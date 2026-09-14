@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>An Cư — Tìm nơi an cư, quản lý trọ trong một nền tảng</title>
+<meta name="description" content="An Cư kết nối người thuê trọ và chủ trọ tại Việt Nam: tìm phòng thông minh, đặt lịch xem, hợp đồng và hoá đơn tự động." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0A0A0C;
+    --surface:#131318;
+    --surface-2:#1B1B22;
+    --border:rgba(255,255,255,.09);
+    --border-strong:rgba(255,255,255,.16);
+    --text:#F4F4F6;
+    --text-muted:#9A9AA7;
+    --text-dim:#6E6E7A;
+    --accent:#7B61FF;
+    --accent-hover:#8E78FF;
+    --accent-fg:#FFFFFF;
+    --success:#3ECf8E;
+    --warning:#F5B14C;
+    --grad:linear-gradient(120deg,#7B61FF 0%,#5EEAD4 100%);
+    --radius-sm:8px;
+    --radius:12px;
+    --radius-lg:16px;
+    --radius-xl:24px;
+    --container:1180px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:90px}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter','Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;font-weight:700;line-height:1.12;letter-spacing:-.02em;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  ::selection{background:rgba(123,97,255,.35)}
+
+  .container{width:100%;max-width:var(--container);margin:0 auto;padding:0 24px}
+  section{position:relative}
+  section[id]{scroll-margin-top:90px}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    height:46px;padding:0 22px;border-radius:var(--radius);
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;
+    border:1px solid transparent;cursor:pointer;white-space:nowrap;
+    transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 8px 30px -10px rgba(123,97,255,.6)}
+  .btn-primary:hover{background:var(--accent-hover);box-shadow:0 12px 40px -10px rgba(123,97,255,.75)}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border-strong)}
+  .btn-ghost:hover{border-color:var(--text);background:rgba(255,255,255,.04)}
+  .btn-lg{height:52px;padding:0 28px;font-size:16px}
+  .btn svg{width:18px;height:18px}
+
+  /* ---------- Eyebrow / chips ---------- */
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
+    padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px 2px rgba(123,97,255,.8)}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;color:var(--text-muted);
+    padding:5px 11px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.02);
+  }
+
+  /* ---------- Header ---------- */
+  header{position:fixed;inset:0 0 auto 0;z-index:100;transition:background .3s var(--ease),border-color .3s var(--ease),backdrop-filter .3s var(--ease)}
+  header.scrolled{background:rgba(10,10,12,.72);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;color:#0A0A0C;font-weight:800}
+  .nav-links{display:flex;align-items:center;gap:36px}
+  .nav-links a{font-size:14.5px;color:var(--text-muted);transition:color .18s var(--ease)}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cta{display:flex;align-items:center;gap:12px}
+  .nav-cta .btn{height:40px;padding:0 18px;font-size:14px}
+  .menu-toggle{display:none;width:42px;height:42px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center}
+  .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before{top:-5px}.menu-toggle span::after{top:5px}
+  body.menu-open .menu-toggle span{background:transparent}
+  body.menu-open .menu-toggle span::before{top:0;transform:rotate(45deg)}
+  body.menu-open .menu-toggle span::after{top:0;transform:rotate(-45deg)}
+
+  .mobile-menu{
+    position:fixed;inset:72px 0 0 0;z-index:99;
+    background:var(--bg);border-top:1px solid var(--border);
+    padding:28px 24px 40px;display:flex;flex-direction:column;gap:6px;
+    transform:translateY(-12px);opacity:0;pointer-events:none;transition:.24s var(--ease);
+  }
+  body.menu-open .mobile-menu{transform:none;opacity:1;pointer-events:auto}
+  .mobile-menu a{padding:14px 4px;font-size:17px;font-weight:500;border-bottom:1px solid var(--border);color:var(--text)}
+  .mobile-menu .btn{margin-top:18px}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:150px 0 90px;text-align:center;overflow:hidden}
+  .hero .glow{
+    position:absolute;left:50%;top:-60px;width:820px;height:520px;transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(123,97,255,.30),rgba(94,234,212,.10) 55%,transparent 75%);
+    filter:blur(30px);pointer-events:none;z-index:0;
+  }
+  .hero .grid-bg{
+    position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:56px 56px;
+    -webkit-mask-image:radial-gradient(ellipse 70% 55% at 50% 30%,#000 40%,transparent 80%);
+    mask-image:radial-gradient(ellipse 70% 55% at 50% 30%,#000 40%,transparent 80%);
+  }
+  .hero .container{position:relative;z-index:1}
+  .hero h1{
+    font-size:clamp(2.4rem,6vw,4.3rem);font-weight:800;margin:26px auto 22px;max-width:16ch;
+  }
+  .hero h1 .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:clamp(1rem,2.2vw,1.2rem);color:var(--text-muted);max-width:56ch;margin:0 auto 34px}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+  /* ---------- Hero mockup ---------- */
+  .mockup-wrap{position:relative;margin:68px auto 0;max-width:960px}
+  .mockup{
+    position:relative;z-index:2;border:1px solid var(--border-strong);border-radius:var(--radius-xl);
+    background:linear-gradient(180deg,#16161d,#0f0f14);
+    box-shadow:0 40px 120px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.03) inset;
+    overflow:hidden;
+  }
+  .mockup-bar{display:flex;align-items:center;gap:7px;padding:14px 18px;border-bottom:1px solid var(--border)}
+  .mockup-bar i{width:10px;height:10px;border-radius:50%;background:#2c2c35;display:block}
+  .mockup-bar .addr{margin-left:14px;font-size:12px;color:var(--text-dim);background:var(--surface-2);padding:5px 12px;border-radius:7px}
+  .mockup-body{display:grid;grid-template-columns:200px 1fr;min-height:340px}
+  .mk-side{border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:6px}
+  .mk-side .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:6px 8px 4px}
+  .mk-side a{font-size:13.5px;color:var(--text-muted);padding:9px 10px;border-radius:8px;display:flex;align-items:center;gap:9px}
+  .mk-side a.active{background:rgba(123,97,255,.14);color:var(--text)}
+  .mk-side a .ic{width:15px;height:15px;border-radius:5px;background:currentColor;opacity:.5}
+  .mk-main{padding:22px;text-align:left}
+  .mk-main h4{font-size:15px;margin-bottom:4px}
+  .mk-main .sub{font-size:12.5px;color:var(--text-dim);margin-bottom:18px}
+  .mk-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .mk-stat{border:1px solid var(--border);border-radius:12px;padding:14px}
+  .mk-stat b{font-family:'Be Vietnam Pro';font-size:20px;display:block}
+  .mk-stat span{font-size:11.5px;color:var(--text-dim)}
+  .mk-rows{display:flex;flex-direction:column;gap:8px}
+  .mk-row{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:10px;padding:11px 13px}
+  .mk-row .thumb{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#2a2540,#20303a);flex-shrink:0}
+  .mk-row .g{flex:1}
+  .mk-row .g b{font-size:13px;font-weight:600;display:block}
+  .mk-row .g span{font-size:11.5px;color:var(--text-dim)}
+  .mk-row .tag{font-size:11px;padding:4px 9px;border-radius:999px;font-weight:600}
+  .tag.ok{background:rgba(62,207,142,.14);color:var(--success)}
+  .tag.wait{background:rgba(245,177,76,.14);color:var(--warning)}
+  .float{
+    position:absolute;z-index:3;background:rgba(20,20,26,.85);backdrop-filter:blur(12px);
+    border:1px solid var(--border-strong);border-radius:14px;padding:13px 16px;
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.7);display:flex;align-items:center;gap:11px;
+  }
+  .float b{font-family:'Be Vietnam Pro';font-size:16px;display:block;line-height:1.2}
+  .float span{font-size:11.5px;color:var(--text-dim)}
+  .float .ico{width:34px;height:34px;border-radius:10px;background:var(--grad);flex-shrink:0}
+  .float.f1{left:-38px;top:96px}
+  .float.f2{right:-30px;bottom:64px}
+
+  /* ---------- Trust strip ---------- */
+  .trust{padding:46px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .trust p{text-align:center;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:20px}
+  .trust-row{display:flex;flex-wrap:wrap;gap:14px 40px;justify-content:center;align-items:center}
+  .trust-row span{font-family:'Be Vietnam Pro';font-weight:600;font-size:17px;color:var(--text-muted)}
+
+  /* ---------- Section shell ---------- */
+  .sec{padding:96px 0}
+  .sec-head{max-width:640px;margin-bottom:56px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .sec-head h2{font-size:clamp(1.9rem,4vw,2.9rem);margin:18px 0 16px}
+  .sec-head p{font-size:1.05rem;color:var(--text-muted)}
+
+  /* ---------- Feature cards ---------- */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{
+    border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);
+    padding:28px;transition:transform .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease);
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--border-strong);background:var(--surface-2)}
+  .card .ci{
+    width:46px;height:46px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px;
+    background:rgba(123,97,255,.12);border:1px solid rgba(123,97,255,.25);
+  }
+  .card .ci svg{width:22px;height:22px;stroke:var(--accent)}
+  .card h3{font-size:1.15rem;margin-bottom:8px}
+  .card p{font-size:.95rem;color:var(--text-muted)}
+
+  /* ---------- Split (landlord) ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .split .list{list-style:none;margin-top:26px;display:flex;flex-direction:column;gap:16px}
+  .split .list li{display:flex;gap:14px;font-size:.98rem}
+  .split .list .tick{
+    width:24px;height:24px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;
+    background:rgba(62,207,142,.13);border:1px solid rgba(62,207,142,.3);
+  }
+  .split .list .tick svg{width:13px;height:13px;stroke:var(--success)}
+  .split .list li b{display:block;font-family:'Be Vietnam Pro';font-weight:600;font-size:.98rem;margin-bottom:2px}
+  .split .list li span{color:var(--text-muted)}
+  .panel{
+    border:1px solid var(--border-strong);border-radius:var(--radius-xl);overflow:hidden;
+    background:linear-gradient(180deg,#16161d,#0f0f14);box-shadow:0 40px 100px -40px rgba(0,0,0,.8);
+  }
+  .panel .ph{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .panel .ph b{font-family:'Be Vietnam Pro';font-size:14px}
+  .panel .ph .pill{font-size:11px;color:var(--success);background:rgba(62,207,142,.14);padding:4px 10px;border-radius:999px}
+  .panel .pb{padding:20px;display:flex;flex-direction:column;gap:10px}
+  .prow{display:flex;align-items:center;gap:13px;border:1px solid var(--border);border-radius:12px;padding:13px 15px}
+  .prow .n{width:38px;height:38px;border-radius:9px;background:var(--surface-2);display:grid;place-items:center;font-family:'Be Vietnam Pro';font-weight:700;font-size:14px;color:var(--text-muted)}
+  .prow .g{flex:1}
+  .prow .g b{font-size:13.5px;display:block}
+  .prow .g span{font-size:11.5px;color:var(--text-dim)}
+  .prow .amt{font-family:'Be Vietnam Pro';font-weight:700;font-size:14px}
+
+  /* ---------- Rooms ---------- */
+  .rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .room{
+    border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface);
+    transition:transform .25s var(--ease),border-color .25s var(--ease);
+  }
+  .room:hover{transform:translateY(-4px);border-color:var(--border-strong)}
+  .room .media{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#2a2540,#1f2f38)}
+  .room .media img{width:100%;height:100%;object-fit:cover}
+  .room .price{
+    position:absolute;left:12px;bottom:12px;font-family:'Be Vietnam Pro';font-weight:700;font-size:14px;
+    background:rgba(10,10,12,.78);backdrop-filter:blur(6px);border:1px solid var(--border-strong);
+    padding:7px 12px;border-radius:999px;
+  }
+  .room .rb{padding:16px 17px 18px}
+  .room .rb h3{font-size:1.02rem;margin-bottom:5px}
+  .room .rb .addr{font-size:.85rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-bottom:13px}
+  .room .rb .addr svg{width:14px;height:14px;stroke:var(--text-dim);flex-shrink:0}
+  .room .meta{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ---------- Steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+  .step{border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;background:var(--surface);position:relative}
+  .step::before{
+    counter-increment:s;content:"0" counter(s);
+    font-family:'Be Vietnam Pro';font-weight:800;font-size:2.2rem;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    display:block;margin-bottom:14px;
+  }
+  .step h3{font-size:1.1rem;margin-bottom:8px}
+  .step p{font-size:.94rem;color:var(--text-muted)}
+
+  /* ---------- Stats ---------- */
+  .stats{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--surface);padding:48px 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px;text-align:center}
+  .stats .s b{font-family:'Be Vietnam Pro';font-weight:800;font-size:clamp(2rem,4vw,2.7rem);display:block;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stats .s span{font-size:.9rem;color:var(--text-muted)}
+
+  /* ---------- Final CTA ---------- */
+  .cta-final{text-align:center;padding:120px 0}
+  .cta-final .box{
+    position:relative;border:1px solid var(--border-strong);border-radius:var(--radius-xl);
+    background:linear-gradient(180deg,#15151c,#0e0e13);padding:64px 32px;overflow:hidden;
+  }
+  .cta-final .box .g2{
+    position:absolute;left:50%;bottom:-140px;width:600px;height:300px;transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(123,97,255,.35),transparent 75%);filter:blur(20px);
+  }
+  .cta-final h2{position:relative;font-size:clamp(2rem,4.5vw,3rem);margin-bottom:16px}
+  .cta-final p{position:relative;color:var(--text-muted);max-width:48ch;margin:0 auto 30px}
+  .cta-final .hero-actions{position:relative}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--border);padding:64px 0 32px}
+  .fgrid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+  .fcol h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:16px;font-weight:600}
+  .fcol a{display:block;font-size:.92rem;color:var(--text-muted);padding:6px 0;transition:color .18s var(--ease)}
+  .fcol a:hover{color:var(--text)}
+  .fcol.about p{font-size:.92rem;color:var(--text-muted);margin-top:12px;max-width:34ch}
+  .fbot{display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--border);font-size:.85rem;color:var(--text-dim);flex-wrap:wrap;gap:12px}
+  .fbot .soc{display:flex;gap:10px}
+  .fbot .soc a{width:34px;height:34px;border:1px solid var(--border);border-radius:9px;display:grid;place-items:center}
+  .fbot .soc a:hover{border-color:var(--border-strong)}
+  .fbot .soc svg{width:15px;height:15px;stroke:var(--text-muted)}
+
+  /* ---------- Reveal animation ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:960px){
+    .nav-links,.nav-cta{display:none}
+    .menu-toggle{display:flex}
+    .mockup-body{grid-template-columns:1fr}
+    .mk-side{display:none}
+    .split{grid-template-columns:1fr;gap:40px}
+    .cards,.rooms,.steps{grid-template-columns:repeat(2,1fr)}
+    .stats{grid-template-columns:repeat(2,1fr);gap:32px 20px}
+    .fgrid{grid-template-columns:1fr 1fr;gap:32px}
+    .float.f1{left:-8px}
+    .float.f2{right:-6px}
+  }
+  @media (max-width:640px){
+    .container{padding:0 18px}
+    .hero{padding:120px 0 64px}
+    .sec{padding:76px 0}
+    .cta-final{padding:80px 0}
+    .cta-final .box{padding:44px 22px}
+    .cards,.rooms,.steps{grid-template-columns:1fr}
+    .sec-head{margin-bottom:40px}
+    .hero-actions .btn{width:100%}
+    .mockup-wrap{margin-top:48px}
+    .float{display:none}
+    .fgrid{grid-template-columns:1fr;gap:28px}
+    .fbot{flex-direction:column;align-items:flex-start}
+    .trust-row{gap:12px 24px}
+    .trust-row span{font-size:15px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="container nav">
+    <a href="#" class="brand"><span class="mark">A</span> An Cư</a>
+    <nav class="nav-links">
+      <a href="#nguoi-thue">Tìm trọ</a>
+      <a href="#chu-tro">Cho chủ trọ</a>
+      <a href="#phong">Phòng nổi bật</a>
+      <a href="#cach-hoat-dong">Cách hoạt động</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Đăng nhập</a>
+      <a href="#" class="btn btn-primary">Đăng tin</a>
+    </div>
+    <button class="menu-toggle" id="menuBtn" aria-label="Mở menu"><span></span></button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#nguoi-thue">Tìm trọ</a>
+  <a href="#chu-tro">Cho chủ trọ</a>
+  <a href="#phong">Phòng nổi bật</a>
+  <a href="#cach-hoat-dong">Cách hoạt động</a>
+  <a href="#" class="btn btn-ghost btn-lg">Đăng nhập</a>
+  <a href="#" class="btn btn-primary btn-lg">Đăng tin</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="glow"></div>
+  <div class="grid-bg"></div>
+  <div class="container">
+    <span class="eyebrow reveal"><span class="dot"></span> Nền tảng thuê trọ thế hệ mới</span>
+    <h1 class="reveal" style="--d:.05s">Tìm nơi <span class="hl">an cư</span>, quản lý trọ trong một nền tảng</h1>
+    <p class="lead reveal" style="--d:.1s">An Cư kết nối người thuê và chủ trọ tại Việt Nam — tìm phòng thông minh, đặt lịch xem trực tuyến, hợp đồng và hoá đơn điện nước tự động hoá.</p>
+    <div class="hero-actions reveal" style="--d:.15s">
+      <a href="#phong" class="btn btn-primary btn-lg">Tìm phòng trọ</a>
+      <a href="#chu-tro" class="btn btn-ghost btn-lg">Tôi là chủ trọ
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="mockup-wrap reveal" style="--d:.2s">
+      <div class="float f1">
+        <span class="ico"></span>
+        <div><b>98%</b><span>lấp đầy phòng</span></div>
+      </div>
+      <div class="float f2">
+        <span class="ico"></span>
+        <div><b>2 phút</b><span>tạo hoá đơn tháng</span></div>
+      </div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <i></i><i></i><i></i>
+          <span class="addr">ancu.vn/quan-ly</span>
+        </div>
+        <div class="mockup-body">
+          <aside class="mk-side">
+            <span class="lbl">Quản lý</span>
+            <a class="active"><span class="ic"></span> Tổng quan</a>
+            <a><span class="ic"></span> Nhà trọ</a>
+            <a><span class="ic"></span> Phòng</a>
+            <a><span class="ic"></span> Hợp đồng</a>
+            <a><span class="ic"></span> Hoá đơn</a>
+            <span class="lbl">Liên hệ</span>
+            <a><span class="ic"></span> Tin nhắn</a>
+            <a><span class="ic"></span> Lịch xem</a>
+          </aside>
+          <div class="mk-main">
+            <h4>Tổng quan</h4>
+            <div class="sub">Nhà trọ Bình Minh · 24 phòng</div>
+            <div class="mk-stats">
+              <div class="mk-stat"><b>22</b><span>Đang thuê</span></div>
+              <div class="mk-stat"><b>2</b><span>Phòng trống</span></div>
+              <div class="mk-stat"><b>18,4tr</b><span>Doanh thu tháng</span></div>
+            </div>
+            <div class="mk-rows">
+              <div class="mk-row"><span class="thumb"></span><div class="g"><b>Phòng 201 · Tầng 2</b><span>Nguyễn V. An · đến hạn 05/09</span></div><span class="tag wait">Chờ TT</span></div>
+              <div class="mk-row"><span class="thumb"></span><div class="g"><b>Phòng 305 · Tầng 3</b><span>Trần T. Mai · đã thanh toán</span></div><span class="tag ok">Xong</span></div>
+              <div class="mk-row"><span class="thumb"></span><div class="g"><b>Phòng 102 · Tầng 1</b><span>Còn trống · 8 lượt quan tâm</span></div><span class="tag ok">Trống</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust">
+  <div class="container reveal">
+    <p>Chủ trọ đang dùng An Cư tại</p>
+    <div class="trust-row">
+      <span>Hà Nội</span><span>Hải Phòng</span><span>Đà Nẵng</span><span>TP. Hồ Chí Minh</span><span>Bình Dương</span><span>Cần Thơ</span>
+    </div>
+  </div>
+</section>
+
+<!-- NGƯỜI THUÊ -->
+<section class="sec" id="nguoi-thue">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Dành cho người thuê</span>
+      <h2>Tìm phòng đúng ý, không mất buổi chạy khắp thành phố</h2>
+      <p>Lọc theo điều bạn thực sự quan tâm, xem phòng trên bản đồ và chốt lịch hẹn chỉ trong vài chạm.</p>
+    </div>
+    <div class="cards" data-stagger>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+        <h3>Lọc thông minh</h3>
+        <p>Giá, diện tích, khu vực, gác lửng, giờ giấc tự do, cho nuôi thú cưng — lọc chính xác nhu cầu thật của bạn.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg></div>
+        <h3>Bản đồ khu vực</h3>
+        <p>Xem phòng ngay trên bản đồ, ước lượng khoảng cách tới chỗ làm, trường học và chợ trước khi đi xem.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></div>
+        <h3>Đặt lịch xem phòng</h3>
+        <p>Chọn khung giờ trống của chủ trọ, nhận xác nhận và nhắc lịch tự động — không cần gọi điện qua lại.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHỦ TRỌ -->
+<section class="sec" id="chu-tro" style="background:linear-gradient(180deg,transparent,rgba(255,255,255,.015),transparent)">
+  <div class="container">
+    <div class="split">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span> Dành cho chủ trọ</span>
+        <h2 style="font-size:clamp(1.9rem,4vw,2.9rem);margin:18px 0 14px">Điều hành mọi phòng trọ từ một màn hình</h2>
+        <p style="color:var(--text-muted)">Thay bảng tính và sổ tay bằng một hệ thống gọn gàng: biết ngay phòng nào trống, ai sắp đến hạn, tháng này thu được bao nhiêu.</p>
+        <ul class="list">
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Quản lý nhiều nhà trọ</b><span>Gộp tất cả cơ sở vào một tài khoản, phân theo tầng và dãy phòng.</span></div></li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Trạng thái phòng tức thời</b><span>Trống, đã thuê, đang sửa — cập nhật realtime, hiển thị ngay trên tin đăng.</span></div></li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Hợp đồng &amp; hoá đơn tự động</b><span>Tạo hợp đồng theo mẫu, chốt hoá đơn hàng tháng và gửi nhắc thanh toán.</span></div></li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Ghi điện nước nhanh</b><span>Nhập chỉ số cuối kỳ, hệ thống tự tính tiền theo đơn giá bạn cài đặt.</span></div></li>
+        </ul>
+      </div>
+      <div class="panel reveal" style="--d:.1s">
+        <div class="ph"><b>Hoá đơn tháng 9 · Nhà trọ Bình Minh</b><span class="pill">Đã gửi 22/24</span></div>
+        <div class="pb">
+          <div class="prow"><span class="n">201</span><div class="g"><b>Nguyễn Văn An</b><span>Tiền phòng + điện 92 số + nước 4 m³</span></div><span class="amt">3.480.000₫</span></div>
+          <div class="prow"><span class="n">305</span><div class="g"><b>Trần Thị Mai</b><span>Tiền phòng + điện 61 số + nước 3 m³</span></div><span class="amt">3.120.000₫</span></div>
+          <div class="prow"><span class="n">208</span><div class="g"><b>Lê Hoàng Nam</b><span>Tiền phòng + điện 74 số + nước 5 m³</span></div><span class="amt">3.350.000₫</span></div>
+          <div class="prow"><span class="n">110</span><div class="g"><b>Phạm Thu Hà</b><span>Tiền phòng + điện 58 số + nước 3 m³</span></div><span class="amt">2.980.000₫</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHÒNG NỔI BẬT -->
+<section class="sec" id="phong">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Phòng nổi bật</span>
+      <h2>Mới đăng tuần này</h2>
+      <p>Những phòng được quan tâm nhiều nhất, đã xác minh bởi chủ trọ trên An Cư.</p>
+    </div>
+    <div class="rooms" data-stagger>
+      <article class="room reveal">
+        <div class="media"><img loading="lazy" alt="Phòng trọ có gác lửng, cửa sổ lớn" src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=70" /><span class="price">2.800.000₫/th</span></div>
+        <div class="rb">
+          <h3>Phòng gác lửng, thoáng sáng</h3>
+          <p class="addr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Lê Chân, Hải Phòng</p>
+          <div class="meta"><span class="chip">22 m²</span><span class="chip">2 người</span><span class="chip">Giờ tự do</span></div>
+        </div>
+      </article>
+      <article class="room reveal">
+        <div class="media"><img loading="lazy" alt="Căn hộ mini đầy đủ nội thất" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=70" /><span class="price">4.200.000₫/th</span></div>
+        <div class="rb">
+          <h3>Căn hộ mini full nội thất</h3>
+          <p class="addr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Ngô Quyền, Hải Phòng</p>
+          <div class="meta"><span class="chip">30 m²</span><span class="chip">2 người</span><span class="chip">Có bếp</span></div>
+        </div>
+      </article>
+      <article class="room reveal">
+        <div class="media"><img loading="lazy" alt="Phòng trọ ban công riêng" src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=70" /><span class="price">3.100.000₫/th</span></div>
+        <div class="rb">
+          <h3>Phòng ban công riêng, đón nắng</h3>
+          <p class="addr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Hồng Bàng, Hải Phòng</p>
+          <div class="meta"><span class="chip">25 m²</span><span class="chip">2 người</span><span class="chip">Thú cưng OK</span></div>
+        </div>
+      </article>
+      <article class="room reveal">
+        <div class="media"><img loading="lazy" alt="Studio hiện đại gần trung tâm" src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=70" /><span class="price">3.900.000₫/th</span></div>
+        <div class="rb">
+          <h3>Studio hiện đại gần trung tâm</h3>
+          <p class="addr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Lê Chân, Hải Phòng</p>
+          <div class="meta"><span class="chip">28 m²</span><span class="chip">2 người</span><span class="chip">Thang máy</span></div>
+        </div>
+      </article>
+      <article class="room reveal">
+        <div class="media"><img loading="lazy" alt="Phòng trọ sạch sẽ khép kín" src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=70" /><span class="price">2.500.000₫/th</span></div>
+        <div class="rb">
+          <h3>Phòng khép kín, an ninh tốt</h3>
+          <p class="addr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Kiến An, Hải Phòng</p>
+          <div class="meta"><span class="chip">20 m²</span><span class="chip">2 người</span><span class="chip">Camera 24/7</span></div>
+        </div>
+      </article>
+      <article class="room reveal">
+        <div class="media"><img loading="lazy" alt="Phòng trọ rộng cho hộ gia đình" src="https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?auto=format&fit=crop&w=800&q=70" /><span class="price">4.600.000₫/th</span></div>
+        <div class="rb">
+          <h3>Phòng rộng, phù hợp gia đình</h3>
+          <p class="addr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Hải An, Hải Phòng</p>
+          <div class="meta"><span class="chip">35 m²</span><span class="chip">3 người</span><span class="chip">Chỗ để ô tô</span></div>
+        </div>
+      </article>
+    </div>
+    <div style="text-align:center;margin-top:44px" class="reveal">
+      <a href="#" class="btn btn-ghost btn-lg">Xem tất cả phòng tại Hải Phòng
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CÁCH HOẠT ĐỘNG -->
+<section class="sec" id="cach-hoat-dong" style="background:linear-gradient(180deg,transparent,rgba(255,255,255,.015),transparent)">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Cách hoạt động</span>
+      <h2>Từ tìm phòng đến dọn vào ở</h2>
+    </div>
+    <div class="steps" data-stagger>
+      <div class="step reveal"><h3>Tìm &amp; lọc</h3><p>Duyệt phòng theo khu vực và ngân sách, lưu lại những phòng ưng ý để so sánh.</p></div>
+      <div class="step reveal"><h3>Đặt lịch &amp; nhắn tin</h3><p>Trao đổi trực tiếp với chủ trọ, chọn khung giờ xem phòng phù hợp.</p></div>
+      <div class="step reveal"><h3>Ký hợp đồng online</h3><p>Xác nhận điều khoản, nhận hợp đồng điện tử và theo dõi hoá đơn hàng tháng ngay trên An Cư.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="sec" id="so-lieu">
+  <div class="container">
+    <div class="stats reveal" data-stagger>
+      <div class="s"><b>12.000+</b><span>phòng đang cho thuê</span></div>
+      <div class="s"><b>3.500+</b><span>chủ trọ tin dùng</span></div>
+      <div class="s"><b>28</b><span>tỉnh thành phủ sóng</span></div>
+      <div class="s"><b>4.9/5</b><span>đánh giá từ người thuê</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-final">
+  <div class="container reveal">
+    <div class="box">
+      <div class="g2"></div>
+      <h2>Sẵn sàng an cư?</h2>
+      <p>Tạo tài khoản miễn phí. Người thuê tìm được phòng đúng ý, chủ trọ quản lý gọn nhẹ ngay từ hôm nay.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary btn-lg">Tìm phòng ngay</a>
+        <a href="#" class="btn btn-ghost btn-lg">Đăng tin cho thuê</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="fgrid">
+      <div class="fcol about">
+        <a href="#" class="brand"><span class="mark">A</span> An Cư</a>
+        <p>Nền tảng thuê và quản lý phòng trọ dành cho người Việt.</p>
+      </div>
+      <div class="fcol">
+        <h4>Người thuê</h4>
+        <a href="#">Tìm phòng trọ</a><a href="#">Bản đồ khu vực</a><a href="#">Phòng đã lưu</a><a href="#">Lịch xem phòng</a>
+      </div>
+      <div class="fcol">
+        <h4>Chủ trọ</h4>
+        <a href="#">Đăng tin cho thuê</a><a href="#">Quản lý nhà trọ</a><a href="#">Hợp đồng &amp; hoá đơn</a><a href="#">Bảng giá</a>
+      </div>
+      <div class="fcol">
+        <h4>Công ty</h4>
+        <a href="#">Về An Cư</a><a href="#">Blog</a><a href="#">Liên hệ</a><a href="#">Điều khoản &amp; bảo mật</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>© 2026 An Cư. Bảo lưu mọi quyền.</span>
+      <div class="soc">
+        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 8.5a3 3 0 0 0-2.1-2.1C18 6 12 6 12 6s-6 0-7.9.4A3 3 0 0 0 2 8.5 31 31 0 0 0 2 12a31 31 0 0 0 .1 3.5 3 3 0 0 0 2.1 2.1C6 18 12 18 12 18s6 0 7.9-.4a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.1-3.5Z"/><path d="m10 15 5-3-5-3Z"/></svg></a>
+        <a href="#" aria-label="Zalo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 8h5M8 8v6l-1.5 2M13 8c2 0 3 1.3 3 3s-1 3-3 3H9"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Header scroll state
+  var hdr = document.getElementById('hdr');
+  var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 12); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  // Mobile menu
+  var mb = document.getElementById('menuBtn');
+  mb.addEventListener('click', function(){ document.body.classList.toggle('menu-open'); });
+  document.querySelectorAll('#mobileMenu a').forEach(function(a){
+    a.addEventListener('click', function(){ document.body.classList.remove('menu-open'); });
+  });
+
+  // Scroll reveal with stagger
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce){
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  } else {
+    document.querySelectorAll('[data-stagger]').forEach(function(group){
+      group.querySelectorAll('.reveal').forEach(function(el,i){ el.style.setProperty('--d',(i*0.08)+'s'); });
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+</script>
+</body>
+</html>
