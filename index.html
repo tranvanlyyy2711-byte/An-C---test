@@ -497,9 +497,8 @@
     stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
     pointer-events:none;transition:stroke .18s var(--ease);
   }
-  .ctrl > svg.caret,.fld .ctrl > svg.caret{
-    position:absolute;left:auto;right:13px;top:50%;transform:translateY(-50%);
-    width:14px;height:14px;
+  .fld .caret{
+    position:absolute;right:13px;width:14px;height:14px;
     stroke:var(--text-dim);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
   }
   .fld select,.fld input{
@@ -540,7 +539,7 @@
     appearance:none;-webkit-appearance:none;cursor:pointer;
   }
   .result-bar .sort select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(123,97,255,.2)}
-  .result-bar .sort .ctrl > svg.caret{right:12px}
+  .result-bar .sort .caret{right:12px}
 
   .empty{
     display:none;text-align:center;padding:64px 24px;
@@ -604,10 +603,10 @@
   .rd-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
 
   .rd-body{display:grid;grid-template-columns:1.1fr 1fr;overflow:hidden;min-height:0}
-  .rd-gallery{display:flex;flex-direction:column;background:var(--surface-2);overflow:hidden;min-height:0}
-  .rd-main{position:relative;flex:1 1 auto;min-height:0;background:linear-gradient(135deg,#2a2540,#1f2f38)}
+  .rd-gallery{padding:0;background:var(--surface-2);overflow-y:auto}
+  .rd-main{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#2a2540,#1f2f38)}
   .rd-main img{width:100%;height:100%;object-fit:cover}
-  .rd-thumbs{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px}
+  .rd-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px}
   .rd-thumbs button{
     position:relative;aspect-ratio:4/3;padding:0;border:1px solid var(--border);border-radius:10px;
     overflow:hidden;background:none;cursor:pointer;opacity:.55;
@@ -620,11 +619,11 @@
 
   .rd-info{padding:28px 28px 26px;overflow-y:auto;min-height:0}
   .rd-info .rd-price{
-    font-family:'Be Vietnam Pro',sans-serif;font-size:1.75rem;font-weight:800;padding-right:52px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:1.75rem;font-weight:800;
     color:var(--text);letter-spacing:-.02em;margin-bottom:4px;
   }
   .rd-info .rd-price span{font-size:1rem;font-weight:500;color:var(--text-muted)}
-  .rd-info h2{font-size:1.3rem;margin:12px 0 8px;padding-right:52px}
+  .rd-info h2{font-size:1.3rem;margin:12px 0 8px}
   .rd-info .rd-addr{display:flex;align-items:flex-start;gap:8px;font-size:14.5px;color:var(--text-muted);line-height:1.5}
   .rd-info .rd-addr svg{width:16px;height:16px;margin-top:3px;stroke:var(--text-dim);fill:none;stroke-width:1.6;flex-shrink:0}
 
@@ -679,8 +678,7 @@
     .finder .btn-find{grid-column:1/-1;width:100%}
     .rd-modal{max-width:560px}
     .rd-body{grid-template-columns:1fr;overflow-y:auto}
-    .rd-gallery{display:block;overflow:visible}
-    .rd-main{aspect-ratio:4/3}
+    .rd-gallery{overflow:visible}
     .rd-info{overflow:visible;padding:22px 22px 24px}
   }
   @media (max-width:640px){
@@ -710,7 +708,7 @@
     </nav>
     <div class="nav-cta">
       <a href="#" class="btn btn-ghost" data-auth="login">Đăng nhập</a>
-      <a href="#" class="btn btn-primary" data-auth="register">Đăng ký</a>
+      <a href="#" class="btn btn-primary" data-auth="register" data-auth-role="landlord">Đăng ký</a>
     </div>
     <button class="menu-toggle" id="menuBtn" aria-label="Mở menu"><span></span></button>
   </div>
@@ -721,7 +719,7 @@
   <a href="#cach-hoat-dong">Cách hoạt động</a>
   <a href="#chu-tro">Cho chủ trọ</a>
   <a href="#" class="btn btn-ghost btn-lg" data-auth="login">Đăng nhập</a>
-  <a href="#" class="btn btn-primary btn-lg" data-auth="register">Đăng ký</a>
+  <a href="#" class="btn btn-primary btn-lg" data-auth="register" data-auth-role="landlord">Đăng ký</a>
 </div>
 
 <!-- HERO -->
@@ -826,7 +824,7 @@
         <div class="fld">
           <label for="fPrice">Khoảng giá</label>
           <div class="ctrl">
-            <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M5.5 12h.01M18.5 12h.01"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 6.5C17 4.6 14.8 3 12 3S7 4.6 7 6.5 9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/></svg>
             <select id="fPrice">
               <option value="">Mọi mức giá</option>
               <option value="0-2000000">Dưới 2 triệu</option>
