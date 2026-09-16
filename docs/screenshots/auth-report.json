@@ -1,0 +1,22 @@
+[
+  {
+    "viewport": "desktop",
+    "loginErr": "Số điện thoại không hợp lệ (ví dụ: 0912345678).",
+    "emailErr": "Email không hợp lệ.",
+    "confirmErr": "Mật khẩu nhập lại không khớp.",
+    "overflowX": 0,
+    "escClosed": true,
+    "jsErrors": [],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "loginErr": "Số điện thoại không hợp lệ (ví dụ: 0912345678).",
+    "emailErr": "Email không hợp lệ.",
+    "confirmErr": "Mật khẩu nhập lại không khớp.",
+    "overflowX": 0,
+    "escClosed": true,
+    "jsErrors": [],
+    "ok": true
+  }
+]

@@ -1,0 +1,266 @@
+[
+  {
+    "viewport": "desktop",
+    "checks": [
+      {
+        "name": "số phòng mặc định",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "lọc Ngô Quyền",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "lọc giá 2-3 triệu",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "lọc nuôi thú cưng",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "không có kết quả",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "rẻ nhất đứng đầu",
+        "got": "1.800.000₫/tháng",
+        "want": "1.800.000₫/tháng",
+        "ok": true
+      },
+      {
+        "name": "tiêu đề chi tiết",
+        "got": "Phòng trọ giá mềm cho sinh viên",
+        "want": "Phòng trọ giá mềm cho sinh viên",
+        "ok": true
+      },
+      {
+        "name": "địa chỉ đầy đủ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có đủ 4 ảnh",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "có 4 thông số",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "bấm thumbnail đổi ảnh chính",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "số điện thoại ẩn trước khi bấm",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "hiện số điện thoại sau khi bấm",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đúng số của chủ phòng",
+        "got": "0968 110 447",
+        "want": "0968 110 447",
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Esc đóng chi tiết",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chi tiết đóng lại",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở modal đăng nhập",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "checks": [
+      {
+        "name": "số phòng mặc định",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "lọc Ngô Quyền",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "lọc giá 2-3 triệu",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "lọc nuôi thú cưng",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "không có kết quả",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "rẻ nhất đứng đầu",
+        "got": "1.800.000₫/tháng",
+        "want": "1.800.000₫/tháng",
+        "ok": true
+      },
+      {
+        "name": "tiêu đề chi tiết",
+        "got": "Phòng trọ giá mềm cho sinh viên",
+        "want": "Phòng trọ giá mềm cho sinh viên",
+        "ok": true
+      },
+      {
+        "name": "địa chỉ đầy đủ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có đủ 4 ảnh",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "có 4 thông số",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "bấm thumbnail đổi ảnh chính",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "số điện thoại ẩn trước khi bấm",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "hiện số điện thoại sau khi bấm",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đúng số của chủ phòng",
+        "got": "0968 110 447",
+        "want": "0968 110 447",
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Esc đóng chi tiết",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chi tiết đóng lại",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở modal đăng nhập",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+]
