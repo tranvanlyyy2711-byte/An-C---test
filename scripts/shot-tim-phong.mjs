@@ -39,7 +39,7 @@ for (const t of targets) {
   };
 
   await page.waitForSelector('#roomList .room-row');
-  expect('số phòng mặc định', await rows(), 8);
+  expect('số phòng mặc định', await rows(), 18);
   expect('không cuộn ngang (tải trang)', await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 0), true);
 
   // Cuộn danh sách phòng một lượt để ảnh lazy-load kịp vào khung chụp
@@ -71,7 +71,7 @@ for (const t of targets) {
 
   await page.click('#filterReset');
   await page.waitForTimeout(150);
-  expect('xoá bộ lọc nâng cao trả lại đủ phòng', await rows(), 8);
+  expect('xoá bộ lọc nâng cao trả lại đủ phòng', await rows(), 18);
 
   // Lọc theo loại phòng
   await page.selectOption('#fType', 'Ở ghép');
@@ -88,7 +88,7 @@ for (const t of targets) {
 
   await page.click('#roomReset');
   await page.waitForTimeout(150);
-  expect('xoá toàn bộ bộ lọc trả lại đủ phòng', await rows(), 8);
+  expect('xoá toàn bộ bộ lọc trả lại đủ phòng', await rows(), 18);
 
   if (t.width > 960) {
     // Desktop/tablet lớn: sidebar cố định luôn hiển thị, không có topbar hamburger

@@ -303,6 +303,86 @@
   .map-pin:focus-visible{outline:none}
   .map-pin:focus-visible .dot{outline:2px solid var(--accent);outline-offset:2px}
 
+  /* ---------- Modal chi tiết phòng ---------- */
+  .rd-overlay{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    background:rgba(6,6,8,.74);backdrop-filter:blur(10px);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .24s var(--ease),visibility .24s var(--ease);
+  }
+  .rd-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+  body.rd-open{overflow:hidden}
+  .rd-modal{
+    position:relative;width:100%;max-width:860px;
+    max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 40px 100px -30px rgba(0,0,0,.85);
+    transform:translateY(14px) scale(.985);opacity:0;
+    transition:transform .3s var(--ease),opacity .3s var(--ease);
+  }
+  .rd-overlay.open .rd-modal{transform:none;opacity:1}
+  .rd-close{
+    position:absolute;top:14px;right:14px;z-index:3;width:44px;height:44px;
+    display:grid;place-items:center;border:1px solid var(--border-strong);
+    background:rgba(10,10,12,.7);backdrop-filter:blur(8px);
+    border-radius:12px;cursor:pointer;color:var(--text);
+    transition:background .18s var(--ease)
+  }
+  .rd-close:hover{background:rgba(10,10,12,.92)}
+  .rd-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+  .rd-body{display:grid;grid-template-columns:1fr 1.1fr;overflow:hidden;min-height:0}
+  .rd-gallery{background:var(--surface-2);display:flex;flex-direction:column;min-height:0}
+  .rd-main{position:relative;flex:1;min-height:260px;background:linear-gradient(135deg,#2a2540,#1f2f38)}
+  .rd-main img{width:100%;height:100%;object-fit:cover}
+  .rd-thumbs{display:flex;gap:8px;padding:10px;background:var(--surface-2);overflow-x:auto}
+  .rd-thumbs button{
+    flex:0 0 auto;width:64px;height:56px;padding:0;border-radius:var(--radius-sm);
+    border:1.5px solid transparent;overflow:hidden;cursor:pointer;background:none;
+    transition:border-color .18s var(--ease),opacity .18s var(--ease);opacity:.65;
+  }
+  .rd-thumbs button img{width:100%;height:100%;object-fit:cover;display:block}
+  .rd-thumbs button:hover{opacity:1}
+  .rd-thumbs button.on{border-color:var(--accent);opacity:1}
+  .rd-thumbs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rd-info{padding:28px 28px 26px;overflow-y:auto;min-height:0}
+  .rd-info .rd-price{
+    font-family:'Be Vietnam Pro',sans-serif;font-size:1.6rem;font-weight:800;
+    color:var(--text);letter-spacing:-.02em;margin-bottom:4px;
+  }
+  .rd-info .rd-price span{font-size:1rem;font-weight:500;color:var(--text-muted)}
+  .rd-info h2{font-size:1.22rem;margin:10px 0 8px}
+  .rd-info .rd-addr{display:flex;align-items:flex-start;gap:8px;font-size:14.5px;color:var(--text-muted);line-height:1.5}
+  .rd-info .rd-addr svg{width:16px;height:16px;margin-top:3px;stroke:var(--text-dim);fill:none;stroke-width:1.6;flex-shrink:0}
+  .rd-specs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+  .rd-specs div{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 12px}
+  .rd-specs dt{font-size:11.5px;color:var(--text-dim);margin-bottom:4px}
+  .rd-specs dd{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+  .rd-block{margin-bottom:18px}
+  .rd-block h3{font-size:.92rem;margin-bottom:8px;color:var(--text)}
+  .rd-block p{font-size:14px;line-height:1.7;color:var(--text-muted);white-space:pre-line}
+  .rd-amen{display:flex;flex-wrap:wrap;gap:8px}
+  .rd-amen span{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    padding:7px 12px;font-size:13px;color:var(--text-muted);
+  }
+  .rd-amen svg{width:13px;height:13px;stroke:var(--success);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .rd-owner{
+    display:flex;align-items:center;gap:13px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+    padding:14px;margin-bottom:16px;
+  }
+  .rd-owner .av{
+    width:44px;height:44px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+    background:rgba(123,97,255,.14);border:1px solid rgba(123,97,255,.3);
+  }
+  .rd-owner .av svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:1.8}
+  .rd-owner b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:16px;letter-spacing:.01em}
+  .rd-owner small{display:block;font-size:12.5px;color:var(--text-dim)}
+  .rd-actions .btn{width:100%;height:48px;font-size:14.5px}
+
   /* ---------- Responsive: 960 / 640 (bao trọn 768 và 390) ---------- */
   @media (max-width:960px){
     .topbar{display:flex}
@@ -324,6 +404,11 @@
     .room-list{max-height:none}
     .map-col{position:static;height:min(70vh,520px);min-height:340px}
     .map-col[hidden],.room-list-col[hidden]{display:none}
+
+    .rd-modal{max-width:560px}
+    .rd-body{grid-template-columns:1fr;overflow-y:auto}
+    .rd-main{min-height:220px}
+    .rd-info{overflow:visible;padding:22px 22px 24px}
   }
   @media (max-width:640px){
     .dash-main{padding:calc(var(--topbar-h) + 20px) 16px 40px}
@@ -334,6 +419,11 @@
     .result-bar{gap:10px}
     .room-row .media{width:96px}
     .dash-head h1{font-size:1.55rem}
+
+    .rd-overlay{padding:0}
+    .rd-modal{max-width:none;max-height:100vh;max-height:100dvh;height:100%;border-radius:0;border:0}
+    .rd-specs{grid-template-columns:1fr 1fr}
+    .rd-info .rd-price{font-size:1.4rem}
   }
 </style>
 </head>
@@ -528,6 +618,57 @@
   </main>
 </div>
 
+<!-- MODAL CHI TIẾT PHÒNG -->
+<div class="rd-overlay" id="rdOverlay" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+  <div class="rd-modal">
+    <button type="button" class="rd-close" id="rdClose" aria-label="Đóng">
+      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="rd-body">
+      <div class="rd-gallery">
+        <div class="rd-main"><img id="rdMainImg" alt="" src="" /></div>
+        <div class="rd-thumbs" id="rdThumbs" hidden></div>
+      </div>
+
+      <div class="rd-info">
+        <p class="rd-price" id="rdPrice"></p>
+        <h2 id="rdTitle"></h2>
+        <p class="rd-addr">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="rdAddr"></span>
+        </p>
+
+        <dl class="rd-specs" id="rdSpecs"></dl>
+
+        <div class="rd-block">
+          <h3>Mô tả</h3>
+          <p id="rdDesc"></p>
+        </div>
+
+        <div class="rd-block">
+          <h3>Tiện nghi</h3>
+          <div class="rd-amen" id="rdAmen"></div>
+        </div>
+
+        <div class="rd-owner">
+          <span class="av">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+          </span>
+          <div>
+            <b id="rdOwnerPhone"></b>
+            <small>SĐT chủ trọ</small>
+          </div>
+        </div>
+
+        <div class="rd-actions">
+          <a class="btn btn-primary" id="rdCallBtn" href="tel:">Gọi cho chủ trọ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // ---------- Reveal khi cuộn ----------
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -579,6 +720,86 @@
     // có thêm mapX/mapY (%) để định vị ghim trên bản đồ placeholder và
     // distance (khoảng cách ước lượng tới vị trí tìm kiếm) phục vụ dashboard cá nhân.
     var ROOMS = [
+      { id:'r09', title:'Phòng khép kín, gần các trường Bách Kinh Xây', type:'Phòng trọ', price:3300000, area:35, people:2,
+        ward:'P. Vĩnh Tuy', district:'Hai Bà Trưng', address:'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội',
+        alt:'Phòng khép kín có gác, tủ quần áo và ban công tại phố Lạc Trung', distance:1.4, mapX:30, mapY:58,
+        amenities:['Máy lạnh','Nóng lạnh','Sân vườn'],
+        phone:'0327882879', postedAt:'05/08/2026',
+        desc:'Diện tích: 15 - 40m² (6 phòng) vệ sinh khép kín. Ngõ rộng, 50m ra mặt đường Lạc Trung, Kim Ngưu, gần các trường ĐH Bách Kinh Xây, gần khu vực Times City, 200m ra bệnh viện Thanh Nhàn, gần chợ, khu cư dân nhiều cây xanh yên tĩnh thoáng mát. Tầng 1 để xe thoải mái miễn phí. Phòng to có điều hòa, bình nóng lạnh, tủ quần áo 4 cánh, giường 1m8, ban công rộng thoáng, vệ sinh khép kín, rộng 30-40m². Phòng nhỏ có điều hòa, bình nóng lạnh, tủ quần áo 4 cánh, giường 1m8, vệ sinh khép kín hoặc vệ sinh riêng mỗi phòng. Giá thuê: 3,3 - 5,2 triệu. Điện: 4k/số, Nước: 80k/người. Không phí dịch vụ, không chi phí quản lý, trợ giá sinh viên.',
+        image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg',
+        images:['../assets/rooms/phong-lac-trung-vinh-tuy.jpg','../assets/rooms/phong-lac-trung-vinh-tuy-2.webp','../assets/rooms/phong-lac-trung-vinh-tuy-3.webp'] },
+      { id:'r10', title:'Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng', type:'Phòng trọ', price:4500000, area:20, people:2,
+        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'26 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội',
+        alt:'Phòng trọ mới xây, đầy đủ nội thất gần Đại Cồ Việt', distance:1.0, mapX:34, mapY:50,
+        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Camera an ninh'],
+        phone:'0967960926', postedAt:'05/08/2026',
+        desc:'Xung quanh là các trường Đại học Bách Khoa, Kinh tế Quốc dân, Đại học Xây dựng. Phòng mới 100%, full nội thất, điều hòa nóng lạnh, giường tủ, kệ bếp, camera an ninh đầy đủ. Mặt tiền thông thoáng, các phòng đều có ban công, lối thoát hiểm độc lập. Không chung chủ. Không qua trung gian, không nhận cọc trước qua mọi hình thức, đến xem trực tiếp phù hợp mới ở.',
+        image:'../assets/rooms/phongtrobachkinhxaygiare1.webp',
+        images:['../assets/rooms/phongtrobachkinhxaygiare1.webp','../assets/rooms/phongtrobachkinhxaygiare2.webp','../assets/rooms/phongtrobachkinhxaygiare3.webp','../assets/rooms/phongtrobachkinhxaygiare4.webp'] },
+      { id:'r11', title:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', type:'Phòng trọ', price:3300000, area:25, people:2,
+        ward:'P. Nghĩa Đô', district:'Cầu Giấy', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội',
+        alt:'Phòng khép kín trong ngõ 210 Hoàng Quốc Việt', distance:2.6, mapX:30, mapY:26,
+        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Chỗ để xe'],
+        phone:'0916667679', postedAt:'05/08/2026',
+        desc:'Phòng khép kín 25m² gồm nhà vệ sinh, bếp, giường, tủ, điều hòa, bình nóng lạnh. Có công tơ riêng, chỗ để xe máy chung tầng 1. Có máy giặt và sân phơi chung ở tầng 5. Gần các trường HV Quân sự, ĐH Điện lực, CĐ Du lịch, ĐH Quốc gia, ĐH KHCN, ĐH Sư phạm, CĐ Sư phạm, ĐH Thương mại. Gần chợ Nghĩa Tân, chợ Trần Cung, nhiều trạm xe buýt. Khu dân trí cao, an ninh, yên tĩnh, sạch sẽ, văn minh. Giá thuê từ 3,3tr/tháng tùy loại phòng.',
+        image:'../assets/rooms/210hqv1.webp',
+        images:['../assets/rooms/210hqv1.webp','../assets/rooms/210hqv2.webp','../assets/rooms/210hqv3.webp','../assets/rooms/210hqv4.webp'] },
+      { id:'r12', title:'Phòng mới xây, đầy đủ tiện nghi', type:'Phòng trọ', price:3500000, area:30, people:2,
+        ward:'P. Hàng Bột', district:'Đống Đa', address:'Số nhà 20, ngách 79, ngõ Cẩm Văn, Phường Hàng Bột, Quận Đống Đa, Hà Nội',
+        alt:'Phòng mới xây đầy đủ tiện nghi tại ngõ Cẩm Văn', distance:2.0, mapX:50, mapY:30,
+        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng'],
+        phone:'0838528543', postedAt:'05/08/2026',
+        desc:'Nhà mới xây, đầy đủ tiện nghi, có nóng lạnh, điều hòa, tủ quần áo, tủ phấn, đệm, giá bếp. Gần chợ, bệnh viện, trường học các cấp 1, 2, 3. Gần Đại học Nhạc viện, Mỹ thuật, Cao đẳng Y tế, Đại học Công đoàn, Thủy lợi, Bách Khoa, Đại học Y tế.',
+        image:'../assets/rooms/moixay1.webp',
+        images:['../assets/rooms/moixay1.webp','../assets/rooms/moixay2.webp','../assets/rooms/moixay3.webp','../assets/rooms/moixay4.webp'] },
+      { id:'r13', title:'Phòng trọ khép kín Trần Thái Tông', type:'Phòng trọ', price:3500000, area:28, people:2,
+        ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội',
+        alt:'Phòng khép kín gần ngã tư Trần Thái Tông - Xuân Thủy', distance:1.3, mapX:40, mapY:32,
+        amenities:['Máy lạnh','Nóng lạnh','Chỗ để xe','Có bếp riêng'],
+        phone:'0904525414', postedAt:'05/08/2026',
+        desc:'Gần ngã tư Trần Thái Tông - Xuân Thủy, cách HV Báo Chí 200m, gần ĐH Quốc Gia, Sư Phạm, Ngoại Ngữ, Thương Mại. Tiện ích: giường, tủ, đệm, điều hòa, nóng lạnh, bàn bếp, máy giặt chung, khóa vân tay. Thang bộ, để xe free. Phí dịch vụ: Điện 4.000đ/số, Nước 100k/người, DV chung 150k/người (wifi, máy giặt...).',
+        image:'../assets/rooms/ttt1.webp',
+        images:['../assets/rooms/ttt1.webp','../assets/rooms/ttt2.webp','../assets/rooms/ttt3.webp'] },
+      { id:'r14', title:'Phòng trọ sinh viên tại Hòa Lạc, gần ĐH FPT, ĐHQGHN', type:'Phòng trọ', price:1800000, area:20, people:2,
+        ward:'X. Hòa Lạc', district:'Thạch Thất', address:'Đường Đại lộ Thăng Long, Xã Hòa Lạc, Huyện Thạch Thất, Hà Nội',
+        alt:'Phòng trọ sinh viên gần cổng sau Đại học FPT Hòa Lạc', distance:24, mapX:6, mapY:82,
+        amenities:['Máy lạnh','Nóng lạnh','Wifi miễn phí','Có bếp riêng'],
+        phone:'0342150995', postedAt:'05/08/2026',
+        desc:'Ngay cổng sau trường ĐH FPT, gần ĐHQGHN Hòa Lạc, gần HVTC. Thiết bị đầy đủ: điều hòa, nóng lạnh, tủ lạnh, wifi, giường tủ, bàn học, bàn bếp, máy giặt (có khu sạc xe điện). Điện 3.400đ/số, nước sạch, dịch vụ 150.000đ/người/tháng (máy giặt, internet, vệ sinh, rác). Gần điểm xe Bus 117, siêu thị, quán ăn, nhà hàng, phòng Gym, chợ. An ninh đảm bảo, nội quy đầy đủ, thoáng mát, an toàn.',
+        image:'../assets/rooms/hoalac1.webp',
+        images:['../assets/rooms/hoalac1.webp','../assets/rooms/hoalac2.webp','../assets/rooms/hoalac3.webp'] },
+      { id:'r15', title:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', type:'Phòng trọ', price:4250000, area:25, people:2,
+        ward:'P. Phúc Diễn', district:'Nam Từ Liêm', address:'Ngõ 90 Đường Phúc Diễn, Quận Nam Từ Liêm, Hà Nội',
+        alt:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', distance:9.5, mapX:14, mapY:44,
+        amenities:['Thang máy','Wifi miễn phí'],
+        phone:'0974942507', postedAt:'05/08/2026',
+        desc:'Ngõ 90 Phúc Diễn - 281 Hồ Tùng Mậu (gần chân ga Cầu Diễn). Trống phòng 501. Điện 3,8k/số, Nước 35k/khối, Dịch vụ chung 150k/người, mạng 100k/phòng, thang máy 50k/người. Không nhận thú cưng, không nhận khách nước ngoài. Hợp đồng 13 tháng.',
+        image:'../assets/rooms/ga1.webp',
+        images:['../assets/rooms/ga1.webp','../assets/rooms/ga2.webp','../assets/rooms/ga3.webp'] },
+      { id:'r16', title:'Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện', type:'Phòng trọ', price:3000000, area:30, people:2,
+        ward:'P. Kim Liên', district:'Đống Đa', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội',
+        alt:'Phòng khép kín có ban công trên phố Tôn Thất Tùng', distance:3.4, mapX:54, mapY:34,
+        amenities:['Máy lạnh','Nóng lạnh'],
+        phone:'0982165646', postedAt:'05/08/2026',
+        desc:'Có phòng cho nữ thuê, diện tích 30m² (có ban công). Tiện nghi đầy đủ: tắm nóng lạnh, điều hòa, máy giặt, quạt, giường tủ. Khép kín, đi khóa về mở, dân trí cao, an ninh tốt.',
+        image:'../assets/rooms/dd1.webp',
+        images:['../assets/rooms/dd1.webp','../assets/rooms/dd2.webp'] },
+      { id:'r17', title:'Trọ có 1 phòng ngủ 1 phòng khách', type:'Phòng trọ', price:4000000, area:25, people:2,
+        ward:'P. Xuân Phương', district:'Nam Từ Liêm', address:'Đường Tu Hoàng, Phường Xuân Phương, Quận Nam Từ Liêm, Hà Nội',
+        alt:'Phòng 1 ngủ 1 khách khép kín tại phố Nhổn', distance:11.8, mapX:8, mapY:60,
+        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng'],
+        phone:'0912415901', postedAt:'05/08/2026',
+        desc:'Địa chỉ 37 phố Nhổn, giá chỉ từ 3xxx (đóng 1 cọc 1), loại 1N1K: 4m5. Phòng khép kín, nội thất: điều hòa, tủ lạnh, ban công thoáng mát, nóng lạnh, tủ quần áo, bếp, sân phơi, máy giặt tầng thượng. Phí dịch vụ: Điện 3,8k/số, Nước 30k/khối, Internet 100k/phòng, Dịch vụ chung 180k/người. Cách mặt đường Nhổn 30m, cách ĐH Công Nghiệp 150m, gần tàu điện trên cao, gần bến xe buýt. Nhà mới xây, không chung chủ, giờ giấc thoải mái, khóa vân tay, không nhận xe điện.',
+        image:'../assets/rooms/1n1k1.webp',
+        images:['../assets/rooms/1n1k1.webp','../assets/rooms/1n1k2.webp','../assets/rooms/1n1k3.webp'] },
+      { id:'r18', title:'Phòng đầy đủ tiện nghi', type:'Phòng trọ', price:2700000, area:25, people:2,
+        ward:'P. Định Công', district:'Hoàng Mai', address:'Số nhà 26A, ngõ 220 Định Công Thượng, Phường Định Công, Quận Hoàng Mai, Hà Nội',
+        alt:'Phòng đầy đủ tiện nghi tại ngõ 220 Định Công Thượng', distance:6.5, mapX:20, mapY:78,
+        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng'],
+        phone:'0972137955', postedAt:'05/08/2026',
+        desc:'Giá 2.700.000đ/tháng nếu ở 1 người, ở 2 người giá 3tr - phòng tầng 2. Tầng 1 có chỗ để xe rộng rãi, khu vực bếp ăn, full đồ (bếp nấu, tủ lạnh, bàn ăn, đồ dùng nhà bếp). Máy giặt, sân phơi ở tầng 4 rộng, thoáng, sạch sẽ, nhiều cây xanh. Phòng tầng 2 còn 1 phòng trống, cửa sổ rộng thoáng, full điều hòa, nóng lạnh, giường, tủ, bàn học. Mỗi tầng 2 phòng, vệ sinh chung sạch sẽ. Phí dịch vụ: internet, nước, điện tính theo hóa đơn nhà cung cấp.',
+        image:'../assets/rooms/hmai1.webp',
+        images:['../assets/rooms/hmai1.webp','../assets/rooms/hmai2.webp','../assets/rooms/hmai3.webp','../assets/rooms/hmai4.webp','../assets/rooms/hmai5.webp'] },
       { id:'r01', title:'Phòng trọ gần Đại học Quốc Gia', type:'Phòng trọ', price:2800000, area:18, people:1, floor:1,
         ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
         alt:'Phòng trọ nhỏ gọn gần Đại học Quốc Gia Hà Nội', distance:1.2, mapX:38, mapY:34,
@@ -832,6 +1053,104 @@
     syncMobileView(narrowMq);
     if(narrowMq.addEventListener) narrowMq.addEventListener('change', syncMobileView);
     else narrowMq.addListener(syncMobileView);
+
+    // ----- Modal chi tiết phòng -----
+    var rd = document.getElementById('rdOverlay');
+    var rdModal = rd.querySelector('.rd-modal');
+    var rdMain = document.getElementById('rdMainImg');
+    var rdLast = null;
+    var SVG_CHECK = '<svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg>';
+
+    function fillDetail(r){
+      document.getElementById('rdPrice').innerHTML = vnd(r.price) + ' <span>/ tháng</span>';
+      document.getElementById('rdTitle').textContent = r.title;
+      document.getElementById('rdAddr').textContent = r.address;
+      rdMain.src = r.image;
+      rdMain.alt = r.alt;
+
+      var gallery = r.images && r.images.length > 1 ? r.images : [r.image];
+      var rdThumbs = document.getElementById('rdThumbs');
+      if(gallery.length > 1){
+        rdThumbs.innerHTML = gallery.map(function(src, i){
+          return '<button type="button" class="' + (i === 0 ? 'on' : '') + '" data-src="' + esc(src) + '" aria-label="Ảnh ' + (i + 1) + '"><img src="' + src + '" alt="" loading="lazy" /></button>';
+        }).join('');
+        rdThumbs.hidden = false;
+      } else {
+        rdThumbs.innerHTML = '';
+        rdThumbs.hidden = true;
+      }
+
+      document.getElementById('rdSpecs').innerHTML =
+        '<div><dt>Diện tích</dt><dd>' + r.area + ' m²</dd></div>' +
+        '<div><dt>Số người tối đa</dt><dd>' + r.people + ' người</dd></div>' +
+        '<div><dt>Ngày đăng</dt><dd>' + esc(r.postedAt || 'Chưa cập nhật') + '</dd></div>';
+
+      document.getElementById('rdDesc').textContent = r.desc || 'Chủ trọ chưa cập nhật mô tả chi tiết cho phòng này.';
+      document.getElementById('rdAmen').innerHTML = r.amenities.map(function(a){
+        return '<span>' + SVG_CHECK + esc(a) + '</span>';
+      }).join('');
+
+      var phone = r.phone || '';
+      document.getElementById('rdOwnerPhone').textContent = phone || 'Liên hệ qua tin nhắn trên An Cư';
+      var callBtn = document.getElementById('rdCallBtn');
+      if(phone){ callBtn.href = 'tel:' + phone.replace(/\s+/g,''); callBtn.hidden = false; }
+      else { callBtn.hidden = true; }
+    }
+
+    function openDetail(id){
+      var r = null;
+      for(var i=0;i<ROOMS.length;i++){ if(ROOMS[i].id === id) r = ROOMS[i]; }
+      if(!r) return;
+      rdLast = document.activeElement;
+      fillDetail(r);
+      document.body.classList.add('rd-open');
+      rd.classList.add('open');
+      rdModal.scrollTop = 0;
+      document.querySelector('.rd-info').scrollTop = 0;
+      setTimeout(function(){ document.getElementById('rdClose').focus(); }, 80);
+    }
+
+    function closeDetail(){
+      rd.classList.remove('open');
+      document.body.classList.remove('rd-open');
+      if(rdLast && rdLast.focus) rdLast.focus();
+    }
+
+    list.addEventListener('click', function(e){
+      var row = e.target.closest('[data-room]');
+      if(row) openDetail(row.getAttribute('data-room'));
+    });
+    list.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter' && e.key !== ' ') return;
+      var row = e.target.closest('[data-room]');
+      if(!row) return;
+      e.preventDefault();
+      openDetail(row.getAttribute('data-room'));
+    });
+
+    document.getElementById('rdThumbs').addEventListener('click', function(e){
+      var btn = e.target.closest('button[data-src]');
+      if(!btn) return;
+      rdMain.src = btn.getAttribute('data-src');
+      var onBtn = document.getElementById('rdThumbs').querySelector('.on');
+      if(onBtn) onBtn.classList.remove('on');
+      btn.classList.add('on');
+    });
+
+    document.getElementById('rdClose').addEventListener('click', closeDetail);
+    rd.addEventListener('mousedown', function(e){ if(e.target === rd) closeDetail(); });
+    rd.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){ e.preventDefault(); closeDetail(); return; }
+      if(e.key !== 'Tab') return;
+      var nodes = Array.prototype.filter.call(
+        rdModal.querySelectorAll('button, [href], input, select, textarea'),
+        function(n){ return !n.disabled && n.offsetParent !== null && n.tabIndex !== -1; }
+      );
+      if(!nodes.length) return;
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    });
 
     apply();
   })();

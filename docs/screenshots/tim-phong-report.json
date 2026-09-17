@@ -1,0 +1,314 @@
+[
+  {
+    "viewport": "desktop",
+    "checks": [
+      {
+        "name": "số phòng mặc định",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tải trang)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "panel bộ lọc mở",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lọc nuôi thú cưng + 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc nâng cao trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "lọc loại phòng Ở ghép",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "không có kết quả",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "xoá toàn bộ bộ lọc trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "sidebar hiển thị cố định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "topbar ẩn ở desktop",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "hover card highlight ghim bản đồ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "tablet",
+    "checks": [
+      {
+        "name": "số phòng mặc định",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tải trang)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "panel bộ lọc mở",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lọc nuôi thú cưng + 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc nâng cao trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "lọc loại phòng Ở ghép",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "không có kết quả",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "xoá toàn bộ bộ lọc trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "topbar hiện ở mobile",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "sidebar ẩn mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở sidebar di động",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "đóng sidebar di động",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mặc định hiện tab Danh sách",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mặc định ẩn cột bản đồ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chuyển sang tab Bản đồ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "ẩn danh sách khi xem bản đồ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "checks": [
+      {
+        "name": "số phòng mặc định",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tải trang)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "panel bộ lọc mở",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lọc nuôi thú cưng + 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc nâng cao trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "lọc loại phòng Ở ghép",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "không có kết quả",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "xoá toàn bộ bộ lọc trả lại đủ phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "topbar hiện ở mobile",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "sidebar ẩn mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở sidebar di động",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "đóng sidebar di động",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mặc định hiện tab Danh sách",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mặc định ẩn cột bản đồ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chuyển sang tab Bản đồ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "ẩn danh sách khi xem bản đồ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+]
