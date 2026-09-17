@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Người tìm trọ — An Cư</title>
+<meta name="description" content="Khu vực người thuê đã đăng nhập: tìm phòng trọ theo khu vực, mức giá, lọc nâng cao và xem vị trí trên bản đồ." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#17161b;
+    --surface:#131318;
+    --surface-2:#1B1B22;
+    --border:rgba(255,255,255,.09);
+    --border-strong:rgba(255,255,255,.16);
+    --text:#F4F4F6;
+    --text-muted:#9A9AA7;
+    --text-dim:#6E6E7A;
+    --accent:#7B61FF;
+    --accent-hover:#8E78FF;
+    --accent-fg:#FFFFFF;
+    --success:#3ECf8E;
+    --warning:#F5B14C;
+    --danger:#FF6B6B;
+    --grad:linear-gradient(120deg,#7B61FF 0%,#5EEAD4 100%);
+    --radius-sm:8px;
+    --radius:12px;
+    --radius-lg:16px;
+    --radius-xl:24px;
+    --container:1180px;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --sidebar-w:264px;
+    --topbar-h:64px;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:dark;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter','Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;font-weight:700;line-height:1.12;letter-spacing:-.02em;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  button{font:inherit}
+  ::selection{background:rgba(123,97,255,.35)}
+
+  /* ---------- Buttons (tái dùng từ index.html) ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    height:46px;padding:0 22px;border-radius:var(--radius);
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;
+    border:1px solid transparent;cursor:pointer;white-space:nowrap;
+    transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 8px 30px -10px rgba(123,97,255,.6)}
+  .btn-primary:hover{background:var(--accent-hover);box-shadow:0 12px 40px -10px rgba(123,97,255,.75)}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border-strong)}
+  .btn-ghost:hover{border-color:var(--text);background:rgba(255,255,255,.04)}
+  .btn svg{width:18px;height:18px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
+    padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px 2px rgba(123,97,255,.8)}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;color:var(--text-muted);
+    padding:5px 11px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.02);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;color:#0A0A0C;font-weight:800;flex-shrink:0}
+
+  /* ---------- Reveal khi cuộn ---------- */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease),transform .6s var(--ease);transition-delay:var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+  }
+
+  /* ---------- Thanh trên cùng (chỉ hiện khi thu gọn sidebar) ---------- */
+  .topbar{
+    display:none;position:fixed;inset:0 0 auto 0;z-index:110;height:var(--topbar-h);
+    align-items:center;justify-content:space-between;padding:0 18px;
+    background:rgba(10,10,12,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);
+  }
+  .menu-toggle{display:flex;width:44px;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+  .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before{top:-5px}.menu-toggle span::after{top:5px}
+  body.nav-open .menu-toggle span{background:transparent}
+  body.nav-open .menu-toggle span::before{top:0;transform:rotate(45deg)}
+  body.nav-open .menu-toggle span::after{top:0;transform:rotate(-45deg)}
+
+  /* ---------- Bố cục dashboard: sidebar + nội dung ---------- */
+  .dash-shell{display:flex;min-height:100vh}
+
+  .side-nav{
+    position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;
+    display:flex;flex-direction:column;gap:4px;
+    padding:22px 16px;border-right:1px solid var(--border);background:var(--surface);
+    overflow-y:auto;
+  }
+  .side-logo{padding:8px 10px 22px}
+  .side-menu{display:flex;flex-direction:column;gap:4px}
+  .side-link{
+    display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);
+    transition:background .18s var(--ease),color .18s var(--ease);
+  }
+  .side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .side-link:hover{color:var(--text);background:rgba(255,255,255,.04)}
+  .side-link.active{color:var(--text);background:rgba(123,97,255,.14)}
+  .side-link.active svg{stroke:var(--accent)}
+  .side-link:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .side-link.is-disabled{cursor:not-allowed;color:var(--text-dim);opacity:.7;justify-content:space-between}
+  .side-link.is-disabled:hover{background:none;color:var(--text-dim)}
+  .badge-soon{
+    font-size:10.5px;font-weight:600;letter-spacing:.02em;color:var(--warning);
+    background:rgba(245,177,76,.14);border:1px solid rgba(245,177,76,.3);
+    padding:3px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0;
+  }
+  .side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(6,6,8,.66);backdrop-filter:blur(4px)}
+
+  .dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w);padding:48px 32px 64px}
+  .container-fluid{width:100%;max-width:1400px;margin:0 auto}
+
+  .dash-head{margin-bottom:28px;max-width:60ch}
+  .dash-head h1{font-size:clamp(1.7rem,3vw,2.3rem);margin-bottom:8px}
+  .dash-head p{color:var(--text-muted);font-size:.98rem}
+
+  /* ---------- Bộ tìm phòng (tái dùng .finder/.fld từ index.html) ---------- */
+  .finder{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;
+  }
+  .finder-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr auto;gap:12px;align-items:end}
+  .fld > label{
+    display:block;margin-bottom:8px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);
+  }
+  .fld .ctrl{position:relative;display:flex;align-items:center}
+  .fld .ctrl > svg{
+    position:absolute;left:14px;width:17px;height:17px;
+    stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+    pointer-events:none;transition:stroke .18s var(--ease);
+  }
+  .fld .caret{
+    position:absolute;right:13px;width:14px;height:14px;
+    stroke:var(--text-dim);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
+  }
+  .fld select,.fld input{
+    width:100%;height:48px;padding:0 14px 0 42px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    color:var(--text);font-family:'Inter',sans-serif;font-size:16px;
+    appearance:none;-webkit-appearance:none;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .fld select{padding-right:34px;cursor:pointer}
+  .fld input::placeholder{color:var(--text-dim)}
+  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(123,97,255,.2)}
+  .fld .ctrl:focus-within > svg{stroke:var(--accent)}
+  .finder .btn-find{height:48px;padding:0 26px}
+
+  .filter-toggle-row{display:flex;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+  .filter-toggle svg{transition:transform .2s var(--ease)}
+  .filter-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+
+  .filter-panel{
+    margin-top:14px;padding-top:14px;border-top:1px solid var(--border);
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .filter-panel[hidden]{display:none}
+  .quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .quick > span{font-size:13px;color:var(--text-dim);margin-right:2px}
+  .qc{
+    display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    color:var(--text-muted);font-family:'Inter',sans-serif;font-size:13.5px;cursor:pointer;
+    transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease);
+  }
+  .qc:hover{color:var(--text);border-color:var(--border-strong)}
+  .qc.on{background:rgba(123,97,255,.14);border-color:var(--accent);color:var(--text)}
+  .qc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .filter-panel-row{display:grid;grid-template-columns:220px 1fr;gap:14px;align-items:end}
+  .filter-panel-actions{display:flex;justify-content:flex-end;gap:10px}
+
+  .result-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .result-bar .cnt{font-size:14.5px;color:var(--text-muted)}
+  .result-bar .cnt b{color:var(--text);font-family:'Be Vietnam Pro',sans-serif}
+
+  .view-toggle{display:none;border:1px solid var(--border);border-radius:999px;padding:4px;background:var(--surface)}
+  .view-toggle button{
+    min-height:44px;padding:0 16px;border-radius:999px;border:0;background:transparent;
+    color:var(--text-muted);font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;
+  }
+  .view-toggle button.on{background:var(--accent);color:var(--accent-fg)}
+
+  /* ---------- Bố cục 2 cột: danh sách + bản đồ ---------- */
+  .dash-grid{display:grid;grid-template-columns:minmax(360px,440px) 1fr;gap:22px;align-items:start}
+
+  .room-list-col{display:flex;flex-direction:column;gap:14px}
+  .room-list{display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 300px);min-height:280px;overflow-y:auto;padding-right:4px}
+
+  /* Card phòng dạng ngang (ảnh trái, thông tin phải) */
+  .room-row{
+    display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);
+    background:var(--surface);overflow:hidden;cursor:pointer;
+    transition:transform .22s var(--ease),border-color .22s var(--ease),background .22s var(--ease);
+  }
+  .room-row:hover,.room-row.hl{transform:translateY(-3px);border-color:var(--accent);background:var(--surface-2)}
+  .room-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .room-row .media{position:relative;width:132px;flex-shrink:0;aspect-ratio:4/3;background:linear-gradient(135deg,#2a2540,#1f2f38)}
+  .room-row .media img{width:100%;height:100%;object-fit:cover}
+  .room-row .media .price{
+    position:absolute;left:8px;bottom:8px;font-family:'Be Vietnam Pro';font-weight:700;font-size:12px;
+    background:rgba(10,10,12,.78);backdrop-filter:blur(6px);border:1px solid var(--border-strong);
+    padding:5px 9px;border-radius:999px;
+  }
+  .room-row .rb{flex:1;min-width:0;padding:12px 14px 12px 12px;display:flex;flex-direction:column;gap:5px}
+  .room-row .rb h3{font-size:.98rem;line-height:1.3}
+  .room-row .rb .addr{font-size:.82rem;color:var(--text-muted);display:flex;align-items:center;gap:5px}
+  .room-row .rb .addr svg{width:13px;height:13px;stroke:var(--text-dim);flex-shrink:0}
+  .room-row .rb .facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+  .room-row .rb .facts span{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--text-muted)}
+  .room-row .rb .facts svg{width:13px;height:13px;stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .room-row .rb .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .room-row .rb .distance{margin-top:auto;padding-top:6px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:4px}
+  .room-row .rb .distance svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+
+  .empty{
+    display:none;text-align:center;padding:48px 20px;
+    background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--radius-lg);
+  }
+  .empty.show{display:block}
+  .empty svg{width:36px;height:36px;margin:0 auto 16px;stroke:var(--text-dim);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+  .empty h3{font-size:1.05rem;margin-bottom:6px}
+  .empty p{font-size:14px;color:var(--text-muted);margin-bottom:18px}
+
+  /* ---------- Bản đồ placeholder ---------- */
+  .map-col{position:sticky;top:24px;height:calc(100vh - 130px);min-height:420px}
+  .map-box{
+    position:relative;width:100%;height:100%;border-radius:var(--radius-lg);overflow:hidden;
+    border:1px solid var(--border);
+    background:
+      radial-gradient(circle at 30% 20%,rgba(123,97,255,.16),transparent 55%),
+      radial-gradient(circle at 75% 70%,rgba(94,234,212,.12),transparent 50%),
+      linear-gradient(160deg,#1b1b22,#101014);
+  }
+  .map-box::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:42px 42px;
+  }
+  .map-box-inner{
+    position:absolute;left:50%;top:26px;transform:translateX(-50%);z-index:1;
+    text-align:center;max-width:300px;pointer-events:none;
+  }
+  .map-box-inner .ico{
+    width:46px;height:46px;margin:0 auto 12px;border-radius:14px;display:grid;place-items:center;
+    background:rgba(123,97,255,.14);border:1px solid rgba(123,97,255,.3);
+  }
+  .map-box-inner .ico svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .map-box-inner h3{font-size:1.02rem;margin-bottom:6px}
+  .map-box-inner p{font-size:12.5px;color:var(--text-dim);line-height:1.6}
+
+  .map-pin{
+    position:absolute;transform:translate(-50%,-100%);z-index:2;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;
+  }
+  /* Vùng chạm 44×44px vô hình, canh giữa đúng tâm chấm ghim — bù cho chấm hiển thị nhỏ (16px)
+     theo đúng quy ước bản đồ; khi nối Goong/Mapbox GL thật, vùng chạm do SDK marker tự xử lý. */
+  .map-pin::before{
+    content:"";position:absolute;left:50%;top:8px;width:44px;height:44px;transform:translate(-50%,-50%);
+  }
+  .map-pin .dot{
+    width:16px;height:16px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
+    background:var(--surface-2);border:2px solid var(--accent);
+    transition:transform .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .map-pin .tag{
+    display:none;margin-top:6px;white-space:nowrap;font-family:'Be Vietnam Pro';font-size:11.5px;font-weight:600;
+    background:rgba(10,10,12,.85);border:1px solid var(--border-strong);border-radius:999px;padding:4px 9px;color:var(--text);
+  }
+  .map-pin:hover .dot,.map-pin.active .dot{
+    background:var(--accent);box-shadow:0 0 0 6px rgba(123,97,255,.18);transform:rotate(-45deg) scale(1.15);
+  }
+  .map-pin:hover .tag,.map-pin.active .tag{display:block}
+  .map-pin:focus-visible{outline:none}
+  .map-pin:focus-visible .dot{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- Responsive: 960 / 640 (bao trọn 768 và 390) ---------- */
+  @media (max-width:960px){
+    .topbar{display:flex}
+    .side-nav{
+      transform:translateX(-100%);top:var(--topbar-h);height:calc(100vh - var(--topbar-h));
+      transition:transform .26s var(--ease);box-shadow:0 30px 60px -20px rgba(0,0,0,.6);
+    }
+    body.nav-open .side-nav{transform:none}
+    body.nav-open .side-backdrop{display:block}
+    .side-logo{display:none}
+    .dash-main{margin-left:0;padding:calc(var(--topbar-h) + 24px) 20px 48px}
+
+    .finder-grid{grid-template-columns:1fr 1fr}
+    .finder .btn-find{grid-column:1/-1;width:100%}
+    .filter-panel-row{grid-template-columns:1fr}
+
+    .dash-grid{grid-template-columns:1fr}
+    .view-toggle{display:inline-flex}
+    .room-list{max-height:none}
+    .map-col{position:static;height:min(70vh,520px);min-height:340px}
+    .map-col[hidden],.room-list-col[hidden]{display:none}
+  }
+  @media (max-width:640px){
+    .dash-main{padding:calc(var(--topbar-h) + 20px) 16px 40px}
+    .finder{padding:14px;border-radius:var(--radius)}
+    .finder-grid{grid-template-columns:1fr;gap:12px}
+    .quick{gap:7px}
+    .qc{font-size:13px;padding:0 13px}
+    .result-bar{gap:10px}
+    .room-row .media{width:96px}
+    .dash-head h1{font-size:1.55rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- Thanh trên cùng: chỉ hiện khi sidebar thu gọn (≤960px) -->
+<div class="topbar" id="topbar">
+  <a href="#" class="brand"><span class="mark">A</span> An Cư</a>
+  <button class="menu-toggle" id="menuBtn" aria-label="Mở menu điều hướng" aria-expanded="false" aria-controls="sideNav">
+    <span></span>
+  </button>
+</div>
+
+<div class="dash-shell">
+  <div class="side-backdrop" id="sideBackdrop"></div>
+
+  <aside class="side-nav" id="sideNav">
+    <a href="#" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
+      <a href="#" class="side-link active" aria-current="page" data-route="/tai-khoan/tim-phong">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Tìm phòng
+      </a>
+      <a href="#" class="side-link" data-route="/tai-khoan/kham-pha-ban-do">
+        <svg viewBox="0 0 24 24"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>
+        Khám phá bản đồ
+      </a>
+      <a href="#" class="side-link" data-route="/tai-khoan/da-luu">
+        <svg viewBox="0 0 24 24"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>
+        Phòng đã lưu
+      </a>
+      <a href="#" class="side-link" data-route="/tai-khoan/lich-xem">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>
+        Lịch xem phòng
+      </a>
+      <a href="#" class="side-link is-disabled" aria-disabled="true" tabindex="-1" title="Thanh toán trực tuyến chưa mở trong bản v1">
+        <span style="display:flex;align-items:center;gap:12px">
+          <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          Thanh toán
+        </span>
+        <span class="badge-soon">Sắp ra mắt</span>
+      </a>
+      <a href="#" class="side-link" data-route="/tai-khoan/ho-tro">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+        Hỗ trợ &amp; báo cáo
+      </a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="container-fluid">
+      <header class="dash-head reveal">
+        <h1>Người tìm trọ</h1>
+        <p>Tìm phòng phù hợp gần khu vực bạn muốn, lọc theo tiêu chí và xem vị trí trên bản đồ trước khi đặt lịch xem.</p>
+      </header>
+
+      <form class="finder reveal" id="finder" novalidate>
+        <div class="finder-grid">
+          <div class="fld">
+            <label for="fQuery">Nhập quận, đường</label>
+            <div class="ctrl">
+              <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <input id="fQuery" type="text" placeholder="Vd: Cầu Giấy, Thái Hà..." autocomplete="off" list="fQueryList" />
+              <datalist id="fQueryList"></datalist>
+            </div>
+          </div>
+
+          <div class="fld">
+            <label for="fPrice">Mức giá</label>
+            <div class="ctrl">
+              <svg viewBox="0 0 24 24"><path d="M12 2v20M17 6.5C17 4.6 14.8 3 12 3S7 4.6 7 6.5 9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/></svg>
+              <select id="fPrice">
+                <option value="">Mọi mức giá</option>
+                <option value="0-2000000">Dưới 2 triệu</option>
+                <option value="2000000-3000000">2 – 3 triệu</option>
+                <option value="3000000-4000000">3 – 4 triệu</option>
+                <option value="4000000-5000000">4 – 5 triệu</option>
+                <option value="5000000-99000000">Trên 5 triệu</option>
+              </select>
+              <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+
+          <div class="fld">
+            <label for="fArea">Diện tích</label>
+            <div class="ctrl">
+              <svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>
+              <select id="fArea">
+                <option value="">Mọi diện tích</option>
+                <option value="0-20">Dưới 20 m²</option>
+                <option value="20-30">20 – 30 m²</option>
+                <option value="30-40">30 – 40 m²</option>
+                <option value="40-999">Trên 40 m²</option>
+              </select>
+              <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+
+          <div class="fld">
+            <label for="fType">Loại phòng</label>
+            <div class="ctrl">
+              <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5"/></svg>
+              <select id="fType">
+                <option value="">Mọi loại phòng</option>
+                <option value="Phòng trọ">Phòng trọ</option>
+                <option value="Căn hộ mini">Căn hộ mini</option>
+                <option value="Ở ghép">Ở ghép</option>
+              </select>
+              <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-find">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            Tìm kiếm
+          </button>
+        </div>
+
+        <div class="filter-toggle-row">
+          <button type="button" class="btn btn-ghost filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filterPanel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            Bộ lọc
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+
+        <div class="filter-panel" id="filterPanel" hidden>
+          <div class="quick" id="quickAmen">
+            <span>Tiện ích:</span>
+            <button type="button" class="qc" data-amen="Giờ giấc tự do">Giờ giấc tự do</button>
+            <button type="button" class="qc" data-amen="Có gác lửng">Có gác lửng</button>
+            <button type="button" class="qc" data-amen="Nuôi thú cưng">Nuôi thú cưng</button>
+            <button type="button" class="qc" data-amen="Có bếp riêng">Có bếp riêng</button>
+            <button type="button" class="qc" data-amen="Chỗ để xe">Chỗ để xe</button>
+            <button type="button" class="qc" data-amen="Máy lạnh">Máy lạnh</button>
+          </div>
+          <div class="filter-panel-row">
+            <div class="fld">
+              <label for="fPeople">Số người ở</label>
+              <div class="ctrl">
+                <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>
+                <select id="fPeople">
+                  <option value="">Bao nhiêu cũng được</option>
+                  <option value="1">1 người</option>
+                  <option value="2">2 người</option>
+                  <option value="3">3 người trở lên</option>
+                </select>
+                <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
+            <div class="filter-panel-actions">
+              <button type="button" class="btn btn-ghost" id="filterReset">Xoá bộ lọc nâng cao</button>
+              <button type="button" class="btn btn-primary" id="filterApply">Áp dụng</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="result-bar reveal">
+        <p class="cnt" id="roomCount" role="status" aria-live="polite"></p>
+        <div class="view-toggle" id="viewToggle" role="tablist" aria-label="Chuyển đổi danh sách / bản đồ">
+          <button type="button" class="on" data-view="list" role="tab" aria-selected="true">Danh sách</button>
+          <button type="button" data-view="map" role="tab" aria-selected="false">Bản đồ</button>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="room-list-col" id="roomListCol">
+          <div class="room-list" id="roomList" data-stagger></div>
+          <div class="empty" id="roomEmpty">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8.5 11h5"/></svg>
+            <h3>Chưa có phòng nào khớp bộ lọc</h3>
+            <p>Thử nới rộng khoảng giá hoặc bỏ bớt tiêu chí lọc nâng cao nhé.</p>
+            <button type="button" class="btn btn-ghost" id="roomReset">Xoá toàn bộ bộ lọc</button>
+          </div>
+        </div>
+
+        <div class="map-col" id="mapCol">
+          <div class="map-box" data-map-placeholder id="mapBox">
+            <div class="map-box-inner">
+              <span class="ico">
+                <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <h3>Bản đồ phòng trọ</h3>
+              <p>Bản đồ Goong / Mapbox GL thực tế sẽ hiển thị tại đây khi cấu hình <code>NEXT_PUBLIC_MAP_TOKEN</code>. Các ghim bên dưới minh hoạ vị trí phòng theo dữ liệu mẫu.</p>
+            </div>
+            <div class="map-pins" id="mapPins"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ---------- Reveal khi cuộn ----------
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce){
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  } else {
+    document.querySelectorAll('[data-stagger]').forEach(function(group){
+      group.querySelectorAll('.reveal').forEach(function(el,i){ el.style.setProperty('--d',(i*0.06)+'s'); });
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  // ---------- Sidebar di động (≤960px) ----------
+  (function(){
+    var menuBtn = document.getElementById('menuBtn');
+    var backdrop = document.getElementById('sideBackdrop');
+    function close(){
+      document.body.classList.remove('nav-open');
+      menuBtn.setAttribute('aria-expanded','false');
+    }
+    menuBtn.addEventListener('click', function(){
+      var open = document.body.classList.toggle('nav-open');
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    backdrop.addEventListener('click', close);
+    document.querySelectorAll('.side-link:not(.is-disabled)').forEach(function(a){
+      a.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') close();
+    });
+  })();
+
+  // ---------- Danh sách phòng + bản đồ placeholder (mock, chưa nối backend) ----------
+  (function(){
+    var list = document.getElementById('roomList');
+    if(!list) return;
+
+    var U = 'https://images.unsplash.com/photo-';
+    var Q = '?auto=format&fit=crop&w=600&q=70';
+    function img(id){ return U + id + Q; }
+
+    // Dữ liệu mẫu riêng cho khu người thuê (khác bộ ROOMS ở trang công khai),
+    // có thêm mapX/mapY (%) để định vị ghim trên bản đồ placeholder và
+    // distance (khoảng cách ước lượng tới vị trí tìm kiếm) phục vụ dashboard cá nhân.
+    var ROOMS = [
+      { id:'r01', title:'Phòng trọ gần Đại học Quốc Gia', type:'Phòng trọ', price:2800000, area:18, people:1, floor:1,
+        ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
+        alt:'Phòng trọ nhỏ gọn gần Đại học Quốc Gia Hà Nội', distance:1.2, mapX:38, mapY:34,
+        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+        image:img('1522708323590-d24dbb6b0267') },
+      { id:'r02', title:'Căn hộ mini có ban công', type:'Căn hộ mini', price:6200000, area:32, people:2, floor:5,
+        ward:'P. Trung Liệt', district:'Đống Đa', address:'58 Thái Hà, P. Trung Liệt, Đống Đa, Hà Nội',
+        alt:'Căn hộ mini hiện đại có ban công riêng', distance:2.4, mapX:58, mapY:22,
+        amenities:['Máy lạnh','Có bếp riêng','Chỗ để xe'],
+        image:img('1560448204-e02f11c3d0e2') },
+      { id:'r03', title:'Ở ghép nữ, an ninh tốt', type:'Ở ghép', price:2100000, area:16, people:3, floor:2,
+        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'12/8 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội',
+        alt:'Phòng ở ghép dành cho nữ, an ninh tốt', distance:0.8, mapX:24, mapY:52,
+        amenities:['Giờ giấc tự do','Wifi miễn phí'],
+        image:img('1505873242700-f289a29e1e0f') },
+      { id:'r04', title:'Phòng có gác, cửa sổ lớn', type:'Phòng trọ', price:3400000, area:24, people:2, floor:2,
+        ward:'P. Khương Trung', district:'Thanh Xuân', address:'21 Vũ Trọng Phụng, P. Khương Trung, Thanh Xuân, Hà Nội',
+        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng', distance:1.6, mapX:44, mapY:64,
+        amenities:['Có gác lửng','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        image:img('1484154218962-a197022b5858') },
+      { id:'r05', title:'Studio khép kín gần Hồ Tây', type:'Căn hộ mini', price:5300000, area:26, people:2, floor:3,
+        ward:'P. Cống Vị', district:'Ba Đình', address:'9 Đội Cấn, P. Cống Vị, Ba Đình, Hà Nội',
+        alt:'Phòng studio khép kín gần Hồ Tây', distance:3.1, mapX:68, mapY:46,
+        amenities:['Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh'],
+        image:img('1493809842364-78817add7ffb') },
+      { id:'r06', title:'Phòng khép kín, nuôi thú cưng', type:'Phòng trọ', price:3100000, area:20, people:2, floor:1,
+        ward:'P. Tân Mai', district:'Hoàng Mai', address:'70 Tân Mai, P. Tân Mai, Hoàng Mai, Hà Nội',
+        alt:'Phòng khép kín cho phép nuôi thú cưng', distance:2.9, mapX:16, mapY:20,
+        amenities:['Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        image:img('1502672260266-1c1ef2d93688') },
+      { id:'r07', title:'Ở ghép nam, gần sân vận động Mỹ Đình', type:'Ở ghép', price:1900000, area:20, people:3, floor:2,
+        ward:'P. Mỹ Đình 2', district:'Nam Từ Liêm', address:'5 Lê Đức Thọ, P. Mỹ Đình 2, Nam Từ Liêm, Hà Nội',
+        alt:'Phòng ở ghép cho nam gần sân vận động Mỹ Đình', distance:5.4, mapX:78, mapY:72,
+        amenities:['Giờ giấc tự do','Chỗ để xe'],
+        image:img('1524758631624-e2822e304c36') },
+      { id:'r08', title:'Phòng rộng, có bếp riêng', type:'Phòng trọ', price:3900000, area:28, people:2, floor:3,
+        ward:'P. Khương Thượng', district:'Đống Đa', address:'112 Tôn Thất Tùng, P. Khương Thượng, Đống Đa, Hà Nội',
+        alt:'Phòng trọ rộng rãi có bếp riêng', distance:4.2, mapX:86, mapY:38,
+        amenities:['Có bếp riêng','Máy lạnh','Chỗ để xe'],
+        image:img('1567767292278-a4f21aa2d36e') }
+    ];
+
+    var nf = new Intl.NumberFormat('vi-VN');
+    function vnd(n){ return nf.format(n) + '₫'; }
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    var SVG_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+    var SVG_AREA = '<svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>';
+    var SVG_PEOPLE = '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>';
+    var SVG_WALK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+    // Gợi ý autocomplete cho ô "Nhập quận, đường" — lấy từ chính dữ liệu mẫu.
+    var qList = document.getElementById('fQueryList');
+    var seen = {};
+    ROOMS.forEach(function(r){
+      [r.district, r.ward.replace('P. ',''), r.address.split(',')[0]].forEach(function(v){
+        if(!seen[v]){ seen[v] = true; qList.innerHTML += '<option value="' + esc(v) + '">'; }
+      });
+    });
+
+    var fQuery = document.getElementById('fQuery');
+    var fPrice = document.getElementById('fPrice');
+    var fArea = document.getElementById('fArea');
+    var fType = document.getElementById('fType');
+    var fPeople = document.getElementById('fPeople');
+    var countEl = document.getElementById('roomCount');
+    var emptyEl = document.getElementById('roomEmpty');
+    var quickBtns = Array.prototype.slice.call(document.querySelectorAll('.qc'));
+    var pins = document.getElementById('mapPins');
+    var firstRender = true;
+
+    var cardIO = reduce ? null : new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); cardIO.unobserve(e.target); }
+      });
+    }, { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
+
+    function rowHtml(r){
+      return '<article class="room-row reveal" role="button" tabindex="0" data-room="' + r.id + '" aria-label="Xem chi tiết ' + esc(r.title) + '">' +
+        '<div class="media">' +
+          '<img loading="lazy" alt="' + esc(r.alt) + '" src="' + r.image + '" />' +
+          '<span class="price">' + vnd(r.price) + '/th</span>' +
+        '</div>' +
+        '<div class="rb">' +
+          '<h3>' + esc(r.title) + '</h3>' +
+          '<p class="addr">' + SVG_PIN + esc(r.ward + ', ' + r.district) + '</p>' +
+          '<div class="facts">' +
+            '<span>' + SVG_AREA + r.area + ' m²</span>' +
+            '<span>' + SVG_PEOPLE + r.people + ' người</span>' +
+          '</div>' +
+          '<div class="meta">' + r.amenities.slice(0,2).map(function(a){ return '<span class="chip">' + esc(a) + '</span>'; }).join('') + '</div>' +
+          '<div class="distance">' + SVG_WALK + 'Cách vị trí tìm kiếm ~' + r.distance.toFixed(1).replace('.',',') + ' km</div>' +
+        '</div>' +
+      '</article>';
+    }
+
+    function pinHtml(r){
+      return '<button type="button" class="map-pin" data-pin="' + r.id + '" style="left:' + r.mapX + '%;top:' + r.mapY + '%" aria-label="' + esc(r.title) + ' · ' + vnd(r.price) + '/tháng">' +
+        '<span class="dot"></span><span class="tag">' + vnd(r.price) + '</span>' +
+      '</button>';
+    }
+
+    function activeAmenities(){
+      return quickBtns.filter(function(b){ return b.classList.contains('on'); })
+                      .map(function(b){ return b.getAttribute('data-amen'); });
+    }
+
+    function apply(){
+      var q = fQuery.value.trim().toLowerCase();
+      var priceRange = fPrice.value ? fPrice.value.split('-').map(Number) : null;
+      var areaRange = fArea.value ? fArea.value.split('-').map(Number) : null;
+      var type = fType.value;
+      var people = fPeople.value;
+      var amens = activeAmenities();
+
+      var filtered = ROOMS.filter(function(r){
+        if(q && (r.address + ' ' + r.ward + ' ' + r.district).toLowerCase().indexOf(q) === -1) return false;
+        if(priceRange && (r.price < priceRange[0] || r.price >= priceRange[1])) return false;
+        if(areaRange && (r.area < areaRange[0] || r.area >= areaRange[1])) return false;
+        if(type && r.type !== type) return false;
+        if(people === '3' ? r.people < 3 : people && r.people !== Number(people)) return false;
+        for(var i=0;i<amens.length;i++){ if(r.amenities.indexOf(amens[i]) === -1) return false; }
+        return true;
+      });
+
+      countEl.innerHTML = filtered.length
+        ? 'Tìm thấy <b>' + filtered.length + '</b> phòng phù hợp'
+        : 'Không có phòng nào khớp bộ lọc';
+      emptyEl.classList.toggle('show', filtered.length === 0);
+
+      list.innerHTML = filtered.map(rowHtml).join('');
+      pins.innerHTML = filtered.map(pinHtml).join('');
+
+      var rows = Array.prototype.slice.call(list.querySelectorAll('.room-row'));
+      rows.forEach(function(el,i){
+        if(reduce){ el.classList.add('in'); return; }
+        el.style.setProperty('--d', ((i % 4) * 0.05) + 's');
+        if(firstRender) cardIO.observe(el);
+        else setTimeout(function(){ el.classList.add('in'); }, 20);
+      });
+      firstRender = false;
+    }
+
+    document.getElementById('finder').addEventListener('submit', function(e){ e.preventDefault(); apply(); });
+    [fPrice, fArea, fType].forEach(function(el){ el.addEventListener('change', apply); });
+    fQuery.addEventListener('input', apply);
+    fQuery.addEventListener('search', apply);
+
+    // ----- Panel "Bộ lọc" mở rộng -----
+    var filterToggle = document.getElementById('filterToggle');
+    var filterPanel = document.getElementById('filterPanel');
+    filterToggle.addEventListener('click', function(){
+      var open = filterPanel.hasAttribute('hidden');
+      if(open){ filterPanel.removeAttribute('hidden'); } else { filterPanel.setAttribute('hidden',''); }
+      filterToggle.setAttribute('aria-expanded', String(open));
+    });
+    quickBtns.forEach(function(b){
+      b.setAttribute('aria-pressed','false');
+      b.addEventListener('click', function(){
+        var on = !b.classList.contains('on');
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+    });
+    fPeople.addEventListener('change', apply);
+    document.getElementById('filterApply').addEventListener('click', apply);
+    document.getElementById('filterReset').addEventListener('click', function(){
+      quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
+      fPeople.value = '';
+      apply();
+    });
+    document.getElementById('roomReset').addEventListener('click', function(){
+      fQuery.value = ''; fPrice.value = ''; fArea.value = ''; fType.value = ''; fPeople.value = '';
+      quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
+      apply();
+    });
+
+    // ----- Liên kết danh sách <-> ghim bản đồ -----
+    function highlightPin(id, on){
+      var pin = pins.querySelector('[data-pin="' + id + '"]');
+      if(pin) pin.classList.toggle('active', on);
+    }
+    function highlightRow(id, on){
+      var row = list.querySelector('[data-room="' + id + '"]');
+      if(row) row.classList.toggle('hl', on);
+    }
+    list.addEventListener('mouseover', function(e){
+      var row = e.target.closest('[data-room]');
+      if(row) highlightPin(row.getAttribute('data-room'), true);
+    });
+    list.addEventListener('mouseout', function(e){
+      var row = e.target.closest('[data-room]');
+      if(row) highlightPin(row.getAttribute('data-room'), false);
+    });
+    list.addEventListener('focusin', function(e){
+      var row = e.target.closest('[data-room]');
+      if(row) highlightPin(row.getAttribute('data-room'), true);
+    });
+    list.addEventListener('focusout', function(e){
+      var row = e.target.closest('[data-room]');
+      if(row) highlightPin(row.getAttribute('data-room'), false);
+    });
+    pins.addEventListener('mouseover', function(e){
+      var pin = e.target.closest('[data-pin]');
+      if(pin) highlightRow(pin.getAttribute('data-pin'), true);
+    });
+    pins.addEventListener('mouseout', function(e){
+      var pin = e.target.closest('[data-pin]');
+      if(pin) highlightRow(pin.getAttribute('data-pin'), false);
+    });
+    pins.addEventListener('click', function(e){
+      var pin = e.target.closest('[data-pin]');
+      if(!pin) return;
+      var row = list.querySelector('[data-room="' + pin.getAttribute('data-pin') + '"]');
+      if(row){ row.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'center'}); row.focus(); }
+    });
+    // TODO: khi nối Goong/Mapbox GL thật, thay .map-pins bằng marker API của thư viện bản đồ,
+    // giữ nguyên hành vi highlight hai chiều danh sách <-> bản đồ ở trên.
+
+    // ----- Tab "Danh sách / Bản đồ" trên di động (≤960px) -----
+    var viewToggle = document.getElementById('viewToggle');
+    var roomListCol = document.getElementById('roomListCol');
+    var mapCol = document.getElementById('mapCol');
+    viewToggle.addEventListener('click', function(e){
+      var btn = e.target.closest('button[data-view]');
+      if(!btn) return;
+      var view = btn.getAttribute('data-view');
+      viewToggle.querySelectorAll('button').forEach(function(b){
+        var on = b === btn;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-selected', String(on));
+      });
+      roomListCol.hidden = view !== 'list';
+      mapCol.hidden = view !== 'map';
+    });
+
+    // Ở màn hẹp (≤960px), mặc định chỉ hiện tab "Danh sách" và ẩn cột bản đồ
+    // cho tới khi người dùng bấm sang tab "Bản đồ". Chỉ đồng bộ lại khi vượt
+    // qua ngưỡng 960px (không ghi đè lựa chọn tab người dùng khi resize nhỏ lẻ).
+    var narrowMq = window.matchMedia('(max-width:960px)');
+    function syncMobileView(mql){
+      var narrow = mql.matches;
+      roomListCol.hidden = false;
+      mapCol.hidden = narrow;
+      viewToggle.querySelectorAll('button').forEach(function(b){
+        var on = b.getAttribute('data-view') === 'list';
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-selected', String(on));
+      });
+    }
+    syncMobileView(narrowMq);
+    if(narrowMq.addEventListener) narrowMq.addEventListener('change', syncMobileView);
+    else narrowMq.addListener(syncMobileView);
+
+    apply();
+  })();
+</script>
+</body>
+</html>
