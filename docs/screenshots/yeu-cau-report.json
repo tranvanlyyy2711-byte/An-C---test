@@ -1,0 +1,410 @@
+[
+  {
+    "viewport": "desktop",
+    "checks": [
+      {
+        "name": "4 số liệu: hôm nay/chờ xác nhận/yêu cầu mới/cần xử lý",
+        "got": [
+          "3",
+          "4",
+          "6",
+          "5"
+        ],
+        "want": [
+          "3",
+          "4",
+          "6",
+          "5"
+        ],
+        "ok": true
+      },
+      {
+        "name": "badge sidebar khớp Cần xử lý",
+        "got": "5",
+        "want": "5",
+        "ok": true
+      },
+      {
+        "name": "số link sidebar = 9",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mục active đúng trang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có ô lịch hôm nay",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "panel bên hiển thị 3 lịch hôm nay",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "sau khi xác nhận: chờ xác nhận giảm, cần xử lý giảm",
+        "got": [
+          "3",
+          "3",
+          "6",
+          "4"
+        ],
+        "want": [
+          "3",
+          "3",
+          "6",
+          "4"
+        ],
+        "ok": true
+      },
+      {
+        "name": "danh sách hiển thị tất cả lịch hẹn",
+        "got": 16,
+        "want": 16,
+        "ok": true
+      },
+      {
+        "name": "mở modal tạo lịch hẹn",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal sau khi lưu",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "kanban: mới/đang xem xét/đã duyệt/từ chối",
+        "got": [
+          "6",
+          "3",
+          "2",
+          "1"
+        ],
+        "want": [
+          "6",
+          "3",
+          "2",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "sau khi duyệt: đang xem xét giảm, đã duyệt tăng",
+        "got": [
+          "6",
+          "2",
+          "3",
+          "1"
+        ],
+        "want": [
+          "6",
+          "2",
+          "3",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "tablet",
+    "checks": [
+      {
+        "name": "4 số liệu: hôm nay/chờ xác nhận/yêu cầu mới/cần xử lý",
+        "got": [
+          "3",
+          "4",
+          "6",
+          "5"
+        ],
+        "want": [
+          "3",
+          "4",
+          "6",
+          "5"
+        ],
+        "ok": true
+      },
+      {
+        "name": "badge sidebar khớp Cần xử lý",
+        "got": "5",
+        "want": "5",
+        "ok": true
+      },
+      {
+        "name": "số link sidebar = 9",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mục active đúng trang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có ô lịch hôm nay",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "panel bên hiển thị 3 lịch hôm nay",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "sau khi xác nhận: chờ xác nhận giảm, cần xử lý giảm",
+        "got": [
+          "3",
+          "3",
+          "6",
+          "4"
+        ],
+        "want": [
+          "3",
+          "3",
+          "6",
+          "4"
+        ],
+        "ok": true
+      },
+      {
+        "name": "danh sách hiển thị tất cả lịch hẹn",
+        "got": 16,
+        "want": 16,
+        "ok": true
+      },
+      {
+        "name": "mở modal tạo lịch hẹn",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal sau khi lưu",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "kanban: mới/đang xem xét/đã duyệt/từ chối",
+        "got": [
+          "6",
+          "3",
+          "2",
+          "1"
+        ],
+        "want": [
+          "6",
+          "3",
+          "2",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "sau khi duyệt: đang xem xét giảm, đã duyệt tăng",
+        "got": [
+          "6",
+          "2",
+          "3",
+          "1"
+        ],
+        "want": [
+          "6",
+          "2",
+          "3",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "checks": [
+      {
+        "name": "4 số liệu: hôm nay/chờ xác nhận/yêu cầu mới/cần xử lý",
+        "got": [
+          "3",
+          "4",
+          "6",
+          "5"
+        ],
+        "want": [
+          "3",
+          "4",
+          "6",
+          "5"
+        ],
+        "ok": true
+      },
+      {
+        "name": "badge sidebar khớp Cần xử lý",
+        "got": "5",
+        "want": "5",
+        "ok": true
+      },
+      {
+        "name": "số link sidebar = 9",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mục active đúng trang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có ô lịch hôm nay",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "panel bên hiển thị 3 lịch hôm nay",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "sau khi xác nhận: chờ xác nhận giảm, cần xử lý giảm",
+        "got": [
+          "3",
+          "3",
+          "6",
+          "4"
+        ],
+        "want": [
+          "3",
+          "3",
+          "6",
+          "4"
+        ],
+        "ok": true
+      },
+      {
+        "name": "danh sách hiển thị tất cả lịch hẹn",
+        "got": 16,
+        "want": 16,
+        "ok": true
+      },
+      {
+        "name": "mở modal tạo lịch hẹn",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal sau khi lưu",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "kanban: mới/đang xem xét/đã duyệt/từ chối",
+        "got": [
+          "6",
+          "3",
+          "2",
+          "1"
+        ],
+        "want": [
+          "6",
+          "3",
+          "2",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "sau khi duyệt: đang xem xét giảm, đã duyệt tăng",
+        "got": [
+          "6",
+          "2",
+          "3",
+          "1"
+        ],
+        "want": [
+          "6",
+          "2",
+          "3",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+]
