@@ -18,13 +18,13 @@
     --text:#F4F4F6;
     --text-muted:#9A9AA7;
     --text-dim:#6E6E7A;
-    --accent:#7B61FF;
-    --accent-hover:#8E78FF;
+    --accent:#228B22;
+    --accent-hover:#1D7C1D;
     --accent-fg:#FFFFFF;
-    --success:#3ECf8E;
+    --success:#228B22;
     --warning:#F5B14C;
     --danger:#FF6B6B;
-    --grad:linear-gradient(120deg,#7B61FF 0%,#5EEAD4 100%);
+    --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
     --radius-sm:8px;
     --radius:12px;
     --radius-lg:16px;
@@ -50,7 +50,7 @@
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block}
   button{font:inherit}
-  ::selection{background:rgba(123,97,255,.35)}
+  ::selection{background:rgba(34,139,34,.25)}
 
   /* ---------- Buttons (tái dùng từ index.html) ---------- */
   .btn{
@@ -61,8 +61,8 @@
     transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease);
   }
   .btn:active{transform:translateY(1px)}
-  .btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 8px 30px -10px rgba(123,97,255,.6)}
-  .btn-primary:hover{background:var(--accent-hover);box-shadow:0 12px 40px -10px rgba(123,97,255,.75)}
+  .btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 8px 30px -10px rgba(34,139,34,.6)}
+  .btn-primary:hover{background:var(--accent-hover);box-shadow:0 12px 40px -10px rgba(34,139,34,.75)}
   .btn-ghost{background:transparent;color:var(--text);border-color:var(--border-strong)}
   .btn-ghost:hover{border-color:var(--text);background:rgba(255,255,255,.04)}
   .btn svg{width:18px;height:18px}
@@ -74,7 +74,7 @@
     letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
     padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);
   }
-  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px 2px rgba(123,97,255,.8)}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px 2px rgba(34,139,34,.8)}
   .chip{
     display:inline-flex;align-items:center;gap:6px;
     font-size:13px;color:var(--text-muted);
@@ -123,7 +123,7 @@
   }
   .side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
   .side-link:hover{color:var(--text);background:rgba(255,255,255,.04)}
-  .side-link.active{color:var(--text);background:rgba(123,97,255,.14)}
+  .side-link.active{color:var(--text);background:rgba(34,139,34,.14)}
   .side-link.active svg{stroke:var(--accent)}
   .side-link:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
   .side-link.is-disabled{cursor:not-allowed;color:var(--text-dim);opacity:.7;justify-content:space-between}
@@ -172,7 +172,7 @@
   }
   .fld select{padding-right:34px;cursor:pointer}
   .fld input::placeholder{color:var(--text-dim)}
-  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(123,97,255,.2)}
+  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.2)}
   .fld .ctrl:focus-within > svg{stroke:var(--accent)}
   .finder .btn-find{height:48px;padding:0 26px}
 
@@ -194,7 +194,7 @@
     transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease);
   }
   .qc:hover{color:var(--text);border-color:var(--border-strong)}
-  .qc.on{background:rgba(123,97,255,.14);border-color:var(--accent);color:var(--text)}
+  .qc.on{background:rgba(34,139,34,.14);border-color:var(--accent);color:var(--text)}
   .qc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .filter-panel-row{display:grid;grid-template-columns:220px 1fr;gap:14px;align-items:end}
   .filter-panel-actions{display:flex;justify-content:flex-end;gap:10px}
@@ -257,14 +257,25 @@
     position:relative;width:100%;height:100%;border-radius:var(--radius-lg);overflow:hidden;
     border:1px solid var(--border);
     background:
-      radial-gradient(circle at 30% 20%,rgba(123,97,255,.16),transparent 55%),
-      radial-gradient(circle at 75% 70%,rgba(94,234,212,.12),transparent 50%),
-      linear-gradient(160deg,#1b1b22,#101014);
+      linear-gradient(180deg, rgba(125, 146, 171, 0.18), rgba(16,16,20,0.2)),
+      linear-gradient(135deg, #eaf0f6 0%, #dfe8f2 20%, #dfe5ef 45%, #d1d9e1 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.16);
   }
   .map-box::before{
     content:"";position:absolute;inset:0;pointer-events:none;
-    background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
-    background-size:42px 42px;
+    background:
+      linear-gradient(rgba(255,255,255,.28) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px),
+      linear-gradient(90deg, transparent 0%, rgba(22,26,34,.04) 40%, rgba(22,26,34,.08) 100%);
+    background-size:36px 36px, 36px 36px, 100% 100%;
+    opacity:.7;
+  }
+  .map-box::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(circle at 18% 26%, rgba(74, 85, 99, .08) 0, transparent 16%),
+      radial-gradient(circle at 64% 36%, rgba(78, 92, 107, .08) 0, transparent 18%),
+      radial-gradient(circle at 72% 62%, rgba(74, 85, 99, .08) 0, transparent 16%);
   }
   .map-box-inner{
     position:absolute;left:50%;top:26px;transform:translateX(-50%);z-index:1;
@@ -272,32 +283,58 @@
   }
   .map-box-inner .ico{
     width:46px;height:46px;margin:0 auto 12px;border-radius:14px;display:grid;place-items:center;
-    background:rgba(123,97,255,.14);border:1px solid rgba(123,97,255,.3);
+    background:rgba(34,139,34,.14);border:1px solid rgba(34,139,34,.3);
   }
   .map-box-inner .ico svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-  .map-box-inner h3{font-size:1.02rem;margin-bottom:6px}
-  .map-box-inner p{font-size:12.5px;color:var(--text-dim);line-height:1.6}
+  .map-box-inner h3{font-size:1.02rem;margin-bottom:6px;color:#1f2430}
+  .map-box-inner p{font-size:12.5px;color:rgba(31,36,48,.78);line-height:1.6}
+
+  .map-toolbar{
+    position:absolute;left:16px;top:16px;z-index:3;display:flex;align-items:center;gap:8px;
+  }
+  .map-chip{
+    display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.76);
+    border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 18px rgba(15,23,42,.12);color:#1f2430;font-size:12px;font-weight:600;
+    backdrop-filter:blur(10px);
+  }
+  .map-chip.active{background:#121826;color:#fff;border-color:rgba(255,255,255,.08);box-shadow:0 8px 18px rgba(17,24,39,.15)}
+  .map-zoom{
+    position:absolute;right:14px;top:16px;z-index:3;display:flex;flex-direction:column;border-radius:16px;border:1px solid rgba(15,23,42,.08);
+    overflow:hidden;box-shadow:0 8px 18px rgba(15,23,42,.14);background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+  }
+  .map-zoom button{
+    width:40px;height:40px;border:0;background:transparent;color:#1f2430;font-size:24px;cursor:pointer;display:grid;place-items:center;
+    border-bottom:1px solid rgba(15,23,42,.06);
+  }
+  .map-zoom button:last-child{border-bottom:0}
+  .map-zoom button:hover{background:rgba(17,24,39,.04)}
+
+  .map-legend{
+    position:absolute;left:16px;bottom:16px;z-index:3;display:flex;align-items:center;gap:8px;
+    padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid rgba(15,23,42,.08);
+    box-shadow:0 8px 18px rgba(15,23,42,.1);color:#1f2430;font-size:12px;font-weight:600;
+  }
+  .map-legend .dot{width:10px;height:10px;border-radius:50%;background:#228B22;box-shadow:0 0 0 4px rgba(34,139,34,.18)}
 
   .map-pin{
     position:absolute;transform:translate(-50%,-100%);z-index:2;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;
   }
-  /* Vùng chạm 44×44px vô hình, canh giữa đúng tâm chấm ghim — bù cho chấm hiển thị nhỏ (16px)
-     theo đúng quy ước bản đồ; khi nối Goong/Mapbox GL thật, vùng chạm do SDK marker tự xử lý. */
   .map-pin::before{
     content:"";position:absolute;left:50%;top:8px;width:44px;height:44px;transform:translate(-50%,-50%);
   }
   .map-pin .dot{
-    width:16px;height:16px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
-    background:var(--surface-2);border:2px solid var(--accent);
-    transition:transform .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease);
+    width:18px;height:18px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
+    background:rgba(255,255,255,.96);border:3px solid #0f172a;box-shadow:0 10px 18px rgba(15,23,42,.2);
+    transition:transform .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease),border-color .18s var(--ease);
   }
   .map-pin .tag{
     display:none;margin-top:6px;white-space:nowrap;font-family:'Be Vietnam Pro';font-size:11.5px;font-weight:600;
-    background:rgba(10,10,12,.85);border:1px solid var(--border-strong);border-radius:999px;padding:4px 9px;color:var(--text);
+    background:rgba(9,12,17,.86);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 9px;color:#fff;
+    box-shadow:0 10px 20px rgba(15,23,42,.18);
   }
   .map-pin:hover .dot,.map-pin.active .dot{
-    background:var(--accent);box-shadow:0 0 0 6px rgba(123,97,255,.18);transform:rotate(-45deg) scale(1.15);
+    background:var(--accent);border-color:var(--accent);box-shadow:0 10px 22px rgba(34,139,34,.38),0 0 0 6px rgba(34,139,34,.18);transform:rotate(-45deg) scale(1.18);
   }
   .map-pin:hover .tag,.map-pin.active .tag{display:block}
   .map-pin:focus-visible{outline:none}
@@ -376,11 +413,23 @@
   }
   .rd-owner .av{
     width:44px;height:44px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
-    background:rgba(123,97,255,.14);border:1px solid rgba(123,97,255,.3);
+    background:rgba(34,139,34,.14);border:1px solid rgba(34,139,34,.3);
   }
   .rd-owner .av svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:1.8}
   .rd-owner b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:16px;letter-spacing:.01em}
   .rd-owner small{display:block;font-size:12.5px;color:var(--text-dim)}
+
+  .rd-booking{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;
+  }
+  .rd-booking h3{font-size:1rem;margin-bottom:12px}
+  .booking-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .booking-grid label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-dim);font-weight:600}
+  .booking-grid input,.booking-grid select{
+    width:100%;height:42px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:15px;
+  }
+  .rd-booking .btn{width:100%;height:46px}
   .rd-actions .btn{width:100%;height:48px;font-size:14.5px}
 
   /* ---------- Responsive: 960 / 640 (bao trọn 768 và 390) ---------- */
@@ -603,12 +652,21 @@
 
         <div class="map-col" id="mapCol">
           <div class="map-box" data-map-placeholder id="mapBox">
+            <div class="map-toolbar">
+              <div class="map-chip active">Khám phá bản đồ</div>
+              <div class="map-chip">Gần tôi</div>
+            </div>
+            <div class="map-zoom" aria-label="Điều khiển zoom bản đồ">
+              <button type="button" aria-label="Phóng to">+</button>
+              <button type="button" aria-label="Thu nhỏ">−</button>
+            </div>
+            <div class="map-legend"><span class="dot"></span>Phòng đang hiển thị</div>
             <div class="map-box-inner">
               <span class="ico">
                 <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
               </span>
               <h3>Bản đồ phòng trọ</h3>
-              <p>Bản đồ Goong / Mapbox GL thực tế sẽ hiển thị tại đây khi cấu hình <code>NEXT_PUBLIC_MAP_TOKEN</code>. Các ghim bên dưới minh hoạ vị trí phòng theo dữ liệu mẫu.</p>
+              <p>Các ghim dưới đây đại diện cho toàn bộ phòng trọ đã xuất hiện trên website, nằm theo vị trí địa lý ước lượng trên khu vực Hà Nội.</p>
             </div>
             <div class="map-pins" id="mapPins"></div>
           </div>
@@ -659,6 +717,29 @@
             <b id="rdOwnerPhone"></b>
             <small>SĐT chủ trọ</small>
           </div>
+        </div>
+
+        <div class="rd-booking">
+          <h3>Đặt lịch xem</h3>
+          <div class="booking-grid">
+            <label>
+              Chọn ngày
+              <input id="rdDate" type="date" />
+            </label>
+            <label>
+              Giờ xem
+              <select id="rdTime">
+                <option value="09:00">09:00</option>
+                <option value="10:00">10:00</option>
+                <option value="11:30">11:30</option>
+                <option value="13:30">13:30</option>
+                <option value="15:00">15:00</option>
+                <option value="17:30">17:30</option>
+                <option value="19:00">19:00</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" class="btn btn-primary" id="rdBookingBtn">Đặt lịch xem</button>
         </div>
 
         <div class="rd-actions">
@@ -800,7 +881,79 @@
         desc:'Giá 2.700.000đ/tháng nếu ở 1 người, ở 2 người giá 3tr - phòng tầng 2. Tầng 1 có chỗ để xe rộng rãi, khu vực bếp ăn, full đồ (bếp nấu, tủ lạnh, bàn ăn, đồ dùng nhà bếp). Máy giặt, sân phơi ở tầng 4 rộng, thoáng, sạch sẽ, nhiều cây xanh. Phòng tầng 2 còn 1 phòng trống, cửa sổ rộng thoáng, full điều hòa, nóng lạnh, giường, tủ, bàn học. Mỗi tầng 2 phòng, vệ sinh chung sạch sẽ. Phí dịch vụ: internet, nước, điện tính theo hóa đơn nhà cung cấp.',
         image:'../assets/rooms/hmai1.webp',
         images:['../assets/rooms/hmai1.webp','../assets/rooms/hmai2.webp','../assets/rooms/hmai3.webp','../assets/rooms/hmai4.webp','../assets/rooms/hmai5.webp'] },
-      { id:'r01', title:'Phòng trọ gần Đại học Quốc Gia', type:'Phòng trọ', price:2800000, area:18, people:1, floor:1,
+      { id:'p01', title:'Phòng gác lửng, thoáng sáng', price:2800000, deposit:2800000, area:22, people:2, floor:2,
+        ward:'P. Trại Cau', district:'Lê Chân', address:'145/12 Tô Hiệu, P. Trại Cau, Lê Chân, Hải Phòng',
+        posted:2, electric:3500, water:25000, service:100000, mapX:30, mapY:46,
+        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng',
+        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Trại Cau 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+        owner:{ name:'Chị Nguyễn Thu Hà', phone:'0912 345 678', rooms:8, reply:'~10 phút' },
+        images:['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p02', title:'Căn hộ mini full nội thất', price:4200000, deposit:4200000, area:30, people:2, floor:4,
+        ward:'P. Lạch Tray', district:'Ngô Quyền', address:'27 Lạch Tray, P. Lạch Tray, Ngô Quyền, Hải Phòng',
+        posted:1, electric:3800, water:30000, service:150000, mapX:58, mapY:34,
+        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng',
+        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Đối diện Đại học Hải Phòng, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
+        owner:{ name:'Anh Trần Quốc Việt', phone:'0938 221 574', rooms:14, reply:'~30 phút' },
+        images:['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p03', title:'Phòng ban công riêng, đón nắng', price:3100000, deposit:3100000, area:25, people:2, floor:3,
+        ward:'P. Sở Dầu', district:'Hồng Bàng', address:'88 Hùng Vương, P. Sở Dầu, Hồng Bàng, Hải Phòng',
+        posted:3, electric:3500, water:25000, service:100000, mapX:42, mapY:58,
+        alt:'Phòng trọ có ban công riêng nhiều ánh sáng',
+        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần bến xe Thượng Lý và chợ Sở Dầu. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
+        owner:{ name:'Cô Phạm Thị Lan', phone:'0906 887 302', rooms:4, reply:'~1 giờ' },
+        images:['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p04', title:'Studio hiện đại gần trung tâm', price:3900000, deposit:3900000, area:28, people:2, floor:5,
+        ward:'P. An Biên', district:'Lê Chân', address:'12 Nguyễn Đức Cảnh, P. An Biên, Lê Chân, Hải Phòng',
+        posted:1, electric:3800, water:30000, service:150000, mapX:48, mapY:30,
+        alt:'Phòng studio hiện đại gần trung tâm thành phố',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách hồ Tam Bạc 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+        owner:{ name:'Anh Lê Hoàng Nam', phone:'0977 415 688', rooms:22, reply:'~15 phút' },
+        images:['https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p05', title:'Phòng khép kín, an ninh tốt', price:2500000, deposit:2500000, area:20, people:2, floor:1,
+        ward:'P. Trần Thành Ngọ', district:'Kiến An', address:'56 Trần Nhân Tông, P. Trần Thành Ngọ, Kiến An, Hải Phòng',
+        posted:4, electric:3500, water:25000, service:80000, mapX:24, mapY:62,
+        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt',
+        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Đại học Hải Phòng cơ sở Kiến An 1,2km, gần chợ và trạm xe buýt.',
+        owner:{ name:'Chú Đỗ Văn Bình', phone:'0913 664 129', rooms:10, reply:'~2 giờ' },
+        images:['https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p06', title:'Phòng rộng, phù hợp gia đình', price:4600000, deposit:4600000, area:35, people:3, floor:2,
+        ward:'P. Đằng Lâm', district:'Hải An', address:'203 Lê Hồng Phong, P. Đằng Lâm, Hải An, Hải Phòng',
+        posted:2, electric:3800, water:30000, service:150000, mapX:65, mapY:54,
+        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình',
+        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Đằng Lâm và siêu thị Aeon Mall 2km.',
+        owner:{ name:'Chị Vũ Mai Phương', phone:'0904 332 871', rooms:6, reply:'~45 phút' },
+        images:['https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p07', title:'Phòng trọ giá mềm cho sinh viên', price:1800000, deposit:1800000, area:16, people:1, floor:3,
+        ward:'P. Hoà Nghĩa', district:'Dương Kinh', address:'9 Phạm Văn Đồng, P. Hoà Nghĩa, Dương Kinh, Hải Phòng',
+        posted:5, electric:3500, water:20000, service:50000, mapX:18, mapY:74,
+        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên',
+        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
+        owner:{ name:'Anh Nguyễn Đức Thắng', phone:'0968 110 447', rooms:12, reply:'~1 giờ' },
+        images:['https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p08', title:'Phòng có gác, cửa sổ hướng vườn', price:3400000, deposit:3400000, area:26, people:2, floor:2,
+        ward:'P. Đông Khê', district:'Ngô Quyền', address:'74/3 Đông Khê, P. Đông Khê, Ngô Quyền, Hải Phòng',
+        posted:3, electric:3500, water:25000, service:100000, mapX:35, mapY:68,
+        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn',
+        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn cây của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Rào 1,5km.',
+        owner:{ name:'Bác Hoàng Văn Sơn', phone:'0915 209 633', rooms:5, reply:'~2 giờ' },
+        images:['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=900&q=70'] },
+      { id:'p09', title:'Căn hộ dịch vụ 2 phòng ngủ', price:6500000, deposit:6500000, area:48, people:3, floor:6,
+        ward:'P. Máy Tơ', district:'Ngô Quyền', address:'15 Lê Thánh Tông, P. Máy Tơ, Ngô Quyền, Hải Phòng',
+        posted:1, electric:3800, water:30000, service:250000, mapX:52, mapY:46,
+        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Cấm. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+        owner:{ name:'Chị Đặng Khánh Linh', phone:'0902 778 916', rooms:18, reply:'~20 phút' },
+        images:['https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70'] }
+    ];
         ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
         alt:'Phòng trọ nhỏ gọn gần Đại học Quốc Gia Hà Nội', distance:1.2, mapX:38, mapY:34,
         amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
@@ -896,8 +1049,8 @@
       '</article>';
     }
 
-    function pinHtml(r){
-      return '<button type="button" class="map-pin" data-pin="' + r.id + '" style="left:' + r.mapX + '%;top:' + r.mapY + '%" aria-label="' + esc(r.title) + ' · ' + vnd(r.price) + '/tháng">' +
+    function pinHtml(r, active){
+      return '<button type="button" class="map-pin' + (active ? ' active' : '') + '" data-pin="' + r.id + '" style="left:' + r.mapX + '%;top:' + r.mapY + '%" aria-label="' + esc(r.title) + ' · ' + vnd(r.price) + '/tháng">' +
         '<span class="dot"></span><span class="tag">' + vnd(r.price) + '</span>' +
       '</button>';
     }
@@ -931,7 +1084,9 @@
       emptyEl.classList.toggle('show', filtered.length === 0);
 
       list.innerHTML = filtered.map(rowHtml).join('');
-      pins.innerHTML = filtered.map(pinHtml).join('');
+
+      var visibleIds = filtered.reduce(function(obj, r){ obj[r.id] = true; return obj; }, {});
+      pins.innerHTML = ROOMS.map(function(r){ return pinHtml(r, !!visibleIds[r.id]); }).join('');
 
       var rows = Array.prototype.slice.call(list.querySelectorAll('.room-row'));
       rows.forEach(function(el,i){
@@ -1065,10 +1220,10 @@
       document.getElementById('rdPrice').innerHTML = vnd(r.price) + ' <span>/ tháng</span>';
       document.getElementById('rdTitle').textContent = r.title;
       document.getElementById('rdAddr').textContent = r.address;
-      rdMain.src = r.image;
+      rdMain.src = (r.images && r.images[0]) || r.image;
       rdMain.alt = r.alt;
 
-      var gallery = r.images && r.images.length > 1 ? r.images : [r.image];
+      var gallery = r.images && r.images.length > 1 ? r.images : [(r.image || (r.images && r.images[0]))];
       var rdThumbs = document.getElementById('rdThumbs');
       if(gallery.length > 1){
         rdThumbs.innerHTML = gallery.map(function(src, i){
@@ -1082,19 +1237,29 @@
 
       document.getElementById('rdSpecs').innerHTML =
         '<div><dt>Diện tích</dt><dd>' + r.area + ' m²</dd></div>' +
-        '<div><dt>Số người tối đa</dt><dd>' + r.people + ' người</dd></div>' +
-        '<div><dt>Ngày đăng</dt><dd>' + esc(r.postedAt || 'Chưa cập nhật') + '</dd></div>';
+        '<div><dt>Số người ở tối đa</dt><dd>' + r.people + ' người</dd></div>' +
+        '<div><dt>Tầng</dt><dd>Tầng ' + (r.floor || 1) + '</dd></div>' +
+        '<div><dt>Tiền cọc</dt><dd>' + vnd(r.deposit || r.price) + '</dd></div>';
 
       document.getElementById('rdDesc').textContent = r.desc || 'Chủ trọ chưa cập nhật mô tả chi tiết cho phòng này.';
       document.getElementById('rdAmen').innerHTML = r.amenities.map(function(a){
         return '<span>' + SVG_CHECK + esc(a) + '</span>';
       }).join('');
 
-      var phone = r.phone || '';
+      var phone = r.phone || (r.owner && r.owner.phone) || '';
       document.getElementById('rdOwnerPhone').textContent = phone || 'Liên hệ qua tin nhắn trên An Cư';
       var callBtn = document.getElementById('rdCallBtn');
       if(phone){ callBtn.href = 'tel:' + phone.replace(/\s+/g,''); callBtn.hidden = false; }
       else { callBtn.hidden = true; }
+
+      var dateInput = document.getElementById('rdDate');
+      var now = new Date();
+      var tomorrow = new Date(now.getTime() + 86400000);
+      var yyyy = tomorrow.getFullYear();
+      var mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      var dd = String(tomorrow.getDate()).padStart(2, '0');
+      dateInput.value = yyyy + '-' + mm + '-' + dd;
+      document.getElementById('rdBookingBtn').textContent = 'Đặt lịch xem';
     }
 
     function openDetail(id){
@@ -1135,6 +1300,19 @@
       var onBtn = document.getElementById('rdThumbs').querySelector('.on');
       if(onBtn) onBtn.classList.remove('on');
       btn.classList.add('on');
+    });
+
+    document.getElementById('rdBookingBtn').addEventListener('click', function(){
+      var date = document.getElementById('rdDate').value;
+      var time = document.getElementById('rdTime').value;
+      if(!date){
+        document.getElementById('rdDate').focus();
+        return;
+      }
+      this.textContent = 'Đã gửi yêu cầu lịch xem';
+      this.disabled = true;
+      this.style.opacity = '0.8';
+      alert('Yêu cầu đặt lịch xem cho ngày ' + date + ' lúc ' + time + ' đã được gửi.');
     });
 
     document.getElementById('rdClose').addEventListener('click', closeDetail);

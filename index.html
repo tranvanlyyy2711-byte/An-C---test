@@ -1372,6 +1372,15 @@
       btn.textContent = btn.getAttribute('data-label') || btn.textContent;
     }
 
+    var AUTH_ROLE_KEY = 'an-cu-auth-role';
+
+    function resolveAuthRole(role){
+      var next = role || localStorage.getItem(AUTH_ROLE_KEY) || 'renter';
+      if(next !== 'renter' && next !== 'landlord') next = 'renter';
+      localStorage.setItem(AUTH_ROLE_KEY, next);
+      return next;
+    }
+
     function setPane(name, role){
       panes.forEach(function(p){
         var on = p.getAttribute('data-pane') === name;
@@ -1388,6 +1397,7 @@
 
     function openAuth(name, role){
       lastFocus = document.activeElement;
+      role = resolveAuthRole(role);
       setPane(name || 'login', role);
       document.body.classList.remove('menu-open');
       document.body.classList.add('auth-open');
@@ -1460,12 +1470,20 @@
         setTimeout(function(){
           var pane = form.closest('.auth-pane');
           var alt = pane.querySelector('.auth-alt');
+          var checkedRole = form.querySelector('input[name="role"]:checked');
+          var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
+          resolveAuthRole(targetRole);
+
           pane.querySelector('.auth-head').hidden = true;
           form.hidden = true;
           if(alt) alt.hidden = true;
           pane.querySelector('.auth-done').hidden = false;
           modal.scrollTop = 0;
           pane.querySelector('.auth-done .btn').focus();
+
+          if(targetRole === 'renter'){
+            setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
+          }
         }, 600);
       });
     });
