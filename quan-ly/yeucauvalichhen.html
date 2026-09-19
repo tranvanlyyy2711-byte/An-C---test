@@ -421,6 +421,48 @@ function liveNow(){ return new Date(SIM_BASE + (Date.now() - LOAD_REAL)); }
 function todayStr(){ var d = liveNow(); return ymd(d); }
 function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
+/* ================= Máy chủ ================= */
+// Mở trang qua máy chủ (npm start) thì lịch hẹn lấy từ cơ sở dữ liệu dùng chung với phía
+// người thuê, và máy chủ quyết định khung giờ nào còn trống. Mở bằng file:// thì dùng dữ
+// liệu mẫu trong trang như trước, nhưng vẫn áp cùng luật một khung giờ một lịch.
+var API = { on:false, now:null };
+var API_READY = (function(){
+  if(!/^https?:$/.test(location.protocol) || !window.fetch) return Promise.resolve(false);
+  return fetch('/api/suc-khoe', { cache:'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){ if(j && j.ok){ API.on = true; API.now = j.now; } return API.on; })
+    .catch(function(){ return false; });
+})();
+function apiCall(method, url, body){
+  return fetch(url, { method:method, cache:'no-store',
+    headers: body ? { 'Content-Type':'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; });
+  });
+}
+// Nạp lại toàn bộ lịch hẹn từ máy chủ vào mảng APPTS mà giao diện đang dùng
+function taiLichMayChu(){
+  return apiCall('GET', '/api/chu-tro/lich-xem').then(function(j){
+    if(j.httpStatus !== 200) throw new Error(j.message || 'Lỗi máy chủ');
+    APPTS.length = 0;
+    j.items.forEach(function(it){
+      APPTS.push({ id:it.id, date:it.date, time:it.time, dur:it.dur, room:it.roomCode, roomId:it.roomId,
+        tenant:it.tenant, phone:it.phone, status:it.status, urgent:it.urgent, renterId:it.renterId });
+      if(ROOM_CODES.indexOf(it.roomCode) === -1) ROOM_CODES.push(it.roomCode);
+    });
+  });
+}
+// Một khung giờ một lịch: buổi xem mới [time, time+dur) không được chồng lên lịch còn hiệu lực
+function phut(t){ var a = t.split(':'); return Number(a[0])*60 + Number(a[1]); }
+function trungLich(room, date, time, dur, excludeId){
+  return APPTS.filter(function(a){
+    return a.id !== excludeId && (a.roomId || a.room) === room && a.date === date &&
+      (a.status === 'pending' || a.status === 'confirmed') &&
+      phut(time) < phut(a.time) + (a.dur || 30) && phut(a.time) < phut(time) + dur;
+  })[0] || null;
+}
+
 var ROOM_CODES = ['P.101','P.102','P.103','P.201','P.202','P.203','P.301','P.302'];
 
 var APPTS = [
@@ -766,6 +808,16 @@ function renderAll(){
 function doConfirm(id){
   var a = APTS_find(id);
   if (!a) return;
+  if (API.on){
+    apiCall('PATCH', '/api/chu-tro/lich-xem/' + id, { action:'confirm' }).then(function(j){
+      return taiLichMayChu().then(function(){
+        renderAll();
+        if (j.httpStatus !== 200) showToast('Chưa xác nhận được', j.message || 'Hãy thử lại.');
+        else showToast('Đã xác nhận lịch', a.room+' · '+a.tenant+' lúc '+a.time+' đã được xác nhận.');
+      });
+    }).catch(function(){ showToast('Mất kết nối', 'Không gửi được tới máy chủ. Hãy thử lại.'); });
+    return;
+  }
   a.status = 'confirmed';
   renderAll();
   showToast('Đã xác nhận lịch', a.room+' · '+a.tenant+' lúc '+a.time+' đã được xác nhận.');
@@ -793,6 +845,7 @@ function createContract(id){
 var modalOverlay = document.getElementById('apptModalOverlay');
 function openCreateModal(){
   state.editingApptId = null;
+  Array.prototype.forEach.call(document.querySelectorAll('#fRoom option[data-tam]'), function(o){ o.remove(); });
   document.getElementById('apptModalTitle').textContent = 'Tạo lịch hẹn xem phòng';
   document.getElementById('apptSaveBtn').textContent = 'Lưu lịch hẹn';
   document.getElementById('apptForm').reset();
@@ -807,7 +860,15 @@ function openRescheduleModal(id){
   state.editingApptId = id;
   document.getElementById('apptModalTitle').textContent = 'Đổi lịch hẹn';
   document.getElementById('apptSaveBtn').textContent = 'Lưu thay đổi';
-  document.getElementById('fRoom').value = a.room;
+  var fRoom = document.getElementById('fRoom');
+  var rid = a.roomId || a.room;
+  fRoom.value = rid;
+  if (fRoom.value !== rid){
+    var o = document.createElement('option');
+    o.value = rid; o.textContent = a.room; o.setAttribute('data-tam', '1');
+    fRoom.appendChild(o);
+    fRoom.value = rid;
+  }
   document.getElementById('fPhone').value = a.phone;
   document.getElementById('fName').value = a.tenant;
   document.getElementById('fDate').value = a.date;
@@ -831,6 +892,33 @@ document.getElementById('apptForm').addEventListener('submit', function(e){
   var date = document.getElementById('fDate').value;
   var time = document.getElementById('fTime').value;
   if (!room || !phone || !name || !date || !time){ showToast('Thiếu thông tin','Vui lòng điền đầy đủ các trường bắt buộc.'); return; }
+  var editId = state.editingApptId;
+  if (API.on){
+    var req = editId
+      ? apiCall('PATCH', '/api/chu-tro/lich-xem/' + editId, { action:'reschedule', roomId:room, tenant:name, phone:phone, date:date, time:time })
+      : apiCall('POST', '/api/chu-tro/lich-xem', { roomId:room, tenant:name, phone:phone, date:date, time:time, note:document.getElementById('fNote').value });
+    req.then(function(j){
+      if (j.httpStatus !== 200 && j.httpStatus !== 201){
+        showToast(j.error === 'slot_taken' ? 'Khung giờ đã có lịch' : 'Chưa lưu được', j.message || 'Hãy thử lại.');
+        return;
+      }
+      return taiLichMayChu().then(function(){
+        closeModal();
+        if (!editId){
+          state.selectedDate = date;
+          if (date.slice(0,7) !== ymd(state.monthCursor).slice(0,7)) state.monthCursor = parseYmd(date.slice(0,8)+'01');
+        }
+        renderAll();
+        showToast(editId ? 'Đã đổi lịch hẹn' : 'Đã tạo lịch hẹn', name+' · '+j.item.roomCode+' lúc '+time+' ngày '+fmtDateShort(date)+'.');
+      });
+    }).catch(function(){ showToast('Mất kết nối', 'Không gửi được tới máy chủ. Hãy thử lại.'); });
+    return;
+  }
+  var clash = trungLich(room, date, time, 30, editId);
+  if (clash){
+    showToast('Khung giờ đã có lịch', room+' đã có lịch lúc '+clash.time+' ngày '+fmtDateShort(date)+'. Hãy chọn giờ khác.');
+    return;
+  }
   if (state.editingApptId){
     var a = APTS_find(state.editingApptId);
     a.room = room; a.phone = phone; a.tenant = name; a.date = date; a.time = time;
@@ -974,12 +1062,22 @@ function initReveal(){
 }
 
 /* ================= Khởi động ================= */
-fillRoomFilters();
-renderAll();
-setTimeout(function(){
-  document.body.classList.remove('is-loading');
-  initReveal();
-}, 500);
+API_READY.then(function(on){
+  if (!on) return;
+  // Dùng "bây giờ" của máy chủ để lịch hôm nay khớp với phía người thuê
+  SIM_BASE = new Date(API.now).getTime();
+  LOAD_REAL = Date.now();
+  return taiLichMayChu();
+}).catch(function(){
+  showToast('Mất kết nối', 'Không tải được lịch hẹn từ máy chủ, đang hiện dữ liệu mẫu.');
+}).then(function(){
+  fillRoomFilters();
+  renderAll();
+  setTimeout(function(){
+    document.body.classList.remove('is-loading');
+    initReveal();
+  }, 500);
+});
 </script>
 </body>
 </html>

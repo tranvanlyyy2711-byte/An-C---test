@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lịch xem phòng — An Cư</title>
+<meta name="description" content="Theo dõi lịch xem phòng bạn đã đặt, đổi giờ hoặc huỷ khi cần, và đặt lịch xem phòng mới trong khu vực người thuê của An Cư." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
+  --border:rgba(34,139,34,.12);--border-strong:rgba(34,139,34,.2);
+  --text:#102010;--text-muted:#4B5C4B;--text-dim:#667565;
+  --accent:#228B22;--accent-hover:#1D7C1D;--accent-fg:#FFFFFF;
+  --success:#228B22;--success-ink:#1B7A1B;--warning:#F5B14C;
+  --warning-ink:#8A5A11;--danger:#FF6B6B;--danger-ink:#B4291F;
+  --info:#2F6FED;--info-ink:#1D4FBE;
+  --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--ease:cubic-bezier(.16,1,.3,1);
+  --sidebar-w:264px;--header-h:72px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:clip}
+h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;line-height:1.15;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
+button{cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .45s var(--ease),transform .45s var(--ease);transition-delay:var(--d,0s)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+/* ===== Sidebar + Header ===== */
+.dash-shell{display:flex;min-height:100vh}
+.side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(16,32,16,.4);backdrop-filter:blur(4px)}
+.side-nav{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;display:flex;flex-direction:column;padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800}
+.side-logo{padding:6px 10px 20px}
+.side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
+.side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+.side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
+.side-menu{display:flex;flex-direction:column;gap:4px}
+.side-link{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);transition:.18s var(--ease)}
+.side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}
+.side-link.active{color:var(--text);background:rgba(34,139,34,.1);font-weight:600}
+.side-link.active svg{stroke:var(--accent)}
+.side-count{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);background:rgba(34,139,34,.1);border:1px solid var(--border-strong);padding:2px 8px;border-radius:999px}
+.side-link-main{display:flex;align-items:center;gap:12px}
+.side-link.is-disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+.badge-soon{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--warning-ink);background:rgba(245,177,76,.16);border:1px solid rgba(245,177,76,.35);padding:2px 8px;border-radius:999px}
+.side-sep{height:1px;background:var(--border);margin:12px}
+
+.dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w)}
+.app-header{position:sticky;top:0;z-index:110;height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 32px;background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.menu-toggle{display:none;width:44px;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);align-items:center;justify-content:center}
+.menu-toggle svg{width:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.icon-btn{position:relative;width:44px;height:44px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text)}
+.icon-btn svg{width:19px;stroke:currentColor;fill:none;stroke-width:1.6}
+.acc-btn{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 12px 0 6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font-weight:700;font-size:13px}
+.nm{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
+
+/* ===== Chung ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 20px;border-radius:var(--radius);font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14px;border:1px solid transparent;white-space:nowrap;transition:.18s var(--ease)}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn-primary{background:linear-gradient(135deg,#228B22,#2E9E37);color:#fff;box-shadow:0 10px 28px -10px rgba(34,139,34,.85)}
+.btn-primary:hover{background:linear-gradient(135deg,#1F7F20,#2A9234)}
+.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-strong)}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(34,139,34,.04)}
+.btn-danger-ghost{background:var(--surface);color:var(--danger-ink);border-color:rgba(180,41,31,.3)}
+.btn-danger-ghost:hover{background:rgba(255,107,107,.08)}
+.btn-sm{height:44px;padding:0 14px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,.side-link:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.stat:focus-visible,.tab-btn:focus-visible,.chip:focus-visible,.modal-close:focus-visible,.icon-btn:focus-visible,.acc-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dash-body{padding:28px 32px 56px}
+.container-fluid{width:100%;max-width:1400px;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:clamp(1.6rem,2.6vw,2.05rem);margin-bottom:6px}
+.page-head p{color:var(--text-muted);font-size:.95rem}
+
+/* ===== Thẻ thống kê ===== */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat{border:1px solid var(--border);border-radius:var(--radius-lg);background:linear-gradient(180deg,#fff,#F6FBF6);padding:20px;text-align:left;width:100%;transition:.25s var(--ease)}
+.stat:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 14px 32px -18px rgba(16,48,16,.25)}
+.stat.is-active-filter{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.12)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.stat-label{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted)}
+.stat-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(34,139,34,.08);border:1px solid var(--border-strong);flex-shrink:0}
+.stat-icon svg{width:18px;stroke:var(--accent);fill:none;stroke-width:1.6}
+.stat.warn .stat-icon{background:rgba(245,177,76,.14);border-color:rgba(245,177,76,.34)}.stat.warn .stat-icon svg{stroke:var(--warning-ink)}
+.stat.info .stat-icon{background:rgba(47,111,237,.1);border-color:rgba(47,111,237,.28)}.stat.info .stat-icon svg{stroke:var(--info-ink)}
+.stat.neutral .stat-icon{background:var(--surface-2);border-color:var(--border-strong)}.stat.neutral .stat-icon svg{stroke:var(--text-dim)}
+.stat-value{font-family:'Be Vietnam Pro',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.stat-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+
+/* ===== Tabs ===== */
+.tabbar{display:inline-flex;padding:5px;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;margin-bottom:20px}
+.tab-btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--text-muted);font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600;white-space:nowrap;transition:.18s var(--ease)}
+.tab-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 4px 14px -6px rgba(16,48,16,.25)}
+.tab-btn.active svg{stroke:var(--accent)}
+.tab-btn .side-count{margin-left:2px}
+
+/* ===== Card + toolbar ===== */
+.card{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-head h2{font-size:16.5px}
+.card-head p{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.card-body{padding:18px 20px 20px}
+
+.apt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.field{height:46px;width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);padding:0 14px;font-size:16px}
+textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;line-height:1.5}
+.search-wrap{position:relative;flex:1;min-width:220px}
+.search-wrap svg{position:absolute;left:12px;top:14px;width:18px;stroke:var(--text-dim);fill:none;stroke-width:1.7}
+.search-wrap input{padding-left:40px}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;transition:.16s var(--ease)}
+.chip:hover{border-color:var(--accent);color:var(--text)}
+.chip.active{background:rgba(34,139,34,.1);border-color:var(--accent);color:var(--accent-hover)}
+
+/* ===== Danh sách lịch xem ===== */
+.apt-list{display:flex;flex-direction:column;gap:12px}
+.apt-item{border:1px solid var(--border);border-radius:var(--radius);padding:14px;background:var(--surface-2);transition:.16s var(--ease)}
+.apt-item:hover{border-color:var(--border-strong)}
+.apt-main{display:flex;gap:14px;align-items:flex-start}
+.apt-thumb{width:96px;height:80px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;background:var(--border)}
+.apt-info{min-width:0;flex:1}
+.apt-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.apt-time{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:15px}
+.apt-date-lbl{font-size:11.5px;color:var(--text-dim);margin-top:2px}
+.apt-room{font-size:15px;margin-top:6px;overflow-wrap:anywhere}
+.apt-addr{display:flex;align-items:flex-start;gap:5px;font-size:13px;color:var(--text-muted);margin-top:4px;overflow-wrap:anywhere}
+.apt-addr svg{width:13px;height:13px;stroke:var(--text-dim);fill:none;stroke-width:1.8;flex-shrink:0;margin-top:2px}
+.apt-rel{font-size:12px;color:var(--text-dim);margin-top:6px;font-weight:600}
+.apt-item[data-status="pending"] .apt-rel,.apt-item[data-status="confirmed"] .apt-rel{color:var(--accent-hover)}
+.apt-note{font-size:12.5px;color:var(--text-dim);margin-top:6px;font-style:italic;overflow-wrap:anywhere}
+
+.apt-status{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;border:1px solid}
+.apt-status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.apt-status.is-confirmed{color:var(--success-ink);background:rgba(34,139,34,.09);border-color:rgba(34,139,34,.22)}
+.apt-status.is-pending{color:var(--warning-ink);background:rgba(245,177,76,.15);border-color:rgba(245,177,76,.35)}
+.apt-status.is-completed{color:#576457;background:#EEF2EE;border-color:#DCE4DC}
+.apt-status.is-cancelled{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.22)}
+
+.apt-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.apt-actions .btn{height:44px;padding:0 14px;font-size:12.5px}
+
+/* ===== Trạng thái rỗng / skeleton / toast ===== */
+.empty-state{padding:52px 20px;text-align:center;color:var(--text-muted)}
+.empty-state svg{width:40px;height:40px;stroke:var(--text-dim);fill:none;stroke-width:1.4;margin-bottom:12px}
+.empty-state h3{font-size:15px;margin-bottom:6px;color:var(--text)}
+.empty-state p{font-size:13.5px;margin-bottom:16px}
+.empty-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+.skeleton{border-radius:var(--radius-lg);background:linear-gradient(100deg,var(--surface-2) 30%,#E4EFE4 50%,var(--surface-2) 70%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+body.is-loading .content-real{display:none}
+body:not(.is-loading) .content-skel{display:none}
+.skel-stat{height:112px}
+.skel-apt{height:150px;margin-bottom:12px}
+@media(prefers-reduced-motion:reduce){.skeleton{animation:none;background:var(--surface-2)}}
+
+.toast{position:fixed;right:24px;bottom:24px;z-index:200;max-width:360px;padding:14px 16px;border-radius:var(--radius);background:#102010;color:#fff;box-shadow:0 20px 50px rgba(16,32,16,.25);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s var(--ease);font-size:14px}
+.toast.show{transform:none;opacity:1}
+.toast b{display:block;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:2px}
+.toast span{color:rgba(255,255,255,.78);font-size:12.5px}
+
+/* ===== Modal đặt / đổi / huỷ lịch ===== */
+body.modal-open{overflow:hidden}
+.modal-overlay{position:fixed;inset:0;z-index:180;background:rgba(16,32,16,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:.2s var(--ease)}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{width:100%;max-width:460px;background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 40px 90px -30px rgba(16,48,16,.4);transform:translateY(14px) scale(.98);transition:.22s var(--ease);max-height:88vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:none}
+.modal-sm{max-width:400px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal-head h2{font-size:16.5px}
+.modal-close{width:46px;height:46px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;color:var(--text-muted);flex-shrink:0}
+.modal-close:hover{border-color:var(--accent);color:var(--accent)}
+.modal-close svg{width:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.modal-body{padding:18px 20px}
+.modal-hint{font-size:13.5px;color:var(--text-muted);margin-top:-4px;margin-bottom:14px;line-height:1.5}
+.modal-hint.is-full{color:var(--danger-ink);font-weight:600}
+.apt-hold{font-size:12px;color:var(--warning-ink);margin-top:4px}
+#mTime option:disabled{color:var(--text-dim)}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;font-family:'Be Vietnam Pro',sans-serif}
+.form-row.is-invalid label{color:var(--danger-ink)}
+.form-row.is-invalid .field{border-color:var(--danger-ink);background:rgba(255,107,107,.06)}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 20px}
+
+@media(max-width:1180px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:960px){
+  .menu-toggle{display:flex}
+  .side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);transition:transform .26s var(--ease)}
+  body.nav-open .side-nav{transform:none}
+  body.nav-open .side-backdrop{display:block;top:var(--header-h)}
+  .dash-main{margin-left:0}
+  .app-header{padding:0 20px}
+  .dash-body{padding:24px 20px 48px}
+}
+@media(max-width:640px){
+  .app-header{padding:0 16px;gap:8px}
+  .dash-body{padding:20px 16px 40px}
+  .stat-grid{grid-template-columns:1fr;gap:12px}
+  .page-head{align-items:flex-start}
+  .page-head .btn{width:100%}
+  .tabbar{width:100%}
+  .tab-btn{flex:1;justify-content:center}
+  .apt-toolbar{flex-direction:column;align-items:stretch}
+  .search-wrap{min-width:0}
+  .chip-row{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  .apt-main{flex-direction:column}
+  .apt-thumb{width:100%;height:150px}
+  .apt-actions .btn{flex:1 1 calc(50% - 6px)}
+  .form-grid2{grid-template-columns:1fr}
+  .toast{left:16px;right:16px;bottom:16px}
+  .modal{max-height:100dvh;border-radius:0;max-width:100%}
+  .modal-overlay{padding:0}
+}
+</style>
+</head>
+<body class="is-loading">
+<div class="dash-shell">
+  <div class="side-backdrop" id="sideBackdrop"></div>
+  <aside class="side-nav" id="sideNav">
+    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <div class="side-role"><span>Khu vực</span><b>Người thuê</b></div>
+    <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
+      <a href="tim-phong.html" class="side-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Tìm phòng</a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>Khám phá bản đồ</a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Phòng đã lưu</a>
+      <a href="dat-lich.html" class="side-link active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>Lịch xem phòng<span class="side-count" id="navCount">0</span></a>
+      <a href="#" class="side-link is-disabled" aria-disabled="true" tabindex="-1" title="Thanh toán trực tuyến chưa mở trong bản v1">
+        <span class="side-link-main"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Thanh toán</span>
+        <span class="badge-soon">Sắp ra mắt</span>
+      </a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>Hỗ trợ &amp; báo cáo</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+    <header class="app-header">
+      <button class="menu-toggle" id="menuBtn" aria-label="Mở menu" aria-expanded="false" aria-controls="sideNav"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="header-actions">
+        <button class="icon-btn" id="notiBtn" type="button" aria-label="Thông báo"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+        <button class="acc-btn" type="button"><span class="av">PT</span><span class="nm">Phạm Thu Trang</span></button>
+      </div>
+    </header>
+
+    <main class="dash-body">
+      <div class="container-fluid">
+
+        <div class="page-head reveal">
+          <div><h1>Lịch xem phòng</h1><p>Theo dõi các buổi xem phòng bạn đã đặt, đổi giờ hoặc huỷ khi cần.</p></div>
+          <button class="btn btn-primary" id="openCreateBtn" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Đặt lịch xem</button>
+        </div>
+
+        <!-- Skeleton loading -->
+        <div class="content-skel">
+          <section class="stat-grid" aria-hidden="true">
+            <div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div>
+          </section>
+          <div class="skeleton skel-apt"></div>
+          <div class="skeleton skel-apt"></div>
+          <div class="skeleton skel-apt"></div>
+        </div>
+
+        <!-- Nội dung thật -->
+        <div class="content-real">
+          <section class="stat-grid" data-stagger aria-label="Thống kê lịch xem phòng" id="statGrid"></section>
+
+          <div class="tabbar reveal" role="tablist" aria-label="Chuyển khu vực">
+            <button class="tab-btn active" id="tabUpcoming" type="button" role="tab" aria-selected="true" aria-controls="panelList" data-tab="upcoming">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>Sắp tới<span class="side-count" id="cntUpcoming">0</span>
+            </button>
+            <button class="tab-btn" id="tabPast" type="button" role="tab" aria-selected="false" aria-controls="panelList" data-tab="past">
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Đã qua<span class="side-count" id="cntPast">0</span>
+            </button>
+          </div>
+
+          <section class="card reveal" id="panelList">
+            <div class="card-head">
+              <div><h2>Danh sách lịch xem</h2><p>Bấm vào một lịch để đổi giờ, huỷ hoặc liên hệ chủ trọ</p></div>
+            </div>
+            <div class="card-body">
+              <div class="apt-toolbar">
+                <div class="search-wrap">
+                  <label class="sr-only" for="apptSearch">Tìm theo tên phòng hoặc địa chỉ</label>
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input class="field" id="apptSearch" type="search" placeholder="Tìm theo tên phòng hoặc địa chỉ" />
+                </div>
+                <div class="chip-row" id="statusChips" role="group" aria-label="Lọc theo trạng thái">
+                  <button type="button" class="chip active" data-status="all" aria-pressed="true">Tất cả</button>
+                  <button type="button" class="chip" data-status="pending" aria-pressed="false">Chờ xác nhận</button>
+                  <button type="button" class="chip" data-status="confirmed" aria-pressed="false">Đã xác nhận</button>
+                  <button type="button" class="chip" data-status="completed" aria-pressed="false">Đã hoàn thành</button>
+                  <button type="button" class="chip" data-status="cancelled" aria-pressed="false">Đã hủy</button>
+                </div>
+                <button class="btn btn-ghost btn-sm" id="resetBtn" type="button">Đặt lại</button>
+              </div>
+              <div class="apt-list" id="apptList"></div>
+              <div class="empty-state" id="apptEmpty" hidden></div>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal đặt / đổi lịch -->
+<div class="modal-overlay" id="apptOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="apptModalTitle">
+    <div class="modal-head"><h2 id="apptModalTitle">Đặt lịch xem phòng</h2><button class="modal-close" id="apptModalClose" type="button" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <form class="modal-body" id="apptForm" novalidate>
+      <div class="form-row" id="rowRoom">
+        <label for="mRoom">Phòng muốn xem</label>
+        <select class="field" id="mRoom" required></select>
+      </div>
+      <p class="modal-hint" id="mRoomHint"></p>
+      <div class="form-row" id="rowPhone">
+        <label for="mPhone">Số điện thoại liên hệ</label>
+        <input class="field" id="mPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxx" required />
+      </div>
+      <div class="form-grid2">
+        <div class="form-row" id="rowDate">
+          <label for="mDate">Ngày xem</label>
+          <input class="field" id="mDate" type="date" required />
+        </div>
+        <div class="form-row" id="rowTime">
+          <label for="mTime">Giờ xem</label>
+          <select class="field" id="mTime" required>
+            <option value="09:00">09:00</option>
+            <option value="10:00">10:00</option>
+            <option value="11:30">11:30</option>
+            <option value="13:30">13:30</option>
+            <option value="15:00">15:00</option>
+            <option value="17:30">17:30</option>
+            <option value="19:00">19:00</option>
+          </select>
+        </div>
+      </div>
+      <p class="modal-hint" id="mSlotHint" aria-live="polite"></p>
+      <div class="form-row">
+        <label for="mNote">Ghi chú cho chủ trọ (không bắt buộc)</label>
+        <textarea class="field" id="mNote" rows="2" placeholder="Ví dụ: mình muốn xem thêm chỗ để xe"></textarea>
+      </div>
+    </form>
+    <div class="modal-foot"><button class="btn btn-ghost" id="apptCancelBtn" type="button">Huỷ</button><button class="btn btn-primary" id="apptSaveBtn" type="submit" form="apptForm">Gửi yêu cầu</button></div>
+  </div>
+</div>
+
+<!-- Modal huỷ lịch -->
+<div class="modal-overlay" id="cancelOverlay">
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+    <div class="modal-head"><h2 id="cancelModalTitle">Huỷ lịch xem phòng?</h2><button class="modal-close" id="cancelModalClose" type="button" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body"><p class="modal-hint" id="cancelText" style="margin-bottom:0"></p></div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="cancelKeepBtn" type="button">Giữ lịch</button><button class="btn btn-danger-ghost" id="cancelConfirmBtn" type="button">Huỷ lịch</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= Thời gian mô phỏng ================= */
+  var SIM_NOW = new Date(2026,8,18,8,15,0);
+  function pad2(n){ return (n<10?'0':'')+n; }
+  function ymd(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+  function todayStr(){ return ymd(SIM_NOW); }
+  function tomorrowStr(){ return ymd(new Date(SIM_NOW.getTime()+86400000)); }
+  function parseYmd(s){ var p=s.split('-'); return new Date(Number(p[0]),Number(p[1])-1,Number(p[2])); }
+  var DAY_NAMES = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+  function fmtDateVi(dateStr){ var d=parseYmd(dateStr); return DAY_NAMES[d.getDay()]+', '+pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear(); }
+  function fmtDateShort(dateStr){ var d=parseYmd(dateStr); return pad2(d.getDate())+'/'+pad2(d.getMonth()+1); }
+  function isoNow(){ return SIM_NOW.toISOString(); }
+
+  /* ================= Một khung giờ chỉ một người ================= */
+  // Mỗi (phòng, ngày, giờ) chỉ có tối đa MỘT lịch còn hiệu lực: "Đã xác nhận", hoặc
+  // "Chờ xác nhận" còn trong hạn giữ chỗ. Quá HOLD_HOURS giờ chủ trọ chưa xác nhận thì
+  // lịch tự huỷ và khung giờ được nhả cho người khác. Cùng quy tắc với tim-phong.html.
+  var HOLD_HOURS = 24;
+  // Lịch của NGƯỜI KHÁC, mô phỏng "máy chủ báo khung giờ nào đã bị chiếm". Chỉ đọc,
+  // không hiện trong danh sách của bạn và không lộ danh tính người đặt.
+  var OTHER_BOOKINGS = [
+    { roomId:'r09', date:'2026-09-20', time:'10:00', status:'confirmed', createdAt:'2026-09-17T09:00:00' },
+    { roomId:'r09', date:'2026-09-19', time:'09:00', status:'pending',   createdAt:'2026-09-18T07:00:00' },
+    // Giữ chỗ từ 16/09, chủ trọ không xác nhận: đã quá hạn nên khung này KHÔNG còn bị chiếm
+    { roomId:'r09', date:'2026-09-19', time:'15:00', status:'pending',   createdAt:'2026-09-16T10:00:00' }
+  ];
+  function holdEnd(it){
+    if(it.holdUntil) return new Date(it.holdUntil);
+    return new Date(new Date(it.createdAt).getTime() + HOLD_HOURS*3600000);
+  }
+  function isActive(it){
+    if(it.status === 'confirmed') return true;
+    return it.status === 'pending' && holdEnd(it).getTime() > SIM_NOW.getTime();
+  }
+  function fmtHold(d){ return pad2(d.getHours())+':'+pad2(d.getMinutes())+' ngày '+pad2(d.getDate())+'/'+pad2(d.getMonth()+1); }
+
+  /* ================= Tiện ích chung ================= */
+  var nf = new Intl.NumberFormat('vi-VN');
+  function vnd(n){ return nf.format(n) + '₫'; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function phoneHref(p){ return 'tel:' + String(p||'').replace(/\s+/g,''); }
+  function icon(inner){ return '<svg viewBox="0 0 24 24">'+inner+'</svg>'; }
+  var SVG_PIN = '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>';
+  var RE_PHONE = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+
+  /* ================= Máy chủ ================= */
+  // Mở trang qua máy chủ (npm start) thì mọi người dùng chung MỘT cơ sở dữ liệu và máy chủ
+  // là trọng tài duy nhất. Mở thẳng bằng file:// thì chạy chế độ mô phỏng trên localStorage.
+  var API = { on:false, now:null };
+  var API_READY = (function(){
+    if(!/^https?:$/.test(location.protocol) || !window.fetch) return Promise.resolve(false);
+    return fetch('/api/suc-khoe', { cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ if(j && j.ok){ API.on = true; API.now = j.now; } return API.on; })
+      .catch(function(){ return false; });
+  })();
+  function apiCall(method, url, body){
+    return fetch(url, { method:method, cache:'no-store',
+      headers: body ? { 'Content-Type':'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; });
+    });
+  }
+  function enc(s){ return encodeURIComponent(s); }
+  // Có máy chủ thì dùng "bây giờ" của máy chủ để ngày hợp lệ ở hai phía luôn khớp
+  API_READY.then(function(on){ if(on && API.now) SIM_NOW = new Date(API.now); });
+
+  // Người thuê mô phỏng: chưa có đăng nhập nên chọn bằng ?nguoi=u-an và nhớ trong trình duyệt.
+  var NGUOI_THUE_MAU = {
+    'u-trang': { id:'u-trang', name:'Phạm Thu Trang', phone:'0901234567' },
+    'u-an':    { id:'u-an',    name:'Nguyễn Văn An',  phone:'0912000111' },
+    'u-linh':  { id:'u-linh',  name:'Trần Mỹ Linh',   phone:'0987000222' },
+    'u-huy':   { id:'u-huy',   name:'Lê Quang Huy',   phone:'0933000333' }
+  };
+  function nguoiHienTai(){
+    var id = null;
+    try{ id = new URLSearchParams(location.search).get('nguoi'); }catch(e){}
+    if(id && NGUOI_THUE_MAU[id]){ try{ localStorage.setItem('an-cu-nguoi-thue', id); }catch(e){} }
+    else { id = null; try{ id = localStorage.getItem('an-cu-nguoi-thue'); }catch(e){} }
+    return NGUOI_THUE_MAU[id] || NGUOI_THUE_MAU['u-trang'];
+  }
+  var MOCK_RENTER = nguoiHienTai();
+
+  /* ================= Từ vựng trạng thái (khớp phía chủ trọ) ================= */
+  var APT_STATUS = {
+    confirmed:{label:'Đã xác nhận',cls:'is-confirmed'},
+    pending:{label:'Chờ xác nhận',cls:'is-pending'},
+    completed:{label:'Đã hoàn thành',cls:'is-completed'},
+    cancelled:{label:'Đã hủy',cls:'is-cancelled'}
+  };
+
+  /* ================= Danh mục phòng cho modal đặt lịch ================= */
+  var ROOM_OPTIONS = [
+    {id:'r09', title:'Phòng khép kín, gần các trường Bách Kinh Xây', district:'Hai Bà Trưng', address:'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội', price:3300000, phone:'0327882879', image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg'},
+    {id:'r10', title:'Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng', district:'Hai Bà Trưng', address:'26 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội', price:4500000, phone:'0967960926', image:'../assets/rooms/phongtrobachkinhxaygiare1.webp'},
+    {id:'r11', title:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', district:'Cầu Giấy', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội', price:3300000, phone:'0916667679', image:'../assets/rooms/210hqv1.webp'},
+    {id:'r12', title:'Phòng mới xây, đầy đủ tiện nghi', district:'Đống Đa', address:'Số nhà 20, ngách 79, ngõ Cẩm Văn, Phường Hàng Bột, Quận Đống Đa, Hà Nội', price:3500000, phone:'0838528543', image:'../assets/rooms/moixay1.webp'},
+    {id:'r13', title:'Phòng trọ khép kín Trần Thái Tông', district:'Cầu Giấy', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội', price:3500000, phone:'0904525414', image:'../assets/rooms/ttt1.webp'},
+    {id:'r14', title:'Phòng trọ sinh viên tại Hòa Lạc, gần ĐH FPT, ĐHQGHN', district:'Thạch Thất', address:'Đường Đại lộ Thăng Long, Xã Hòa Lạc, Huyện Thạch Thất, Hà Nội', price:1800000, phone:'0342150995', image:'../assets/rooms/hoalac1.webp'},
+    {id:'r15', title:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', district:'Nam Từ Liêm', address:'Ngõ 90 Đường Phúc Diễn, Quận Nam Từ Liêm, Hà Nội', price:4250000, phone:'0974942507', image:'../assets/rooms/ga1.webp'},
+    {id:'r16', title:'Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện', district:'Đống Đa', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội', price:3000000, phone:'0982165646', image:'../assets/rooms/dd1.webp'},
+    {id:'r17', title:'Trọ có 1 phòng ngủ 1 phòng khách', district:'Nam Từ Liêm', address:'Đường Tu Hoàng, Phường Xuân Phương, Quận Nam Từ Liêm, Hà Nội', price:4000000, phone:'0912415901', image:'../assets/rooms/1n1k1.webp'},
+    {id:'r18', title:'Phòng đầy đủ tiện nghi', district:'Hoàng Mai', address:'Số nhà 26A, ngõ 220 Định Công Thượng, Phường Định Công, Quận Hoàng Mai, Hà Nội', price:2700000, phone:'0972137955', image:'../assets/rooms/hmai1.webp'},
+    // Tám phòng dưới đây chưa có số chủ trọ trong dữ liệu mẫu. Giữ phone rỗng để
+    // nút "Liên hệ chủ trọ" tự ẩn, thay vì bịa số.
+    {id:'r01', title:'Phòng trọ gần Đại học Quốc Gia', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội', price:2800000, phone:'', image:'../assets/rooms/210hqv2.webp'},
+    {id:'r02', title:'Căn hộ mini có ban công', district:'Đống Đa', address:'58 Thái Hà, P. Trung Liệt, Đống Đa, Hà Nội', price:6200000, phone:'', image:'../assets/rooms/moixay2.webp'},
+    {id:'r03', title:'Ở ghép nữ, an ninh tốt', district:'Hai Bà Trưng', address:'12/8 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội', price:2100000, phone:'', image:'../assets/rooms/phongtrobachkinhxaygiare2.webp'},
+    {id:'r04', title:'Phòng có gác, cửa sổ lớn', district:'Thanh Xuân', address:'21 Vũ Trọng Phụng, P. Khương Trung, Thanh Xuân, Hà Nội', price:3400000, phone:'', image:'../assets/rooms/hmai2.webp'},
+    {id:'r05', title:'Studio khép kín gần Hồ Tây', district:'Ba Đình', address:'9 Đội Cấn, P. Cống Vị, Ba Đình, Hà Nội', price:5300000, phone:'', image:'../assets/rooms/1n1k2.webp'},
+    {id:'r06', title:'Phòng khép kín, nuôi thú cưng', district:'Hoàng Mai', address:'70 Tân Mai, P. Tân Mai, Hoàng Mai, Hà Nội', price:3100000, phone:'', image:'../assets/rooms/dd2.webp'},
+    {id:'r07', title:'Ở ghép nam, gần sân vận động Mỹ Đình', district:'Nam Từ Liêm', address:'5 Lê Đức Thọ, P. Mỹ Đình 2, Nam Từ Liêm, Hà Nội', price:1900000, phone:'', image:'../assets/rooms/ga2.webp'},
+    {id:'r08', title:'Phòng rộng, có bếp riêng', district:'Đống Đa', address:'112 Tôn Thất Tùng, P. Khương Thượng, Đống Đa, Hà Nội', price:3900000, phone:'', image:'../assets/rooms/ttt2.webp'}
+  ];
+  function roomById(id){
+    for(var i=0;i<ROOM_OPTIONS.length;i++){ if(ROOM_OPTIONS[i].id===id) return ROOM_OPTIONS[i]; }
+    return null;
+  }
+
+  /* ================= Dữ liệu mẫu ban đầu ================= */
+  var SEED_APPTS = [
+    { id:101, roomId:'r09', room:'Phòng khép kín, gần các trường Bách Kinh Xây', address:'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội', price:3300000, image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg', landlordPhone:'0327882879', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-20', time:'09:00', dur:30, status:'pending', urgent:false, note:'', createdAt:'2026-09-17T20:10:00', source:'seed' },
+    { id:102, roomId:'r11', room:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội', price:3300000, image:'../assets/rooms/210hqv1.webp', landlordPhone:'0916667679', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-18', time:'15:00', dur:30, status:'confirmed', urgent:false, note:'Hẹn gặp trước cổng khu trọ.', createdAt:'2026-09-16T09:00:00', source:'seed' },
+    { id:103, roomId:'r13', room:'Phòng trọ khép kín Trần Thái Tông', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội', price:3500000, image:'../assets/rooms/ttt1.webp', landlordPhone:'0904525414', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-22', time:'17:30', dur:30, status:'confirmed', urgent:false, note:'', createdAt:'2026-09-17T11:30:00', source:'seed' },
+    { id:104, roomId:'r16', room:'Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội', price:3000000, image:'../assets/rooms/dd1.webp', landlordPhone:'0982165646', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-10', time:'10:00', dur:30, status:'completed', urgent:false, note:'Đã xem, phòng ổn nhưng hơi xa trung tâm.', createdAt:'2026-09-08T08:00:00', source:'seed' },
+    { id:105, roomId:'r10', room:'Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng', address:'26 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội', price:4500000, image:'../assets/rooms/phongtrobachkinhxaygiare1.webp', landlordPhone:'0967960926', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-08', time:'13:30', dur:30, status:'cancelled', urgent:false, note:'Đổi ý, đã tìm được phòng khác gần hơn.', createdAt:'2026-09-05T14:20:00', source:'seed' }
+  ];
+
+  /* ================= Kho lưu localStorage (có dự phòng bộ nhớ) ================= */
+  var STORE_KEY = 'an-cu-lich-xem-v1';
+  var MEM = null;
+  function readStore(){
+    try{
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if(!raw) return null;
+      var obj = JSON.parse(raw);
+      if(!obj || obj.v!==1 || !Array.isArray(obj.items)) return null;
+      return obj;
+    }catch(e){ return null; }
+  }
+  var warnedNoSave = false;
+  function writeStore(obj){
+    MEM = obj;
+    try{ window.localStorage.setItem(STORE_KEY, JSON.stringify(obj)); }
+    catch(e){
+      if(!warnedNoSave){ warnedNoSave = true; showToast('Không lưu được','Trình duyệt đang chặn bộ nhớ cục bộ, lịch chỉ được giữ trong phiên này.'); }
+    }
+  }
+  // Gieo dữ liệu mẫu đúng một lần. Nếu người dùng đã đặt lịch bên trang tìm phòng
+  // trước khi mở trang này thì bản ghi đó được giữ nguyên, mẫu chỉ thêm vào cạnh.
+  function seedOnce(){
+    var obj = readStore() || MEM;
+    if(!obj) obj = { v:1, seq:1, items:[] };
+    if(!obj.seeded){
+      obj.items = obj.items.concat(SEED_APPTS);
+      obj.seeded = true;
+      var max = 0;
+      obj.items.forEach(function(it){ if(it.id > max) max = it.id; });
+      obj.seq = max + 1;
+      writeStore(obj);
+    }
+    return obj;
+  }
+  function listAppts(){ return (readStore() || MEM || seedOnce()).items.slice(); }
+  function nextId(){
+    var obj = readStore() || MEM || seedOnce();
+    var max = 0;
+    for(var i=0;i<obj.items.length;i++){ if(obj.items[i].id > max) max = obj.items[i].id; }
+    return max+1;
+  }
+  // Lịch chờ quá hạn giữ chỗ thì chuyển sang huỷ (mô phỏng tác vụ dọn định kỳ của máy chủ)
+  function sweepExpired(){
+    var obj = readStore() || MEM;
+    if(!obj) return;
+    var changed = false;
+    obj.items.forEach(function(it){
+      if(it.status === 'pending' && !isActive(it)){ it.status = 'cancelled'; it.cancelReason = 'expired'; changed = true; }
+    });
+    if(changed) writeStore(obj);
+  }
+  // Ai đang giữ khung giờ: 'me', 'other' hoặc null. Luôn đọc kho mới nhất.
+  function slotOwner(roomId, date, time, excludeId){
+    var obj = readStore() || MEM;
+    var mine = obj ? obj.items : [];
+    for(var i=0;i<mine.length;i++){
+      var m = mine[i];
+      if(m.id !== excludeId && m.roomId === roomId && m.date === date && m.time === time && isActive(m)) return 'me';
+    }
+    for(var j=0;j<OTHER_BOOKINGS.length;j++){
+      var o = OTHER_BOOKINGS[j];
+      if(o.roomId === roomId && o.date === date && o.time === time && isActive(o)) return 'other';
+    }
+    return null;
+  }
+  // Ghi có kiểm tra: kiểm tra khung giờ và ghi trong cùng một lượt, trên dữ liệu mới nhất.
+  // Quy tắc nằm ở hàm ghi chứ không chỉ ở giao diện, giống ràng buộc ở cơ sở dữ liệu.
+  function addAppt(rec){
+    sweepExpired();
+    var owner = slotOwner(rec.roomId, rec.date, rec.time, null);
+    if(owner) return { ok:false, owner:owner };
+    var obj = readStore() || MEM || seedOnce();
+    obj.items.push(rec);
+    obj.seq = rec.id+1;
+    writeStore(obj);
+    return { ok:true };
+  }
+  function moveAppt(id, roomId, patch){
+    sweepExpired();
+    var owner = slotOwner(roomId, patch.date, patch.time, id);
+    if(owner) return { ok:false, owner:owner };
+    patchAppt(id, patch);
+    return { ok:true };
+  }
+  function patchAppt(id, patch){
+    var obj = readStore() || MEM || seedOnce();
+    for(var i=0;i<obj.items.length;i++){
+      if(obj.items[i].id === id){
+        for(var k in patch){ if(Object.prototype.hasOwnProperty.call(patch,k)) obj.items[i][k] = patch[k]; }
+        break;
+      }
+    }
+    writeStore(obj);
+  }
+  function findAppt(id){
+    for(var i=0;i<S.appts.length;i++){ if(S.appts[i].id === id) return S.appts[i]; }
+    return null;
+  }
+
+  /* ================= Kho dữ liệu: máy chủ hoặc mô phỏng ================= */
+  // Mọi hàm trả về Promise, nên phần giao diện chỉ viết một lần cho cả hai chế độ.
+  function mustOk(j){ if(j.httpStatus !== 200) throw new Error(j.message || 'Lỗi máy chủ'); return j; }
+  function khoResult(j, okStatus){
+    if(j.httpStatus === okStatus) return { ok:true, item:j.item };
+    if(j.httpStatus === 409 && j.error === 'slot_taken') return { ok:false, owner:j.owner };
+    return { ok:false, error:j.message || 'Máy chủ từ chối yêu cầu.' };
+  }
+  function khoList(){
+    return API_READY.then(function(){
+      if(API.on) return apiCall('GET', '/api/lich-xem?nguoi=' + enc(MOCK_RENTER.id)).then(function(j){ return mustOk(j).items || []; });
+      sweepExpired();
+      return listAppts();
+    });
+  }
+  // Các lịch còn hiệu lực của một phòng trong một ngày: [{time, dur, owner}], không có danh tính
+  function khoTaken(roomId, date, excludeId){
+    return API_READY.then(function(){
+      if(API.on) return apiCall('GET', '/api/khung-gio?phong=' + enc(roomId) + '&ngay=' + enc(date) + '&nguoi=' + enc(MOCK_RENTER.id) + (excludeId ? '&boQua=' + enc(excludeId) : ''))
+        .then(function(j){ return mustOk(j).taken || []; });
+      sweepExpired();
+      var out = [];
+      listAppts().forEach(function(m){
+        if(m.id !== excludeId && m.roomId === roomId && m.date === date && isActive(m)) out.push({ time:m.time, dur:m.dur || 30, owner:'me' });
+      });
+      OTHER_BOOKINGS.forEach(function(o){
+        if(o.roomId === roomId && o.date === date && isActive(o)) out.push({ time:o.time, dur:30, owner:'other' });
+      });
+      return out;
+    });
+  }
+  function khoCreate(rec){
+    return API_READY.then(function(){
+      if(!API.on) return addAppt(rec);
+      return apiCall('POST', '/api/lich-xem', { nguoi:MOCK_RENTER.id, roomId:rec.roomId, date:rec.date, time:rec.time, phone:rec.phone, note:rec.note, source:rec.source })
+        .then(function(j){ return khoResult(j, 201); });
+    });
+  }
+  function khoReschedule(id, roomId, patch){
+    return API_READY.then(function(){
+      if(!API.on) return moveAppt(id, roomId, patch);
+      return apiCall('PATCH', '/api/lich-xem/' + id, { nguoi:MOCK_RENTER.id, action:'reschedule', date:patch.date, time:patch.time, phone:patch.phone, note:patch.note })
+        .then(function(j){ return khoResult(j, 200); });
+    });
+  }
+  function khoCancel(id){
+    return API_READY.then(function(){
+      if(!API.on){ patchAppt(id, { status:'cancelled', cancelReason:'renter' }); return { ok:true }; }
+      return apiCall('PATCH', '/api/lich-xem/' + id, { nguoi:MOCK_RENTER.id, action:'cancel' })
+        .then(function(j){ return khoResult(j, 200); });
+    });
+  }
+  // Hai buổi xem có chồng thời gian lên nhau không
+  function phut(t){ var a = t.split(':'); return Number(a[0])*60 + Number(a[1]); }
+  function chongLan(t1, d1, t2, d2){ return phut(t1) < phut(t2) + d2 && phut(t2) < phut(t1) + d1; }
+  function chuKhung(taken, time){
+    var owner = null;
+    taken.forEach(function(t){
+      if(chongLan(time, 30, t.time, t.dur || 30)) owner = (t.owner === 'me' || owner === 'me') ? 'me' : 'other';
+    });
+    return owner;
+  }
+
+  /* ================= State ================= */
+  var S = { tab:'upcoming', status:'all', q:'', editId:null, cancelId:null, appts:[], lastFocus:null };
+
+  function isUpcoming(a){ return a.status==='pending' || a.status==='confirmed'; }
+  function pastLabel(a){
+    if(a.status==='completed') return 'Đã xem xong · ' + fmtDateShort(a.date);
+    if(a.status==='cancelled') return a.cancelReason==='expired' ? 'Tự huỷ vì chủ trọ chưa xác nhận trong ' + HOLD_HOURS + ' giờ' : 'Đã huỷ lịch này';
+    return fmtDateShort(a.date);
+  }
+  function relativeUntil(dateStr,timeStr){
+    var today = todayStr();
+    if(dateStr === today) return 'Hôm nay lúc ' + timeStr;
+    if(dateStr === tomorrowStr()) return 'Ngày mai lúc ' + timeStr;
+    if(dateStr < today) return 'Đã tới giờ hẹn';
+    var days = Math.round((parseYmd(dateStr).getTime() - parseYmd(today).getTime()) / 86400000);
+    return 'Còn ' + days + ' ngày nữa';
+  }
+
+  /* ================= Render: thống kê ================= */
+  function computeStats(){
+    var upcoming=0, pending=0, confirmed=0, completed=0;
+    S.appts.forEach(function(a){
+      if(isUpcoming(a)) upcoming++;
+      if(a.status==='pending') pending++;
+      if(a.status==='confirmed') confirmed++;
+      if(a.status==='completed') completed++;
+    });
+    return { upcoming:upcoming, pending:pending, confirmed:confirmed, completed:completed };
+  }
+  function statHtml(key,tone,label,value,sub,svgPath){
+    return '<button type="button" class="stat'+(tone?' '+tone:'')+'" data-stat="'+key+'">'+
+      '<div class="stat-top"><span class="stat-label">'+label+'</span><span class="stat-icon">'+icon(svgPath)+'</span></div>'+
+      '<div class="stat-value">'+value+'</div><div class="stat-sub">'+sub+'</div>'+
+    '</button>';
+  }
+  var ICON_CAL = '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/>';
+  var ICON_CLOCK = '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>';
+  var ICON_CHECKCIRCLE = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/>';
+  var ICON_CHECK = '<path d="M20 6 9 17l-5-5"/>';
+  function renderStats(){
+    var s = computeStats();
+    document.getElementById('statGrid').innerHTML =
+      statHtml('all-upcoming','','Sắp tới', s.upcoming, 'Lịch chưa diễn ra', ICON_CAL) +
+      statHtml('pending','warn','Chờ xác nhận', s.pending, 'Đang chờ chủ trọ phản hồi', ICON_CLOCK) +
+      statHtml('confirmed','info','Đã xác nhận', s.confirmed, 'Chủ trọ đã đồng ý lịch', ICON_CHECKCIRCLE) +
+      statHtml('completed','neutral','Đã hoàn thành', s.completed, 'Các buổi đã xem xong', ICON_CHECK);
+    document.getElementById('cntUpcoming').textContent = s.upcoming;
+    document.getElementById('cntPast').textContent = S.appts.length - s.upcoming;
+    document.getElementById('navCount').textContent = s.upcoming;
+    markActiveStat();
+  }
+  function markActiveStat(){
+    var key = S.tab==='past' && S.status==='completed' ? 'completed' :
+      (S.tab==='upcoming' && (S.status==='pending'||S.status==='confirmed') ? S.status :
+      (S.tab==='upcoming' && S.status==='all' ? 'all-upcoming' : null));
+    document.querySelectorAll('#statGrid .stat').forEach(function(btn){
+      btn.classList.toggle('is-active-filter', !!key && btn.getAttribute('data-stat')===key);
+    });
+  }
+
+  /* ================= Render: danh sách ================= */
+  function currentAppts(){
+    var arr = S.appts.filter(function(a){ return isUpcoming(a) === (S.tab==='upcoming'); });
+    if(S.status !== 'all') arr = arr.filter(function(a){ return a.status === S.status; });
+    if(S.q){
+      var q = S.q.trim().toLowerCase();
+      arr = arr.filter(function(a){ return (a.room+' '+a.address).toLowerCase().indexOf(q) !== -1; });
+    }
+    arr.sort(function(x,y){
+      var tx = parseYmd(x.date).getTime(), ty = parseYmd(y.date).getTime();
+      if(tx===ty){ return S.tab==='upcoming' ? (x.time<y.time?-1:1) : (x.time<y.time?1:-1); }
+      return S.tab==='upcoming' ? tx-ty : ty-tx;
+    });
+    return arr;
+  }
+  function actionsHtml(a){
+    // Một số phòng trong dữ liệu mẫu không có số chủ trọ. Ẩn hẳn nút thay vì
+    // để lại một liên kết "tel:" rỗng bấm không ăn.
+    var call = a.landlordPhone
+      ? '<a class="btn btn-sm '+(a.status==='confirmed'?'btn-primary':'btn-ghost')+'" href="'+phoneHref(a.landlordPhone)+'">Liên hệ chủ trọ</a>'
+      : '';
+    var view = '<a class="btn btn-ghost btn-sm" href="tim-phong.html">Xem lại phòng</a>';
+    var reschedule = '<button type="button" class="btn btn-ghost btn-sm" data-reschedule="'+a.id+'">Đổi lịch</button>';
+    var cancel = '<button type="button" class="btn btn-danger-ghost btn-sm" data-cancel="'+a.id+'">Huỷ lịch</button>';
+    var rebook = '<button type="button" class="btn btn-primary btn-sm" data-rebook="'+a.id+'">Đặt lịch lại</button>';
+    if(a.status==='pending') return reschedule + cancel + call + view;
+    if(a.status==='confirmed') return call + reschedule + cancel + view;
+    if(a.status==='completed') return rebook + view + call;
+    return rebook + view;
+  }
+  function apptItemHtml(a){
+    var st = APT_STATUS[a.status];
+    var sub = isUpcoming(a) ? relativeUntil(a.date,a.time) : pastLabel(a);
+    var noteHtml = a.note ? '<p class="apt-note">Ghi chú: '+esc(a.note)+'</p>' : '';
+    if(a.status==='pending') noteHtml = '<p class="apt-hold">Giữ chỗ đến '+fmtHold(holdEnd(a))+'. Quá hạn mà chủ trọ chưa xác nhận thì lịch tự huỷ.</p>' + noteHtml;
+    return '<article class="apt-item" data-appt="'+a.id+'" data-status="'+a.status+'">'+
+      '<div class="apt-main">'+
+        '<img class="apt-thumb" src="'+esc(a.image||'')+'" alt="Ảnh '+esc(a.room)+'" loading="lazy" width="96" height="80" />'+
+        '<div class="apt-info">'+
+          '<div class="apt-row1"><span class="apt-time">'+esc(a.time)+'</span><span class="apt-status '+st.cls+'">'+st.label+'</span></div>'+
+          '<p class="apt-date-lbl">'+fmtDateVi(a.date)+'</p>'+
+          '<h3 class="apt-room">'+esc(a.room)+'</h3>'+
+          '<p class="apt-addr">'+icon(SVG_PIN)+esc(a.address)+'</p>'+
+          '<p class="apt-rel">'+esc(sub)+'</p>'+
+          noteHtml+
+        '</div>'+
+      '</div>'+
+      '<div class="apt-actions">'+actionsHtml(a)+'</div>'+
+    '</article>';
+  }
+  function emptyHtml(title, desc, actions){
+    var btns = actions.map(function(a){
+      if(a.href) return '<a class="btn '+a.cls+'" href="'+a.href+'">'+a.label+'</a>';
+      return '<button type="button" class="btn '+a.cls+'" data-action="'+a.action+'">'+a.label+'</button>';
+    }).join('');
+    return icon('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 15l2 2 4-4"/>')+
+      '<h3>'+title+'</h3><p>'+desc+'</p>'+
+      (btns ? '<div class="empty-actions">'+btns+'</div>' : '');
+  }
+  function fillEmptyState(el){
+    var hasAny = S.appts.length > 0;
+    var filtered = S.status !== 'all' || !!S.q;
+    if(!hasAny){
+      el.innerHTML = emptyHtml('Bạn chưa có lịch xem phòng nào','Tìm phòng phù hợp rồi đặt lịch xem — chủ trọ thường xác nhận trong vài giờ.',[
+        {href:'tim-phong.html', cls:'btn-ghost', label:'Tìm phòng ngay'},
+        {action:'open-create', cls:'btn-primary', label:'+ Đặt lịch xem'}
+      ]);
+    } else if(filtered){
+      el.innerHTML = emptyHtml('Không có lịch nào khớp bộ lọc','Thử bỏ bộ lọc trạng thái hoặc xoá từ khoá tìm kiếm.',[
+        {action:'reset-filters', cls:'btn-ghost', label:'Đặt lại bộ lọc'}
+      ]);
+    } else if(S.tab==='past'){
+      el.innerHTML = emptyHtml('Chưa có lịch nào đã qua','Các buổi đã xem hoặc đã huỷ sẽ xuất hiện ở đây.', []);
+    } else {
+      el.innerHTML = emptyHtml('Chưa có lịch sắp tới','Đặt lịch xem phòng mới để theo dõi tại đây.',[
+        {action:'open-create', cls:'btn-primary', label:'+ Đặt lịch xem'}
+      ]);
+    }
+  }
+  function renderList(){
+    var arr = currentAppts();
+    var listEl = document.getElementById('apptList');
+    var emptyEl = document.getElementById('apptEmpty');
+    if(arr.length===0){
+      listEl.innerHTML = '';
+      fillEmptyState(emptyEl);
+      emptyEl.hidden = false;
+    } else {
+      emptyEl.hidden = true;
+      listEl.innerHTML = arr.map(apptItemHtml).join('');
+    }
+  }
+  function renderAll(){
+    return khoList().then(function(items){
+      S.appts = items;
+      renderStats();
+      renderList();
+    }).catch(function(){ showToast('Mất kết nối','Không tải được lịch xem từ máy chủ. Hãy thử tải lại trang.'); });
+  }
+
+  /* ================= Toast ================= */
+  var toastTimer = null;
+  function showToast(title, text){
+    var t = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastText').textContent = text;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+  }
+
+  /* ================= Modal: mở / đóng / bẫy focus ================= */
+  function openModal(id){
+    S.lastFocus = document.activeElement;
+    var ov = document.getElementById(id);
+    document.body.classList.add('modal-open');
+    ov.classList.add('open');
+    var f = ov.querySelector('select,input,textarea,button');
+    setTimeout(function(){ if(f) f.focus(); }, 60);
+  }
+  function closeModal(id){
+    document.getElementById(id).classList.remove('open');
+    if(!document.querySelector('.modal-overlay.open')) document.body.classList.remove('modal-open');
+    if(S.lastFocus && S.lastFocus.focus) S.lastFocus.focus();
+  }
+  document.querySelectorAll('.modal-overlay').forEach(function(ov){
+    ov.addEventListener('mousedown', function(e){ if(e.target===ov) closeModal(ov.id); });
+  });
+  document.addEventListener('keydown', function(e){
+    var openOv = document.querySelector('.modal-overlay.open');
+    if(!openOv) return;
+    if(e.key === 'Escape'){ e.preventDefault(); closeModal(openOv.id); return; }
+    if(e.key !== 'Tab') return;
+    var nodes = Array.prototype.filter.call(
+      openOv.querySelectorAll('button, [href], input, select, textarea'),
+      function(n){ return !n.disabled && n.offsetParent !== null && n.tabIndex !== -1; }
+    );
+    if(!nodes.length) return;
+    var first = nodes[0], last = nodes[nodes.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  });
+
+  /* ================= Modal đặt / đổi lịch ================= */
+  function fillRoomSelect(){
+    document.getElementById('mRoom').innerHTML = ROOM_OPTIONS.map(function(r){
+      return '<option value="'+r.id+'">'+esc(r.title)+' — '+esc(r.district)+'</option>';
+    }).join('');
+  }
+  function updateRoomHint(){
+    var r = roomById(document.getElementById('mRoom').value);
+    document.getElementById('mRoomHint').textContent = r ? (r.address + ' · ' + vnd(r.price) + '/tháng') : '';
+  }
+  function clearFieldErrors(){
+    document.querySelectorAll('#apptForm .form-row.is-invalid').forEach(function(r){ r.classList.remove('is-invalid'); });
+  }
+  function markInvalid(id){
+    clearFieldErrors();
+    var el = document.getElementById(id);
+    var row = el.closest('.form-row');
+    if(row) row.classList.add('is-invalid');
+    el.focus();
+  }
+  function openCreateModal(){
+    S.editId = null;
+    document.getElementById('apptModalTitle').textContent = 'Đặt lịch xem phòng';
+    document.getElementById('apptSaveBtn').textContent = 'Gửi yêu cầu';
+    document.getElementById('apptForm').reset();
+    fillRoomSelect(); // dựng lại danh mục, bỏ lựa chọn tạm do đổi lịch chèn vào
+    document.getElementById('mRoom').disabled = false;
+    document.getElementById('mPhone').value = MOCK_RENTER.phone;
+    document.getElementById('mDate').min = todayStr();
+    document.getElementById('mDate').value = tomorrowStr();
+    updateRoomHint();
+    refreshTimeSlots();
+    clearFieldErrors();
+    openModal('apptOverlay');
+  }
+  function openRescheduleModal(id){
+    var a = findAppt(id); if(!a) return;
+    S.editId = id;
+    document.getElementById('apptModalTitle').textContent = 'Đổi lịch xem phòng';
+    document.getElementById('apptSaveBtn').textContent = 'Lưu thay đổi';
+    var sel = document.getElementById('mRoom');
+    sel.value = a.roomId;
+    // Bản ghi có thể trỏ tới phòng không còn trong danh mục. Khi đó chèn tạm một
+    // lựa chọn dựng từ chính bản ghi, để ô không rỗng và vẫn lưu được thay đổi.
+    if(sel.value !== a.roomId){
+      var opt = document.createElement('option');
+      opt.value = a.roomId;
+      opt.textContent = a.room || a.roomId;
+      sel.appendChild(opt);
+      sel.value = a.roomId;
+    }
+    sel.disabled = true;
+    document.getElementById('mPhone').value = a.phone;
+    document.getElementById('mDate').min = todayStr();
+    document.getElementById('mDate').value = a.date;
+    document.getElementById('mTime').value = a.time;
+    document.getElementById('mNote').value = a.note || '';
+    updateRoomHint();
+    refreshTimeSlots();
+    clearFieldErrors();
+    openModal('apptOverlay');
+  }
+  function doRebook(id){
+    var a = findAppt(id); if(!a) return;
+    openCreateModal();
+    document.getElementById('mRoom').value = a.roomId;
+    document.getElementById('mPhone').value = a.phone;
+    updateRoomHint();
+    refreshTimeSlots();
+  }
+  // Làm mờ khung giờ đã có người giữ; tự chuyển sang giờ trống đầu tiên nếu giờ đang chọn bị chiếm
+  var slotReq = 0;
+  function refreshTimeSlots(){
+    var roomId = document.getElementById('mRoom').value;
+    var date = document.getElementById('mDate').value;
+    var my = ++slotReq;
+    if(!roomId || !date){ applyTimeSlots([], roomId, date); return Promise.resolve(); }
+    return khoTaken(roomId, date, S.editId).then(function(taken){
+      if(my === slotReq) applyTimeSlots(taken, roomId, date);
+    }).catch(function(){
+      if(my !== slotReq) return;
+      var hint = document.getElementById('mSlotHint');
+      hint.textContent = 'Chưa tải được khung giờ trống. Bạn vẫn gửi được, hệ thống sẽ kiểm tra lại.';
+      hint.classList.remove('is-full');
+    });
+  }
+  function applyTimeSlots(taken, roomId, date){
+    var sel = document.getElementById('mTime');
+    var hint = document.getElementById('mSlotHint');
+    var free = 0;
+    Array.prototype.forEach.call(sel.options, function(opt){
+      var owner = (roomId && date) ? chuKhung(taken, opt.value) : null;
+      opt.disabled = !!owner;
+      opt.textContent = opt.value + (owner === 'me' ? ' · Bạn đã đặt' : owner === 'other' ? ' · Đã có người đặt' : '');
+      if(!owner) free++;
+    });
+    if(sel.selectedOptions.length && sel.selectedOptions[0].disabled){
+      var firstFree = Array.prototype.filter.call(sel.options, function(o){ return !o.disabled; })[0];
+      if(firstFree) sel.value = firstFree.value;
+    }
+    var full = !!(roomId && date) && free === 0;
+    hint.textContent = full ? 'Ngày này đã kín lịch, hãy chọn ngày khác.'
+      : 'Khung giờ bị mờ là đã có người đặt. Lịch chờ xác nhận được giữ chỗ ' + HOLD_HOURS + ' giờ.';
+    hint.classList.toggle('is-full', full);
+  }
+  document.getElementById('mRoom').addEventListener('change', function(){ updateRoomHint(); refreshTimeSlots(); });
+  document.getElementById('mDate').addEventListener('change', refreshTimeSlots);
+  document.getElementById('mDate').addEventListener('input', refreshTimeSlots);
+  document.getElementById('openCreateBtn').addEventListener('click', openCreateModal);
+  document.getElementById('apptModalClose').addEventListener('click', function(){ closeModal('apptOverlay'); });
+  document.getElementById('apptCancelBtn').addEventListener('click', function(){ closeModal('apptOverlay'); });
+
+  document.getElementById('apptForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var roomId = document.getElementById('mRoom').value;
+    var phoneRaw = document.getElementById('mPhone').value.trim();
+    var date = document.getElementById('mDate').value;
+    var time = document.getElementById('mTime').value;
+    var note = document.getElementById('mNote').value.trim();
+
+    // Trình duyệt tự xoá giá trị khi gõ tay một ngày sai định dạng, và đánh dấu
+    // rangeUnderflow khi ngày nằm trước "min". Bắt hai trường hợp đó trước để báo
+    // đúng việc, thay vì rơi vào nhánh "Thiếu thông tin".
+    var dateEl = document.getElementById('mDate');
+    if(dateEl.validity && (dateEl.validity.rangeUnderflow || dateEl.validity.badInput)){
+      showToast('Ngày không hợp lệ','Chỉ có thể đặt lịch từ hôm nay trở đi.');
+      markInvalid('mDate'); return;
+    }
+    if(!roomId || !date || !time){
+      showToast('Thiếu thông tin','Vui lòng chọn phòng, ngày và giờ xem.');
+      markInvalid(!roomId ? 'mRoom' : (!date ? 'mDate' : 'mTime'));
+      return;
+    }
+    var digits = phoneRaw.replace(/[\s.-]/g,'');
+    if(!RE_PHONE.test(digits)){
+      showToast('Số điện thoại chưa hợp lệ','Nhập số di động Việt Nam, ví dụ 0912 345 678.');
+      markInvalid('mPhone'); return;
+    }
+    if(date < todayStr()){
+      showToast('Ngày không hợp lệ','Chỉ có thể đặt lịch từ hôm nay trở đi.');
+      markInvalid('mDate'); return;
+    }
+    function slotTaken(owner){
+      if(owner === 'me') showToast('Lịch đã tồn tại','Bạn đã có lịch xem phòng này vào đúng ngày giờ đó.');
+      else showToast('Khung giờ đã có người đặt','Người khác vừa giữ khung giờ này. Hãy chọn giờ khác.');
+      refreshTimeSlots();
+      markInvalid('mTime');
+    }
+
+    var room = roomById(roomId) || {};
+    var saveBtn = document.getElementById('apptSaveBtn');
+    var saveLabel = saveBtn.textContent;
+    function done(res, onOk){
+      saveBtn.disabled = false;
+      saveBtn.textContent = saveLabel;
+      if(!res.ok){
+        if(res.owner) slotTaken(res.owner);
+        else showToast('Chưa lưu được', res.error);
+        return;
+      }
+      renderAll().then(function(){ onOk(); closeModal('apptOverlay'); });
+    }
+    function lost(){
+      saveBtn.disabled = false;
+      saveBtn.textContent = saveLabel;
+      showToast('Mất kết nối','Không gửi được tới máy chủ. Hãy thử lại.');
+    }
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Đang gửi…';
+    if(S.editId){
+      var editId = S.editId;
+      var roomName = (findAppt(editId) || {}).room || room.title || '';
+      khoReschedule(editId, roomId, { date:date, time:time, phone:digits, note:note, status:'pending',
+        holdUntil:new Date(SIM_NOW.getTime() + HOLD_HOURS*3600000).toISOString(), cancelReason:null })
+        .then(function(res){
+          done(res, function(){
+            showToast('Đã đổi lịch', 'Lịch xem ' + roomName + ' chuyển sang ' + fmtDateShort(date) + ' lúc ' + time + ', chờ chủ trọ xác nhận lại.');
+          });
+        }, lost);
+    } else {
+      var rec = {
+        id:(API.on ? 0 : nextId()), roomId:roomId, room:room.title||'', address:room.address||'', price:room.price||0,
+        image:room.image||'', landlordPhone:room.phone||'', tenant:MOCK_RENTER.name, phone:digits,
+        date:date, time:time, dur:30, status:'pending', urgent:false, note:note, createdAt:isoNow(),
+        holdUntil:new Date(SIM_NOW.getTime() + HOLD_HOURS*3600000).toISOString(), source:'dat-lich'
+      };
+      khoCreate(rec).then(function(res){
+        done(res, function(){
+          showToast('Đã gửi yêu cầu', 'Lịch xem ' + rec.room + ' ngày ' + fmtDateShort(date) + ' lúc ' + time + ' đã gửi tới chủ trọ, chờ xác nhận.');
+        });
+      }, lost);
+    }
+  });
+
+  /* ================= Modal huỷ lịch ================= */
+  function openCancelModal(id){
+    var a = findAppt(id); if(!a) return;
+    S.cancelId = id;
+    document.getElementById('cancelText').textContent = 'Lịch xem ' + a.room + ' ngày ' + fmtDateShort(a.date) + ' lúc ' + a.time + ' sẽ được huỷ. Chủ trọ sẽ được thông báo, bạn vẫn có thể đặt lại sau.';
+    openModal('cancelOverlay');
+  }
+  document.getElementById('cancelModalClose').addEventListener('click', function(){ closeModal('cancelOverlay'); });
+  document.getElementById('cancelKeepBtn').addEventListener('click', function(){ closeModal('cancelOverlay'); });
+  document.getElementById('cancelConfirmBtn').addEventListener('click', function(){
+    var id = S.cancelId;
+    var a = findAppt(id);
+    var btn = this;
+    btn.disabled = true;
+    khoCancel(id).then(function(res){
+      btn.disabled = false;
+      if(!res.ok){ showToast('Chưa huỷ được', res.error || 'Hãy thử lại.'); return; }
+      renderAll().then(function(){
+        showToast('Đã huỷ lịch', 'Lịch xem ' + (a?a.room:'') + ' đã được huỷ. Khung giờ được nhả cho người khác.');
+        closeModal('cancelOverlay');
+      });
+    }, function(){
+      btn.disabled = false;
+      showToast('Mất kết nối','Không gửi được tới máy chủ. Hãy thử lại.');
+    });
+  });
+
+  /* ================= Tabs / chip lọc / tìm kiếm ================= */
+  function setTab(tab){
+    S.tab = tab;
+    var up = document.getElementById('tabUpcoming'), pa = document.getElementById('tabPast');
+    up.classList.toggle('active', tab==='upcoming'); up.setAttribute('aria-selected', tab==='upcoming');
+    pa.classList.toggle('active', tab==='past'); pa.setAttribute('aria-selected', tab==='past');
+  }
+  function setStatus(v){
+    S.status = v;
+    document.querySelectorAll('#statusChips .chip').forEach(function(c){
+      var on = c.getAttribute('data-status')===v;
+      c.classList.toggle('active', on);
+      c.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  document.getElementById('tabUpcoming').addEventListener('click', function(){ setTab('upcoming'); renderList(); markActiveStat(); });
+  document.getElementById('tabPast').addEventListener('click', function(){ setTab('past'); renderList(); markActiveStat(); });
+  document.getElementById('statusChips').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-status]'); if(!btn) return;
+    setStatus(btn.getAttribute('data-status'));
+    renderList(); markActiveStat();
+  });
+  document.getElementById('apptSearch').addEventListener('input', function(){ S.q = this.value; renderList(); });
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    S.q=''; document.getElementById('apptSearch').value='';
+    setStatus('all'); renderList(); markActiveStat();
+  });
+  document.getElementById('statGrid').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-stat]'); if(!btn) return;
+    var key = btn.getAttribute('data-stat');
+    if(key==='completed'){ setTab('past'); setStatus('completed'); }
+    else if(key==='all-upcoming'){ setTab('upcoming'); setStatus('all'); }
+    else { setTab('upcoming'); setStatus(key); }
+    document.getElementById('apptSearch').value=''; S.q='';
+    renderList(); markActiveStat();
+  });
+
+  /* ================= Danh sách: hành động uỷ quyền ================= */
+  document.getElementById('apptList').addEventListener('click', function(e){
+    var resch = e.target.closest('[data-reschedule]');
+    if(resch){ openRescheduleModal(Number(resch.getAttribute('data-reschedule'))); return; }
+    var canc = e.target.closest('[data-cancel]');
+    if(canc){ openCancelModal(Number(canc.getAttribute('data-cancel'))); return; }
+    var reb = e.target.closest('[data-rebook]');
+    if(reb){ doRebook(Number(reb.getAttribute('data-rebook'))); return; }
+  });
+  document.querySelector('.card-body').addEventListener('click', function(e){
+    var openCreate = e.target.closest('[data-action="open-create"]');
+    if(openCreate){ openCreateModal(); return; }
+    var doReset = e.target.closest('[data-action="reset-filters"]');
+    if(doReset){ document.getElementById('resetBtn').click(); return; }
+  });
+
+  /* ================= Sidebar di động ================= */
+  var menuBtn = document.getElementById('menuBtn');
+  var sideBackdrop = document.getElementById('sideBackdrop');
+  function closeNav(){ document.body.classList.remove('nav-open'); menuBtn.setAttribute('aria-expanded','false'); }
+  function openNav(){ document.body.classList.add('nav-open'); menuBtn.setAttribute('aria-expanded','true'); }
+  menuBtn.addEventListener('click', function(){
+    if(document.body.classList.contains('nav-open')) closeNav(); else openNav();
+  });
+  sideBackdrop.addEventListener('click', closeNav);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('nav-open')) closeNav(); });
+
+  document.getElementById('notiBtn').addEventListener('click', function(){
+    showToast('Thông báo','Bạn chưa có thông báo mới.');
+  });
+
+  /* ================= Reveal khi cuộn ================= */
+  function initReveal(){
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('[data-stagger]').forEach(function(group){
+      Array.prototype.forEach.call(group.children, function(el,i){
+        el.classList.add('reveal');
+        el.style.setProperty('--d',(i*0.05)+'s');
+      });
+    });
+    var reveals = document.querySelectorAll('.reveal');
+    if(reduce){
+      reveals.forEach(function(el){ el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    reveals.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ================= Khởi động ================= */
+  function boot(){
+    var rawExists = false;
+    try{ rawExists = !!window.localStorage.getItem(STORE_KEY); }catch(e){}
+    var wasCorrupt = rawExists && !readStore();
+    var nm = document.querySelector('.acc-btn .nm'), av = document.querySelector('.acc-btn .av');
+    if(nm) nm.textContent = MOCK_RENTER.name;
+    if(av){ var w = MOCK_RENTER.name.split(' '); av.textContent = (w[0].charAt(0) + w[w.length-1].charAt(0)).toUpperCase(); }
+    API_READY.then(function(on){
+      if(!on) seedOnce();
+      else wasCorrupt = false;
+      fillRoomSelect();
+      return renderAll();
+    }).then(function(){
+      setTimeout(function(){
+        document.body.classList.remove('is-loading');
+        initReveal();
+        if(wasCorrupt) showToast('Dữ liệu lịch bị lỗi','Đã khôi phục danh sách lịch xem mẫu.');
+      }, 500);
+    });
+  }
+  boot();
+
+  // Chế độ mô phỏng: tab khác ghi thì cập nhật. Chế độ máy chủ: quay lại tab thì tải lại.
+  window.addEventListener('storage', function(e){
+    if(!API.on && e.key === STORE_KEY) renderAll();
+  });
+  window.addEventListener('focus', function(){ if(API.on) renderAll(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+[
+  {
+    "name": "đúng 1 yêu cầu thành công",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "29 yêu cầu còn lại bị từ chối 409",
+    "got": 29,
+    "want": 29,
+    "ok": true
+  },
+  {
+    "name": "chỉ mục duy nhất chặn cả lệnh ghi thẳng",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "lịch đã huỷ vẫn ghi được, không chiếm chỗ",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "Trang đặt r14 24/09 13:30",
+    "got": "Đã gửi yêu cầu",
+    "want": "Đã gửi yêu cầu",
+    "ok": true
+  },
+  {
+    "name": "An thấy 13:30 đã bị khoá",
+    "got": "khoá: 13:30 · Đã có người đặt",
+    "want": "khoá: 13:30 · Đã có người đặt",
+    "ok": true
+  },
+  {
+    "name": "An sửa giao diện để ép đặt vẫn bị máy chủ từ chối",
+    "got": "Khung giờ đã có người đặt",
+    "want": "Khung giờ đã có người đặt",
+    "ok": true
+  },
+  {
+    "name": "trước khi bấm, An vẫn thấy 17:30 trống",
+    "got": "trống: 17:30",
+    "want": "trống: 17:30",
+    "ok": true
+  },
+  {
+    "name": "chỉ đúng một người thắng",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "cơ sở dữ liệu chỉ có một lịch cho r15 25/09 17:30",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "trình duyệt nhớ người dùng: An",
+    "got": "Nguyễn Văn An",
+    "want": "Nguyễn Văn An",
+    "ok": true
+  },
+  {
+    "name": "An không thấy lịch của Trang",
+    "got": false,
+    "want": false,
+    "ok": true
+  },
+  {
+    "name": "Trang thấy lịch r14 đang chờ xác nhận",
+    "got": "Chờ xác nhận",
+    "want": "Chờ xác nhận",
+    "ok": true
+  },
+  {
+    "name": "chủ trọ thấy lịch Trang vừa đặt",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "chủ trọ xác nhận được",
+    "got": "Đã xác nhận lịch",
+    "want": "Đã xác nhận lịch",
+    "ok": true
+  },
+  {
+    "name": "Trang thấy lịch đã được xác nhận",
+    "got": "Đã xác nhận",
+    "want": "Đã xác nhận",
+    "ok": true
+  },
+  {
+    "name": "chủ trọ đặt chồng lên lịch 16:00 bị chặn",
+    "got": "Khung giờ đã có lịch",
+    "want": "Khung giờ đã có lịch",
+    "ok": true
+  },
+  {
+    "name": "modal vẫn mở để chọn lại",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "Trang giữ chỗ r13 và r16",
+    "got": [
+      201,
+      201
+    ],
+    "want": [
+      201,
+      201
+    ],
+    "ok": true
+  },
+  {
+    "name": "An chưa đặt được r13 lúc này",
+    "got": 409,
+    "want": 409,
+    "ok": true
+  },
+  {
+    "name": "lịch chưa được xác nhận tự huỷ vì quá hạn",
+    "got": "cancelled/expired",
+    "want": "cancelled/expired",
+    "ok": true
+  },
+  {
+    "name": "lịch đã được xác nhận thì không hết hạn",
+    "got": "confirmed",
+    "want": "confirmed",
+    "ok": true
+  },
+  {
+    "name": "khung giờ được nhả, An đặt được",
+    "got": 201,
+    "want": 201,
+    "ok": true
+  },
+  {
+    "name": "chủ trọ không xác nhận được lịch đã quá hạn",
+    "got": 409,
+    "want": 409,
+    "ok": true
+  },
+  {
+    "name": "không có lỗi JavaScript trên các trang",
+    "got": 0,
+    "want": 0,
+    "ok": true
+  }
+]
