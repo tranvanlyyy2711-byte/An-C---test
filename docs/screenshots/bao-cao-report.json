@@ -1,0 +1,392 @@
+[
+  {
+    "viewport": "desktop",
+    "checks": [
+      {
+        "name": "9 link sidebar",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mục active là Báo cáo",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "4 thẻ thống kê tháng 09: doanh thu/chi phí/dòng tiền/lấp đầy",
+        "got": [
+          "69,8 triệu",
+          "18,2 triệu",
+          "51,6 triệu",
+          "87,5%"
+        ],
+        "want": [
+          "69,8 triệu",
+          "18,2 triệu",
+          "51,6 triệu",
+          "87,5%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "cơ cấu thu 78/16/6%",
+        "got": [
+          "78%",
+          "16%",
+          "6%"
+        ],
+        "want": [
+          "78%",
+          "16%",
+          "6%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tổng công nợ tháng 09 = 12,6 triệu",
+        "got": "12,6 triệu",
+        "want": "12,6 triệu",
+        "ok": true
+      },
+      {
+        "name": "4 phòng đang nợ",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "đổi sang tháng 07: doanh thu 64,5 triệu, lấp đầy 87,5%",
+        "got": [
+          "64,5 triệu",
+          "87,5%"
+        ],
+        "want": [
+          "64,5 triệu",
+          "87,5%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tháng 07 có 1 khoản nợ",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "nút nhắc nhở đổi trạng thái",
+        "got": "Đã nhắc",
+        "want": "Đã nhắc",
+        "ok": true
+      },
+      {
+        "name": "tên tệp CSV xuất ra",
+        "got": "bao-cao-2026-09.csv",
+        "want": "bao-cao-2026-09.csv",
+        "ok": true
+      },
+      {
+        "name": "mở popover thông báo",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở popover tài khoản",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đổi khu trọ",
+        "got": "Nhà trọ Thanh Xuân 2",
+        "want": "Nhà trọ Thanh Xuân 2",
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": [],
+        "want": [],
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS/console",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "tablet",
+    "checks": [
+      {
+        "name": "9 link sidebar",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mục active là Báo cáo",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "4 thẻ thống kê tháng 09: doanh thu/chi phí/dòng tiền/lấp đầy",
+        "got": [
+          "69,8 triệu",
+          "18,2 triệu",
+          "51,6 triệu",
+          "87,5%"
+        ],
+        "want": [
+          "69,8 triệu",
+          "18,2 triệu",
+          "51,6 triệu",
+          "87,5%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "cơ cấu thu 78/16/6%",
+        "got": [
+          "78%",
+          "16%",
+          "6%"
+        ],
+        "want": [
+          "78%",
+          "16%",
+          "6%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tổng công nợ tháng 09 = 12,6 triệu",
+        "got": "12,6 triệu",
+        "want": "12,6 triệu",
+        "ok": true
+      },
+      {
+        "name": "4 phòng đang nợ",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "đổi sang tháng 07: doanh thu 64,5 triệu, lấp đầy 87,5%",
+        "got": [
+          "64,5 triệu",
+          "87,5%"
+        ],
+        "want": [
+          "64,5 triệu",
+          "87,5%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tháng 07 có 1 khoản nợ",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "nút nhắc nhở đổi trạng thái",
+        "got": "Đã nhắc",
+        "want": "Đã nhắc",
+        "ok": true
+      },
+      {
+        "name": "tên tệp CSV xuất ra",
+        "got": "bao-cao-2026-09.csv",
+        "want": "bao-cao-2026-09.csv",
+        "ok": true
+      },
+      {
+        "name": "mở popover thông báo",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở popover tài khoản",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đổi khu trọ",
+        "got": "Nhà trọ Thanh Xuân 2",
+        "want": "Nhà trọ Thanh Xuân 2",
+        "ok": true
+      },
+      {
+        "name": "sidebar mở trên di động",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": [],
+        "want": [],
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS/console",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "checks": [
+      {
+        "name": "9 link sidebar",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mục active là Báo cáo",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "4 thẻ thống kê tháng 09: doanh thu/chi phí/dòng tiền/lấp đầy",
+        "got": [
+          "69,8 triệu",
+          "18,2 triệu",
+          "51,6 triệu",
+          "87,5%"
+        ],
+        "want": [
+          "69,8 triệu",
+          "18,2 triệu",
+          "51,6 triệu",
+          "87,5%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "cơ cấu thu 78/16/6%",
+        "got": [
+          "78%",
+          "16%",
+          "6%"
+        ],
+        "want": [
+          "78%",
+          "16%",
+          "6%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tổng công nợ tháng 09 = 12,6 triệu",
+        "got": "12,6 triệu",
+        "want": "12,6 triệu",
+        "ok": true
+      },
+      {
+        "name": "4 phòng đang nợ",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "đổi sang tháng 07: doanh thu 64,5 triệu, lấp đầy 87,5%",
+        "got": [
+          "64,5 triệu",
+          "87,5%"
+        ],
+        "want": [
+          "64,5 triệu",
+          "87,5%"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tháng 07 có 1 khoản nợ",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "nút nhắc nhở đổi trạng thái",
+        "got": "Đã nhắc",
+        "want": "Đã nhắc",
+        "ok": true
+      },
+      {
+        "name": "tên tệp CSV xuất ra",
+        "got": "bao-cao-2026-09.csv",
+        "want": "bao-cao-2026-09.csv",
+        "ok": true
+      },
+      {
+        "name": "mở popover thông báo",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở popover tài khoản",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đổi khu trọ",
+        "got": "Nhà trọ Thanh Xuân 2",
+        "want": "Nhà trọ Thanh Xuân 2",
+        "ok": true
+      },
+      {
+        "name": "sidebar mở trên di động",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": [],
+        "want": [],
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS/console",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+]
