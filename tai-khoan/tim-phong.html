@@ -10,14 +10,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#17161b;
-    --surface:#131318;
-    --surface-2:#1B1B22;
-    --border:rgba(255,255,255,.09);
-    --border-strong:rgba(255,255,255,.16);
-    --text:#F4F4F6;
-    --text-muted:#9A9AA7;
-    --text-dim:#6E6E7A;
+    --bg:#F5F7F5;
+    --surface:#FFFFFF;
+    --surface-2:#F2F7F2;
+    --border:rgba(34,139,34,.1);
+    --border-strong:rgba(34,139,34,.18);
+    --text:#1A1D1A;
+    --text-muted:#495649;
+    --text-dim:#667565;
     --accent:#228B22;
     --accent-hover:#1D7C1D;
     --accent-fg:#FFFFFF;
@@ -36,7 +36,7 @@
   }
 
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{color-scheme:dark;-webkit-text-size-adjust:100%}
+  html{color-scheme:light;-webkit-text-size-adjust:100%}
   body{
     background:var(--bg);
     color:var(--text);
@@ -111,8 +111,9 @@
   .side-nav{
     position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;
     display:flex;flex-direction:column;gap:4px;
-    padding:22px 16px;border-right:1px solid var(--border);background:var(--surface);
+    padding:22px 16px;border-right:1px solid var(--border);background:rgba(255,255,255,.96);
     overflow-y:auto;
+    box-shadow:inset -1px 0 0 rgba(34,139,34,.05);
   }
   .side-logo{padding:8px 10px 22px}
   .side-menu{display:flex;flex-direction:column;gap:4px}
@@ -241,6 +242,17 @@
   .room-row .rb .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
   .room-row .rb .distance{margin-top:auto;padding-top:6px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:4px}
   .room-row .rb .distance svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+  .save-room-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    border:1px solid var(--border-strong);background:rgba(34,139,34,.06);color:var(--text);
+    border-radius:999px;padding:8px 12px;min-height:38px;cursor:pointer;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;white-space:nowrap;
+    transition:all .18s var(--ease);
+  }
+  .save-room-btn:hover{border-color:var(--accent);background:rgba(34,139,34,.12)}
+  .save-room-btn.saved{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(34,139,34,.24)}
+  .save-room-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .save-room-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
   .empty{
     display:none;text-align:center;padding:48px 20px;
@@ -255,27 +267,31 @@
   .map-col{position:sticky;top:24px;height:calc(100vh - 130px);min-height:420px}
   .map-box{
     position:relative;width:100%;height:100%;border-radius:var(--radius-lg);overflow:hidden;
-    border:1px solid var(--border);
+    border:1px solid rgba(15,23,42,.08);
     background:
-      linear-gradient(180deg, rgba(125, 146, 171, 0.18), rgba(16,16,20,0.2)),
-      linear-gradient(135deg, #eaf0f6 0%, #dfe8f2 20%, #dfe5ef 45%, #d1d9e1 100%);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.16);
+      linear-gradient(180deg, rgba(240,245,240,.75), rgba(255,255,255,.7)),
+      linear-gradient(135deg, #edf4ee 0%, #eef5ef 20%, #e6efe6 45%, #dfeae0 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
+  }
+  .map-box iframe{
+    position:absolute;inset:0;width:100%;height:100%;border:0;display:block;z-index:0;
+    background:#e9efe8;
   }
   .map-box::before{
-    content:"";position:absolute;inset:0;pointer-events:none;
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
     background:
-      linear-gradient(rgba(255,255,255,.28) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px),
-      linear-gradient(90deg, transparent 0%, rgba(22,26,34,.04) 40%, rgba(22,26,34,.08) 100%);
+      linear-gradient(rgba(255,255,255,.32) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.28) 1px, transparent 1px),
+      linear-gradient(90deg, transparent 0%, rgba(22,26,34,.025) 40%, rgba(22,26,34,.06) 100%);
     background-size:36px 36px, 36px 36px, 100% 100%;
-    opacity:.7;
+    opacity:.9;
   }
   .map-box::after{
     content:"";position:absolute;inset:0;pointer-events:none;
     background:
-      radial-gradient(circle at 18% 26%, rgba(74, 85, 99, .08) 0, transparent 16%),
-      radial-gradient(circle at 64% 36%, rgba(78, 92, 107, .08) 0, transparent 18%),
-      radial-gradient(circle at 72% 62%, rgba(74, 85, 99, .08) 0, transparent 16%);
+      radial-gradient(circle at 18% 26%, rgba(34,139,34,.08) 0, transparent 16%),
+      radial-gradient(circle at 64% 36%, rgba(34,139,34,.06) 0, transparent 18%),
+      radial-gradient(circle at 72% 62%, rgba(34,139,34,.05) 0, transparent 16%);
   }
   .map-box-inner{
     position:absolute;left:50%;top:26px;transform:translateX(-50%);z-index:1;
@@ -293,18 +309,23 @@
     position:absolute;left:16px;top:16px;z-index:3;display:flex;align-items:center;gap:8px;
   }
   .map-chip{
-    display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.76);
-    border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 18px rgba(15,23,42,.12);color:#1f2430;font-size:12px;font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.88);
+    border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 18px rgba(15,23,42,.08);color:#1f2430;font-size:12px;font-weight:600;
     backdrop-filter:blur(10px);
   }
-  .map-chip.active{background:#121826;color:#fff;border-color:rgba(255,255,255,.08);box-shadow:0 8px 18px rgba(17,24,39,.15)}
+  .map-chip.active{background:#228B22;color:#fff;border-color:rgba(34,139,34,.16);box-shadow:0 8px 18px rgba(34,139,34,.24)}
   .map-zoom{
     position:absolute;right:14px;top:16px;z-index:3;display:flex;flex-direction:column;border-radius:16px;border:1px solid rgba(15,23,42,.08);
-    overflow:hidden;box-shadow:0 8px 18px rgba(15,23,42,.14);background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+    overflow:hidden;box-shadow:0 8px 18px rgba(15,23,42,.14);background:rgba(255,255,255,.72);backdrop-filter:blur(8px);
   }
   .map-zoom button{
     width:40px;height:40px;border:0;background:transparent;color:#1f2430;font-size:24px;cursor:pointer;display:grid;place-items:center;
     border-bottom:1px solid rgba(15,23,42,.06);
+  }
+  .map-open-link{
+    position:absolute;right:14px;bottom:14px;z-index:3;padding:10px 12px;border-radius:999px;
+    background:rgba(255,255,255,.82);border:1px solid rgba(15,23,42,.08);color:#1f2430;text-decoration:none;
+    font-size:12px;font-weight:700;box-shadow:0 8px 18px rgba(15,23,42,.12);
   }
   .map-zoom button:last-child{border-bottom:0}
   .map-zoom button:hover{background:rgba(17,24,39,.04)}
@@ -325,7 +346,7 @@
   }
   .map-pin .dot{
     width:18px;height:18px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
-    background:rgba(255,255,255,.96);border:3px solid #0f172a;box-shadow:0 10px 18px rgba(15,23,42,.2);
+    background:rgba(255,255,255,.97);border:3px solid #228B22;box-shadow:0 10px 18px rgba(34,139,34,.22);
     transition:transform .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease),border-color .18s var(--ease);
   }
   .map-pin .tag{
@@ -500,7 +521,7 @@
         <svg viewBox="0 0 24 24"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>
         Khám phá bản đồ
       </a>
-      <a href="#" class="side-link" data-route="/tai-khoan/da-luu">
+      <a href="da-luu.html" class="side-link" data-route="/tai-khoan/da-luu">
         <svg viewBox="0 0 24 24"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>
         Phòng đã lưu
       </a>
@@ -652,6 +673,7 @@
 
         <div class="map-col" id="mapCol">
           <div class="map-box" data-map-placeholder id="mapBox">
+            <iframe id="googleMapFrame" title="Bản đồ phòng trọ" src="https://www.google.com/maps?q=H%C3%A0%20N%E1%BB%99i%2C%20Vi%E1%BB%87t%20Nam&z=12&output=embed" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
             <div class="map-toolbar">
               <div class="map-chip active">Khám phá bản đồ</div>
               <div class="map-chip">Gần tôi</div>
@@ -661,13 +683,7 @@
               <button type="button" aria-label="Thu nhỏ">−</button>
             </div>
             <div class="map-legend"><span class="dot"></span>Phòng đang hiển thị</div>
-            <div class="map-box-inner">
-              <span class="ico">
-                <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              </span>
-              <h3>Bản đồ phòng trọ</h3>
-              <p>Các ghim dưới đây đại diện cho toàn bộ phòng trọ đã xuất hiện trên website, nằm theo vị trí địa lý ước lượng trên khu vực Hà Nội.</p>
-            </div>
+            <a class="map-open-link" href="https://www.google.com/maps" target="_blank" rel="noreferrer">Mở trên Google Maps</a>
             <div class="map-pins" id="mapPins"></div>
           </div>
         </div>
@@ -743,6 +759,7 @@
         </div>
 
         <div class="rd-actions">
+          <button type="button" class="btn btn-ghost" id="rdSaveBtn">Lưu phòng</button>
           <a class="btn btn-primary" id="rdCallBtn" href="tel:">Gọi cho chủ trọ</a>
         </div>
       </div>
@@ -751,6 +768,46 @@
 </div>
 
 <script>
+  var SAVED_KEY = 'an_cu_saved_rooms';
+  function getSavedRooms(){
+    try {
+      return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveRooms(ids){
+    localStorage.setItem(SAVED_KEY, JSON.stringify(ids));
+  }
+  function isRoomSaved(id){
+    return getSavedRooms().indexOf(id) !== -1;
+  }
+  function toggleRoomSave(id){
+    var saved = getSavedRooms();
+    var idx = saved.indexOf(id);
+    if (idx === -1) {
+      saved.unshift(id);
+    } else {
+      saved.splice(idx, 1);
+    }
+    saveRooms(saved);
+    updateSaveButtons();
+    var rdSaveBtn = document.getElementById('rdSaveBtn');
+    if (rdSaveBtn) {
+      rdSaveBtn.textContent = isRoomSaved(id) ? 'Đã lưu phòng' : 'Lưu phòng';
+      rdSaveBtn.classList.toggle('saved', isRoomSaved(id));
+    }
+  }
+  function updateSaveButtons(){
+    var all = document.querySelectorAll('[data-save-room]');
+    all.forEach(function(btn){
+      var id = btn.getAttribute('data-save-room');
+      var on = isRoomSaved(id);
+      btn.classList.toggle('saved', on);
+      btn.innerHTML = on ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 11 2 2 4-4"/></svg>Đã lưu' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Lưu phòng';
+    });
+  }
+
   // ---------- Reveal khi cuộn ----------
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce){
@@ -954,46 +1011,6 @@
         owner:{ name:'Chị Đặng Khánh Linh', phone:'0902 778 916', rooms:18, reply:'~20 phút' },
         images:['https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=70','https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=70'] }
     ];
-        ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
-        alt:'Phòng trọ nhỏ gọn gần Đại học Quốc Gia Hà Nội', distance:1.2, mapX:38, mapY:34,
-        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
-        image:img('1522708323590-d24dbb6b0267') },
-      { id:'r02', title:'Căn hộ mini có ban công', type:'Căn hộ mini', price:6200000, area:32, people:2, floor:5,
-        ward:'P. Trung Liệt', district:'Đống Đa', address:'58 Thái Hà, P. Trung Liệt, Đống Đa, Hà Nội',
-        alt:'Căn hộ mini hiện đại có ban công riêng', distance:2.4, mapX:58, mapY:22,
-        amenities:['Máy lạnh','Có bếp riêng','Chỗ để xe'],
-        image:img('1560448204-e02f11c3d0e2') },
-      { id:'r03', title:'Ở ghép nữ, an ninh tốt', type:'Ở ghép', price:2100000, area:16, people:3, floor:2,
-        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'12/8 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội',
-        alt:'Phòng ở ghép dành cho nữ, an ninh tốt', distance:0.8, mapX:24, mapY:52,
-        amenities:['Giờ giấc tự do','Wifi miễn phí'],
-        image:img('1505873242700-f289a29e1e0f') },
-      { id:'r04', title:'Phòng có gác, cửa sổ lớn', type:'Phòng trọ', price:3400000, area:24, people:2, floor:2,
-        ward:'P. Khương Trung', district:'Thanh Xuân', address:'21 Vũ Trọng Phụng, P. Khương Trung, Thanh Xuân, Hà Nội',
-        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng', distance:1.6, mapX:44, mapY:64,
-        amenities:['Có gác lửng','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
-        image:img('1484154218962-a197022b5858') },
-      { id:'r05', title:'Studio khép kín gần Hồ Tây', type:'Căn hộ mini', price:5300000, area:26, people:2, floor:3,
-        ward:'P. Cống Vị', district:'Ba Đình', address:'9 Đội Cấn, P. Cống Vị, Ba Đình, Hà Nội',
-        alt:'Phòng studio khép kín gần Hồ Tây', distance:3.1, mapX:68, mapY:46,
-        amenities:['Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh'],
-        image:img('1493809842364-78817add7ffb') },
-      { id:'r06', title:'Phòng khép kín, nuôi thú cưng', type:'Phòng trọ', price:3100000, area:20, people:2, floor:1,
-        ward:'P. Tân Mai', district:'Hoàng Mai', address:'70 Tân Mai, P. Tân Mai, Hoàng Mai, Hà Nội',
-        alt:'Phòng khép kín cho phép nuôi thú cưng', distance:2.9, mapX:16, mapY:20,
-        amenities:['Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
-        image:img('1502672260266-1c1ef2d93688') },
-      { id:'r07', title:'Ở ghép nam, gần sân vận động Mỹ Đình', type:'Ở ghép', price:1900000, area:20, people:3, floor:2,
-        ward:'P. Mỹ Đình 2', district:'Nam Từ Liêm', address:'5 Lê Đức Thọ, P. Mỹ Đình 2, Nam Từ Liêm, Hà Nội',
-        alt:'Phòng ở ghép cho nam gần sân vận động Mỹ Đình', distance:5.4, mapX:78, mapY:72,
-        amenities:['Giờ giấc tự do','Chỗ để xe'],
-        image:img('1524758631624-e2822e304c36') },
-      { id:'r08', title:'Phòng rộng, có bếp riêng', type:'Phòng trọ', price:3900000, area:28, people:2, floor:3,
-        ward:'P. Khương Thượng', district:'Đống Đa', address:'112 Tôn Thất Tùng, P. Khương Thượng, Đống Đa, Hà Nội',
-        alt:'Phòng trọ rộng rãi có bếp riêng', distance:4.2, mapX:86, mapY:38,
-        amenities:['Có bếp riêng','Máy lạnh','Chỗ để xe'],
-        image:img('1567767292278-a4f21aa2d36e') }
-    ];
 
     var nf = new Intl.NumberFormat('vi-VN');
     function vnd(n){ return nf.format(n) + '₫'; }
@@ -1031,13 +1048,19 @@
     }, { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
 
     function rowHtml(r){
+      var saved = isRoomSaved(r.id);
       return '<article class="room-row reveal" role="button" tabindex="0" data-room="' + r.id + '" aria-label="Xem chi tiết ' + esc(r.title) + '">' +
         '<div class="media">' +
           '<img loading="lazy" alt="' + esc(r.alt) + '" src="' + r.image + '" />' +
           '<span class="price">' + vnd(r.price) + '/th</span>' +
         '</div>' +
         '<div class="rb">' +
-          '<h3>' + esc(r.title) + '</h3>' +
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">' +
+            '<h3>' + esc(r.title) + '</h3>' +
+            '<button class="save-room-btn' + (saved ? ' saved' : '') + '" type="button" data-save-room="' + r.id + '" aria-label="' + (saved ? 'Bỏ lưu' : 'Lưu') + ' phòng ' + esc(r.title) + '">' +
+              (saved ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 11 2 2 4-4"/></svg>Đã lưu' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Lưu phòng') +
+            '</button>' +
+          '</div>' +
           '<p class="addr">' + SVG_PIN + esc(r.ward + ', ' + r.district) + '</p>' +
           '<div class="facts">' +
             '<span>' + SVG_AREA + r.area + ' m²</span>' +
@@ -1058,6 +1081,14 @@
     function activeAmenities(){
       return quickBtns.filter(function(b){ return b.classList.contains('on'); })
                       .map(function(b){ return b.getAttribute('data-amen'); });
+    }
+
+    function updateMapSource(address){
+      if(!address) address = 'Hà Nội, Việt Nam';
+      var iframe = document.getElementById('googleMapFrame');
+      if(iframe){
+        iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&z=12&output=embed';
+      }
     }
 
     function apply(){
@@ -1087,6 +1118,11 @@
 
       var visibleIds = filtered.reduce(function(obj, r){ obj[r.id] = true; return obj; }, {});
       pins.innerHTML = ROOMS.map(function(r){ return pinHtml(r, !!visibleIds[r.id]); }).join('');
+      if(filtered.length){
+        updateMapSource(filtered[0].address);
+      } else {
+        updateMapSource('Hà Nội, Việt Nam');
+      }
 
       var rows = Array.prototype.slice.call(list.querySelectorAll('.room-row'));
       rows.forEach(function(el,i){
@@ -1252,6 +1288,14 @@
       if(phone){ callBtn.href = 'tel:' + phone.replace(/\s+/g,''); callBtn.hidden = false; }
       else { callBtn.hidden = true; }
 
+      var rdSaveBtn = document.getElementById('rdSaveBtn');
+      if (rdSaveBtn) {
+        var saved = isRoomSaved(r.id);
+        rdSaveBtn.classList.toggle('saved', saved);
+        rdSaveBtn.textContent = saved ? 'Đã lưu phòng' : 'Lưu phòng';
+        rdSaveBtn.onclick = function(){ toggleRoomSave(r.id); };
+      }
+
       var dateInput = document.getElementById('rdDate');
       var now = new Date();
       var tomorrow = new Date(now.getTime() + 86400000);
@@ -1282,6 +1326,13 @@
     }
 
     list.addEventListener('click', function(e){
+      var saveBtn = e.target.closest('[data-save-room]');
+      if (saveBtn) {
+        e.stopPropagation();
+        var id = saveBtn.getAttribute('data-save-room');
+        toggleRoomSave(id);
+        return;
+      }
       var row = e.target.closest('[data-room]');
       if(row) openDetail(row.getAttribute('data-room'));
     });
