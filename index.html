@@ -890,12 +890,6 @@
           </button>
           <select id="fArea" hidden aria-hidden="true">
             <option value="">Hà Nội</option>
-            <option value="Lê Chân">Quận Lê Chân</option>
-            <option value="Ngô Quyền">Quận Ngô Quyền</option>
-            <option value="Hồng Bàng">Quận Hồng Bàng</option>
-            <option value="Hải An">Quận Hải An</option>
-            <option value="Kiến An">Quận Kiến An</option>
-            <option value="Dương Kinh">Quận Dương Kinh</option>
           </select>
         </div>
 
@@ -1122,19 +1116,19 @@
 
     <div class="filter-shell">
       <aside class="filter-sidebar" aria-label="Chọn loại lọc">
-        <button type="button" class="filter-tab active" data-filter-tab="ward">Phường</button>
-        <button type="button" class="filter-tab" data-filter-tab="area">Khu vực</button>
+        <button type="button" class="filter-tab active" data-filter-tab="area">Khu vực</button>
+        <button type="button" class="filter-tab" data-filter-tab="ward">Phường/Xã</button>
       </aside>
 
       <div class="filter-content">
-        <div class="filter-panel active" data-filter-panel="ward">
-          <div class="filter-list" id="wardList"></div>
-          <button type="button" class="filter-more" id="showMoreWard">Xem tất cả</button>
-        </div>
-
-        <div class="filter-panel" data-filter-panel="area">
+        <div class="filter-panel active" data-filter-panel="area">
           <div class="filter-list" id="areaList"></div>
           <button type="button" class="filter-more" id="showMoreArea">Xem tất cả</button>
+        </div>
+
+        <div class="filter-panel" data-filter-panel="ward">
+          <div class="filter-list" id="wardList"></div>
+          <button type="button" class="filter-more" id="showMoreWard">Xem tất cả</button>
         </div>
       </div>
     </div>
@@ -1327,6 +1321,11 @@
           <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           <span id="rdAddr"></span>
         </p>
+
+        <div class="rd-block">
+          <h3>Địa chỉ chi tiết</h3>
+          <p id="rdAddrDetail"></p>
+        </div>
 
         <dl class="rd-specs" id="rdSpecs"></dl>
 
@@ -1636,83 +1635,83 @@
 
     var ROOMS = [
       { id:'p01', title:'Phòng gác lửng, thoáng sáng', price:2800000, deposit:2800000, area:22, people:2, floor:2,
-        ward:'P. Trại Cau', district:'Lê Chân', address:'145/12 Tô Hiệu, P. Trại Cau, Lê Chân, Hải Phòng',
+        ward:'P. Nghĩa Đô', district:'Cầu Giấy', address:'12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội',
         posted:2, electric:3500, water:25000, service:100000,
         alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng',
         amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
-        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Trại Cau 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Nghĩa Tân 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
         owner:{ name:'Chị Nguyễn Thu Hà', phone:'0912 345 678', rooms:8, reply:'~10 phút' },
         images:[img('1522708323590-d24dbb6b0267'),img('1505873242700-f289a29e1e0f'),img('1484154218962-a197022b5858'),img('1556228453-efd6c1ff04f6')] },
 
       { id:'p02', title:'Căn hộ mini full nội thất', price:4200000, deposit:4200000, area:30, people:2, floor:4,
-        ward:'P. Lạch Tray', district:'Ngô Quyền', address:'27 Lạch Tray, P. Lạch Tray, Ngô Quyền, Hải Phòng',
+        ward:'P. Kim Liên', district:'Đống Đa', address:'27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội',
         posted:1, electric:3800, water:30000, service:150000,
         alt:'Căn hộ mini đầy đủ nội thất, bếp riêng',
         amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
-        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Đối diện Đại học Hải Phòng, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
+        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Gần công viên Thống Nhất, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
         owner:{ name:'Anh Trần Quốc Việt', phone:'0938 221 574', rooms:14, reply:'~30 phút' },
         images:[img('1560448204-e02f11c3d0e2'),img('1522771739844-6a9f6d5f14af'),img('1507089947368-19c1da9775ae'),img('1484154218962-a197022b5858')] },
 
       { id:'p03', title:'Phòng ban công riêng, đón nắng', price:3100000, deposit:3100000, area:25, people:2, floor:3,
-        ward:'P. Sở Dầu', district:'Hồng Bàng', address:'88 Hùng Vương, P. Sở Dầu, Hồng Bàng, Hải Phòng',
+        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội',
         posted:3, electric:3500, water:25000, service:100000,
         alt:'Phòng trọ có ban công riêng nhiều ánh sáng',
         amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
-        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần bến xe Thượng Lý và chợ Sở Dầu. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
+        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần chợ Mơ và bến xe Nước Ngầm. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
         owner:{ name:'Cô Phạm Thị Lan', phone:'0906 887 302', rooms:4, reply:'~1 giờ' },
         images:[img('1502672260266-1c1ef2d93688'),img('1505873242700-f289a29e1e0f'),img('1522708323590-d24dbb6b0267'),img('1556228453-efd6c1ff04f6')] },
 
       { id:'p04', title:'Studio hiện đại gần trung tâm', price:3900000, deposit:3900000, area:28, people:2, floor:5,
-        ward:'P. An Biên', district:'Lê Chân', address:'12 Nguyễn Đức Cảnh, P. An Biên, Lê Chân, Hải Phòng',
+        ward:'P. Khương Đình', district:'Thanh Xuân', address:'12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội',
         posted:1, electric:3800, water:30000, service:150000,
         alt:'Phòng studio hiện đại gần trung tâm thành phố',
         amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
-        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách hồ Tam Bạc 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách công viên Hạ Đình 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
         owner:{ name:'Anh Lê Hoàng Nam', phone:'0977 415 688', rooms:22, reply:'~15 phút' },
         images:[img('1493809842364-78817add7ffb'),img('1507089947368-19c1da9775ae'),img('1522771739844-6a9f6d5f14af'),img('1484154218962-a197022b5858')] },
 
       { id:'p05', title:'Phòng khép kín, an ninh tốt', price:2500000, deposit:2500000, area:20, people:2, floor:1,
-        ward:'P. Trần Thành Ngọ', district:'Kiến An', address:'56 Trần Nhân Tông, P. Trần Thành Ngọ, Kiến An, Hải Phòng',
+        ward:'P. Ngọc Hà', district:'Ba Đình', address:'56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội',
         posted:4, electric:3500, water:25000, service:80000,
         alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt',
         amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
-        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Đại học Hải Phòng cơ sở Kiến An 1,2km, gần chợ và trạm xe buýt.',
+        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Lăng Bác 1,2km, gần chợ và trạm xe buýt.',
         owner:{ name:'Chú Đỗ Văn Bình', phone:'0913 664 129', rooms:10, reply:'~2 giờ' },
         images:[img('1524758631624-e2822e304c36'),img('1522708323590-d24dbb6b0267'),img('1556228453-efd6c1ff04f6'),img('1505873242700-f289a29e1e0f')] },
 
       { id:'p06', title:'Phòng rộng, phù hợp gia đình', price:4600000, deposit:4600000, area:35, people:3, floor:2,
-        ward:'P. Đằng Lâm', district:'Hải An', address:'203 Lê Hồng Phong, P. Đằng Lâm, Hải An, Hải Phòng',
+        ward:'P. Vĩnh Hưng', district:'Hoàng Mai', address:'203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội',
         posted:2, electric:3800, water:30000, service:150000,
         alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình',
         amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
-        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Đằng Lâm và siêu thị Aeon Mall 2km.',
+        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Vĩnh Hưng và Times City 2km.',
         owner:{ name:'Chị Vũ Mai Phương', phone:'0904 332 871', rooms:6, reply:'~45 phút' },
         images:[img('1567767292278-a4f21aa2d36e'),img('1507089947368-19c1da9775ae'),img('1484154218962-a197022b5858'),img('1522771739844-6a9f6d5f14af')] },
 
       { id:'p07', title:'Phòng trọ giá mềm cho sinh viên', price:1800000, deposit:1800000, area:16, people:1, floor:3,
-        ward:'P. Hoà Nghĩa', district:'Dương Kinh', address:'9 Phạm Văn Đồng, P. Hoà Nghĩa, Dương Kinh, Hải Phòng',
+        ward:'P. Mỹ Đình', district:'Từ Liêm', address:'9 Lê Đức Thọ, P. Mỹ Đình, Từ Liêm, Hà Nội',
         posted:5, electric:3500, water:20000, service:50000,
         alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên',
         amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
-        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
+        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê gần Đại học Thương Mại, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
         owner:{ name:'Anh Nguyễn Đức Thắng', phone:'0968 110 447', rooms:12, reply:'~1 giờ' },
         images:[img('1505873242700-f289a29e1e0f'),img('1524758631624-e2822e304c36'),img('1556228453-efd6c1ff04f6'),img('1522708323590-d24dbb6b0267')] },
 
       { id:'p08', title:'Phòng có gác, cửa sổ hướng vườn', price:3400000, deposit:3400000, area:26, people:2, floor:2,
-        ward:'P. Đông Khê', district:'Ngô Quyền', address:'74/3 Đông Khê, P. Đông Khê, Ngô Quyền, Hải Phòng',
+        ward:'P. Nhật Tân', district:'Tây Hồ', address:'74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội',
         posted:3, electric:3500, water:25000, service:100000,
         alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn',
         amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
-        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn cây của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Rào 1,5km.',
+        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn đào của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Nhật Tân 1,5km.',
         owner:{ name:'Bác Hoàng Văn Sơn', phone:'0915 209 633', rooms:5, reply:'~2 giờ' },
         images:[img('1522771739844-6a9f6d5f14af'),img('1502672260266-1c1ef2d93688'),img('1484154218962-a197022b5858'),img('1507089947368-19c1da9775ae')] },
 
       { id:'p09', title:'Căn hộ dịch vụ 2 phòng ngủ', price:6500000, deposit:6500000, area:48, people:3, floor:6,
-        ward:'P. Máy Tơ', district:'Ngô Quyền', address:'15 Lê Thánh Tông, P. Máy Tơ, Ngô Quyền, Hải Phòng',
+        ward:'P. Việt Hưng', district:'Long Biên', address:'15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội',
         posted:1, electric:3800, water:30000, service:250000,
         alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi',
         amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
-        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Cấm. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Đuống. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
         owner:{ name:'Chị Đặng Khánh Linh', phone:'0902 778 916', rooms:18, reply:'~20 phút' },
         images:[img('1507089947368-19c1da9775ae'),img('1560448204-e02f11c3d0e2'),img('1493809842364-78817add7ffb'),img('1484154218962-a197022b5858')] }
     ];
@@ -1720,6 +1719,29 @@
     var nf = new Intl.NumberFormat('vi-VN');
     function vnd(n){ return nf.format(n) + '₫'; }
     function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Cấu trúc địa chỉ thống nhất: Khu vực → Phường/Xã → Quận/Huyện → Thành phố.
+    // r.ward/r.district đã sẵn có; địa chỉ chi tiết (số nhà/ngõ/đường) và thành phố
+    // được tách ra từ chuỗi r.address hiện có, không tạo thêm dữ liệu mới.
+    function addressCore(s){ return String(s).replace(/^(Phường|Xã|Quận|Huyện|P\.|X\.)\s*/i,'').trim().toLowerCase(); }
+    function splitAddress(r){
+      var parts = r.address.split(',').map(function(s){ return s.trim(); });
+      var city = parts[parts.length - 1] || '';
+      var wardCore = addressCore(r.ward);
+      var districtCore = addressCore(r.district);
+      var idx = -1;
+      for (var i = 0; i < parts.length - 1; i++){
+        if (addressCore(parts[i]) === wardCore) { idx = i; break; }
+      }
+      if (idx === -1){
+        for (var j = 0; j < parts.length - 1; j++){
+          if (addressCore(parts[j]) === districtCore) { idx = j; break; }
+        }
+      }
+      var detail = idx > 0 ? parts.slice(0, idx).join(', ') : parts[0];
+      return { detail: detail, city: city };
+    }
+    function mainAddressLine(r){ return r.ward + ', ' + r.district + ', ' + splitAddress(r).city; }
 
     var SVG_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
     var SVG_AREA = '<svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>';
@@ -1762,7 +1784,7 @@
     var selectedArea = '';
     var wardExpanded = false;
     var areaExpanded = false;
-    var activeFilterTab = 'ward';
+    var activeFilterTab = 'area';
 
     function getFilteredOptions(type) {
       var source = type === 'ward' ? wardOptions : areaOptions;
@@ -1826,14 +1848,14 @@
 
     function getCurrentLocationLabel() {
       var labels = [];
-      if (selectedWard) labels.push(selectedWard);
       if (selectedArea) labels.push(selectedArea);
+      if (selectedWard) labels.push(selectedWard);
       if (!labels.length) return 'Hà Nội';
       return labels.join(' • ');
     }
 
     function updateSelectedLocation() {
-      var value = [selectedWard, selectedArea].filter(Boolean).join(' • ');
+      var value = [selectedArea, selectedWard].filter(Boolean).join(' • ');
       locationValue.textContent = value || 'Hà Nội';
       fArea.value = value;
       renderWardList();
@@ -1913,7 +1935,7 @@
     if (filterApply) {
       filterApply.addEventListener('click', function(){
         closeFilterModal();
-        var value = [selectedWard, selectedArea].filter(Boolean).join(' • ');
+        var value = [selectedArea, selectedWard].filter(Boolean).join(' • ');
         locationValue.textContent = value || 'Hà Nội';
         fArea.value = value;
         apply();
@@ -1938,7 +1960,7 @@
         '</div>' +
         '<div class="rb">' +
           '<h3>' + esc(r.title) + '</h3>' +
-          '<p class="addr">' + SVG_PIN + esc(r.ward + ', ' + r.district) + '</p>' +
+          '<p class="addr">' + SVG_PIN + esc(mainAddressLine(r)) + '</p>' +
           '<div class="facts">' +
             '<span>' + SVG_AREA + r.area + ' m²</span>' +
             '<span>' + SVG_PEOPLE + r.people + ' người</span>' +
@@ -1974,13 +1996,16 @@
     }
 
     function apply(){
-      var area = fArea.value;
       var people = fPeople.value;
       var amens = activeAmenities();
       var range = fPrice.value ? fPrice.value.split('-').map(Number) : null;
 
       var list = ROOMS.filter(function(r){
-        if(area && r.district !== area) return false;
+        if(selectedWard || selectedArea){
+          var hay = (r.ward + ' ' + r.district + ' ' + r.address).toLowerCase();
+          if(selectedWard && hay.indexOf(selectedWard.toLowerCase()) === -1) return false;
+          if(selectedArea && hay.indexOf(selectedArea.toLowerCase()) === -1) return false;
+        }
         if(range && (r.price < range[0] || r.price >= range[1])) return false;
         if(people === '3' ? r.people < 3 : people && r.people !== Number(people)) return false;
         for(var i=0;i<amens.length;i++){ if(r.amenities.indexOf(amens[i]) === -1) return false; }
@@ -1996,8 +2021,9 @@
       });
 
       lastFilteredRooms = list;
+      var locLabel = [selectedArea, selectedWard].filter(Boolean).join(', ');
       countEl.innerHTML = list.length
-        ? 'Tìm thấy <b>' + list.length + '</b> phòng phù hợp' + (area ? ' tại ' + esc(area) : ' tại Hải Phòng')
+        ? 'Tìm thấy <b>' + list.length + '</b> phòng phù hợp' + (locLabel ? ' tại ' + esc(locLabel) : ' tại Hà Nội')
         : 'Hiện chưa có phòng trọ bạn muốn';
       emptyEl.classList.toggle('show', list.length === 0);
 
@@ -2038,6 +2064,7 @@
     if (roomReset) {
       roomReset.addEventListener('click', function(){
         fArea.value = ''; fPrice.value = ''; fPeople.value = ''; fSort.value = 'new';
+        selectedWard = ''; selectedArea = ''; locationValue.textContent = 'Hà Nội';
         quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
         apply();
       });
@@ -2054,7 +2081,8 @@
     function fillDetail(r){
       document.getElementById('rdPrice').innerHTML = vnd(r.price) + ' <span>/ tháng</span>';
       document.getElementById('rdTitle').textContent = r.title;
-      document.getElementById('rdAddr').textContent = r.address;
+      document.getElementById('rdAddr').textContent = mainAddressLine(r);
+      document.getElementById('rdAddrDetail').textContent = splitAddress(r).detail;
       rdMain.src = r.images[0];
       rdMain.alt = r.alt;
 
