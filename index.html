@@ -24,6 +24,7 @@
     --success:#228B22;
     --warning:#F5B14C;
     --danger:#FF6B6B;
+    --danger-ink:#B4291F;
     --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
     --radius-sm:8px;
     --radius:12px;
@@ -94,6 +95,10 @@
   .nav-links a:hover{color:var(--text);transform:translateY(-1px)}
   .nav-cta{display:flex;align-items:center;gap:12px}
   .nav-cta .btn{height:40px;padding:0 18px;font-size:14px}
+  .nav-cta > [hidden],.mobile-menu > [hidden]{display:none!important}
+  .nav-user{display:flex;align-items:center;gap:12px}
+  .nav-hello{font-size:14px;color:var(--text-muted);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+  .nav-hello b{color:var(--text);font-weight:600}
   .menu-toggle{display:none;width:42px;height:42px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center}
   .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
   .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
@@ -111,6 +116,9 @@
   body.menu-open .mobile-menu{transform:none;opacity:1;pointer-events:auto}
   .mobile-menu a{padding:14px 4px;font-size:17px;font-weight:800;border-bottom:1px solid var(--border);color:var(--text)}
   .mobile-menu .btn{margin-top:18px}
+  .mobile-menu a.btn-primary{color:var(--accent-fg)}
+  .mobile-menu .nav-user{flex-direction:column;align-items:stretch;gap:0}
+  .mobile-menu .nav-hello{padding:18px 4px 0;font-size:15px;max-width:none}
 
   /* ---------- Hero ---------- */
   .hero{padding:150px 0 90px;text-align:center;overflow:hidden}
@@ -432,7 +440,7 @@
   .pw-toggle.on .off{display:block}
   .pw-toggle.on .on{display:none}
 
-  .err{display:none;margin-top:7px;font-size:13px;line-height:1.45;color:var(--danger)}
+  .err{display:none;margin-top:7px;font-size:13px;line-height:1.45;color:var(--danger-ink)}
   .field.invalid .err{display:block}
 
   .auth-row{display:flex;justify-content:flex-end;margin:-4px 0 18px}
@@ -472,6 +480,13 @@
   .auth-done h3{font-size:1.2rem;margin-bottom:8px}
   .auth-done p{font-size:14.5px;color:var(--text-muted);line-height:1.6;margin-bottom:20px}
   .auth-done .mock{display:block;margin-top:10px;font-size:12.5px;color:var(--text-dim)}
+  .auth-form-err{
+    display:none;margin:0 0 14px;padding:11px 14px;border-radius:var(--radius-sm);
+    background:color-mix(in srgb, var(--danger-ink) 6%, transparent);
+    border:1px solid color-mix(in srgb, var(--danger-ink) 24%, transparent);
+    font-size:13.5px;line-height:1.5;color:var(--danger-ink);
+  }
+  .auth-form-err.show{display:block}
 
   @media (max-width:480px){
     .auth-overlay{padding:16px}
@@ -1405,7 +1420,7 @@
     document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
   }
 
-  // ---------- Auth modal (mock, chưa nối backend) ----------
+  // ---------- Auth modal: đăng nhập thật khi chạy qua máy chủ, mô phỏng khi mở file:// ----------
   (function(){
     var overlay = document.getElementById('authOverlay');
     if(!overlay) return;
@@ -1466,6 +1481,8 @@
       pane.querySelector('.auth-head').hidden = false;
       var alt = pane.querySelector('.auth-alt');
       form.reset();
+      var formErr = form.querySelector('.auth-form-err');
+      if(formErr){ formErr.textContent = ''; formErr.classList.remove('show'); }
       form.hidden = false;
       if(alt) alt.hidden = false;
       done.hidden = true;
@@ -1504,6 +1521,8 @@
     }
 
     function openAuth(name, role){
+      // Đã đăng nhập thì không mở lại form, đưa thẳng vào khu vực của mình
+      if(AUTH_API.me){ window.location.href = areaOf(AUTH_API.me); return; }
       lastFocus = document.activeElement;
       role = resolveAuthRole(role);
       setPane(name || 'login', role);
@@ -1575,39 +1594,141 @@
       });
     });
 
-    // Submit (mock)
+    // ---------- Máy chủ xác thực ----------
+    // Mở qua máy chủ (npm start): đăng ký / đăng nhập thật, tài khoản lưu trong SQLite (server/auth.mjs).
+    // Mở thẳng file (file://): không có máy chủ, form chạy mô phỏng để xem giao diện.
+    var AUTH_API = { on:false, me:null };
+    var AUTH_READY = (!/^https?:$/.test(location.protocol) || !window.fetch)
+      ? Promise.resolve(AUTH_API)
+      : fetch('/api/suc-khoe', { cache:'no-store', credentials:'same-origin' })
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(j){ if(j && j.ok){ AUTH_API.on = true; AUTH_API.me = j.me || null; } return AUTH_API; })
+          .catch(function(){ return AUTH_API; });
+
+    function areaOf(user){ return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html'; }
+    function shortName(user){
+      if(!user) return '';
+      if(user.name === user.phone) return user.phone;
+      var w = String(user.name).trim().split(/\s+/);
+      return w[w.length - 1];
+    }
+    function authPost(url, body){
+      return fetch(url, { method:'POST', cache:'no-store', credentials:'same-origin',
+        headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body || {}) })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; }); });
+    }
+    function formError(form, msg){
+      var box = form.querySelector('.auth-form-err');
+      if(!box){
+        box = document.createElement('p');
+        box.className = 'auth-form-err';
+        box.setAttribute('role', 'alert');
+        var submit = form.querySelector('.btn-submit');
+        submit.parentNode.insertBefore(box, submit);
+      }
+      box.textContent = msg || '';
+      box.classList.toggle('show', !!msg);
+    }
+    function showDone(form, note){
+      var pane = form.closest('.auth-pane');
+      var alt = pane.querySelector('.auth-alt');
+      var done = pane.querySelector('.auth-done');
+      var mock = done.querySelector('.mock');
+      if(mock && note) mock.textContent = note;
+      pane.querySelector('.auth-head').hidden = true;
+      form.hidden = true;
+      if(alt) alt.hidden = true;
+      done.hidden = false;
+      modal.scrollTop = 0;
+      done.querySelector('.btn').focus();
+    }
+
+    // Không có máy chủ: giữ hành vi mô phỏng cũ. Quên mật khẩu luôn mô phỏng vì chưa có SMS thật.
+    function mockSubmit(form, kind){
+      setTimeout(function(){
+        var checkedRole = form.querySelector('input[name="role"]:checked');
+        var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
+        resolveAuthRole(targetRole);
+        showDone(form, kind === 'forgot' ? '' : 'Chế độ xem giao diện: chưa lưu tài khoản. Chạy npm start rồi mở localhost:5500 để đăng ký, đăng nhập thật.');
+        if(kind !== 'forgot' && targetRole === 'renter'){
+          setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
+        }
+      }, 600);
+    }
+
     overlay.querySelectorAll('[data-auth-form]').forEach(function(form){
+      var kind = form.getAttribute('data-auth-form');
       var btn = form.querySelector('.btn-submit');
       btn.setAttribute('data-label', btn.textContent);
+      function busy(on){ btn.disabled = on; btn.textContent = on ? 'Đang xử lý…' : btn.getAttribute('data-label'); }
+
       form.addEventListener('submit', function(e){
         e.preventDefault();
+        formError(form, '');
         var inputs = Array.prototype.slice.call(form.querySelectorAll('[data-rule]'));
         var firstBad = null;
         inputs.forEach(function(input){ if(!checkField(input) && !firstBad) firstBad = input; });
         if(firstBad){ firstBad.focus(); return; }
+        busy(true);
 
-        btn.disabled = true;
-        btn.textContent = 'Đang xử lý…';
-        setTimeout(function(){
-          var pane = form.closest('.auth-pane');
-          var alt = pane.querySelector('.auth-alt');
-          var checkedRole = form.querySelector('input[name="role"]:checked');
-          var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
-          resolveAuthRole(targetRole);
+        AUTH_READY.then(function(){
+          if(!AUTH_API.on || kind === 'forgot') return mockSubmit(form, kind);
 
-          pane.querySelector('.auth-head').hidden = true;
-          form.hidden = true;
-          if(alt) alt.hidden = true;
-          pane.querySelector('.auth-done').hidden = false;
-          modal.scrollTop = 0;
-          pane.querySelector('.auth-done .btn').focus();
-
-          if(targetRole === 'renter'){
-            setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
-          }
-        }, 600);
+          var f = form.elements;
+          var role = form.querySelector('input[name="role"]:checked');
+          var body = kind === 'register'
+            ? { role: role ? role.value : '', phone: f.phone.value, email: f.email.value, password: f.password.value }
+            : { phone: f.phone.value, password: f.password.value };
+          return authPost(kind === 'register' ? '/api/dang-ky' : '/api/dang-nhap', body).then(function(j){
+            if(!j.user){
+              busy(false);
+              var input = j.field ? form.querySelector('[name="' + j.field + '"][data-rule]') : null;
+              if(input){ failField(input, j.message); input.focus(); }
+              else formError(form, j.message || 'Máy chủ không phản hồi, vui lòng thử lại.');
+              return;
+            }
+            AUTH_API.me = j.user;
+            resolveAuthRole(j.user.role);
+            renderHeader();
+            showDone(form, 'Đang chuyển tới ' + (j.user.role === 'landlord' ? 'trang quản lý của chủ trọ' : 'trang tìm phòng của bạn') + '…');
+            setTimeout(function(){ window.location.href = areaOf(j.user); }, 900);
+          });
+        }).catch(function(){
+          busy(false);
+          formError(form, 'Không kết nối được máy chủ. Kiểm tra cửa sổ chạy npm start còn mở không.');
+        });
       });
     });
+
+    // Header: đã đăng nhập thì thay "Đăng nhập / Đăng ký" bằng lời chào, lối vào khu vực riêng và Đăng xuất
+    function renderHeader(){
+      var me = AUTH_API.me;
+      [document.querySelector('.nav-cta'), document.getElementById('mobileMenu')].forEach(function(box){
+        if(!box) return;
+        var inMenu = box.id === 'mobileMenu';
+        Array.prototype.forEach.call(box.querySelectorAll(':scope > [data-auth]'), function(b){ b.hidden = !!me; });
+        var old = box.querySelector(':scope > .nav-user');
+        if(old) old.remove();
+        if(!me) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'nav-user';
+        wrap.innerHTML = '<span class="nav-hello">Chào, <b></b></span>' +
+          '<a class="btn btn-primary' + (inMenu ? ' btn-lg' : '') + '"></a>' +
+          '<button type="button" class="btn btn-ghost' + (inMenu ? ' btn-lg' : '') + '" data-logout>Đăng xuất</button>';
+        wrap.querySelector('b').textContent = shortName(me);
+        var link = wrap.querySelector('a');
+        link.href = areaOf(me);
+        link.textContent = me.role === 'landlord' ? 'Trang quản lý' : 'Trang của tôi';
+        wrap.querySelector('[data-logout]').addEventListener('click', logout);
+        box.appendChild(wrap);
+      });
+    }
+    function logout(){
+      authPost('/api/dang-xuat')
+        .catch(function(){})
+        .then(function(){ AUTH_API.me = null; document.body.classList.remove('menu-open'); renderHeader(); });
+    }
+    AUTH_READY.then(renderHeader);
 
     // Bẫy focus + Esc
     overlay.addEventListener('keydown', function(e){

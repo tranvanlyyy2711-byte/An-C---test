@@ -47,7 +47,7 @@ npm run test:lich    # kiểm thử đầu-cuối với cơ sở dữ liệu t�
 
 Mở trang qua máy chủ thì mọi người dùng chung một cơ sở dữ liệu. Mở thẳng file bằng `file://` thì các trang chạy chế độ mô phỏng trên `localStorage` như trước, để xem giao diện không cần máy chủ.
 
-**Nhiều người dùng.** Prototype chưa có đăng nhập, nên chọn người thuê bằng tham số `?nguoi=`. Trình duyệt nhớ lựa chọn này.
+**Nhiều người dùng.** Cách chính là đăng nhập thật ở trang chủ (tài khoản demo trong CLAUDE.md, hoặc tự đăng ký). Đã đăng nhập thì máy chủ lấy người thuê từ phiên và bỏ qua `?nguoi=`. Chưa đăng nhập thì vẫn chọn được người thuê demo bằng tham số `?nguoi=`, trình duyệt nhớ lựa chọn này.
 
 - `tai-khoan/tim-phong.html?nguoi=u-trang` là Phạm Thu Trang, mặc định.
 - `?nguoi=u-an`, `?nguoi=u-linh`, `?nguoi=u-huy` là các người thuê khác.
@@ -114,7 +114,7 @@ alter table viewing_appointments add constraint no_overlap_active
 
 ## Giới hạn của prototype
 
-- **Chưa có đăng nhập.** Ai cũng tự khai là ai qua `?nguoi=`, và API chủ trọ chưa kiểm quyền.
+- **Đăng nhập chưa bắt buộc.** Chưa đăng nhập vẫn tự khai là người thuê demo qua `?nguoi=` được (để giữ chế độ demo và `test:lich`); tài khoản đăng ký mới thì chỉ thao tác được khi có phiên. API chủ trọ chặn người thuê đã đăng nhập, nhưng chưa đăng nhập vẫn gọi được.
 - **Trang chủ trọ ở chế độ máy chủ hiện lịch của mọi phòng**, gồm cả phòng của người thuê dưới mã `R01`–`R18`, vì dữ liệu mẫu chưa gán phòng nào cho chủ trọ nào.
 - **"Bây giờ" đứng yên** ở mốc mô phỏng, trừ khi đổi bằng `AN_CU_NOW`.
 - Chế độ `file://` vẫn chỉ là mô phỏng một người dùng, dùng để xem giao diện.
