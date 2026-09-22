@@ -429,7 +429,17 @@ body.modal-open{overflow:hidden}
     if(!/^https?:$/.test(location.protocol) || !window.fetch) return Promise.resolve(false);
     return fetch('/api/suc-khoe', { cache:'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ if(j && j.ok){ API.on = true; API.now = j.now; } return API.on; })
+      .then(function(j){
+        if(j && j.ok){
+          API.on = true; API.now = j.now;
+          // Đã đăng nhập bằng tài khoản người thuê: dùng tài khoản thật, bỏ người thuê mô phỏng ?nguoi=
+          if(j.me && j.me.role === 'renter'){
+            MOCK_RENTER = { id:j.me.id, name:j.me.name, phone:j.me.phone };
+            showRenterName();
+          }
+        }
+        return API.on;
+      })
       .catch(function(){ return false; });
   })();
   function apiCall(method, url, body){
@@ -1181,13 +1191,19 @@ body.modal-open{overflow:hidden}
   }
 
   /* ================= Khởi động ================= */
+  function showRenterName(){
+    var nm = document.querySelector('.acc-btn .nm'), av = document.querySelector('.acc-btn .av');
+    if(nm) nm.textContent = MOCK_RENTER.name;
+    if(av){
+      var w = String(MOCK_RENTER.name).trim().split(/s+/);
+      av.textContent = /^d/.test(w[0]) ? w[0].slice(-2) : (w[0].charAt(0) + w[w.length-1].charAt(0)).toUpperCase();
+    }
+  }
   function boot(){
     var rawExists = false;
     try{ rawExists = !!window.localStorage.getItem(STORE_KEY); }catch(e){}
     var wasCorrupt = rawExists && !readStore();
-    var nm = document.querySelector('.acc-btn .nm'), av = document.querySelector('.acc-btn .av');
-    if(nm) nm.textContent = MOCK_RENTER.name;
-    if(av){ var w = MOCK_RENTER.name.split(' '); av.textContent = (w[0].charAt(0) + w[w.length-1].charAt(0)).toUpperCase(); }
+    showRenterName();
     API_READY.then(function(on){
       if(!on) seedOnce();
       else wasCorrupt = false;

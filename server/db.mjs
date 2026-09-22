@@ -12,6 +12,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'fs';
 import { dirname } from 'path';
 import { PHONG, NGUOI_THUE } from './phong.mjs';
+import { AUTH_SCHEMA, seedDemoUsers } from './auth.mjs';
 
 export const HOLD_HOURS = 24;
 export const SLOTS = ['09:00', '10:00', '11:30', '13:30', '15:00', '17:30', '19:00'];
@@ -69,11 +70,14 @@ const MSG_TAKEN = 'Khung giờ này đã có người đặt. Hãy chọn giờ 
 export function openDb({ file, now }) {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;');
+  db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  db.exec(AUTH_SCHEMA);
+  seedDemoUsers(db);
 
   const q = {
     get: db.prepare('SELECT * FROM viewing_appointments WHERE id = ?'),
+    renterUser: db.prepare("SELECT id, full_name, phone FROM users WHERE id = ? AND role = 'renter'"),
     byRenter: db.prepare('SELECT * FROM viewing_appointments WHERE renter_id = ? ORDER BY date, time'),
     all: db.prepare('SELECT * FROM viewing_appointments ORDER BY date, time'),
     activeOnDay: db.prepare(`SELECT id, renter_id, time, dur FROM viewing_appointments WHERE room_id = ? AND date = ? AND status IN ${ACTIVE}`),
@@ -116,7 +120,11 @@ export function openDb({ file, now }) {
   }
 
   // ---------- Kiểm tra đầu vào ----------
+  // Người thuê có tài khoản trong bảng users (đăng ký thật hoặc tài khoản demo đã seed),
+  // hoặc một trong các người thuê mô phỏng của phong.mjs.
   function renterOf(id) {
+    const row = id ? q.renterUser.get(String(id)) : null;
+    if (row) return { id: row.id, name: row.full_name || row.phone, phone: row.phone };
     const u = NGUOI_THUE[id];
     if (!u) throw new ApiError(401, 'unknown_renter', 'Không xác định được người dùng.');
     return u;

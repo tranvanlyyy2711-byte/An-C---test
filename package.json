@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server/index.mjs",
     "test:lich": "node scripts/check-dat-lich-may-chu.mjs",
+    "test:auth": "node scripts/check-dang-nhap.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
