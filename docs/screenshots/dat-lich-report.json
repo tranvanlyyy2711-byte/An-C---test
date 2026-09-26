@@ -1,0 +1,506 @@
+[
+  {
+    "viewport": "desktop",
+    "checks": [
+      {
+        "name": "skeleton đã ẩn",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "sắp tới mặc định = 3",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "#cntUpcoming = 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "#navCount = 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "sidebar đủ 6 mục",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "mục active là Lịch xem phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã qua = 2",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "có mục đã hoàn thành",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "lọc chờ xác nhận",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "chip pending có aria-pressed true",
+        "got": "true",
+        "want": "true",
+        "ok": true
+      },
+      {
+        "name": "tìm kiếm không khớp = 0",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đặt lại trả về đủ 3 lịch sắp tới",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "mở modal đặt lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thiếu ngày thì modal vẫn mở",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal sau khi gửi hợp lệ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "số lịch sắp tới tăng lên 4",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "toast hiện Đã gửi yêu cầu",
+        "got": "Đã gửi yêu cầu",
+        "want": "Đã gửi yêu cầu",
+        "ok": true
+      },
+      {
+        "name": "mở modal huỷ lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal huỷ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "sắp tới còn 3 sau khi huỷ 1",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "dữ liệu còn nguyên sau reload (sắp tới)",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "tablet",
+    "checks": [
+      {
+        "name": "skeleton đã ẩn",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "sắp tới mặc định = 3",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "#cntUpcoming = 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "#navCount = 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "sidebar đủ 6 mục",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "mục active là Lịch xem phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã qua = 2",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "có mục đã hoàn thành",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "lọc chờ xác nhận",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "chip pending có aria-pressed true",
+        "got": "true",
+        "want": "true",
+        "ok": true
+      },
+      {
+        "name": "tìm kiếm không khớp = 0",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đặt lại trả về đủ 3 lịch sắp tới",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "mở modal đặt lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thiếu ngày thì modal vẫn mở",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal sau khi gửi hợp lệ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "số lịch sắp tới tăng lên 4",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "toast hiện Đã gửi yêu cầu",
+        "got": "Đã gửi yêu cầu",
+        "want": "Đã gửi yêu cầu",
+        "ok": true
+      },
+      {
+        "name": "mở modal huỷ lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal huỷ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "sắp tới còn 3 sau khi huỷ 1",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "dữ liệu còn nguyên sau reload (sắp tới)",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "menu-toggle hiện ở mobile/tablet",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở sidebar di động",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng sidebar di động",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "checks": [
+      {
+        "name": "skeleton đã ẩn",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "sắp tới mặc định = 3",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "#cntUpcoming = 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "#navCount = 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "sidebar đủ 6 mục",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "mục active là Lịch xem phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã qua = 2",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "có mục đã hoàn thành",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "lọc chờ xác nhận",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "chip pending có aria-pressed true",
+        "got": "true",
+        "want": "true",
+        "ok": true
+      },
+      {
+        "name": "tìm kiếm không khớp = 0",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đặt lại trả về đủ 3 lịch sắp tới",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "mở modal đặt lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thiếu ngày thì modal vẫn mở",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal sau khi gửi hợp lệ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "số lịch sắp tới tăng lên 4",
+        "got": 4,
+        "want": 4,
+        "ok": true
+      },
+      {
+        "name": "toast hiện Đã gửi yêu cầu",
+        "got": "Đã gửi yêu cầu",
+        "want": "Đã gửi yêu cầu",
+        "ok": true
+      },
+      {
+        "name": "mở modal huỷ lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng modal huỷ",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "sắp tới còn 3 sau khi huỷ 1",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "dữ liệu còn nguyên sau reload (sắp tới)",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "menu-toggle hiện ở mobile/tablet",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "mở sidebar di động",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đóng sidebar di động",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+]

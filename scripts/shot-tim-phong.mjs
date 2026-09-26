@@ -79,8 +79,14 @@ for (const t of targets) {
   expect('lọc loại phòng Ở ghép', await rows(), 2);
   await page.selectOption('#fType', '');
 
-  // Trạng thái rỗng
-  await page.fill('#fQuery', 'khu vực không tồn tại xyz');
+  // Trạng thái rỗng — chọn một Phường/Xã không khớp phòng nào qua modal Vị trí
+  await page.click('#locationTrigger');
+  await page.waitForTimeout(200);
+  await page.click('#locFilterOverlay .filter-tab[data-filter-tab="ward"]');
+  await page.fill('#locFilterSearch', 'Tây Hồ');
+  await page.waitForTimeout(150);
+  await page.click('#wardList .filter-chip');
+  await page.click('#locFilterApply');
   await page.waitForTimeout(150);
   expect('không có kết quả', await rows(), 0);
   expect('hiện trạng thái rỗng', await page.locator('#roomEmpty').isVisible(), true);

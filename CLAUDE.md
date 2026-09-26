@@ -45,8 +45,8 @@ Tham chiếu thẩm mỹ: website **Pryzm** (ảnh `godly.design_website_pryzm_.
 
 **Tối giản – hiện đại – chuyên nghiệp:**
 
-- **Dark-first.** Nền gần đen, chữ tương phản cao, dùng **một** màu nhấn duy nhất và dùng tiết chế. Có hỗ trợ light theme qua cùng bộ tokens.
-- **Nhiều khoảng trắng.** Dựa vào spacing và lưới, hạn chế đường viền và đổ bóng. Viền dùng hairline 1px `rgba(255,255,255,.08)`; chỉ màu nhấn mới có glow nhẹ.
+- **Light-first, đồng bộ toàn dự án.** Mọi trang dùng chung **một** bộ token nền sáng duy nhất, lấy chuẩn từ khối `:root` của `quan-ly/yeucauvalichhen.html`: `--bg:#F7FBF7`, `--surface:#FFFFFF`, `--surface-2:#F1F8F1`, `--text:#102010`, và **một** màu nhấn duy nhất `--accent:#228B22` dùng tiết chế. Không trang nào được tự đặt tông riêng; trang nào đang lệch tông thì phải đổi về bộ token này.
+- **Nhiều khoảng trắng.** Dựa vào spacing và lưới, hạn chế đường viền và đổ bóng. Viền dùng hairline 1px `rgba(34,139,34,.12)` (token `--border`); chỉ màu nhấn mới có glow nhẹ.
 - **Typography rõ ràng.** Heading lớn, chắc, tracking hơi âm; body line-height thoáng. Font **phải render dấu tiếng Việt sạch** — dùng `Be Vietnam Pro` (heading) + `Inter` (body), cả hai có subset `vietnamese`, nạp qua `next/font`.
 - **Ảnh phòng là trọng tâm.** Card danh sách: ảnh tỉ lệ 4:3, bo 12px, badge giá overlay góc dưới. Trang chi tiết: gallery ảnh lớn + dải thumbnail, mở lightbox. Tham khảo bố cục card & gallery ở homedy.com nhưng theo tone tối giản của An Cư. Luôn qua `next/image`.
 - **Chuyển động.** Micro-interaction 150–250ms ease-out, hover kín đáo. Scroll reveal cho section: xem Quy tắc bắt buộc #3. Tất cả tôn trọng `prefers-reduced-motion`.
@@ -54,9 +54,10 @@ Tham chiếu thẩm mỹ: website **Pryzm** (ảnh `godly.design_website_pryzm_.
 
 ### Design tokens
 
-Khai báo trong `src/app/globals.css` dưới dạng CSS variables (dark là mặc định, `:root` + `.light` override). **Không hardcode mã màu/spacing trong component** — luôn tham chiếu token qua Tailwind. Nhóm tối thiểu:
+Khai báo dưới dạng CSS variables trong `:root`. **Nền sáng là mặc định và là tông duy nhất của v1** — chưa làm dark theme. **Không hardcode mã màu/spacing trong component** — luôn tham chiếu token. Nhóm tối thiểu:
 
-- Màu: `--bg`, `--surface`, `--surface-2`, `--border`, `--text`, `--text-muted`, `--accent`, `--accent-fg`, `--danger`, `--warning`, `--success`.
+- Màu: `--bg`, `--surface`, `--surface-2`, `--border`, `--border-strong`, `--text`, `--text-muted`, `--text-dim`, `--accent`, `--accent-hover`, `--accent-fg`, `--danger`, `--warning`, `--success`, `--info`.
+- Màu mực cho badge trên nền sáng (chữ phải đạt tương phản ≥ 4.5:1): `--success-ink` `#1B7A1B`, `--warning-ink` `#8A5A11`, `--danger-ink` `#B4291F`, `--info-ink` `#1D4FBE`.
 - Bán kính: `--radius-sm` (8px, input), `--radius` (12px, card), `--radius-lg` (16px).
 - Spacing: hệ 4px. Container `max-w` 1200–1280px, gutter 24px, lưới 12 cột.
 
@@ -159,6 +160,21 @@ npx supabase migration new <ten>
 ```
 
 Trước khi coi một thay đổi là xong: `npm run lint` và `npm run typecheck` phải sạch.
+
+**Prototype HTML hiện tại** (chưa phải Next.js) có máy chủ riêng cho lịch xem phòng, dùng SQLite tích hợp của Node, không thêm dependency:
+
+```bash
+npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở data/ (không commit)
+npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
+npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
+node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
+```
+
+**Luôn tự chạy server xem trước trong terminal của mình, không nhờ AI khởi động hộ.** Nếu để AI chạy nền, tiến trình đó gắn với phiên làm việc của AI và sẽ tắt khi phiên kết thúc, khiến link `localhost:5500` báo lỗi dù trang không có vấn đề gì. Mở một cửa sổ terminal riêng, chạy lệnh ở trên, và **giữ cửa sổ đó mở** suốt lúc làm việc — mỗi lần AI sửa file xong chỉ cần reload trình duyệt.
+
+Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`.
+
+Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999`. Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
 
 ---
 
