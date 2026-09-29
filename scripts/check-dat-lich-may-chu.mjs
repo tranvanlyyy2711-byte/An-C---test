@@ -58,11 +58,15 @@ async function openPage(ctx, path) {
   await p.goto(B + path, { waitUntil: 'domcontentloaded' });
   return p;
 }
+// Đặt thành công thì trang hiện thông báo "Bạn đang đặt lịch xem phòng" (đóng lại để thao tác tiếp),
+// thất bại thì hiện toast lỗi
 const toast = async (p, title) => {
   try {
-    await p.waitForFunction((t) => document.getElementById('toastTitle').textContent.trim() === t, title, { timeout: 5000 });
-    return title;
-  } catch { return (await p.locator('#toastTitle').textContent()).trim(); }
+    await p.waitForFunction((t) => document.getElementById('toastTitle').textContent.trim() === t
+      || !(document.getElementById('bookedOverlay') || { hidden: true }).hidden, title, { timeout: 5000 });
+  } catch {}
+  if (await p.locator('#bookedOverlay').isVisible()) { await p.click('#bookedOk'); return 'Đã gửi yêu cầu'; }
+  return (await p.locator('#toastTitle').textContent()).trim();
 };
 const optionText = (p, sel, idx) => p.evaluate(([s, i]) => { const o = document.querySelectorAll(s + ' option')[i]; return (o.disabled ? 'khoá: ' : 'trống: ') + o.textContent; }, [sel, idx]);
 const waitOption = (p, sel, idx, text) => p.waitForFunction(([s, i, t]) => document.querySelectorAll(s + ' option')[i].textContent === t, [sel, idx, text], { timeout: 5000 }).catch(() => {});

@@ -108,7 +108,14 @@ for (const t of targets) {
   await page.waitForTimeout(200);
   expect('đóng modal sau khi gửi hợp lệ', await page.locator('#apptOverlay').evaluate((el) => el.classList.contains('open')), false);
   expect('số lịch sắp tới tăng lên 4', await items(), 4);
-  expect('toast hiện Đã gửi yêu cầu', await page.locator('#toastTitle').textContent(), 'Đã gửi yêu cầu');
+  expect('hiện thông báo đã đặt lịch', await page.locator('#bookedOverlay').isVisible(), true);
+  expect('thông báo đúng phòng', (await page.locator('#bookedRoom').textContent()).length > 0, true);
+  expect('thông báo đúng giờ', await page.locator('#bookedTime').textContent(), '10:00 - 10:30');
+  expect('focus ở nút xác nhận', await page.evaluate(() => document.activeElement.id), 'bookedOk');
+  expect('thông báo không tràn ngang', await page.evaluate(() => document.querySelector('.booked').getBoundingClientRect().right <= window.innerWidth), true);
+  await shot('da-dat-lich');
+  await page.click('#bookedOk');
+  expect('bấm xác nhận thì đóng thông báo', await page.locator('#bookedOverlay').isVisible(), false);
 
   // ---- Huỷ một lịch ----
   const firstId = await page.locator('#apptList .apt-item').first().getAttribute('data-appt');

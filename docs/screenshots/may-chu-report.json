@@ -97,9 +97,9 @@
   },
   {
     "name": "chủ trọ đặt chồng lên lịch 16:00 bị chặn",
-    "got": "Khung giờ đã có lịch",
+    "got": "Đã xác nhận lịch",
     "want": "Khung giờ đã có lịch",
-    "ok": true
+    "ok": false
   },
   {
     "name": "modal vẫn mở để chọn lại",
@@ -151,8 +151,8 @@
   },
   {
     "name": "không có lỗi JavaScript trên các trang",
-    "got": 0,
+    "got": 1,
     "want": 0,
-    "ok": true
+    "ok": false
   }
 ]

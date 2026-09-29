@@ -40,7 +40,12 @@ await page.click('#rdBookingBtn');
 await page.waitForTimeout(400);
 
 expect('nút đổi nhãn sau khi đặt', (await page.locator('#rdBookingBtn').textContent()).trim(), 'Đã gửi yêu cầu lịch xem');
-expect('hiện toast xác nhận', (await page.locator('#toastTitle').textContent()).trim(), 'Đã gửi yêu cầu');
+expect('hiện thông báo đã đặt lịch', await page.locator('#bookedOverlay').isVisible(), true);
+expect('thông báo đúng phòng', (await page.locator('#bookedRoom').textContent()).trim(), tenPhong);
+expect('thông báo đúng ngày giờ', (await page.locator('#bookedDate').textContent()) + ' ' + (await page.locator('#bookedTime').textContent()), '24/09/2026 15:00 - 15:30');
+await page.screenshot({ path: resolve(outDir, 'tim-phong-da-dat-lich-desktop.png') });
+await page.keyboard.press('Escape');
+expect('Esc chỉ đóng thông báo, chi tiết phòng vẫn mở', [await page.locator('#bookedOverlay').isVisible(), await page.locator('#rdOverlay').evaluate((el) => el.classList.contains('open'))].join(), 'false,true');
 
 const kho = await page.evaluate(() => {
   try { return JSON.parse(window.localStorage.getItem('an-cu-lich-xem-v1')); } catch (e) { return null; }
