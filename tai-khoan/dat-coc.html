@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Đặt cọc phòng — An Cư</title>
+<meta name="description" content="Đặt cọc giữ phòng trên An Cư: nhập thông tin đặt cọc, chuyển khoản và theo dõi chủ trọ xác nhận." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F7FBF7;
+    --surface:#FFFFFF;
+    --surface-2:#F1F8F1;
+    --border:rgba(34,139,34,.12);
+    --border-strong:rgba(34,139,34,.2);
+    --text:#102010;
+    --text-muted:#4B5C4B;
+    --text-dim:#667565;
+    --accent:#228B22;
+    --accent-hover:#1D7C1D;
+    --accent-fg:#FFFFFF;
+    --success:#228B22;
+    --success-ink:#1B7A1B;
+    --warning:#F5B14C;
+    --warning-ink:#8A5A11;
+    --danger:#FF6B6B;
+    --danger-ink:#B4291F;
+    --info:#2F6FED;
+    --info-ink:#1D4FBE;
+    --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
+    --radius-sm:8px;
+    --radius:12px;
+    --radius-lg:16px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:light;-webkit-text-size-adjust:100%}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(900px 480px at 0% 0%, rgba(34,139,34,.07), transparent 70%),
+      radial-gradient(700px 420px at 100% 100%, rgba(34,139,34,.05), transparent 70%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter','Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:'Be Vietnam Pro','Inter',sans-serif;font-weight:700;line-height:1.2;letter-spacing:-.02em;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  button,input,select{font:inherit}
+  ::selection{background:rgba(34,139,34,.25)}
+  [hidden]{display:none !important}
+
+  /* ---------- Nút ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    min-height:48px;padding:0 20px;border-radius:var(--radius);
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;
+    border:1px solid transparent;cursor:pointer;white-space:nowrap;
+    transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 8px 30px -12px rgba(34,139,34,.6)}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-strong)}
+  .btn-ghost:hover{border-color:var(--accent);background:rgba(34,139,34,.04)}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .btn:focus-visible,.link-back:focus-visible,.chip-back:focus-visible,.copy:focus-visible,.pay-opt:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- Khung trang ---------- */
+  .page{width:100%;max-width:600px;margin:0 auto;padding:40px 16px 56px}
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+    box-shadow:0 30px 80px -40px rgba(16,48,16,.28);
+    padding:24px;
+  }
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;min-height:44px}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;color:#fff;font-weight:800;flex-shrink:0}
+  .link-back{
+    display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 4px;
+    font-size:14px;font-weight:500;color:var(--text-muted);border-radius:var(--radius-sm);
+    background:none;border:0;cursor:pointer;
+  }
+  .link-back:hover{color:var(--accent-hover)}
+  .link-back svg,.chip-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ---------- Thanh bước ---------- */
+  .steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);margin:12px 0 22px}
+  .steps li{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 2px}
+  .steps li::before{
+    content:"";position:absolute;top:13px;left:calc(-50% + 16px);right:calc(50% + 16px);height:2px;
+    background:var(--border-strong);border-radius:2px;
+  }
+  .steps li:first-child::before{display:none}
+  .steps li.done::before,.steps li.current::before{background:var(--accent)}
+  .steps .dot{
+    position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:700;
+    background:var(--surface);border:1.5px solid var(--border-strong);color:var(--text-dim);
+    transition:background .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease);
+  }
+  .steps .dot svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .steps li.done .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+  .steps li.current .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px rgba(34,139,34,.14)}
+  .steps .lbl{font-size:12px;line-height:1.3;color:var(--text-dim)}
+  .steps li.current .lbl{color:var(--text);font-weight:600}
+
+  .chip-back{
+    display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;margin-bottom:14px;
+    font-size:13px;font-weight:600;color:var(--success-ink);
+    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;cursor:pointer;
+  }
+  .chip-back:hover{border-color:var(--accent)}
+  .step-head h1{font-size:clamp(1.35rem,4.4vw,1.6rem);margin-bottom:4px;outline:none}
+  .step-head p{color:var(--text-muted);font-size:14.5px;margin-bottom:18px}
+
+  /* ---------- Thẻ phòng ---------- */
+  .room{
+    display:flex;gap:14px;align-items:center;
+    padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);
+  }
+  .room img{width:112px;aspect-ratio:4/3;object-fit:cover;border-radius:10px;flex-shrink:0;background:#e6efe6}
+  .room h3{font-size:15.5px;line-height:1.35;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .room .addr{font-size:13px;color:var(--text-dim);line-height:1.4;margin-bottom:4px}
+  .room .price{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;color:var(--success-ink);font-size:16px}
+  .room .price span{font-size:13px;font-weight:500;color:var(--text-dim)}
+  .room.sm img{width:84px}
+  .room.sm h3{font-size:14px}
+  .room.sm .price{font-size:14.5px}
+
+  /* ---------- Form ---------- */
+  .form{display:flex;flex-direction:column;gap:16px;margin-top:18px}
+  .field label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+  .field label .req{color:var(--danger-ink)}
+  .field label .opt{font-weight:400;color:var(--text-dim)}
+  .field input{
+    width:100%;height:48px;padding:0 14px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    background:var(--surface);color:var(--text);font-size:16px;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .field input::placeholder{color:#8A968A}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.16)}
+  .field input[aria-invalid="true"]{border-color:var(--danger-ink)}
+  .field .hint{font-size:12.5px;color:var(--text-dim);margin-top:6px}
+  .field .err{font-size:12.5px;color:var(--danger-ink);margin-top:6px;font-weight:500}
+  .money{position:relative}
+  .money input{padding-right:40px}
+  .money::after{content:"₫";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-weight:600}
+
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+  .actions .btn{width:100%;padding:0 12px}
+  .actions.single{grid-template-columns:1fr}
+
+  /* ---------- Thanh toán ---------- */
+  .pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .pay-opt{position:relative;display:flex;align-items:center;gap:10px;min-height:52px;padding:0 14px;border:1px solid var(--border-strong);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:600;transition:border-color .18s var(--ease),background .18s var(--ease)}
+  .pay-opt input{position:absolute;opacity:0;pointer-events:none}
+  .pay-opt .radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-strong);flex-shrink:0;display:grid;place-items:center}
+  .pay-opt .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);transform:scale(0);transition:transform .18s var(--ease)}
+  .pay-opt svg{width:18px;height:18px;stroke:var(--text-muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .pay-opt:has(input:checked){border-color:var(--accent);background:rgba(34,139,34,.05)}
+  .pay-opt:has(input:checked) .radio{border-color:var(--accent)}
+  .pay-opt:has(input:checked) .radio::after{transform:scale(1)}
+  .pay-box{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+  .qr{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .qr .code{width:136px;height:136px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:10px}
+  .qr .code svg{width:100%;height:100%;display:block}
+  .qr small{font-size:12px;color:var(--text-dim);text-align:center}
+  .bank dl{display:flex;flex-direction:column;gap:10px}
+  .bank dl > div{display:flex;flex-direction:column;gap:1px}
+  .bank dt{font-size:12.5px;color:var(--text-dim)}
+  .bank dd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:600;font-size:15px;word-break:break-word}
+  .bank dd.amount{color:var(--success-ink);font-family:'Be Vietnam Pro',sans-serif;font-size:17px}
+  .copy{
+    display:inline-grid;place-items:center;width:36px;height:36px;margin:-4px 0;
+    border:0;background:none;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-muted);
+  }
+  .copy:hover{background:rgba(34,139,34,.08);color:var(--accent)}
+  .copy svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .notice{
+    display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;
+    background:rgba(34,139,34,.06);border:1px solid var(--border);border-radius:var(--radius);
+    font-size:13.5px;color:var(--text-muted);line-height:1.5;
+  }
+  .notice svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .notice b{color:var(--text)}
+  .wallet{padding:18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);font-size:14px;color:var(--text-muted)}
+  .wallet dl{margin-top:10px}
+
+  /* ---------- Trang kết quả ---------- */
+  .result{text-align:center}
+  .result .room{text-align:left}
+  .illus{
+    width:96px;height:96px;margin:8px auto 16px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle, rgba(34,139,34,.14), rgba(34,139,34,.04) 70%);
+  }
+  .illus svg{width:46px;height:46px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .illus.warn svg .warn{stroke:var(--warning-ink)}
+  .illus.ok{background:none}
+  .illus.ok span{width:68px;height:68px;border-radius:50%;background:var(--accent);display:grid;place-items:center;box-shadow:0 0 0 10px rgba(34,139,34,.12),0 16px 40px -10px rgba(34,139,34,.6)}
+  .illus.ok svg{width:34px;height:34px;stroke:#fff;stroke-width:2.2}
+  .result h1{font-size:clamp(1.3rem,4.2vw,1.55rem);margin-bottom:6px;outline:none}
+  .result > p{color:var(--text-muted);font-size:14.5px;max-width:42ch;margin:0 auto 20px}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;padding:14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);margin-bottom:18px}
+  .meta dt{font-size:12.5px;color:var(--text-dim)}
+  .meta dd{display:flex;align-items:center;gap:4px;font-weight:600;font-size:14.5px;word-break:break-all}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid;white-space:nowrap}
+  .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .badge.info{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(47,111,237,.22)}
+  .badge.warn{color:var(--warning-ink);background:rgba(245,177,76,.14);border-color:rgba(245,177,76,.35)}
+  .badge.ok{color:var(--success-ink);background:rgba(34,139,34,.08);border-color:rgba(34,139,34,.25)}
+  .sec-title{text-align:left;font-size:14.5px;margin:0 0 10px}
+  .sum{text-align:left;margin-bottom:18px;padding:14px;border:1px solid var(--border);border-radius:var(--radius)}
+  .sum > div{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:4px 0;color:var(--text-muted)}
+  .sum > div b{color:var(--text);font-weight:600}
+  .sum > div.total{border-top:1px solid var(--border);margin-top:6px;padding-top:10px;color:var(--text);font-weight:600}
+  .sum > div.total b{color:var(--success-ink);font-family:'Be Vietnam Pro',sans-serif;font-size:16px}
+  .timeline{list-style:none;text-align:left;margin:0 0 18px;padding:14px;border:1px solid var(--border);border-radius:var(--radius)}
+  .timeline li{position:relative;padding:0 0 12px 26px;font-size:14px;color:var(--text-dim)}
+  .timeline li:last-child{padding-bottom:0}
+  .timeline li::before{content:"";position:absolute;left:5px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--border-strong)}
+  .timeline li::after{content:"";position:absolute;left:10px;top:20px;bottom:-4px;width:1px;background:var(--border-strong)}
+  .timeline li:last-child::after{display:none}
+  .timeline li.done{color:var(--text)}
+  .timeline li.done::before{background:var(--accent);border-color:var(--accent)}
+  .timeline li.now{color:var(--text);font-weight:600}
+  .timeline li.now::before{border-color:var(--warning);background:var(--warning)}
+  .timeline small{display:block;font-weight:400;font-size:12.5px;color:var(--text-dim)}
+
+  .empty{text-align:center;padding:24px 8px}
+  .empty h1{font-size:1.35rem;margin-bottom:6px}
+  .empty p{color:var(--text-muted);margin-bottom:18px}
+
+  /* ---------- Chuyển động ---------- */
+  .view{animation:viewIn .4s var(--ease) both}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .45s var(--ease),transform .45s var(--ease);transition-delay:var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+  @keyframes viewIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){
+    .view{animation:none}
+    .reveal{opacity:1;transform:none;transition:none}
+    .btn,.pay-opt,.steps .dot{transition:none}
+  }
+
+  .toast{position:fixed;left:50%;bottom:24px;z-index:300;max-width:360px;width:calc(100% - 32px);padding:12px 16px;border-radius:var(--radius);background:#102010;color:#fff;box-shadow:0 20px 50px rgba(16,32,16,.25);transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:.25s var(--ease);font-size:14px;text-align:center}
+  .toast.show{transform:translate(-50%,0);opacity:1}
+
+  @media (max-width:520px){
+    .page{padding:16px 12px 40px}
+    .card{padding:18px 16px}
+    .steps .lbl{font-size:11.5px}
+    .room img{width:96px}
+    .pay-box{grid-template-columns:1fr}
+    .qr{flex-direction:row;justify-content:flex-start;gap:14px}
+    .qr .code{width:120px;height:120px}
+    .qr small{text-align:left}
+    .meta{grid-template-columns:1fr}
+    .pay-opts{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+  <div class="card">
+    <div class="card-top">
+      <a href="../index.html" class="brand"><span class="mark">A</span> An Cư</a>
+    </div>
+    <div id="app" aria-live="polite"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  // Luồng đặt cọc (prototype, chưa nối backend thanh toán — thanh toán trực tuyến ngoài phạm vi v1,
+  // ở đây người thuê tự chuyển khoản rồi bấm xác nhận). Mỗi bước là một "trang" riêng có hash
+  // để nút Quay lại của trình duyệt vẫn đi đúng bước:
+  //   (không hash) Thông tin đặt cọc → #thanh-toan → #da-gui → #cho-xac-nhan → #thanh-cong
+  var ROOM_KEY = 'an-cu-dat-coc-phong';
+  var ORDER_KEY = 'an-cu-dat-coc-don';
+  var STEPS = ['thong-tin', 'thanh-toan', 'da-gui', 'cho-xac-nhan', 'thanh-cong'];
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var app = document.getElementById('app');
+  var nf = new Intl.NumberFormat('vi-VN');
+  function vnd(n){ return nf.format(n) + '₫'; }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function readJson(key){ try{ return JSON.parse(localStorage.getItem(key) || 'null'); }catch(e){ return null; } }
+  function writeJson(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+  var ICON = {
+    back:'<svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+    next:'<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+    check:'<svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg>',
+    copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    bank:'<svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>',
+    wallet:'<svg viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>',
+    info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    home:'<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>',
+    calClock:'<svg viewBox="0 0 24 24"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4M8 2v4M3 10h5"/><circle cx="17.5" cy="17.5" r="4.5"/><path d="M17.5 15.5v2l1.5 1"/></svg>',
+    clipAlert:'<svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path class="warn" d="M12 11v4M12 18h.01"/></svg>'
+  };
+
+  // ---------- Dữ liệu ----------
+  var params = new URLSearchParams(location.search);
+  var roomId = params.get('phong');
+  // Vào từ trang Thanh toán (phòng đã xem xong ở Lịch xem phòng) thì nút quay lại trả về đó
+  var FROM_PAY = params.get('tu') === 'thanh-toan';
+  var room = readJson(ROOM_KEY);
+  if(!room || (roomId && room.id !== roomId)) room = null;
+
+  var order = readJson(ORDER_KEY);
+  if(order && (!room || order.roomId !== room.id)) order = null;
+
+  // Người thuê: có máy chủ (npm start) và đã đăng nhập thì lấy tài khoản thật, không thì người thuê mô phỏng
+  var NGUOI_THUE_MAU = {
+    'u-trang': { name:'Phạm Thu Trang', phone:'0901234567' },
+    'u-an':    { name:'Nguyễn Văn An',  phone:'0912000111' },
+    'u-linh':  { name:'Trần Mỹ Linh',   phone:'0987000222' },
+    'u-huy':   { name:'Lê Quang Huy',   phone:'0933000333' }
+  };
+  var renter = (function(){
+    var id = null; try{ id = localStorage.getItem('an-cu-nguoi-thue'); }catch(e){}
+    return NGUOI_THUE_MAU[id] || NGUOI_THUE_MAU['u-trang'];
+  })();
+  var renterReady = (/^https?:$/.test(location.protocol) && window.fetch)
+    ? fetch('/api/toi', { cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){ if(j && j.user && j.user.role === 'renter') renter = { name:j.user.name, phone:j.user.phone }; })
+        .catch(function(){})
+    : Promise.resolve();
+
+  // Tài khoản nhận cọc: dữ liệu mẫu cho prototype
+  var BANK = { name:'Vietcombank', number:'1224 5478 0089', holder:'NGUYEN VAN A' };
+
+  function ymd(d){
+    var p = new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Ho_Chi_Minh', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(d);
+    var o = {}; p.forEach(function(x){ o[x.type] = x.value; });
+    return o.year + o.month + o.day;
+  }
+  function fmtTime(iso){
+    return new Intl.DateTimeFormat('vi-VN', { timeZone:'Asia/Ho_Chi_Minh', hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric' }).format(new Date(iso));
+  }
+  function newCode(){ return 'ANCU' + ymd(new Date()) + '-' + String(Math.floor(1000 + Math.random()*9000)); }
+  function transferNote(o){ return 'COC ' + o.code.replace('ANCU','') + ' ' + o.phone.slice(-4); }
+
+  // ---------- Điều hướng giữa các bước ----------
+  function currentStep(){
+    var h = location.hash.replace('#','');
+    return STEPS.indexOf(h) > 0 ? h : 'thong-tin';
+  }
+  // Bước sau chỉ mở khi đã có đủ dữ liệu của các bước trước
+  function allowed(step){
+    if(step === 'thong-tin') return true;
+    if(!order) return false;
+    var reached = STEPS.indexOf(order.reached || 'thanh-toan');
+    return STEPS.indexOf(step) <= reached;
+  }
+  function go(step){
+    if(order && STEPS.indexOf(step) > STEPS.indexOf(order.reached || 'thong-tin')){
+      order.reached = step;
+      writeJson(ORDER_KEY, order);
+    }
+    var url = location.pathname + location.search + (step === 'thong-tin' ? '' : '#' + step);
+    history.pushState(null, '', url);
+    render(true);
+    window.scrollTo({ top:0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  window.addEventListener('popstate', function(){ render(true); });
+
+  // ---------- Thành phần dùng chung ----------
+  function stepper(active){
+    var labels = ['Xác nhận thuê', 'Thông tin đặt cọc', 'Thanh toán', 'Hoàn tất'];
+    return '<ol class="steps" aria-label="Các bước đặt cọc">' + labels.map(function(l, i){
+      var st = i < active ? 'done' : i === active ? 'current' : '';
+      return '<li class="' + st + '"' + (i === active ? ' aria-current="step"' : '') + '>' +
+        '<span class="dot">' + (i < active ? ICON.check : (i + 1)) + '</span><span class="lbl">' + l + '</span></li>';
+    }).join('') + '</ol>';
+  }
+  function roomCard(sm){
+    return '<div class="room' + (sm ? ' sm' : '') + ' reveal">' +
+      '<img src="' + esc(room.image) + '" alt="' + esc(room.alt || room.title) + '" />' +
+      '<div><h3>' + esc(room.title) + '</h3>' +
+      (sm ? '<p class="addr">' + esc(room.address) + '</p>' : '') +
+      '<p class="price">' + vnd(room.price) + '<span>/tháng</span></p></div></div>';
+  }
+  function backLink(label, target){
+    return '<button type="button" class="link-back" data-go="' + target + '">' + ICON.back + label + '</button>';
+  }
+  function copyBtn(text, label){
+    return '<button type="button" class="copy" data-copy="' + esc(text) + '" aria-label="Sao chép ' + label + '">' + ICON.copy + '</button>';
+  }
+
+  // ---------- Bước: Thông tin đặt cọc ----------
+  function viewInfo(){
+    var o = order || {};
+    var dep = o.deposit || room.deposit || room.price;
+    return backLink('Quay lại', 'phong') + stepper(1) +
+      '<button type="button" class="chip-back" data-go="phong">' + ICON.back + (FROM_PAY ? 'Xác nhận thuê' : 'Thông tin phòng') + '</button>' +
+      '<div class="step-head reveal"><h1 tabindex="-1">Thông tin đặt cọc</h1>' +
+      '<p>Hãy kiểm tra và chốt số tiền đặt cọc (tương đương 1 tháng tiền phòng).</p></div>' +
+      roomCard(false) +
+      '<form class="form" id="infoForm" novalidate>' +
+        '<div class="field reveal"><label for="fDeposit">Số tiền cọc <span class="req">*</span></label>' +
+          '<div class="money"><input id="fDeposit" name="deposit" inputmode="numeric" autocomplete="off" value="' + nf.format(dep) + '" aria-describedby="fDepositHint fDepositErr" /></div>' +
+          '<p class="hint" id="fDepositHint">Tối thiểu ' + vnd(room.price) + ', tối đa ' + vnd(room.price * 3) + '.</p>' +
+          '<p class="err" id="fDepositErr" hidden></p></div>' +
+        '<div class="field reveal"><label for="fPhone">Số điện thoại <span class="req">*</span></label>' +
+          '<input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0901 234 567" value="' + esc(o.phone || renter.phone) + '" aria-describedby="fPhoneErr" />' +
+          '<p class="err" id="fPhoneErr" hidden></p></div>' +
+        '<div class="field reveal"><label for="fEmail">Email <span class="opt">(không bắt buộc)</span></label>' +
+          '<input id="fEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Nhập email để nhận biên nhận" value="' + esc(o.email || '') + '" aria-describedby="fEmailErr" />' +
+          '<p class="err" id="fEmailErr" hidden></p></div>' +
+        '<div class="actions">' +
+          '<button type="button" class="btn btn-ghost" data-go="phong">' + ICON.back + 'Quay lại</button>' +
+          '<button type="submit" class="btn btn-primary">Tiếp tục' + ICON.next + '</button>' +
+        '</div>' +
+      '</form>';
+  }
+  function bindInfo(){
+    var form = document.getElementById('infoForm');
+    var dep = document.getElementById('fDeposit');
+    // Tiền là số nguyên VND: chỉ giữ chữ số và định dạng lại khi gõ
+    dep.addEventListener('input', function(){
+      var digits = dep.value.replace(/\D/g,'').slice(0, 12);
+      dep.value = digits ? nf.format(Number(digits)) : '';
+    });
+    renterReady.then(function(){
+      var ph = document.getElementById('fPhone');
+      if(ph && !order && ph.value !== renter.phone && document.activeElement !== ph) ph.value = renter.phone;
+    });
+    function setErr(input, errId, msg){
+      var el = document.getElementById(errId);
+      el.textContent = msg || ''; el.hidden = !msg;
+      input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      return !msg;
+    }
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var amount = Number(dep.value.replace(/\D/g,''));
+      var phEl = document.getElementById('fPhone');
+      var emEl = document.getElementById('fEmail');
+      var phone = phEl.value.replace(/[\s.-]/g,'');
+      var email = emEl.value.trim();
+      var ok = true, first = null;
+      function check(input, errId, msg){ if(!setErr(input, errId, msg)){ ok = false; first = first || input; } }
+      check(dep, 'fDepositErr',
+        !amount ? 'Vui lòng nhập số tiền cọc.' :
+        amount < room.price ? 'Tiền cọc tối thiểu bằng 1 tháng tiền phòng (' + vnd(room.price) + ').' :
+        amount > room.price * 3 ? 'Tiền cọc không vượt quá 3 tháng tiền phòng (' + vnd(room.price * 3) + ').' : '');
+      check(phEl, 'fPhoneErr',
+        !phone ? 'Vui lòng nhập số điện thoại.' :
+        !/^0\d{9}$/.test(phone) ? 'Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.' : '');
+      check(emEl, 'fEmailErr', email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Email chưa đúng định dạng.' : '');
+      if(!ok){ first.focus(); return; }
+
+      order = order || { code:newCode(), roomId:room.id, createdAt:new Date().toISOString(), method:'bank' };
+      order.deposit = amount; order.phone = phone; order.email = email;
+      order.name = renter.name;
+      writeJson(ORDER_KEY, order);
+      go('thanh-toan');
+    });
+  }
+
+  // ---------- Bước: Phương thức thanh toán ----------
+  function viewPay(){
+    var note = transferNote(order);
+    var bank = order.method !== 'wallet';
+    return backLink('Quay lại', 'thong-tin') + stepper(2) +
+      '<button type="button" class="chip-back" data-go="thong-tin">' + ICON.back + 'Thông tin đặt cọc</button>' +
+      '<div class="step-head reveal"><h1 tabindex="-1">Phương thức thanh toán</h1>' +
+      '<p>Chọn phương thức và quét mã để chuyển tiền cọc cho chủ trọ.</p></div>' +
+      '<fieldset class="pay-opts reveal" style="border:0"><legend class="sr" hidden>Phương thức thanh toán</legend>' +
+        '<label class="pay-opt"><input type="radio" name="method" value="bank"' + (bank ? ' checked' : '') + ' /><span class="radio"></span>' + ICON.bank + 'Chuyển khoản ngân hàng</label>' +
+        '<label class="pay-opt"><input type="radio" name="method" value="wallet"' + (!bank ? ' checked' : '') + ' /><span class="radio"></span>' + ICON.wallet + 'Ví điện tử</label>' +
+      '</fieldset>' +
+      '<div class="pay-box reveal">' +
+        '<div class="qr"><div class="code">' + qrSvg(order.code) + '</div><small>Quét mã để thanh toán<br />bằng ' + (bank ? 'ứng dụng ngân hàng' : 'ví điện tử') + '</small></div>' +
+        '<div class="bank"><dl>' +
+          (bank
+            ? '<div><dt>Ngân hàng</dt><dd>' + BANK.name + '</dd></div>' +
+              '<div><dt>Số tài khoản</dt><dd>' + BANK.number + copyBtn(BANK.number.replace(/\s/g,''), 'số tài khoản') + '</dd></div>'
+            : '<div><dt>Ví nhận</dt><dd>Ví điện tử của chủ trọ</dd></div>' +
+              '<div><dt>Số ví</dt><dd>' + esc(room.phone || '0988 000 999') + copyBtn((room.phone || '0988000999').replace(/\s/g,''), 'số ví') + '</dd></div>') +
+          '<div><dt>Chủ tài khoản</dt><dd>' + BANK.holder + '</dd></div>' +
+          '<div><dt>Số tiền</dt><dd class="amount">' + vnd(order.deposit) + copyBtn(String(order.deposit), 'số tiền') + '</dd></div>' +
+          '<div><dt>Nội dung chuyển khoản (bắt buộc)</dt><dd>' + esc(note) + copyBtn(note, 'nội dung chuyển khoản') + '</dd></div>' +
+        '</dl></div>' +
+      '</div>' +
+      '<p class="notice reveal">' + ICON.info + '<span>Sau khi chuyển tiền, bấm <b>“Tôi đã thanh toán”</b> để An Cư kiểm tra và báo chủ trọ xác nhận.</span></p>' +
+      '<div class="actions">' +
+        '<button type="button" class="btn btn-ghost" data-go="thong-tin">' + ICON.back + 'Quay lại</button>' +
+        '<button type="button" class="btn btn-primary" id="paidBtn">Tôi đã thanh toán' + ICON.next + '</button>' +
+      '</div>';
+  }
+  function bindPay(){
+    app.querySelectorAll('input[name="method"]').forEach(function(r){
+      r.addEventListener('change', function(){
+        order.method = r.value; writeJson(ORDER_KEY, order);
+        render(); var sel = app.querySelector('input[name="method"]:checked'); if(sel) sel.focus();
+      });
+    });
+    document.getElementById('paidBtn').addEventListener('click', function(){
+      order.paidAt = new Date().toISOString();
+      writeJson(ORDER_KEY, order);
+      go('da-gui');
+    });
+  }
+
+  // Mã QR trang trí (sinh giả từ mã đơn, không mã hoá dữ liệu thật) — prototype chưa có cổng thanh toán
+  function qrSvg(seed){
+    var n = 25, h = 0, cells = '';
+    for(var i=0;i<seed.length;i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    function rnd(){ h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; }
+    function finder(x, y){ return x < 7 && y < 7 || x >= n-7 && y < 7 || x < 7 && y >= n-7; }
+    for(var y=0;y<n;y++) for(var x=0;x<n;x++){
+      if(finder(x, y)) continue;
+      if(rnd() < .48) cells += 'M' + x + ' ' + y + 'h1v1h-1z';
+    }
+    function eye(x, y){ return '<path d="M' + x + ' ' + y + 'h7v7h-7zM' + (x+1) + ' ' + (y+1) + 'v5h5v-5z" fill-rule="evenodd"/><path d="M' + (x+2) + ' ' + (y+2) + 'h3v3h-3z"/>'; }
+    return '<svg viewBox="0 0 ' + n + ' ' + n + '" role="img" aria-label="Mã QR thanh toán mẫu" shape-rendering="crispEdges" fill="#102010">' +
+      '<path d="' + cells + '"/>' + eye(0,0) + eye(n-7,0) + eye(0,n-7) + '</svg>';
+  }
+
+  // ---------- Bước: Kết quả ----------
+  function metaBlock(badgeCls, badgeText){
+    return '<dl class="meta reveal">' +
+      '<div><dt>Mã đơn cọc</dt><dd>' + esc(order.code) + copyBtn(order.code, 'mã đơn cọc') + '</dd></div>' +
+      '<div><dt>Trạng thái</dt><dd><span class="badge ' + badgeCls + '">' + badgeText + '</span></dd></div>' +
+    '</dl>';
+  }
+  function roomBlock(){
+    return '<h2 class="sec-title reveal">Thông tin phòng</h2>' + roomCard(true);
+  }
+  function timeline(stage){
+    var items = [
+      ['Đã gửi thông tin đặt cọc', order.paidAt ? fmtTime(order.paidAt) : ''],
+      ['An Cư kiểm tra giao dịch', stage > 1 ? 'Đã nhận ' + vnd(order.deposit) : 'Thường trong vòng 15 phút'],
+      ['Chủ trọ xác nhận giữ phòng', stage > 2 ? fmtTime(order.confirmedAt) : 'Trong vòng 24 giờ']
+    ];
+    return '<ol class="timeline reveal">' + items.map(function(it, i){
+      var cls = i < stage ? 'done' : i === stage ? 'now' : '';
+      return '<li class="' + cls + '">' + it[0] + '<small>' + esc(it[1]) + '</small></li>';
+    }).join('') + '</ol>';
+  }
+
+  function viewSent(){
+    return '<div class="result">' +
+      '<div class="illus reveal">' + ICON.calClock + '</div>' +
+      '<h1 tabindex="-1" class="reveal">Đã gửi thông tin đặt cọc!</h1>' +
+      '<p class="reveal">Cảm ơn bạn đã đặt cọc phòng trên An Cư. Chúng tôi đang kiểm tra giao dịch và sẽ báo ngay khi có kết quả.</p>' +
+      metaBlock('info', 'Đang kiểm tra thanh toán') + timeline(1) + roomBlock() +
+      '<div class="actions">' +
+        '<a class="btn btn-ghost" href="../index.html">' + ICON.home + 'Về trang chủ</a>' +
+        '<button type="button" class="btn btn-primary" id="nextBtn">Theo dõi trạng thái' + ICON.next + '</button>' +
+      '</div></div>';
+  }
+  function viewWaiting(){
+    return '<div class="result">' +
+      '<div class="illus warn reveal">' + ICON.clipAlert + '</div>' +
+      '<h1 tabindex="-1" class="reveal">Đang chờ chủ trọ xác nhận</h1>' +
+      '<p class="reveal">An Cư đã nhận tiền cọc của bạn. Chủ trọ sẽ xác nhận giữ phòng trong vòng 24 giờ, bạn sẽ nhận thông báo qua số ' + esc(order.phone) + '.</p>' +
+      metaBlock('warn', 'Chờ chủ trọ xác nhận') + timeline(2) + roomBlock() +
+      '<div class="actions">' +
+        '<a class="btn btn-ghost" href="../index.html">' + ICON.home + 'Về trang chủ</a>' +
+        '<button type="button" class="btn btn-primary" id="nextBtn">Kiểm tra xác nhận' + ICON.next + '</button>' +
+      '</div></div>';
+  }
+  function viewDone(){
+    return '<div class="result">' +
+      '<div class="illus ok reveal"><span>' + ICON.check + '</span></div>' +
+      '<h1 tabindex="-1" class="reveal">Thanh toán thành công!</h1>' +
+      '<p class="reveal">Chủ trọ đã xác nhận giữ phòng cho bạn. Hợp đồng thuê sẽ được gửi để bạn xem và ký trên An Cư.</p>' +
+      metaBlock('ok', 'Đã xác nhận') +
+      '<h2 class="sec-title reveal">Thông tin thanh toán</h2>' +
+      '<div class="sum reveal">' +
+        '<div><span>Phương thức</span><b>' + (order.method === 'wallet' ? 'Ví điện tử' : 'Chuyển khoản ngân hàng') + '</b></div>' +
+        '<div><span>Thời gian</span><b>' + fmtTime(order.paidAt) + '</b></div>' +
+        '<div><span>Tiền cọc</span><b>' + vnd(order.deposit) + '</b></div>' +
+        '<div><span>Phí dịch vụ</span><b>' + vnd(0) + '</b></div>' +
+        '<div class="total"><span>Tổng thanh toán</span><b>' + vnd(order.deposit) + '</b></div>' +
+      '</div>' + roomBlock() +
+      '<div class="actions">' +
+        '<a class="btn btn-ghost" href="../index.html">' + ICON.home + 'Về trang chủ</a>' +
+        '<a class="btn btn-primary" href="thanh-toan-tien-nha.html">Về trang thanh toán</a>' +
+      '</div></div>';
+  }
+
+  function viewEmpty(){
+    return '<div class="empty"><h1 tabindex="-1">Chưa chọn phòng để đặt cọc</h1>' +
+      '<p>Hãy mở một phòng, bấm “Thuê phòng này” và xác nhận để bắt đầu đặt cọc.</p>' +
+      '<a class="btn btn-primary" href="tim-phong.html">Tìm phòng</a></div>';
+  }
+
+  // ---------- Hiển thị ----------
+  function render(moveFocus){
+    if(!room){ app.innerHTML = '<div class="view">' + viewEmpty() + '</div>'; document.title = 'Đặt cọc phòng — An Cư'; return; }
+    var step = currentStep();
+    if(!allowed(step)){ history.replaceState(null, '', location.pathname + location.search); step = 'thong-tin'; }
+    var html = step === 'thanh-toan' ? viewPay() :
+               step === 'da-gui' ? viewSent() :
+               step === 'cho-xac-nhan' ? viewWaiting() :
+               step === 'thanh-cong' ? viewDone() : viewInfo();
+    app.innerHTML = '<div class="view">' + html + '</div>';
+
+    var titles = { 'thong-tin':'Thông tin đặt cọc', 'thanh-toan':'Phương thức thanh toán', 'da-gui':'Đã gửi thông tin đặt cọc', 'cho-xac-nhan':'Chờ chủ trọ xác nhận', 'thanh-cong':'Thanh toán thành công' };
+    document.title = titles[step] + ' — An Cư';
+
+    if(step === 'thong-tin') bindInfo();
+    if(step === 'thanh-toan') bindPay();
+    var next = document.getElementById('nextBtn');
+    if(next) next.addEventListener('click', function(){
+      if(step === 'da-gui') go('cho-xac-nhan');
+      else { order.confirmedAt = new Date().toISOString(); writeJson(ORDER_KEY, order); go('thanh-cong'); }
+    });
+    reveal();
+    var h1 = app.querySelector('h1');
+    if(h1 && moveFocus) h1.focus({ preventScroll:true });
+  }
+
+  // Nút quay lại / chuyển bước dùng chung
+  app.addEventListener('click', function(e){
+    var g = e.target.closest('[data-go]');
+    if(g){
+      var t = g.getAttribute('data-go');
+      if(t === 'phong'){ location.href = FROM_PAY ? 'thanh-toan-tien-nha.html' : 'tim-phong.html'; return; }
+      if(history.length > 1 && STEPS.indexOf(t) === STEPS.indexOf(currentStep()) - 1) history.back();
+      else go(t);
+      return;
+    }
+    var c = e.target.closest('[data-copy]');
+    if(c) copy(c.getAttribute('data-copy'));
+  });
+
+  function copy(text){
+    var done = function(){ toast('Đã sao chép: ' + text); };
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly','');
+      ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(e){ toast('Không sao chép được, hãy chép thủ công.'); }
+      ta.remove();
+    }
+  }
+  var toastTimer = null;
+  function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  // Reveal khi cuộn, stagger nhẹ cho từng khối; tắt hẳn khi giảm chuyển động
+  var io = !reduce && 'IntersectionObserver' in window ? new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin:'0px 0px -10% 0px' }) : null;
+  function reveal(){
+    app.querySelectorAll('.reveal').forEach(function(el, i){
+      if(!io){ el.classList.add('in'); return; }
+      el.style.setProperty('--d', Math.min(i * 0.05, 0.35) + 's');
+      io.observe(el);
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

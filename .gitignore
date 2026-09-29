@@ -1,0 +1,2 @@
+# Cơ sở dữ liệu SQLite của máy chủ prototype (tự tạo khi chạy npm start)
+data/

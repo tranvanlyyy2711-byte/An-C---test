@@ -1,0 +1,98 @@
+[
+  {
+    "name": "nút đổi nhãn sau khi đặt",
+    "got": "Đã gửi yêu cầu lịch xem",
+    "want": "Đã gửi yêu cầu lịch xem",
+    "ok": true
+  },
+  {
+    "name": "hiện toast xác nhận",
+    "got": "Đã gửi yêu cầu",
+    "want": "Đã gửi yêu cầu",
+    "ok": true
+  },
+  {
+    "name": "đã ghi vào kho",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "bản ghi có nguồn tim-phong",
+    "got": "tim-phong",
+    "want": "tim-phong",
+    "ok": true
+  },
+  {
+    "name": "bản ghi ở trạng thái chờ xác nhận",
+    "got": "pending",
+    "want": "pending",
+    "ok": true
+  },
+  {
+    "name": "bản ghi giữ đúng tên phòng",
+    "got": "Phòng khép kín, gần các trường Bách Kinh Xây",
+    "want": "Phòng khép kín, gần các trường Bách Kinh Xây",
+    "ok": true
+  },
+  {
+    "name": "bản ghi có số chủ trọ",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "chưa gắn cờ seeded",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "lịch vừa đặt xuất hiện bên trang lịch xem",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "tab Sắp tới có 4 lịch",
+    "got": 4,
+    "want": 4,
+    "ok": true
+  },
+  {
+    "name": "huy hiệu sidebar bằng 4",
+    "got": "4",
+    "want": "4",
+    "ok": true
+  },
+  {
+    "name": "dữ liệu mẫu được gieo cạnh bản ghi cũ",
+    "got": 6,
+    "want": 6,
+    "ok": true
+  },
+  {
+    "name": "đã gắn cờ seeded",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "không có mã trùng",
+    "got": 6,
+    "want": 6,
+    "ok": true
+  },
+  {
+    "name": "quay lại trang tìm phòng được",
+    "got": 18,
+    "want": 18,
+    "ok": true
+  },
+  {
+    "name": "không có lỗi JS",
+    "got": 0,
+    "want": 0,
+    "ok": true
+  }
+]

@@ -38,7 +38,7 @@ for (const t of targets) {
   };
 
   await page.waitForSelector('#roomGrid .room');
-  expect('số phòng mặc định', await cards(), 9);
+  expect('số phòng mặc định', await cards(), 6);
 
   // Cuộn hết trang một lượt để ảnh lazy-load kịp vào khung chụp
   await page.evaluate(async () => {
@@ -63,13 +63,29 @@ for (const t of targets) {
   await page.waitForTimeout(400);
   await shot('finder');
 
-  // Lọc theo vị trí
-  await page.selectOption('#fArea', 'Ngô Quyền');
+  // Lọc theo vị trí — qua modal Vị trí thật (Khu vực / Phường-Xã), không thao tác DOM ẩn.
+  await page.click('#locationTrigger');
+  await page.waitForTimeout(200);
+  expect('mở modal vị trí', await page.locator('#filterOverlay').evaluate((el) => el.classList.contains('open')), true);
+  expect('tab mặc định là Khu vực', (await page.locator('.filter-tab.active').textContent()).trim(), 'Khu vực');
+  await page.fill('#filterSearch', 'Nghĩa Đô');
   await page.waitForTimeout(150);
-  expect('lọc Ngô Quyền', await cards(), 3);
+  await page.click('#areaList .filter-chip');
+  await page.click('#filterApply');
+  await page.waitForTimeout(150);
+  expect('lọc theo khu vực Nghĩa Đô', await cards(), 1);
+
+  // Bỏ chọn lại (không có nút "Xoá bộ lọc" ở khu rooms của trang chủ)
+  await page.click('#locationTrigger');
+  await page.waitForTimeout(200);
+  await page.fill('#filterSearch', 'Nghĩa Đô');
+  await page.waitForTimeout(150);
+  await page.click('#areaList .filter-chip.active');
+  await page.click('#filterApply');
+  await page.waitForTimeout(150);
+  expect('bỏ lọc vị trí trả lại đủ phòng', await cards(), 6);
 
   // Lọc theo giá
-  await page.selectOption('#fArea', '');
   await page.selectOption('#fPrice', '2000000-3000000');
   await page.waitForTimeout(150);
   expect('lọc giá 2-3 triệu', await cards(), 2);
@@ -84,8 +100,7 @@ for (const t of targets) {
   expect('lọc nuôi thú cưng', await cards(), 3);
 
   // Trạng thái rỗng
-  await page.click('.qc[data-amen="Nuôi thú cưng"]');
-  await page.selectOption('#fArea', 'Kiến An');
+  await page.click('.qc[data-amen="Giờ giấc tự do"]');
   await page.click('.qc[data-amen="Có bếp riêng"]');
   await page.waitForTimeout(150);
   expect('không có kết quả', await cards(), 0);
@@ -94,10 +109,12 @@ for (const t of targets) {
   await page.waitForTimeout(200);
   await shot('empty');
 
-  // Xoá bộ lọc
-  await page.click('#roomReset');
+  // Xoá bộ lọc (không có nút "Xoá bộ lọc" ở khu rooms của trang chủ, bỏ chọn thủ công)
+  await page.click('.qc[data-amen="Nuôi thú cưng"]');
+  await page.click('.qc[data-amen="Giờ giấc tự do"]');
+  await page.click('.qc[data-amen="Có bếp riêng"]');
   await page.waitForTimeout(150);
-  expect('xoá bộ lọc trả lại đủ phòng', await cards(), 9);
+  expect('xoá bộ lọc trả lại đủ phòng', await cards(), 6);
 
   // Sắp xếp theo giá tăng dần
   await page.selectOption('#fSort', 'asc');
@@ -112,7 +129,7 @@ for (const t of targets) {
   const title = (await page.locator('#rdTitle').textContent()).trim();
   const addr = (await page.locator('#rdAddr').textContent()).trim();
   expect('tiêu đề chi tiết', title, 'Phòng trọ giá mềm cho sinh viên');
-  expect('địa chỉ đầy đủ', addr.includes('Dương Kinh'), true);
+  expect('địa chỉ đầy đủ', addr.includes('Từ Liêm'), true);
   expect('có đủ 4 ảnh', await page.locator('#rdThumbs button').count(), 4);
   expect('có 4 thông số', await page.locator('#rdSpecs div').count(), 4);
   await shot('detail');

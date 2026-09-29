@@ -62,20 +62,35 @@
     .btn:hover{background:var(--accent-hover)}
     .btn.ghost{background:transparent;border-color:var(--border);color:var(--text)}
     .btn.ghost:hover{background:var(--surface-2)}
-    .saved-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-    .saved-card{display:flex;gap:14px;align-items:stretch;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 10px 24px rgba(17,24,39,.03)}
-    .saved-card .img{position:relative;width:180px;flex-shrink:0}
-    .saved-card .img img{width:100%;height:100%;object-fit:cover}
-    .saved-card .img .badge{position:absolute;left:10px;bottom:10px;background:rgba(10,10,12,.8);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
-    .saved-card .content{flex:1;min-width:0;padding:16px 16px 16px 0;display:flex;flex-direction:column;gap:10px}
-    .saved-card h3{margin:0;font-size:1.05rem;line-height:1.35}
-    .saved-card .meta{display:flex;flex-wrap:wrap;gap:8px;color:var(--text-muted);font-size:13px}
-    .saved-card .meta span{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
-    .saved-card .meta svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+    .saved-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+    .saved-card{
+      display:grid;grid-template-columns:1.1fr 1.3fr;gap:0;align-items:stretch;
+      border:1px solid var(--border);background:var(--surface);border-radius:18px;overflow:hidden;
+      box-shadow:0 12px 28px rgba(17,24,39,.04);transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .saved-card:hover{transform:translateY(-2px);box-shadow:0 18px 36px rgba(17,24,39,.06)}
+    .saved-card .img{position:relative;height:100%;min-height:260px;background:#edf3ee}
+    .saved-card .img img{width:100%;height:100%;object-fit:cover;display:block}
+    .saved-card .img .badge{position:absolute;left:12px;bottom:12px;background:rgba(10,10,12,.8);color:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+    .saved-card .content{display:flex;flex-direction:column;gap:12px;padding:18px 18px 16px}
+    .saved-card .meta-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .saved-card h3{margin:0;font-size:1.06rem;line-height:1.4;letter-spacing:-.01em}
+    .saved-card .location{display:flex;align-items:flex-start;gap:8px;color:var(--text-muted);font-size:13px;line-height:1.5}
+    .saved-card .location svg{width:14px;height:14px;stroke:var(--text-dim);fill:none;stroke-width:1.8;margin-top:1px;flex-shrink:0}
+    .saved-card .price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .saved-card .price{font-size:clamp(1.4rem,2vw,2rem);font-family:'Be Vietnam Pro',sans-serif;font-weight:800;color:var(--accent);letter-spacing:-.03em}
+    .saved-card .price small{font-size:.75em;color:var(--text-dim);font-weight:600}
+    .saved-card .tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(34,139,34,.1);color:var(--accent);font-size:12.5px;font-weight:700}
+    .saved-card .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px}
+    .saved-card .stats span{display:inline-flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--border);background:var(--surface-2);border-radius:999px;font-size:12.5px;color:var(--text-muted)}
+    .saved-card .stats svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+    .saved-card .desc{margin:0;color:var(--text-muted);font-size:13.5px;line-height:1.6}
     .saved-card .actions{display:flex;gap:10px;margin-top:auto;flex-wrap:wrap}
-    .saved-card .actions .btn{height:40px;font-size:14px}
-    .saved-card .remove-btn{border-color:rgba(225,91,91,.26);background:rgba(225,91,91,.06);color:var(--danger)}
-    .saved-card .remove-btn:hover{background:rgba(225,91,91,.12)}
+    .saved-card .btn{height:42px;padding:0 18px;border-radius:12px;font-size:14px}
+    .saved-card .btn.secondary{background:transparent;border-color:var(--border);color:var(--text)}
+    .saved-card .btn.secondary:hover{background:var(--surface-2)}
+    .saved-card .remove-btn{border-color:rgba(225,91,91,.22);background:rgba(225,91,91,.04);color:var(--danger)}
+    .saved-card .remove-btn:hover{background:rgba(225,91,91,.1)}
     .empty{display:none;text-align:center;padding:56px 24px;border:1px dashed var(--border-strong);border-radius:var(--radius-lg);background:var(--surface)}
     .empty.show{display:block}
     .empty h2{margin:0 0 8px;font-size:1.4rem}
@@ -86,9 +101,11 @@
       .saved-grid{grid-template-columns:1fr}
     }
     @media (max-width:640px){
-      .saved-card{flex-direction:column}
-      .saved-card .img{width:100%;height:220px}
+      .saved-card{grid-template-columns:1fr}
+      .saved-card .img{min-height:220px}
       .saved-card .content{padding:14px}
+      .saved-card .actions{flex-direction:column}
+      .saved-card .actions .btn{width:100%}
     }
   </style>
 </head>
@@ -108,6 +125,10 @@
         <a href="dat-lich.html" class="side-link" data-route="/tai-khoan/lich-xem">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>
           Lịch xem phòng
+        </a>
+        <a href="thanh-toan-tien-nha.html" class="side-link" data-route="/tai-khoan/thanh-toan">
+          <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          Thanh toán
         </a>
       </nav>
     </aside>
@@ -191,15 +212,28 @@
         var room = findRoomById(id);
         if (!room) return '';
         return '<article class="saved-card">' +
-          '<div class="img"><img src="' + room.image + '" alt="' + room.title + '" /><span class="badge">' + formatVnd(room.price) + '/th</span></div>' +
+          '<div class="img">' +
+            '<img src="' + room.image + '" alt="' + room.title + '" />' +
+            '<span class="badge">' + formatVnd(room.price) + '/th</span>' +
+          '</div>' +
           '<div class="content">' +
-            '<h3>' + room.title + '</h3>' +
-            '<div class="meta">' +
-              '<span><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' + room.ward + ', ' + room.district + '</span>' +
-              '<span><svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>' + room.area + ' m²</span>' +
+            '<div class="meta-top">' +
+              '<h3>' + room.title + '</h3>' +
             '</div>' +
+            '<div class="location"><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>' + room.address + '</span></div>' +
+            '<div class="price-row">' +
+              '<div class="price">' + formatVnd(room.price) + '<small>/tháng</small></div>' +
+              '<span class="tag">✅ Phòng sẵn</span>' +
+            '</div>' +
+            '<div class="stats">' +
+              '<span><svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>' + room.area + ' m²</span>' +
+              '<span><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>' + room.people + ' người</span>' +
+              '<span><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M8 11h8"/></svg>Máy lạnh</span>' +
+            '</div>' +
+            '<p class="desc">Phòng phù hợp cho sinh viên, người đi làm hoặc cặp đôi muốn ở yên tĩnh, tiện nghi và gần trung tâm thành phố.</p>' +
             '<div class="actions">' +
-              '<a class="btn" href="tim-phong.html">Xem chi tiết</a>' +
+              '<button class="btn secondary" type="button">Đặt cọc</button>' +
+              '<a class="btn" href="tim-phong.html">Đặt lịch xem</a>' +
               '<button class="btn remove-btn" type="button" data-remove-room="' + room.id + '">Bỏ lưu</button>' +
             '</div>' +
           '</div>' +
