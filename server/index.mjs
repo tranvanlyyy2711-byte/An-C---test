@@ -2,8 +2,8 @@
 //   npm start                 -> http://localhost:5500
 //   PORT=5600 npm start       -> đổi cổng
 //   AN_CU_DB=đường/dẫn.sqlite -> đổi file dữ liệu (mặc định data/an-cu.sqlite)
-//   AN_CU_NOW=2026-09-19T09:00:00 -> đổi "bây giờ" mô phỏng (mặc định 18/09/2026 08:15,
-//                                    cùng mốc với các trang), dùng để thử hết hạn giữ chỗ.
+//   AN_CU_NOW=2026-09-19T09:00:00 -> đóng băng "bây giờ" ở một mốc (mặc định: giờ thật của máy),
+//                                    dùng cho kiểm thử và để thử hết hạn giữ chỗ.
 import { createServer } from 'http';
 import { readFile } from 'fs/promises';
 import { extname, join, normalize, sep, dirname } from 'path';
@@ -17,10 +17,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const port = Number(process.argv[2] || process.env.PORT || 5500);
 const dbFile = process.env.AN_CU_DB || join(root, 'data', 'an-cu.sqlite');
-const FIXED_NOW = new Date(process.env.AN_CU_NOW || '2026-09-18T08:15:00');
-if (Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
+const FIXED_NOW = process.env.AN_CU_NOW ? new Date(process.env.AN_CU_NOW) : null;
+if (FIXED_NOW && Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
+const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());
 
-const store = openDb({ file: dbFile, now: () => new Date(FIXED_NOW.getTime()) });
+const store = openDb({ file: dbFile, now });
 const auth = createAuth(store.db, ApiError);
 
 const types = {
@@ -60,7 +61,7 @@ async function api(req, res, url) {
 
   const me = auth.userFromReq(req);
 
-  if (p === '/api/suc-khoe' && m === 'GET') return send(res, 200, { ok: true, now: FIXED_NOW.toISOString(), me });
+  if (p === '/api/suc-khoe' && m === 'GET') return send(res, 200, { ok: true, now: now().toISOString(), me });
 
   // ----- Tài khoản -----
   if (p === '/api/toi' && m === 'GET') return send(res, 200, { user: me });
@@ -99,6 +100,17 @@ async function api(req, res, url) {
     const b = { ...body, nguoi: renterId(body.nguoi) };
     if (body.action === 'reschedule') return send(res, 200, { item: store.rescheduleForRenter(id[1], b) });
     if (body.action === 'cancel') return send(res, 200, { item: store.cancelForRenter(id[1], b) });
+    if (body.action === 'memo') return send(res, 200, { item: store.memoForRenter(id[1], b) });
+    throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+  }
+  if (p === '/api/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForRenter(renterId(qs.get('nguoi'))) });
+  if (p === '/api/yeu-cau-thue' && m === 'POST') {
+    const body = await readJson(req);
+    return send(res, 201, { item: store.createRequest({ ...body, nguoi: renterId(body.nguoi) }) });
+  }
+  if ((id = p.match(/^\/api\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action === 'seen') return send(res, 200, { item: store.markRequestSeen(id[1], { nguoi: renterId(body.nguoi) }) });
     throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
   }
   if (p === '/api/khung-gio' && m === 'GET') {
@@ -115,6 +127,10 @@ async function api(req, res, url) {
   if (p === '/api/chu-tro/lich-xem' && m === 'POST') return send(res, 201, { item: store.createForLandlord(await readJson(req)) });
   if ((id = p.match(/^\/api\/chu-tro\/lich-xem\/(\d+)$/)) && m === 'PATCH') {
     return send(res, 200, { item: store.updateForLandlord(id[1], await readJson(req)) });
+  }
+  if (p === '/api/chu-tro/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForLandlord() });
+  if ((id = p.match(/^\/api\/chu-tro\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
+    return send(res, 200, { item: store.decideRequest(id[1], await readJson(req)) });
   }
 
   throw new ApiError(404, 'not_found', 'Không có API này.');
@@ -162,7 +178,7 @@ server.listen(port, () => {
   const lan = Object.values(networkInterfaces()).flat()
     .filter((a) => a && a.family === 'IPv4' && !a.internal && !a.address.startsWith('169.254.'))
     .map((a) => `http://${a.address}:${port}`);
-  console.log(`An Cư: http://localhost:${port}  (dữ liệu: ${dbFile}, bây giờ = ${FIXED_NOW.toLocaleString('vi-VN')})` +
+  console.log(`An Cư: http://localhost:${port}  (dữ liệu: ${dbFile}, bây giờ = ${now().toLocaleString('vi-VN')}${FIXED_NOW ? ' (đóng băng)' : ''})` +
     (lan.length ? `
   Máy khác cùng mạng: ${lan.join('  ')}` : ''));
 });

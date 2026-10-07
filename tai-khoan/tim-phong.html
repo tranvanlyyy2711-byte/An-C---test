@@ -1091,7 +1091,7 @@
 
   // Cùng mốc thời gian mô phỏng với dat-lich.html và quan-ly/yeucauvalichhen.html,
   // để một ngày hợp lệ bên này cũng hợp lệ bên kia.
-  var SIM_NOW = new Date(2026,8,18,8,15,0);
+  var SIM_NOW = new Date(); // giờ thật; có máy chủ thì lấy giờ máy chủ bên dưới
   function lichPad2(n){ return (n<10?'0':'')+n; }
   function lichYmd(d){ return d.getFullYear()+'-'+lichPad2(d.getMonth()+1)+'-'+lichPad2(d.getDate()); }
   function lichToday(){ return lichYmd(SIM_NOW); }
@@ -1875,6 +1875,12 @@
       e.preventDefault();
       openDetail(row.getAttribute('data-room'));
     });
+    // Liên kết sâu từ trang lịch xem: tim-phong.html?phong=p03 mở thẳng chi tiết phòng
+    (function(){
+      var deep = null;
+      try{ deep = new URLSearchParams(location.search).get('phong'); }catch(e){}
+      if(deep) openDetail(deep);
+    })();
 
     document.getElementById('rdThumbs').addEventListener('click', function(e){
       var btn = e.target.closest('button[data-src]');

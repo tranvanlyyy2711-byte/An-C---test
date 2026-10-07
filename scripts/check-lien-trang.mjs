@@ -24,6 +24,7 @@ const expect = (name, got, want) => {
 const browser = await chromium.launch({ channel: 'msedge' });
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();
+await page.clock.setFixedTime(new Date(2026, 8, 18, 8, 15)); // dữ liệu mẫu neo quanh 18/09/2026 08:15
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -63,11 +64,14 @@ if (kho) {
 // 2. Sang trang lịch xem bằng chính liên kết trong khối đặt lịch
 await page.click('.rd-booking-link');
 await page.waitForURL('**/dat-lich.html');
-await page.waitForSelector('.content-real .apt-item');
-await page.waitForTimeout(600);
+await page.waitForSelector('body:not(.is-loading) #calView .wk');
+await page.waitForTimeout(400);
+await page.click('#viewSeg [data-view="month"]');
+await page.waitForTimeout(200);
 
-expect('lịch vừa đặt xuất hiện bên trang lịch xem', await page.locator(`#apptList .apt-item:has-text("${tenPhong}")`).count() > 0, true);
-expect('tab Sắp tới có 4 lịch', await page.locator('#apptList .apt-item').count(), 4);
+const lichMoi = page.locator('#calView .cal-ev[data-status="pending"]', { hasText: tenPhong });
+expect('lịch vừa đặt xuất hiện trên lịch tháng (màu cam)', await lichMoi.count() > 0, true);
+expect('tháng 9 có 6 lịch', await page.locator('#calView .cal-ev').count(), 6);
 expect('huy hiệu sidebar bằng 4', (await page.locator('#navCount').textContent()).trim(), '4');
 
 const khoSau = await page.evaluate(() => {

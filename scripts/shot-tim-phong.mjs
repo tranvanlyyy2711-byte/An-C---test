@@ -23,6 +23,7 @@ let failed = false;
 
 for (const t of targets) {
   const page = await browser.newPage({ viewport: { width: t.width, height: t.height }, deviceScaleFactor: 1 });
+  await page.clock.setFixedTime(new Date(2026, 8, 18, 8, 15)); // dữ liệu mẫu neo quanh 18/09/2026 08:15
   const errors = [];
   const checks = [];
   page.on('pageerror', (e) => errors.push(String(e)));

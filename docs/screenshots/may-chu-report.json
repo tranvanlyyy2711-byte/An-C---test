@@ -12,6 +12,66 @@
     "ok": true
   },
   {
+    "name": "Linh đặt p04 lúc 09:06",
+    "got": 201,
+    "want": 201,
+    "ok": true
+  },
+  {
+    "name": "Huy đặt 09:20 chồng lên buổi 09:06-09:36 bị chặn",
+    "got": "409/slot_taken",
+    "want": "409/slot_taken",
+    "ok": true
+  },
+  {
+    "name": "Huy đặt 09:36 sát ngay sau thì được",
+    "got": 201,
+    "want": 201,
+    "ok": true
+  },
+  {
+    "name": "giờ đã bị chiếm trả về đúng phút",
+    "got": [
+      "09:06",
+      "09:36"
+    ],
+    "want": [
+      "09:06",
+      "09:36"
+    ],
+    "ok": true
+  },
+  {
+    "name": "06:30 ngoài giờ nhận lịch bị từ chối",
+    "got": "invalid_time",
+    "want": "invalid_time",
+    "ok": true
+  },
+  {
+    "name": "21:01 ngoài giờ nhận lịch bị từ chối",
+    "got": "invalid_time",
+    "want": "invalid_time",
+    "ok": true
+  },
+  {
+    "name": "giờ sai định dạng bị từ chối",
+    "got": "invalid_time",
+    "want": "invalid_time",
+    "ok": true
+  },
+  {
+    "name": "giờ đã qua trong hôm nay bị từ chối",
+    "got": "past_time",
+    "want": "past_time",
+    "ok": true
+  },
+  {
+    "name": "20 yêu cầu lệch phút (14:00-14:19) gửi cùng lúc: đúng 1 thành công",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
     "name": "chỉ mục duy nhất chặn cả lệnh ghi thẳng",
     "got": true,
     "want": true,
@@ -67,14 +127,38 @@
   },
   {
     "name": "An không thấy lịch của Trang",
-    "got": false,
-    "want": false,
+    "got": 0,
+    "want": 0,
     "ok": true
   },
   {
-    "name": "Trang thấy lịch p09 đang chờ xác nhận",
-    "got": "Chờ xác nhận",
-    "want": "Chờ xác nhận",
+    "name": "Trang thấy lịch p09 màu cam (chờ xác nhận)",
+    "got": "pending",
+    "want": "pending",
+    "ok": true
+  },
+  {
+    "name": "popover của Trang đúng giờ và trạng thái",
+    "got": [
+      "01:30 PM - 24/09/2026",
+      "Chờ xác nhận"
+    ],
+    "want": [
+      "01:30 PM - 24/09/2026",
+      "Chờ xác nhận"
+    ],
+    "ok": true
+  },
+  {
+    "name": "modal báo trùng với lịch của chính mình và khoá nút gửi",
+    "got": [
+      true,
+      true
+    ],
+    "want": [
+      true,
+      true
+    ],
     "ok": true
   },
   {
@@ -90,9 +174,9 @@
     "ok": true
   },
   {
-    "name": "Trang thấy lịch đã được xác nhận",
-    "got": "Đã xác nhận",
-    "want": "Đã xác nhận",
+    "name": "Trang thấy lịch đã được xác nhận (màu xanh)",
+    "got": "confirmed",
+    "want": "confirmed",
     "ok": true
   },
   {
@@ -147,6 +231,164 @@
     "name": "chủ trọ không xác nhận được lịch đã quá hạn",
     "got": 409,
     "want": 409,
+    "ok": true
+  },
+  {
+    "name": "đã xác nhận và đã hết buổi 18/09 15:00 -> đã xem xong",
+    "got": "completed",
+    "want": "completed",
+    "ok": true
+  },
+  {
+    "name": "An đặt p02 10:00 hôm nay, giữ chỗ tới mai",
+    "got": 201,
+    "want": 201,
+    "ok": true
+  },
+  {
+    "name": "chờ xác nhận mà đã tới giờ hẹn -> tự huỷ dù còn hạn giữ chỗ",
+    "got": "cancelled/expired",
+    "want": "cancelled/expired",
+    "ok": true
+  },
+  {
+    "name": "lịch đã qua không đổi giờ được",
+    "got": "not_active",
+    "want": "not_active",
+    "ok": true
+  },
+  {
+    "name": "lịch đã qua không huỷ được",
+    "got": "not_active",
+    "want": "not_active",
+    "ok": true
+  },
+  {
+    "name": "người thuê ghi chú riêng vào lịch đã qua",
+    "got": [
+      200,
+      "Giá ổn, hơi xa trường",
+      "completed"
+    ],
+    "want": [
+      200,
+      "Giá ổn, hơi xa trường",
+      "completed"
+    ],
+    "ok": true
+  },
+  {
+    "name": "người khác không ghi chú được",
+    "got": 403,
+    "want": 403,
+    "ok": true
+  },
+  {
+    "name": "ghi chú còn sau khi tải lại",
+    "got": "Giá ổn, hơi xa trường",
+    "want": "Giá ổn, hơi xa trường",
+    "ok": true
+  },
+  {
+    "name": "chưa xem xong thì không gửi yêu cầu thuê được",
+    "got": "not_viewed",
+    "want": "not_viewed",
+    "ok": true
+  },
+  {
+    "name": "5 lần gửi cùng lúc cho một buổi xem: đúng 1 yêu cầu",
+    "got": [
+      1,
+      4
+    ],
+    "want": [
+      1,
+      4
+    ],
+    "ok": true
+  },
+  {
+    "name": "người khác không gửi thay được",
+    "got": 403,
+    "want": 403,
+    "ok": true
+  },
+  {
+    "name": "Trang gửi yêu cầu từ popover, hiện chờ duyệt",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "chủ trọ thấy 2 yêu cầu thuê của Trang",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "chủ trọ không duyệt được",
+    "got": "Đã cập nhật yêu cầu",
+    "want": "Đã cập nhật yêu cầu",
+    "ok": true
+  },
+  {
+    "name": "trạng thái trên máy chủ",
+    "got": [
+      "p03:rejected",
+      "p08:approved"
+    ],
+    "want": [
+      "p03:rejected",
+      "p08:approved"
+    ],
+    "ok": true
+  },
+  {
+    "name": "lý do không duyệt lưu lại",
+    "got": "Phòng đã có người đặt cọc trước",
+    "want": "Phòng đã có người đặt cọc trước",
+    "ok": true
+  },
+  {
+    "name": "Trang được báo P03 không được duyệt, kèm lý do",
+    "got": [
+      "Yêu cầu thuê không được duyệt",
+      "Lý do: Phòng đã có người đặt cọc trước"
+    ],
+    "want": [
+      "Yêu cầu thuê không được duyệt",
+      "Lý do: Phòng đã có người đặt cọc trước"
+    ],
+    "ok": true
+  },
+  {
+    "name": "tiếp theo báo P08 đã được duyệt",
+    "got": "Chủ trọ đã duyệt yêu cầu thuê",
+    "want": "Chủ trọ đã duyệt yêu cầu thuê",
+    "ok": true
+  },
+  {
+    "name": "tự chuyển sang bước đặt cọc của P08",
+    "got": "p08",
+    "want": "p08",
+    "ok": true
+  },
+  {
+    "name": "đã đánh dấu đã báo, không báo lại",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "đã duyệt rồi thì không đổi sang không duyệt được",
+    "got": "bad_state",
+    "want": "bad_state",
+    "ok": true
+  },
+  {
+    "name": "chủ trọ không thấy ghi chú riêng",
+    "got": false,
+    "want": false,
     "ok": true
   },
   {

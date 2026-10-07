@@ -9,19 +9,31 @@
         "ok": true
       },
       {
-        "name": "sắp tới mặc định = 3",
-        "got": 3,
-        "want": 3,
+        "name": "không còn khối thống kê / tab cũ",
+        "got": 0,
+        "want": 0,
         "ok": true
       },
       {
-        "name": "#cntUpcoming = 3",
-        "got": "3",
-        "want": "3",
+        "name": "mặc định chế độ tuần",
+        "got": "true",
+        "want": "true",
         "ok": true
       },
       {
-        "name": "#navCount = 3",
+        "name": "tiêu đề tuần",
+        "got": "14 – 20 tháng 9, 2026",
+        "want": "14 – 20 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tuần này có 2 lịch",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "#navCount = 3 lịch sắp tới",
         "got": "3",
         "want": "3",
         "ok": true
@@ -33,51 +45,241 @@
         "ok": true
       },
       {
-        "name": "mục active là Lịch xem phòng",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "đã qua = 2",
-        "got": 2,
-        "want": 2,
-        "ok": true
-      },
-      {
-        "name": "có mục đã hoàn thành",
+        "name": "có vạch giờ hiện tại",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "lọc chờ xác nhận",
+        "name": "chờ xác nhận = cam",
+        "got": "rgb(245, 177, 76)",
+        "want": "rgb(245, 177, 76)",
+        "ok": true
+      },
+      {
+        "name": "đã xác nhận = xanh lá",
+        "got": "rgb(34, 139, 34)",
+        "want": "rgb(34, 139, 34)",
+        "ok": true
+      },
+      {
+        "name": "bỏ chọn \"Chờ xác nhận\" thì ẩn lịch cam",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "chip pending có aria-pressed true",
-        "got": "true",
-        "want": "true",
-        "ok": true
-      },
-      {
-        "name": "tìm kiếm không khớp = 0",
+        "name": "còn lại là lịch xanh",
         "got": 0,
         "want": 0,
         "ok": true
       },
       {
-        "name": "hiện trạng thái rỗng",
+        "name": "chọn lại thì hiện lại",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "tuần sau",
+        "got": "21 – 27 tháng 9, 2026",
+        "want": "21 – 27 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tuần sau có 1 lịch (22/09)",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "nút Hôm nay quay về tuần hiện tại",
+        "got": "14 – 20 tháng 9, 2026",
+        "want": "14 – 20 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tiêu đề tháng",
+        "got": "Tháng 9, 2026",
+        "want": "Tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tháng 9 có đủ 5 lịch",
+        "got": 5,
+        "want": 5,
+        "ok": true
+      },
+      {
+        "name": "đã hoàn thành = xám",
+        "got": "rgb(225, 231, 225)",
+        "want": "rgb(225, 231, 225)",
+        "ok": true
+      },
+      {
+        "name": "đã hủy = xám",
+        "got": "rgb(236, 240, 236)",
+        "want": "rgb(236, 240, 236)",
+        "ok": true
+      },
+      {
+        "name": "ẩn đã xong + đã hủy còn 3",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "mở popover",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đặt lại trả về đủ 3 lịch sắp tới",
-        "got": 3,
-        "want": 3,
+        "name": "popover: tên phòng là liên kết",
+        "got": "tim-phong.html?phong=p01",
+        "want": "tim-phong.html?phong=p01",
+        "ok": true
+      },
+      {
+        "name": "popover: tên phòng",
+        "got": "Phòng gác lửng, thoáng sáng",
+        "want": "Phòng gác lửng, thoáng sáng",
+        "ok": true
+      },
+      {
+        "name": "popover: thời gian chính xác",
+        "got": "09:00 AM - 20/09/2026",
+        "want": "09:00 AM - 20/09/2026",
+        "ok": true
+      },
+      {
+        "name": "popover: trạng thái",
+        "got": "Chờ xác nhận",
+        "want": "Chờ xác nhận",
+        "ok": true
+      },
+      {
+        "name": "popover: 3 nút hành động",
+        "got": [
+          "Đổi lịch",
+          "Huỷ lịch",
+          "Liên hệ chủ trọ"
+        ],
+        "want": [
+          "Đổi lịch",
+          "Huỷ lịch",
+          "Liên hệ chủ trọ"
+        ],
+        "ok": true
+      },
+      {
+        "name": "popover nằm trong màn hình",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Esc đóng popover",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "focus quay về khối sự kiện",
+        "got": "101",
+        "want": "101",
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: không có nút đổi/huỷ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: có nút gửi yêu cầu thuê",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: ghi là lịch sử",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: hiện ghi chú riêng sẵn có",
+        "got": "Phòng ổn, giá hợp lý nhưng hơi xa trung tâm.",
+        "want": "Phòng ổn, giá hợp lý nhưng hơi xa trung tâm.",
+        "ok": true
+      },
+      {
+        "name": "lưu ghi chú",
+        "got": [
+          "Đã lưu ghi chú",
+          "Đã lưu"
+        ],
+        "want": [
+          "Đã lưu ghi chú",
+          "Đã lưu"
+        ],
+        "ok": true
+      },
+      {
+        "name": "lịch đã huỷ: không có nút hành động, có ô ghi chú",
+        "got": [
+          0,
+          1
+        ],
+        "want": [
+          0,
+          1
+        ],
+        "ok": true
+      },
+      {
+        "name": "đóng popover thì tự lưu ghi chú chưa lưu",
+        "got": "Đã lưu ghi chú",
+        "want": "Đã lưu ghi chú",
+        "ok": true
+      },
+      {
+        "name": "mở form yêu cầu thuê",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã gửi: chờ chủ trọ duyệt",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "báo yêu cầu không được duyệt",
+        "got": [
+          true,
+          "Yêu cầu thuê không được duyệt",
+          "Lý do: Phòng đã có người đặt cọc trước"
+        ],
+        "want": [
+          true,
+          "Yêu cầu thuê không được duyệt",
+          "Lý do: Phòng đã có người đặt cọc trước"
+        ],
+        "ok": true
+      },
+      {
+        "name": "bấm \"Đã hiểu\" thì đóng thông báo",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "popover ghi yêu cầu không được duyệt",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -87,21 +289,93 @@
         "ok": true
       },
       {
-        "name": "thiếu ngày thì modal vẫn mở",
+        "name": "gợi ý các khung giờ đã có người đặt",
+        "got": "Các khung giờ đã có người đặt: 09:00 AM - 09:30 AM.",
+        "want": "Các khung giờ đã có người đặt: 09:00 AM - 09:30 AM.",
+        "ok": true
+      },
+      {
+        "name": "trùng lịch: báo lỗi",
+        "got": "Khung giờ này đã có người đặt, vui lòng chọn thời gian khác.",
+        "want": "Khung giờ này đã có người đặt, vui lòng chọn thời gian khác.",
+        "ok": true
+      },
+      {
+        "name": "trùng lịch: viền đỏ",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đóng modal sau khi gửi hợp lệ",
+        "name": "trùng lịch: khoá nút gửi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "09:30 vừa sát buổi 09:00 thì hợp lệ",
+        "got": [
+          false,
+          false
+        ],
+        "want": [
+          false,
+          false
+        ],
+        "ok": true
+      },
+      {
+        "name": "21:06 ngoài giờ nhận lịch thì báo lỗi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "gõ \"pm\" bật nút PM",
+        "got": "true",
+        "want": "true",
+        "ok": true
+      },
+      {
+        "name": "sai định dạng thì báo lỗi",
+        "got": "Giờ chưa đúng định dạng. Nhập theo dạng hh:mm, ví dụ 09:06.",
+        "want": "Giờ chưa đúng định dạng. Nhập theo dạng hh:mm, ví dụ 09:06.",
+        "ok": true
+      },
+      {
+        "name": "mở bảng chọn giờ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "9 AM: 30 phút đầu bị gạch",
+        "got": 30,
+        "want": 30,
+        "ok": true
+      },
+      {
+        "name": "chọn 10:06 AM",
+        "got": [
+          "10:06",
+          "10:06"
+        ],
+        "want": [
+          "10:06",
+          "10:06"
+        ],
+        "ok": true
+      },
+      {
+        "name": "10:06 hợp lệ, mở khoá nút gửi",
         "got": false,
         "want": false,
         "ok": true
       },
       {
-        "name": "số lịch sắp tới tăng lên 4",
-        "got": 4,
-        "want": 4,
+        "name": "đóng modal sau khi gửi",
+        "got": false,
+        "want": false,
         "ok": true
       },
       {
@@ -111,21 +385,9 @@
         "ok": true
       },
       {
-        "name": "thông báo đúng phòng",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
         "name": "thông báo đúng giờ",
-        "got": "10:00 - 10:30",
-        "want": "10:00 - 10:30",
-        "ok": true
-      },
-      {
-        "name": "focus ở nút xác nhận",
-        "got": "bookedOk",
-        "want": "bookedOk",
+        "got": "10:06 AM - 10:36 AM",
+        "want": "10:06 AM - 10:36 AM",
         "ok": true
       },
       {
@@ -135,13 +397,19 @@
         "ok": true
       },
       {
-        "name": "bấm xác nhận thì đóng thông báo",
-        "got": false,
-        "want": false,
+        "name": "lịch mới hiện trên bảng (màu cam)",
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
-        "name": "mở modal huỷ lịch",
+        "name": "#navCount = 4",
+        "got": "4",
+        "want": "4",
+        "ok": true
+      },
+      {
+        "name": "mở modal huỷ",
         "got": true,
         "want": true,
         "ok": true
@@ -153,15 +421,33 @@
         "ok": true
       },
       {
-        "name": "sắp tới còn 3 sau khi huỷ 1",
+        "name": "lịch vừa huỷ chuyển xám",
+        "got": "cancelled",
+        "want": "cancelled",
+        "ok": true
+      },
+      {
+        "name": "#navCount về 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "sau reload tuần này có 3 lịch",
         "got": 3,
         "want": 3,
         "ok": true
       },
       {
-        "name": "dữ liệu còn nguyên sau reload (sắp tới)",
-        "got": 3,
-        "want": 3,
+        "name": "đã báo rồi thì không báo lại",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "ghi chú riêng còn sau reload",
+        "got": "Giá ổn, tuy nhiên hơi xa trường",
+        "want": "Giá ổn, tuy nhiên hơi xa trường",
         "ok": true
       },
       {
@@ -174,6 +460,44 @@
         "name": "không có touch target < 44px",
         "got": 0,
         "want": 0,
+        "ok": true
+      },
+      {
+        "name": "qua 15:30: lịch 15:00 đã xác nhận chuyển sang đã xem xong",
+        "got": "completed",
+        "want": "completed",
+        "ok": true
+      },
+      {
+        "name": "lịch vừa qua chỉ còn ghi chú + yêu cầu thuê, hết nút đổi/huỷ",
+        "got": [
+          0,
+          1
+        ],
+        "want": [
+          0,
+          1
+        ],
+        "ok": true
+      },
+      {
+        "name": "báo đã duyệt kèm đếm ngược",
+        "got": [
+          true,
+          "Chủ trọ đã duyệt yêu cầu thuê",
+          true
+        ],
+        "want": [
+          true,
+          "Chủ trọ đã duyệt yêu cầu thuê",
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "tự chuyển sang bước đặt cọc của đúng phòng",
+        "got": "p03",
+        "want": "p03",
         "ok": true
       },
       {
@@ -195,19 +519,31 @@
         "ok": true
       },
       {
-        "name": "sắp tới mặc định = 3",
-        "got": 3,
-        "want": 3,
+        "name": "không còn khối thống kê / tab cũ",
+        "got": 0,
+        "want": 0,
         "ok": true
       },
       {
-        "name": "#cntUpcoming = 3",
-        "got": "3",
-        "want": "3",
+        "name": "mặc định chế độ tuần",
+        "got": "true",
+        "want": "true",
         "ok": true
       },
       {
-        "name": "#navCount = 3",
+        "name": "tiêu đề tuần",
+        "got": "14 – 20 tháng 9, 2026",
+        "want": "14 – 20 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tuần này có 2 lịch",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "#navCount = 3 lịch sắp tới",
         "got": "3",
         "want": "3",
         "ok": true
@@ -219,51 +555,241 @@
         "ok": true
       },
       {
-        "name": "mục active là Lịch xem phòng",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "đã qua = 2",
-        "got": 2,
-        "want": 2,
-        "ok": true
-      },
-      {
-        "name": "có mục đã hoàn thành",
+        "name": "có vạch giờ hiện tại",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "lọc chờ xác nhận",
+        "name": "chờ xác nhận = cam",
+        "got": "rgb(245, 177, 76)",
+        "want": "rgb(245, 177, 76)",
+        "ok": true
+      },
+      {
+        "name": "đã xác nhận = xanh lá",
+        "got": "rgb(34, 139, 34)",
+        "want": "rgb(34, 139, 34)",
+        "ok": true
+      },
+      {
+        "name": "bỏ chọn \"Chờ xác nhận\" thì ẩn lịch cam",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "chip pending có aria-pressed true",
-        "got": "true",
-        "want": "true",
-        "ok": true
-      },
-      {
-        "name": "tìm kiếm không khớp = 0",
+        "name": "còn lại là lịch xanh",
         "got": 0,
         "want": 0,
         "ok": true
       },
       {
-        "name": "hiện trạng thái rỗng",
+        "name": "chọn lại thì hiện lại",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "tuần sau",
+        "got": "21 – 27 tháng 9, 2026",
+        "want": "21 – 27 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tuần sau có 1 lịch (22/09)",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "nút Hôm nay quay về tuần hiện tại",
+        "got": "14 – 20 tháng 9, 2026",
+        "want": "14 – 20 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tiêu đề tháng",
+        "got": "Tháng 9, 2026",
+        "want": "Tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tháng 9 có đủ 5 lịch",
+        "got": 5,
+        "want": 5,
+        "ok": true
+      },
+      {
+        "name": "đã hoàn thành = xám",
+        "got": "rgb(225, 231, 225)",
+        "want": "rgb(225, 231, 225)",
+        "ok": true
+      },
+      {
+        "name": "đã hủy = xám",
+        "got": "rgb(236, 240, 236)",
+        "want": "rgb(236, 240, 236)",
+        "ok": true
+      },
+      {
+        "name": "ẩn đã xong + đã hủy còn 3",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "mở popover",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đặt lại trả về đủ 3 lịch sắp tới",
-        "got": 3,
-        "want": 3,
+        "name": "popover: tên phòng là liên kết",
+        "got": "tim-phong.html?phong=p01",
+        "want": "tim-phong.html?phong=p01",
+        "ok": true
+      },
+      {
+        "name": "popover: tên phòng",
+        "got": "Phòng gác lửng, thoáng sáng",
+        "want": "Phòng gác lửng, thoáng sáng",
+        "ok": true
+      },
+      {
+        "name": "popover: thời gian chính xác",
+        "got": "09:00 AM - 20/09/2026",
+        "want": "09:00 AM - 20/09/2026",
+        "ok": true
+      },
+      {
+        "name": "popover: trạng thái",
+        "got": "Chờ xác nhận",
+        "want": "Chờ xác nhận",
+        "ok": true
+      },
+      {
+        "name": "popover: 3 nút hành động",
+        "got": [
+          "Đổi lịch",
+          "Huỷ lịch",
+          "Liên hệ chủ trọ"
+        ],
+        "want": [
+          "Đổi lịch",
+          "Huỷ lịch",
+          "Liên hệ chủ trọ"
+        ],
+        "ok": true
+      },
+      {
+        "name": "popover nằm trong màn hình",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Esc đóng popover",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "focus quay về khối sự kiện",
+        "got": "101",
+        "want": "101",
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: không có nút đổi/huỷ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: có nút gửi yêu cầu thuê",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: ghi là lịch sử",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: hiện ghi chú riêng sẵn có",
+        "got": "Phòng ổn, giá hợp lý nhưng hơi xa trung tâm.",
+        "want": "Phòng ổn, giá hợp lý nhưng hơi xa trung tâm.",
+        "ok": true
+      },
+      {
+        "name": "lưu ghi chú",
+        "got": [
+          "Đã lưu ghi chú",
+          "Đã lưu"
+        ],
+        "want": [
+          "Đã lưu ghi chú",
+          "Đã lưu"
+        ],
+        "ok": true
+      },
+      {
+        "name": "lịch đã huỷ: không có nút hành động, có ô ghi chú",
+        "got": [
+          0,
+          1
+        ],
+        "want": [
+          0,
+          1
+        ],
+        "ok": true
+      },
+      {
+        "name": "đóng popover thì tự lưu ghi chú chưa lưu",
+        "got": "Đã lưu ghi chú",
+        "want": "Đã lưu ghi chú",
+        "ok": true
+      },
+      {
+        "name": "mở form yêu cầu thuê",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã gửi: chờ chủ trọ duyệt",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "báo yêu cầu không được duyệt",
+        "got": [
+          true,
+          "Yêu cầu thuê không được duyệt",
+          "Lý do: Phòng đã có người đặt cọc trước"
+        ],
+        "want": [
+          true,
+          "Yêu cầu thuê không được duyệt",
+          "Lý do: Phòng đã có người đặt cọc trước"
+        ],
+        "ok": true
+      },
+      {
+        "name": "bấm \"Đã hiểu\" thì đóng thông báo",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "popover ghi yêu cầu không được duyệt",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -273,21 +799,93 @@
         "ok": true
       },
       {
-        "name": "thiếu ngày thì modal vẫn mở",
+        "name": "gợi ý các khung giờ đã có người đặt",
+        "got": "Các khung giờ đã có người đặt: 09:00 AM - 09:30 AM.",
+        "want": "Các khung giờ đã có người đặt: 09:00 AM - 09:30 AM.",
+        "ok": true
+      },
+      {
+        "name": "trùng lịch: báo lỗi",
+        "got": "Khung giờ này đã có người đặt, vui lòng chọn thời gian khác.",
+        "want": "Khung giờ này đã có người đặt, vui lòng chọn thời gian khác.",
+        "ok": true
+      },
+      {
+        "name": "trùng lịch: viền đỏ",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đóng modal sau khi gửi hợp lệ",
+        "name": "trùng lịch: khoá nút gửi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "09:30 vừa sát buổi 09:00 thì hợp lệ",
+        "got": [
+          false,
+          false
+        ],
+        "want": [
+          false,
+          false
+        ],
+        "ok": true
+      },
+      {
+        "name": "21:06 ngoài giờ nhận lịch thì báo lỗi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "gõ \"pm\" bật nút PM",
+        "got": "true",
+        "want": "true",
+        "ok": true
+      },
+      {
+        "name": "sai định dạng thì báo lỗi",
+        "got": "Giờ chưa đúng định dạng. Nhập theo dạng hh:mm, ví dụ 09:06.",
+        "want": "Giờ chưa đúng định dạng. Nhập theo dạng hh:mm, ví dụ 09:06.",
+        "ok": true
+      },
+      {
+        "name": "mở bảng chọn giờ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "9 AM: 30 phút đầu bị gạch",
+        "got": 30,
+        "want": 30,
+        "ok": true
+      },
+      {
+        "name": "chọn 10:06 AM",
+        "got": [
+          "10:06",
+          "10:06"
+        ],
+        "want": [
+          "10:06",
+          "10:06"
+        ],
+        "ok": true
+      },
+      {
+        "name": "10:06 hợp lệ, mở khoá nút gửi",
         "got": false,
         "want": false,
         "ok": true
       },
       {
-        "name": "số lịch sắp tới tăng lên 4",
-        "got": 4,
-        "want": 4,
+        "name": "đóng modal sau khi gửi",
+        "got": false,
+        "want": false,
         "ok": true
       },
       {
@@ -297,21 +895,9 @@
         "ok": true
       },
       {
-        "name": "thông báo đúng phòng",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
         "name": "thông báo đúng giờ",
-        "got": "10:00 - 10:30",
-        "want": "10:00 - 10:30",
-        "ok": true
-      },
-      {
-        "name": "focus ở nút xác nhận",
-        "got": "bookedOk",
-        "want": "bookedOk",
+        "got": "10:06 AM - 10:36 AM",
+        "want": "10:06 AM - 10:36 AM",
         "ok": true
       },
       {
@@ -321,13 +907,19 @@
         "ok": true
       },
       {
-        "name": "bấm xác nhận thì đóng thông báo",
-        "got": false,
-        "want": false,
+        "name": "lịch mới hiện trên bảng (màu cam)",
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
-        "name": "mở modal huỷ lịch",
+        "name": "#navCount = 4",
+        "got": "4",
+        "want": "4",
+        "ok": true
+      },
+      {
+        "name": "mở modal huỷ",
         "got": true,
         "want": true,
         "ok": true
@@ -339,15 +931,33 @@
         "ok": true
       },
       {
-        "name": "sắp tới còn 3 sau khi huỷ 1",
+        "name": "lịch vừa huỷ chuyển xám",
+        "got": "cancelled",
+        "want": "cancelled",
+        "ok": true
+      },
+      {
+        "name": "#navCount về 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "sau reload tuần này có 3 lịch",
         "got": 3,
         "want": 3,
         "ok": true
       },
       {
-        "name": "dữ liệu còn nguyên sau reload (sắp tới)",
-        "got": 3,
-        "want": 3,
+        "name": "đã báo rồi thì không báo lại",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "ghi chú riêng còn sau reload",
+        "got": "Giá ổn, tuy nhiên hơi xa trường",
+        "want": "Giá ổn, tuy nhiên hơi xa trường",
         "ok": true
       },
       {
@@ -378,6 +988,44 @@
         "name": "đóng sidebar di động",
         "got": false,
         "want": false,
+        "ok": true
+      },
+      {
+        "name": "qua 15:30: lịch 15:00 đã xác nhận chuyển sang đã xem xong",
+        "got": "completed",
+        "want": "completed",
+        "ok": true
+      },
+      {
+        "name": "lịch vừa qua chỉ còn ghi chú + yêu cầu thuê, hết nút đổi/huỷ",
+        "got": [
+          0,
+          1
+        ],
+        "want": [
+          0,
+          1
+        ],
+        "ok": true
+      },
+      {
+        "name": "báo đã duyệt kèm đếm ngược",
+        "got": [
+          true,
+          "Chủ trọ đã duyệt yêu cầu thuê",
+          true
+        ],
+        "want": [
+          true,
+          "Chủ trọ đã duyệt yêu cầu thuê",
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "tự chuyển sang bước đặt cọc của đúng phòng",
+        "got": "p03",
+        "want": "p03",
         "ok": true
       },
       {
@@ -399,19 +1047,31 @@
         "ok": true
       },
       {
-        "name": "sắp tới mặc định = 3",
-        "got": 3,
-        "want": 3,
+        "name": "không còn khối thống kê / tab cũ",
+        "got": 0,
+        "want": 0,
         "ok": true
       },
       {
-        "name": "#cntUpcoming = 3",
-        "got": "3",
-        "want": "3",
+        "name": "mặc định chế độ tuần",
+        "got": "true",
+        "want": "true",
         "ok": true
       },
       {
-        "name": "#navCount = 3",
+        "name": "tiêu đề tuần",
+        "got": "14 – 20 tháng 9, 2026",
+        "want": "14 – 20 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tuần này có 2 lịch",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "#navCount = 3 lịch sắp tới",
         "got": "3",
         "want": "3",
         "ok": true
@@ -423,51 +1083,247 @@
         "ok": true
       },
       {
-        "name": "mục active là Lịch xem phòng",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "đã qua = 2",
-        "got": 2,
-        "want": 2,
-        "ok": true
-      },
-      {
-        "name": "có mục đã hoàn thành",
+        "name": "có vạch giờ hiện tại",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "lọc chờ xác nhận",
+        "name": "chờ xác nhận = cam",
+        "got": "rgb(245, 177, 76)",
+        "want": "rgb(245, 177, 76)",
+        "ok": true
+      },
+      {
+        "name": "đã xác nhận = xanh lá",
+        "got": "rgb(34, 139, 34)",
+        "want": "rgb(34, 139, 34)",
+        "ok": true
+      },
+      {
+        "name": "bỏ chọn \"Chờ xác nhận\" thì ẩn lịch cam",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "chip pending có aria-pressed true",
-        "got": "true",
-        "want": "true",
-        "ok": true
-      },
-      {
-        "name": "tìm kiếm không khớp = 0",
+        "name": "còn lại là lịch xanh",
         "got": 0,
         "want": 0,
         "ok": true
       },
       {
-        "name": "hiện trạng thái rỗng",
+        "name": "chọn lại thì hiện lại",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "tuần sau",
+        "got": "21 – 27 tháng 9, 2026",
+        "want": "21 – 27 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tuần sau có 1 lịch (22/09)",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "nút Hôm nay quay về tuần hiện tại",
+        "got": "14 – 20 tháng 9, 2026",
+        "want": "14 – 20 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tiêu đề tháng",
+        "got": "Tháng 9, 2026",
+        "want": "Tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "tháng 9 có đủ 5 lịch",
+        "got": 5,
+        "want": 5,
+        "ok": true
+      },
+      {
+        "name": "đã hoàn thành = xám",
+        "got": "rgb(225, 231, 225)",
+        "want": "rgb(225, 231, 225)",
+        "ok": true
+      },
+      {
+        "name": "đã hủy = xám",
+        "got": "rgb(236, 240, 236)",
+        "want": "rgb(236, 240, 236)",
+        "ok": true
+      },
+      {
+        "name": "ẩn đã xong + đã hủy còn 3",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "mobile: chạm một ngày trong tháng mở tuần của ngày đó",
+        "got": "21 – 27 tháng 9, 2026",
+        "want": "21 – 27 tháng 9, 2026",
+        "ok": true
+      },
+      {
+        "name": "mở popover",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đặt lại trả về đủ 3 lịch sắp tới",
-        "got": 3,
-        "want": 3,
+        "name": "popover: tên phòng là liên kết",
+        "got": "tim-phong.html?phong=p01",
+        "want": "tim-phong.html?phong=p01",
+        "ok": true
+      },
+      {
+        "name": "popover: tên phòng",
+        "got": "Phòng gác lửng, thoáng sáng",
+        "want": "Phòng gác lửng, thoáng sáng",
+        "ok": true
+      },
+      {
+        "name": "popover: thời gian chính xác",
+        "got": "09:00 AM - 20/09/2026",
+        "want": "09:00 AM - 20/09/2026",
+        "ok": true
+      },
+      {
+        "name": "popover: trạng thái",
+        "got": "Chờ xác nhận",
+        "want": "Chờ xác nhận",
+        "ok": true
+      },
+      {
+        "name": "popover: 3 nút hành động",
+        "got": [
+          "Đổi lịch",
+          "Huỷ lịch",
+          "Liên hệ chủ trọ"
+        ],
+        "want": [
+          "Đổi lịch",
+          "Huỷ lịch",
+          "Liên hệ chủ trọ"
+        ],
+        "ok": true
+      },
+      {
+        "name": "popover nằm trong màn hình",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Esc đóng popover",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "focus quay về khối sự kiện",
+        "got": "101",
+        "want": "101",
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: không có nút đổi/huỷ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: có nút gửi yêu cầu thuê",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: ghi là lịch sử",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "lịch đã xem: hiện ghi chú riêng sẵn có",
+        "got": "Phòng ổn, giá hợp lý nhưng hơi xa trung tâm.",
+        "want": "Phòng ổn, giá hợp lý nhưng hơi xa trung tâm.",
+        "ok": true
+      },
+      {
+        "name": "lưu ghi chú",
+        "got": [
+          "Đã lưu ghi chú",
+          "Đã lưu"
+        ],
+        "want": [
+          "Đã lưu ghi chú",
+          "Đã lưu"
+        ],
+        "ok": true
+      },
+      {
+        "name": "lịch đã huỷ: không có nút hành động, có ô ghi chú",
+        "got": [
+          0,
+          1
+        ],
+        "want": [
+          0,
+          1
+        ],
+        "ok": true
+      },
+      {
+        "name": "đóng popover thì tự lưu ghi chú chưa lưu",
+        "got": "Đã lưu ghi chú",
+        "want": "Đã lưu ghi chú",
+        "ok": true
+      },
+      {
+        "name": "mở form yêu cầu thuê",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã gửi: chờ chủ trọ duyệt",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "báo yêu cầu không được duyệt",
+        "got": [
+          true,
+          "Yêu cầu thuê không được duyệt",
+          "Lý do: Phòng đã có người đặt cọc trước"
+        ],
+        "want": [
+          true,
+          "Yêu cầu thuê không được duyệt",
+          "Lý do: Phòng đã có người đặt cọc trước"
+        ],
+        "ok": true
+      },
+      {
+        "name": "bấm \"Đã hiểu\" thì đóng thông báo",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "popover ghi yêu cầu không được duyệt",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -477,21 +1333,93 @@
         "ok": true
       },
       {
-        "name": "thiếu ngày thì modal vẫn mở",
+        "name": "gợi ý các khung giờ đã có người đặt",
+        "got": "Các khung giờ đã có người đặt: 09:00 AM - 09:30 AM.",
+        "want": "Các khung giờ đã có người đặt: 09:00 AM - 09:30 AM.",
+        "ok": true
+      },
+      {
+        "name": "trùng lịch: báo lỗi",
+        "got": "Khung giờ này đã có người đặt, vui lòng chọn thời gian khác.",
+        "want": "Khung giờ này đã có người đặt, vui lòng chọn thời gian khác.",
+        "ok": true
+      },
+      {
+        "name": "trùng lịch: viền đỏ",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đóng modal sau khi gửi hợp lệ",
+        "name": "trùng lịch: khoá nút gửi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "09:30 vừa sát buổi 09:00 thì hợp lệ",
+        "got": [
+          false,
+          false
+        ],
+        "want": [
+          false,
+          false
+        ],
+        "ok": true
+      },
+      {
+        "name": "21:06 ngoài giờ nhận lịch thì báo lỗi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "gõ \"pm\" bật nút PM",
+        "got": "true",
+        "want": "true",
+        "ok": true
+      },
+      {
+        "name": "sai định dạng thì báo lỗi",
+        "got": "Giờ chưa đúng định dạng. Nhập theo dạng hh:mm, ví dụ 09:06.",
+        "want": "Giờ chưa đúng định dạng. Nhập theo dạng hh:mm, ví dụ 09:06.",
+        "ok": true
+      },
+      {
+        "name": "mở bảng chọn giờ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "9 AM: 30 phút đầu bị gạch",
+        "got": 30,
+        "want": 30,
+        "ok": true
+      },
+      {
+        "name": "chọn 10:06 AM",
+        "got": [
+          "10:06",
+          "10:06"
+        ],
+        "want": [
+          "10:06",
+          "10:06"
+        ],
+        "ok": true
+      },
+      {
+        "name": "10:06 hợp lệ, mở khoá nút gửi",
         "got": false,
         "want": false,
         "ok": true
       },
       {
-        "name": "số lịch sắp tới tăng lên 4",
-        "got": 4,
-        "want": 4,
+        "name": "đóng modal sau khi gửi",
+        "got": false,
+        "want": false,
         "ok": true
       },
       {
@@ -501,21 +1429,9 @@
         "ok": true
       },
       {
-        "name": "thông báo đúng phòng",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
         "name": "thông báo đúng giờ",
-        "got": "10:00 - 10:30",
-        "want": "10:00 - 10:30",
-        "ok": true
-      },
-      {
-        "name": "focus ở nút xác nhận",
-        "got": "bookedOk",
-        "want": "bookedOk",
+        "got": "10:06 AM - 10:36 AM",
+        "want": "10:06 AM - 10:36 AM",
         "ok": true
       },
       {
@@ -525,13 +1441,19 @@
         "ok": true
       },
       {
-        "name": "bấm xác nhận thì đóng thông báo",
-        "got": false,
-        "want": false,
+        "name": "lịch mới hiện trên bảng (màu cam)",
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
-        "name": "mở modal huỷ lịch",
+        "name": "#navCount = 4",
+        "got": "4",
+        "want": "4",
+        "ok": true
+      },
+      {
+        "name": "mở modal huỷ",
         "got": true,
         "want": true,
         "ok": true
@@ -543,15 +1465,33 @@
         "ok": true
       },
       {
-        "name": "sắp tới còn 3 sau khi huỷ 1",
+        "name": "lịch vừa huỷ chuyển xám",
+        "got": "cancelled",
+        "want": "cancelled",
+        "ok": true
+      },
+      {
+        "name": "#navCount về 3",
+        "got": "3",
+        "want": "3",
+        "ok": true
+      },
+      {
+        "name": "sau reload tuần này có 3 lịch",
         "got": 3,
         "want": 3,
         "ok": true
       },
       {
-        "name": "dữ liệu còn nguyên sau reload (sắp tới)",
-        "got": 3,
-        "want": 3,
+        "name": "đã báo rồi thì không báo lại",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "ghi chú riêng còn sau reload",
+        "got": "Giá ổn, tuy nhiên hơi xa trường",
+        "want": "Giá ổn, tuy nhiên hơi xa trường",
         "ok": true
       },
       {
@@ -582,6 +1522,44 @@
         "name": "đóng sidebar di động",
         "got": false,
         "want": false,
+        "ok": true
+      },
+      {
+        "name": "qua 15:30: lịch 15:00 đã xác nhận chuyển sang đã xem xong",
+        "got": "completed",
+        "want": "completed",
+        "ok": true
+      },
+      {
+        "name": "lịch vừa qua chỉ còn ghi chú + yêu cầu thuê, hết nút đổi/huỷ",
+        "got": [
+          0,
+          1
+        ],
+        "want": [
+          0,
+          1
+        ],
+        "ok": true
+      },
+      {
+        "name": "báo đã duyệt kèm đếm ngược",
+        "got": [
+          true,
+          "Chủ trọ đã duyệt yêu cầu thuê",
+          true
+        ],
+        "want": [
+          true,
+          "Chủ trọ đã duyệt yêu cầu thuê",
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "tự chuyển sang bước đặt cọc của đúng phòng",
+        "got": "p03",
+        "want": "p03",
         "ok": true
       },
       {

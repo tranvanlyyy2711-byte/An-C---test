@@ -241,6 +241,10 @@ body.modal-open{overflow:hidden}
 .rent-room h3{font-size:14.5px;line-height:1.35;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rent-room .price{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;color:var(--success-ink)}
 .rent-room .price span{font-size:12.5px;font-weight:500;color:var(--text-dim)}
+.rent-want{display:flex;flex-direction:column;gap:6px;margin-top:14px;text-align:left;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600}
+.rent-want input{height:46px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font:inherit;font-size:16px;font-weight:400}
+.rent-want input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.viewed-reason{font-size:12.5px;line-height:1.45;color:var(--text-muted)}
 .rent-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
 .rent-actions .btn{width:100%;padding:0 12px}
 @keyframes rentFade{from{opacity:0}to{opacity:1}}
@@ -370,15 +374,16 @@ body:not(.is-loading) .content-skel{display:none}
   <div class="rent" role="dialog" aria-modal="true" aria-labelledby="rentTitle" aria-describedby="rentDesc">
     <p class="rent-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22v-7h6v7"/></svg>An Cư</p>
     <div class="rent-illus" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg></span></div>
-    <h2 id="rentTitle" tabindex="-1">Bạn có muốn thuê phòng này?</h2>
-    <p class="rent-desc" id="rentDesc">Sau khi xem phòng, nếu bạn thấy phù hợp, hãy xác nhận để tiến hành đặt cọc.</p>
+    <h2 id="rentTitle" tabindex="-1">Gửi yêu cầu thuê phòng này?</h2>
+    <p class="rent-desc" id="rentDesc">Chủ trọ sẽ xem xét yêu cầu. Khi được duyệt, bạn sẽ được chuyển sang bước đặt cọc.</p>
     <div class="rent-room">
       <img id="rentImg" src="" alt="" width="104" height="78" />
       <div><h3 id="rentRoom"></h3><p class="price" id="rentPrice"></p></div>
     </div>
+    <label class="rent-want">Ngày muốn dọn vào<input type="date" id="rentWant" required /></label>
     <div class="rent-actions">
       <button type="button" class="btn btn-ghost" id="rentNo">Không thuê</button>
-      <button type="button" class="btn btn-primary" id="rentYes">Xác nhận Đặt cọc</button>
+      <button type="button" class="btn btn-primary" id="rentYes">Gửi yêu cầu thuê</button>
     </div>
   </div>
 </div>
@@ -631,6 +636,7 @@ body:not(.is-loading) .content-skel{display:none}
       ? fetch('/api/suc-khoe', { cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
           if(!j || !j.ok) return fromStore();
           var who = null; try{ who = localStorage.getItem('an-cu-nguoi-thue'); }catch(e){}
+          API_ON = true; WHO = who || 'u-trang';
           return fetch('/api/lich-xem?nguoi=' + encodeURIComponent(who || 'u-trang'), { cache:'no-store' })
             .then(function(r){ return r.json(); }).then(function(k){ return (k && k.items) || []; });
         }).catch(fromStore)
@@ -640,7 +646,29 @@ body:not(.is-loading) .content-skel{display:none}
       viewed = items.filter(function(a){ return a.status === 'completed' && !declined[a.id]; })
         .sort(function(a, b){ return (b.date + b.time).localeCompare(a.date + a.time); })
         .filter(function(a){ if(seen[a.roomId]) return false; seen[a.roomId] = true; return true; });
-    });
+    }).then(loadReqs);
+  }
+  // Yêu cầu thuê: người thuê gửi sau buổi xem, chủ trọ duyệt mới được đặt cọc
+  var REQ_KEY = 'an-cu-yeu-cau-thue-v1', API_ON = false, WHO = 'u-trang', reqs = [];
+  function loadReqs(){
+    if(!API_ON){ var o = readJson(REQ_KEY); reqs = o && Array.isArray(o.items) ? o.items : []; return Promise.resolve(); }
+    return fetch('/api/yeu-cau-thue?nguoi=' + encodeURIComponent(WHO), { cache:'no-store' })
+      .then(function(r){ return r.json(); }).then(function(j){ reqs = (j && j.items) || []; }).catch(function(){});
+  }
+  function reqFor(a){ return reqs.filter(function(r){ return String(r.appointmentId) === String(a.id); })[0] || null; }
+  function sendRequest(a, wantDate){
+    if(API_ON){
+      return fetch('/api/yeu-cau-thue', { method:'POST', headers:{ 'Content-Type':'application/json' }, cache:'no-store',
+        body: JSON.stringify({ nguoi:WHO, appointmentId:a.id, wantDate:wantDate, note:'' }) })
+        .then(function(r){ return r.json().then(function(j){ return r.status === 201 ? { ok:true, item:j.item } : { ok:false, error:j.message || 'Máy chủ từ chối yêu cầu.' }; }); });
+    }
+    var o = readJson(REQ_KEY) || { v:1, items:[] };
+    if(o.items.some(function(r){ return String(r.appointmentId) === String(a.id); })) return Promise.resolve({ ok:false, error:'Bạn đã gửi yêu cầu thuê cho buổi xem này rồi.' });
+    var item = { id:o.items.reduce(function(m, r){ return Math.max(m, r.id); }, 0) + 1, appointmentId:a.id, roomId:a.roomId, room:a.room,
+      roomCode:String(a.roomId).toUpperCase(), price:a.price, renterId:WHO, tenant:a.tenant || '', phone:a.phone || '', wantDate:wantDate, note:'',
+      status:'pending', reason:'', createdAt:new Date().toISOString(), decidedAt:null, seenAt:null };
+    o.items.push(item); writeJson(REQ_KEY, o);
+    return Promise.resolve({ ok:true, item:item });
   }
   function orderFor(a){
     var o = readJson(ORDER_KEY);
@@ -652,17 +680,22 @@ body:not(.is-loading) .content-skel{display:none}
       '<div class="card-head"><div><h2 id="viewedTitle">Phòng đã xem xong</h2><p>Chọn phòng bạn muốn thuê để xác nhận và đặt cọc</p></div>' +
         '<span class="side-count">' + viewed.length + ' phòng</span></div>' +
       '<div class="card-body"><ul class="viewed-grid">' + viewed.map(function(a){
-        var o = orderFor(a), st = null;
+        var o = orderFor(a), st = null, rq = reqFor(a), reason = '';
         if(o) st = o.reached === 'thanh-cong' ? ['paid', 'Đã đặt cọc'] :
                    (o.reached === 'da-gui' || o.reached === 'cho-xac-nhan') ? ['submitted', 'Chờ xác nhận cọc'] : ['pending', 'Đang đặt cọc'];
+        else if(rq && rq.status === 'approved') st = ['paid', 'Chủ trọ đã duyệt'];
+        else if(rq && rq.status === 'rejected'){ st = ['overdue', 'Không được duyệt']; reason = rq.reason ? 'Lý do: ' + rq.reason : 'Chủ trọ không nêu lý do.'; }
+        else if(rq) st = ['submitted', 'Chờ chủ trọ duyệt'];
         return '<li class="viewed-item">' +
           '<img src="' + esc(a.image) + '" alt="Ảnh ' + esc(a.room) + '" width="320" height="240" loading="lazy" />' +
           '<div class="viewed-info"><h3>' + esc(a.room) + '</h3>' +
             '<p class="when">Đã xem ngày ' + fmtDate(a.date) + ' lúc ' + esc(a.time) + '</p>' +
             '<p class="price">' + vnd(a.price || 0) + '<span>/tháng</span></p>' +
-            (st ? '<span class="status is-' + st[0] + '">' + st[1] + '</span>' : '') + '</div>' +
+            (st ? '<span class="status is-' + st[0] + '">' + st[1] + '</span>' : '') +
+            (reason ? '<p class="viewed-reason">' + esc(reason) + '</p>' : '') + '</div>' +
           (o ? '<button type="button" class="btn btn-ghost" data-deposit="' + esc(a.id) + '">' + (st[0] === 'pending' ? 'Tiếp tục đặt cọc' : 'Xem đơn cọc') + '</button>'
-             : '<button type="button" class="btn btn-primary" data-rent="' + esc(a.id) + '">Thuê phòng này</button>') +
+             : !rq ? '<button type="button" class="btn btn-primary" data-rent="' + esc(a.id) + '">Gửi yêu cầu thuê</button>'
+             : rq.status === 'approved' ? '<button type="button" class="btn btn-primary" data-deposit="' + esc(a.id) + '">Đặt cọc ngay</button>' : '') +
         '</li>';
       }).join('') + '</ul></div></section>';
   }
@@ -685,9 +718,11 @@ body:not(.is-loading) .content-skel{display:none}
     img.src = a.image || ''; img.alt = 'Ảnh ' + a.room; img.hidden = !a.image;
     document.getElementById('rentRoom').textContent = a.room;
     document.getElementById('rentPrice').innerHTML = vnd(a.price || 0) + '<span>/tháng</span>';
+    var want = document.getElementById('rentWant');
+    want.min = todayYmd; want.value = ymd(new Date(Date.now() + 7 * 864e5));
     rentOv.hidden = false;
     document.body.classList.add('modal-open');
-    document.getElementById('rentYes').focus();
+    want.focus();
   }
   function closeRent(){
     rentOv.hidden = true; renting = null;
@@ -695,7 +730,19 @@ body:not(.is-loading) .content-skel{display:none}
     if(rentReturn && document.body.contains(rentReturn)) rentReturn.focus();
     rentReturn = null;
   }
-  document.getElementById('rentYes').addEventListener('click', function(){ if(renting) goDeposit(renting); });
+  document.getElementById('rentYes').addEventListener('click', function(){
+    var a = renting, btn = this; if(!a) return;
+    var want = document.getElementById('rentWant').value;
+    if(!want || want < todayYmd){ showToast('Ngày dọn vào chưa hợp lệ', 'Chọn một ngày từ hôm nay trở đi.'); document.getElementById('rentWant').focus(); return; }
+    btn.disabled = true;
+    sendRequest(a, want).then(function(res){
+      btn.disabled = false;
+      if(!res.ok){ showToast('Chưa gửi được yêu cầu', res.error); return; }
+      reqs.push(res.item);
+      rentReturn = null; closeRent(); render();
+      showToast('Đã gửi yêu cầu thuê', 'Chủ trọ sẽ xem xét. Khi được duyệt, bạn sẽ được chuyển sang bước đặt cọc.');
+    }, function(){ btn.disabled = false; showToast('Mất kết nối', 'Không gửi được yêu cầu. Hãy thử lại.'); });
+  });
   document.getElementById('rentNo').addEventListener('click', function(){
     var a = renting; if(!a) return;
     declined[a.id] = true; saved.declined = declined; writeJson(STORE_KEY, saved);
@@ -708,8 +755,8 @@ body:not(.is-loading) .content-skel{display:none}
     if(rentOv.hidden) return;
     if(e.key === 'Escape'){ e.preventDefault(); closeRent(); return; }
     if(e.key === 'Tab'){
-      var no = document.getElementById('rentNo'), yes = document.getElementById('rentYes');
-      e.preventDefault(); (document.activeElement === no ? yes : no).focus();
+      var f = [document.getElementById('rentWant'), document.getElementById('rentNo'), document.getElementById('rentYes')];
+      e.preventDefault(); f[(f.indexOf(document.activeElement) + (e.shiftKey ? 2 : 1)) % 3].focus();
     }
   });
 
@@ -875,8 +922,12 @@ body:not(.is-loading) .content-skel{display:none}
     var xem = new URLSearchParams(location.search).get('xem');
     if(!xem) return;
     var a = findViewed(xem);
-    if(a) openRent(a);
-    else showToast('Không tìm thấy phòng', 'Lịch xem này chưa hoàn thành hoặc bạn đã chọn không thuê.');
+    if(!a){ showToast('Không tìm thấy phòng', 'Lịch xem này chưa hoàn thành hoặc bạn đã chọn không thuê.'); return; }
+    var rq = reqFor(a);
+    if(orderFor(a) || (rq && rq.status === 'approved')) goDeposit(a);
+    else if(!rq) openRent(a);
+    else if(rq.status === 'rejected') showToast('Yêu cầu thuê không được duyệt', rq.reason ? 'Lý do: ' + rq.reason : 'Chủ trọ không nêu lý do.');
+    else showToast('Đang chờ chủ trọ duyệt', 'Khi được duyệt, bạn sẽ được chuyển sang bước đặt cọc.');
   });
 })();
 </script>

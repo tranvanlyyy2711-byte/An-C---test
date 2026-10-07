@@ -15,7 +15,9 @@ import { PHONG, NGUOI_THUE } from './phong.mjs';
 import { AUTH_SCHEMA, seedDemoUsers } from './auth.mjs';
 
 export const HOLD_HOURS = 24;
-export const SLOTS = ['09:00', '10:00', '11:30', '13:30', '15:00', '17:30', '19:00'];
+// Người thuê chọn giờ tự do đến từng phút, trong khung nhận lịch [OPEN_FROM, LAST_START]
+export const OPEN_FROM = '07:00';
+export const LAST_START = '21:00';
 const ACTIVE = "('pending','confirmed')";
 const RE_PHONE = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 const RE_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -35,6 +37,7 @@ CREATE TABLE IF NOT EXISTS viewing_appointments (
   hold_expires_at TEXT,                 -- hạn giữ chỗ của lịch chờ xác nhận (ISO UTC); NULL = không hết hạn
   cancel_reason   TEXT,                 -- 'renter' | 'landlord' | 'expired'
   note            TEXT    NOT NULL DEFAULT '',
+  renter_memo     TEXT    NOT NULL DEFAULT '',  -- ghi chú riêng của người thuê, chủ trọ không thấy
   urgent          INTEGER NOT NULL DEFAULT 0,
   source          TEXT,
   created_at      TEXT    NOT NULL
@@ -47,6 +50,25 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_active_per_slot
   WHERE status IN ('pending','confirmed');
 
 CREATE INDEX IF NOT EXISTS idx_renter ON viewing_appointments (renter_id);
+
+-- Yêu cầu thuê phòng sau buổi xem: người thuê gửi, chủ trọ duyệt hoặc không duyệt.
+-- Mỗi buổi xem chỉ có MỘT yêu cầu (chỉ mục duy nhất), bấm hai lần hay gửi từ hai tab cũng không tạo trùng.
+CREATE TABLE IF NOT EXISTS rental_requests (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  appointment_id  INTEGER NOT NULL REFERENCES viewing_appointments(id),
+  room_id         TEXT    NOT NULL,
+  renter_id       TEXT    NOT NULL,
+  tenant_name     TEXT    NOT NULL,
+  tenant_phone    TEXT    NOT NULL,
+  want_date       TEXT    NOT NULL,     -- YYYY-MM-DD, ngày muốn dọn vào
+  note            TEXT    NOT NULL DEFAULT '',
+  status          TEXT    NOT NULL CHECK (status IN ('pending','reviewing','approved','rejected')),
+  reject_reason   TEXT    NOT NULL DEFAULT '',
+  created_at      TEXT    NOT NULL,
+  decided_at      TEXT,
+  seen_at         TEXT                  -- người thuê đã xem kết quả duyệt; NULL = chưa báo
+);
+CREATE UNIQUE INDEX IF NOT EXISTS one_request_per_viewing ON rental_requests (appointment_id);
 `;
 
 export class ApiError extends Error {
@@ -73,6 +95,10 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  // CSDL tạo trước khi có cột ghi chú riêng thì bổ sung cột
+  if (!db.prepare('PRAGMA table_info(viewing_appointments)').all().some((c) => c.name === 'renter_memo')) {
+    db.exec("ALTER TABLE viewing_appointments ADD COLUMN renter_memo TEXT NOT NULL DEFAULT ''");
+  }
   db.exec(AUTH_SCHEMA);
   seedDemoUsers(db);
 
@@ -84,6 +110,12 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     activeOnDay: db.prepare(`SELECT id, renter_id, time, dur FROM viewing_appointments WHERE room_id = ? AND date = ? AND status IN ${ACTIVE}`),
     sweep: db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'expired'
                        WHERE status = 'pending' AND hold_expires_at IS NOT NULL AND hold_expires_at <= ?`),
+    // Tới giờ hẹn mà chủ trọ vẫn chưa xác nhận: lịch tự huỷ. Đã xác nhận và đã hết buổi: đã xem xong.
+    // So theo giờ địa phương 'YYYY-MM-DD HH:MM:SS', cùng cách lưu date + time.
+    sweepPastPending: db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'expired'
+                       WHERE status = 'pending' AND datetime(date || ' ' || time) <= ?`),
+    sweepPastConfirmed: db.prepare(`UPDATE viewing_appointments SET status = 'completed'
+                       WHERE status = 'confirmed' AND datetime(date || ' ' || time, '+' || dur || ' minutes') <= ?`),
     // Xác nhận nguyên tử: chỉ ăn khi lịch còn 'pending' và chưa quá hạn giữ chỗ; không khớp -> không dòng nào
     confirm: db.prepare(`UPDATE viewing_appointments SET status = 'confirmed', hold_expires_at = NULL
                          WHERE id = ? AND status = 'pending' AND (hold_expires_at IS NULL OR hold_expires_at > ?)
@@ -107,7 +139,10 @@ export function openDb({ file, now, afterCheck = () => {} }) {
 
   // Lịch chờ quá hạn giữ chỗ -> tự huỷ, nhả khung giờ. Chạy trước mọi thao tác đọc/ghi,
   // nên khung giờ được nhả ngay khi hết hạn chứ không phải chờ một tác vụ định kỳ.
-  const sweep = () => q.sweep.run(nowIso()).changes;
+  const localStamp = () => { const n = now(); return `${ymd(n)} ${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`; };
+  const sweep = () => q.sweep.run(nowIso()).changes
+    + q.sweepPastPending.run(localStamp()).changes
+    + q.sweepPastConfirmed.run(localStamp()).changes;
 
   function findConflict(roomId, date, time, dur, excludeId) {
     return q.activeOnDay.all(roomId, date).find((r) => r.id !== excludeId && overlaps(time, dur, r.time, r.dur)) || null;
@@ -138,8 +173,13 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     if (!RE_DATE.test(String(date || ''))) throw new ApiError(400, 'invalid_date', 'Ngày không hợp lệ.');
     if (date < ymd(now())) throw new ApiError(400, 'past_date', 'Chỉ có thể đặt lịch từ hôm nay trở đi.');
   }
-  function checkRenterTime(time) {
-    if (!SLOTS.includes(time)) throw new ApiError(400, 'invalid_time', 'Giờ xem không nằm trong các khung giờ cho phép.');
+  function checkRenterTime(date, time) {
+    if (!RE_TIME.test(String(time || ''))) throw new ApiError(400, 'invalid_time', 'Giờ xem không hợp lệ.');
+    if (time < OPEN_FROM || time > LAST_START) throw new ApiError(400, 'invalid_time', `Chỉ nhận lịch xem từ ${OPEN_FROM} đến ${LAST_START}.`);
+    const n = now();
+    if (date === ymd(n) && minutes(time) <= n.getHours() * 60 + n.getMinutes()) {
+      throw new ApiError(400, 'past_time', 'Giờ này đã qua, hãy chọn giờ muộn hơn.');
+    }
   }
   function checkPhone(phone) {
     const d = String(phone || '').replace(/[\s.-]/g, '');
@@ -170,7 +210,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   function listForRenter(nguoi) {
     renterOf(nguoi);
     sweep();
-    return q.byRenter.all(nguoi).map(toItem);
+    return q.byRenter.all(nguoi).map((r) => ({ ...toItem(r), memo: r.renter_memo }));
   }
 
   // Khung giờ đã bị chiếm của một phòng trong một ngày. Chỉ trả giờ và "của tôi hay người khác",
@@ -191,7 +231,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     const room = PHONG[roomId];
     if (!room || room.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
     checkDate(date);
-    checkRenterTime(time);
+    checkRenterTime(date, time);
     const ph = checkPhone(phone || u.phone);
     const nt = String(note || '').slice(0, 500);
     return tx(() => {
@@ -207,7 +247,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   function rescheduleForRenter(id, { nguoi, date, time, phone, note }) {
     const u = renterOf(nguoi);
     checkDate(date);
-    checkRenterTime(time);
+    checkRenterTime(date, time);
     const ph = checkPhone(phone || u.phone);
     return tx(() => {
       sweep();
@@ -234,6 +274,88 @@ export function openDb({ file, now, afterCheck = () => {} }) {
       db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'renter' WHERE id = ?`).run(row.id);
       return toItem(q.get.get(row.id));
     });
+  }
+
+  // Ghi chú riêng sau buổi xem (ví dụ "giá ổn nhưng hơi xa trường"). Không đổi trạng thái lịch.
+  function memoForRenter(id, { nguoi, memo }) {
+    const u = renterOf(nguoi);
+    return tx(() => {
+      sweep();
+      const row = loadRow(id);
+      if (row.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền sửa lịch này.');
+      db.prepare('UPDATE viewing_appointments SET renter_memo = ? WHERE id = ?').run(String(memo || '').slice(0, 1000), row.id);
+      const r = q.get.get(row.id);
+      return { ...toItem(r), memo: r.renter_memo };
+    });
+  }
+
+  // ================= Yêu cầu thuê phòng =================
+  const qr = {
+    get: db.prepare('SELECT * FROM rental_requests WHERE id = ?'),
+    byRenter: db.prepare('SELECT * FROM rental_requests WHERE renter_id = ? ORDER BY created_at DESC'),
+    all: db.prepare('SELECT * FROM rental_requests ORDER BY created_at DESC'),
+    insert: db.prepare(`INSERT INTO rental_requests
+      (appointment_id, room_id, renter_id, tenant_name, tenant_phone, want_date, note, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`),
+  };
+  function toRequest(r) {
+    const p = PHONG[r.room_id] || {};
+    return {
+      id: r.id, appointmentId: r.appointment_id, roomId: r.room_id, room: p.title || r.room_id, roomCode: p.code || r.room_id,
+      price: p.price || 0, renterId: r.renter_id, tenant: r.tenant_name, phone: r.tenant_phone,
+      wantDate: r.want_date, note: r.note, status: r.status, reason: r.reject_reason,
+      createdAt: r.created_at, decidedAt: r.decided_at, seenAt: r.seen_at,
+    };
+  }
+  function requestsForRenter(nguoi) {
+    renterOf(nguoi);
+    return qr.byRenter.all(nguoi).map(toRequest);
+  }
+  function createRequest({ nguoi, appointmentId, wantDate, note }) {
+    const u = renterOf(nguoi);
+    if (!RE_DATE.test(String(wantDate || '')) || wantDate < ymd(now())) throw new ApiError(400, 'invalid_date', 'Ngày dọn vào phải từ hôm nay trở đi.');
+    return tx(() => {
+      sweep();
+      const row = loadRow(appointmentId);
+      if (row.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền với lịch này.');
+      if (row.status !== 'completed') throw new ApiError(409, 'not_viewed', 'Chỉ gửi được yêu cầu thuê cho phòng bạn đã xem xong.');
+      let info;
+      try {
+        info = qr.insert.run(row.id, row.room_id, u.id, u.name, row.tenant_phone, wantDate, String(note || '').slice(0, 500), nowIso());
+      } catch (e) {
+        if (isUniqueViolation(e)) throw new ApiError(409, 'already_requested', 'Bạn đã gửi yêu cầu thuê cho buổi xem này rồi.');
+        throw e;
+      }
+      return toRequest(qr.get.get(info.lastInsertRowid));
+    });
+  }
+  // Người thuê đã được báo kết quả (đã duyệt / không duyệt): không báo lại lần nữa
+  function markRequestSeen(id, { nguoi }) {
+    const u = renterOf(nguoi);
+    const r = qr.get.get(Number(id));
+    if (!r) throw new ApiError(404, 'not_found', 'Không tìm thấy yêu cầu thuê.');
+    if (r.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền với yêu cầu này.');
+    db.prepare('UPDATE rental_requests SET seen_at = ? WHERE id = ? AND seen_at IS NULL').run(nowIso(), r.id);
+    return toRequest(qr.get.get(r.id));
+  }
+  function requestsForLandlord() { return qr.all.all().map(toRequest); }
+  // Chuyển trạng thái nguyên tử: chỉ ăn khi trạng thái hiện tại hợp lệ, không đọc rồi mới ghi
+  const MOVES = {
+    review:  { from: ['pending'], to: 'reviewing' },
+    approve: { from: ['pending', 'reviewing'], to: 'approved' },
+    reject:  { from: ['pending', 'reviewing'], to: 'rejected' },
+    reopen:  { from: ['rejected'], to: 'pending' },
+  };
+  function decideRequest(id, { action, reason }) {
+    const mv = MOVES[action];
+    if (!mv) throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    const decided = mv.to === 'approved' || mv.to === 'rejected';
+    const r = db.prepare(`UPDATE rental_requests SET status = ?, reject_reason = ?, decided_at = ?, seen_at = NULL
+        WHERE id = ? AND status IN (${mv.from.map(() => '?').join(',')}) RETURNING *`)
+      .get(mv.to, mv.to === 'rejected' ? String(reason || '').slice(0, 500) : '', decided ? nowIso() : null, Number(id), ...mv.from);
+    if (r) return toRequest(r);
+    if (!qr.get.get(Number(id))) throw new ApiError(404, 'not_found', 'Không tìm thấy yêu cầu thuê.');
+    throw new ApiError(409, 'bad_state', 'Yêu cầu này đã được xử lý, hãy tải lại để xem trạng thái mới.');
   }
 
   // ================= Phía chủ trọ =================
@@ -301,7 +423,8 @@ export function openDb({ file, now, afterCheck = () => {} }) {
 
   return {
     db, sweep, now,
-    listForRenter, takenFor, createForRenter, rescheduleForRenter, cancelForRenter,
+    listForRenter, takenFor, createForRenter, rescheduleForRenter, cancelForRenter, memoForRenter,
+    requestsForRenter, createRequest, markRequestSeen, requestsForLandlord, decideRequest,
     listAll, createForLandlord, updateForLandlord,
     close: () => db.close(),
   };

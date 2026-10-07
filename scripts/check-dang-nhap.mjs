@@ -27,7 +27,7 @@ const expect = (name, got, want) => {
 let sv = null;
 async function startServer() {
   sv = spawn(process.execPath, [join(root, 'server/index.mjs'), String(PORT)], {
-    env: { ...process.env, AN_CU_DB: DB }, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, AN_CU_DB: DB, AN_CU_NOW: '2026-09-18T08:15:00' }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   sv.stderr.on('data', (d) => { if (!/ExperimentalWarning|trace-warnings/.test(String(d))) process.stderr.write('[máy chủ] ' + d); });
   await new Promise((ok, fail) => { sv.stdout.once('data', ok); sv.once('exit', (c) => fail(new Error('Máy chủ thoát sớm, mã ' + c))); });
