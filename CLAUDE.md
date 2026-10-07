@@ -166,6 +166,7 @@ Trước khi coi một thay đổi là xong: `npm run lint` và `npm run typeche
 ```bash
 npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở data/ (không commit)
 npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
+npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```

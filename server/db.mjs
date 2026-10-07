@@ -67,7 +67,8 @@ const isUniqueViolation = (e) => /UNIQUE constraint failed/i.test(String(e && e.
 
 const MSG_TAKEN = 'Khung giờ này đã có người đặt. Hãy chọn giờ khác.';
 
-export function openDb({ file, now }) {
+// afterCheck: CHỈ cho kiểm thử, gọi giữa bước "kiểm tra chồng lấn" và bước ghi để nới rộng khe hở đua.
+export function openDb({ file, now, afterCheck = () => {} }) {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;');
@@ -83,6 +84,10 @@ export function openDb({ file, now }) {
     activeOnDay: db.prepare(`SELECT id, renter_id, time, dur FROM viewing_appointments WHERE room_id = ? AND date = ? AND status IN ${ACTIVE}`),
     sweep: db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'expired'
                        WHERE status = 'pending' AND hold_expires_at IS NOT NULL AND hold_expires_at <= ?`),
+    // Xác nhận nguyên tử: chỉ ăn khi lịch còn 'pending' và chưa quá hạn giữ chỗ; không khớp -> không dòng nào
+    confirm: db.prepare(`UPDATE viewing_appointments SET status = 'confirmed', hold_expires_at = NULL
+                         WHERE id = ? AND status = 'pending' AND (hold_expires_at IS NULL OR hold_expires_at > ?)
+                         RETURNING *`),
     insert: db.prepare(`INSERT INTO viewing_appointments
       (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, hold_expires_at, cancel_reason, note, urgent, source, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
@@ -192,6 +197,7 @@ export function openDb({ file, now }) {
     return tx(() => {
       sweep();
       const c = findConflict(roomId, date, time, 30, null);
+      afterCheck();
       if (c) throw new ApiError(409, 'slot_taken', MSG_TAKEN, { owner: c.renter_id === u.id ? 'me' : 'other' });
       const info = guarded(() => q.insert.run(roomId, u.id, u.name, ph, date, time, 30, 'pending', holdIso(), null, nt, 0, source || 'api', nowIso()));
       return toItem(q.get.get(info.lastInsertRowid));
@@ -253,6 +259,7 @@ export function openDb({ file, now }) {
     return tx(() => {
       sweep();
       const c = findConflict(roomId, date, time, 30, null);
+      afterCheck();
       if (c) throw new ApiError(409, 'slot_taken', `Phòng này đã có lịch lúc ${c.time} ngày ${date.slice(8)}/${date.slice(5, 7)}.`, { conflictTime: c.time });
       const info = guarded(() => q.insert.run(roomId, null, name, ph, date, time, 30, 'pending', null, null, String(note || '').slice(0, 500), 0, 'chu-tro', nowIso()));
       return toItem(q.get.get(info.lastInsertRowid));
@@ -264,15 +271,19 @@ export function openDb({ file, now }) {
       sweep();
       const row = loadRow(id);
       if (body.action === 'confirm') {
-        if (row.status !== 'pending') {
-          const msg = row.cancel_reason === 'expired'
+        // Một câu lệnh nguyên tử: điều kiện "còn chờ và chưa hết hạn" được kiểm ngay lúc ghi,
+        // không dựa vào trạng thái đã đọc trước đó. Đúng cả khi không có khoá ghi toàn DB
+        // (Postgres READ COMMITTED), nên chuyển sang Supabase giữ nguyên được.
+        const done = q.confirm.get(row.id, nowIso());
+        if (!done) {
+          const cur = q.get.get(row.id);
+          const expired = cur.cancel_reason === 'expired' || (cur.status === 'pending' && cur.hold_expires_at && cur.hold_expires_at <= nowIso());
+          const msg = expired
             ? 'Lịch đã quá hạn giữ chỗ và tự huỷ, không xác nhận được nữa.'
             : 'Lịch không còn ở trạng thái chờ xác nhận.';
           throw new ApiError(409, 'not_pending', msg);
         }
-        // Xác nhận thì khung giờ được giữ hẳn, không còn hạn giữ chỗ
-        db.prepare(`UPDATE viewing_appointments SET status = 'confirmed', hold_expires_at = NULL WHERE id = ?`).run(row.id);
-        return toItem(q.get.get(row.id));
+        return toItem(done);
       }
       if (body.action === 'reschedule') {
         mustBeActive(row);

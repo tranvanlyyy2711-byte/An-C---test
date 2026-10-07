@@ -83,6 +83,19 @@ Khung giờ đã có người giữ thì trả `409` với `error: "slot_taken"`
 - Chủ trọ đặt 16:15 chồng lên lịch 16:00 bị chặn.
 - Đồng hồ chạy qua 24 giờ: lịch chờ tự huỷ, khung giờ nhả cho người khác, lịch đã xác nhận giữ nguyên, chủ trọ không xác nhận được lịch đã quá hạn.
 
+### Kiểm thử nhiều tiến trình
+
+`npm run test:dong-thoi` cho 8 tiến trình Node cùng ghi một file SQLite, cùng xuất phát ở một mốc giờ. Kiểm thử ở trên chạy trong một tiến trình, mà `DatabaseSync` chạy đồng bộ nên các request không bao giờ chen vào giữa nhau. Vì vậy kiểm thử đó không thử được giao dịch, còn kiểm thử này thì có. Móc `afterCheck` của `openDb` (chỉ dùng cho kiểm thử) ngủ 40ms giữa bước kiểm tra và bước ghi để nới rộng khe hở.
+
+- **Đối chứng không dùng giao dịch:** cả 8 tiến trình cùng ghi được. Điều này chứng minh kịch bản thật sự tạo ra đua.
+- **Chồng lấn một phần** (09:00, 09:03, …): chỉ mục duy nhất không bắt được trường hợp này. Chỉ có giao dịch `BEGIN IMMEDIATE` giữ đúng 1 lịch. Khi thử tắt giao dịch thì có 4 lịch chồng nhau cùng lọt.
+- **Cùng một khung giờ:** đúng 1 lịch.
+- **Xác nhận nguyên tử:** xác nhận lần hai bị từ chối, lịch đã quá hạn không xác nhận được.
+
+Thao tác xác nhận là một câu `UPDATE … WHERE status = 'pending' AND hold_expires_at > now RETURNING *`, không đọc trạng thái trước rồi mới ghi. Cách này vẫn đúng khi không có khoá ghi toàn DB, nên chuyển sang Postgres giữ nguyên được.
+
+Khi một thao tác ghi lỗi, `ROLLBACK` hoàn tác luôn bước nhả lịch quá hạn chạy cùng giao dịch. Lịch quá hạn chỉ được nhả ở thao tác thành công kế tiếp. Việc này vô hại vì thao tác nào cũng nhả lịch quá hạn trước tiên.
+
 ## Chuyển sang Supabase theo CLAUDE.md
 
 Cùng thiết kế, đổi sang Postgres:
@@ -106,6 +119,7 @@ alter table viewing_appointments add constraint no_overlap_active
   where (status in ('requested', 'confirmed'));
 ```
 
+- Xác nhận dùng một câu `update … where status = 'requested' and hold_expires_at > now() returning *`, không đọc trước rồi mới ghi. Postgres mặc định `READ COMMITTED`, nên kiểu đọc rồi ghi sẽ đua với `pg_cron` nhả lịch quá hạn.
 - Đặt lịch qua một hàm `security definer` gọi bằng `supabase.rpc`: nhả lịch quá hạn của đúng khung giờ đó, rồi chèn, trong cùng một giao dịch. Server Action bắt mã lỗi `23505` hoặc `23P01` để báo "Khung giờ này đã có người đặt".
 - Thêm một tác vụ `pg_cron` mỗi phút đổi các lịch `requested` quá `hold_expires_at` sang `cancelled`.
 - RLS không cho người thuê đọc lịch người khác. Giao diện lấy giờ bị chiếm qua một hàm `security definer` chỉ trả giờ.
