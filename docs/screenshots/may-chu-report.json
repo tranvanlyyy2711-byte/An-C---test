@@ -24,7 +24,7 @@
     "ok": true
   },
   {
-    "name": "Trang đặt r14 24/09 13:30",
+    "name": "Trang đặt p09 24/09 13:30",
     "got": "Đã gửi yêu cầu",
     "want": "Đã gửi yêu cầu",
     "ok": true
@@ -54,7 +54,7 @@
     "ok": true
   },
   {
-    "name": "cơ sở dữ liệu chỉ có một lịch cho r15 25/09 17:30",
+    "name": "cơ sở dữ liệu chỉ có một lịch cho p07 25/09 17:30",
     "got": 1,
     "want": 1,
     "ok": true
@@ -72,7 +72,7 @@
     "ok": true
   },
   {
-    "name": "Trang thấy lịch r14 đang chờ xác nhận",
+    "name": "Trang thấy lịch p09 đang chờ xác nhận",
     "got": "Chờ xác nhận",
     "want": "Chờ xác nhận",
     "ok": true
@@ -97,9 +97,9 @@
   },
   {
     "name": "chủ trọ đặt chồng lên lịch 16:00 bị chặn",
-    "got": "Đã xác nhận lịch",
+    "got": "Khung giờ đã có lịch",
     "want": "Khung giờ đã có lịch",
-    "ok": false
+    "ok": true
   },
   {
     "name": "modal vẫn mở để chọn lại",
@@ -108,7 +108,7 @@
     "ok": true
   },
   {
-    "name": "Trang giữ chỗ r13 và r16",
+    "name": "Trang giữ chỗ p05 và p08",
     "got": [
       201,
       201
@@ -120,7 +120,7 @@
     "ok": true
   },
   {
-    "name": "An chưa đặt được r13 lúc này",
+    "name": "An chưa đặt được p05 lúc này",
     "got": 409,
     "want": 409,
     "ok": true
@@ -151,8 +151,8 @@
   },
   {
     "name": "không có lỗi JavaScript trên các trang",
-    "got": 1,
+    "got": 0,
     "want": 0,
-    "ok": false
+    "ok": true
   }
 ]

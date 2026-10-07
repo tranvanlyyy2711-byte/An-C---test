@@ -85,7 +85,7 @@ try {
   console.log('\n=== 1. Ba mươi người bấm đặt cùng một khung giờ, cùng lúc ===');
   const users = ['u-trang', 'u-an', 'u-linh', 'u-huy'];
   const rs = await Promise.all(Array.from({ length: 30 }, (_, i) =>
-    api('POST', '/api/lich-xem', { nguoi: users[i % 4], roomId: 'r12', date: '2026-09-23', time: '10:00' })));
+    api('POST', '/api/lich-xem', { nguoi: users[i % 4], roomId: 'p06', date: '2026-09-23', time: '10:00' })));
   expect('đúng 1 yêu cầu thành công', rs.filter((r) => r.status === 201).length, 1);
   expect('29 yêu cầu còn lại bị từ chối 409', rs.filter((r) => r.status === 409).length, 29);
 
@@ -95,11 +95,11 @@ try {
   let rawError = '';
   try {
     raw.prepare(`INSERT INTO viewing_appointments (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, created_at)
-                 VALUES ('r12', 'u-huy', 'Kẻ gian', '0900000000', '2026-09-23', '10:00', 30, 'pending', '2026-09-18T00:00:00Z')`).run();
+                 VALUES ('p06', 'u-huy', 'Kẻ gian', '0900000000', '2026-09-23', '10:00', 30, 'pending', '2026-09-18T00:00:00Z')`).run();
   } catch (e) { rawError = String(e.message); }
   expect('chỉ mục duy nhất chặn cả lệnh ghi thẳng', /UNIQUE constraint failed/.test(rawError), true);
   raw.prepare(`INSERT INTO viewing_appointments (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, created_at)
-               VALUES ('r12', 'u-huy', 'Lịch cũ', '0900000000', '2026-09-23', '10:00', 30, 'cancelled', '2026-09-18T00:00:00Z')`).run();
+               VALUES ('p06', 'u-huy', 'Lịch cũ', '0900000000', '2026-09-23', '10:00', 30, 'cancelled', '2026-09-18T00:00:00Z')`).run();
   expect('lịch đã huỷ vẫn ghi được, không chiếm chỗ', true, true);
   raw.close();
 
@@ -109,12 +109,12 @@ try {
   const a = await openPage(ctxA, '/tai-khoan/tim-phong.html?nguoi=u-trang');
   const b = await openPage(ctxB, '/tai-khoan/tim-phong.html?nguoi=u-an');
 
-  await openRoom(a, 'r14', '2026-09-24');
+  await openRoom(a, 'p09', '2026-09-24');
   await a.selectOption('#rdTime', '13:30');
   await a.click('#rdBookingBtn');
-  expect('Trang đặt r14 24/09 13:30', await toast(a, 'Đã gửi yêu cầu'), 'Đã gửi yêu cầu');
+  expect('Trang đặt p09 24/09 13:30', await toast(a, 'Đã gửi yêu cầu'), 'Đã gửi yêu cầu');
 
-  await openRoom(b, 'r14', '2026-09-24');
+  await openRoom(b, 'p09', '2026-09-24');
   await waitOption(b, '#rdTime', 3, '13:30 · Đã có người đặt');
   expect('An thấy 13:30 đã bị khoá', await optionText(b, '#rdTime', 3), 'khoá: 13:30 · Đã có người đặt');
   await b.screenshot({ path: resolve(outDir, 'may-chu-khung-gio-bi-khoa-desktop.png') });
@@ -124,8 +124,8 @@ try {
 
   console.log('\n=== 4. Cả hai cùng nhìn thấy khung giờ trống, cùng bấm ===');
   await a.click('#rdClose'); await b.click('#rdClose');
-  await openRoom(a, 'r15', '2026-09-25');
-  await openRoom(b, 'r15', '2026-09-25');
+  await openRoom(a, 'p07', '2026-09-25');
+  await openRoom(b, 'p07', '2026-09-25');
   await a.selectOption('#rdTime', '17:30');
   await b.selectOption('#rdTime', '17:30');
   expect('trước khi bấm, An vẫn thấy 17:30 trống', await optionText(b, '#rdTime', 5), 'trống: 17:30');
@@ -135,9 +135,9 @@ try {
   ]);
   const thang = [ra, rb].filter((t) => t === 'Đã gửi yêu cầu').length;
   expect('chỉ đúng một người thắng', thang, 1);
-  const r15 = (await api('GET', '/api/chu-tro/lich-xem')).body.items
-    .filter((i) => i.roomId === 'r15' && i.date === '2026-09-25' && i.time === '17:30' && ['pending', 'confirmed'].includes(i.status));
-  expect('cơ sở dữ liệu chỉ có một lịch cho r15 25/09 17:30', r15.length, 1);
+  const p07 = (await api('GET', '/api/chu-tro/lich-xem')).body.items
+    .filter((i) => i.roomId === 'p07' && i.date === '2026-09-25' && i.time === '17:30' && ['pending', 'confirmed'].includes(i.status));
+  expect('cơ sở dữ liệu chỉ có một lịch cho p07 25/09 17:30', p07.length, 1);
 
   console.log('\n=== 5. Trang lịch xem của từng người ===');
   const da = await openPage(ctxA, '/tai-khoan/dat-lich.html');
@@ -147,9 +147,9 @@ try {
   await da.waitForTimeout(700); await db.waitForTimeout(700);
   expect('trình duyệt nhớ người dùng: An', (await db.locator('.acc-btn .nm').textContent()).trim(), 'Nguyễn Văn An');
   const lichAn = await db.locator('#apptList .apt-item').allTextContents();
-  expect('An không thấy lịch của Trang', lichAn.some((t) => t.includes('Hòa Lạc')), false);
-  const theR14 = da.locator('#apptList .apt-item', { hasText: 'Hòa Lạc' });
-  expect('Trang thấy lịch r14 đang chờ xác nhận', (await theR14.locator('.apt-status').textContent()).trim(), 'Chờ xác nhận');
+  expect('An không thấy lịch của Trang', lichAn.some((t) => t.includes('Long Biên')), false);
+  const theP09 = da.locator('#apptList .apt-item', { hasText: 'Long Biên' });
+  expect('Trang thấy lịch p09 đang chờ xác nhận', (await theP09.locator('.apt-status').textContent()).trim(), 'Chờ xác nhận');
   await da.screenshot({ path: resolve(outDir, 'may-chu-lich-cua-toi-desktop.png'), fullPage: true });
 
   console.log('\n=== 6. Chủ trọ ===');
@@ -158,15 +158,15 @@ try {
   await cp.waitForTimeout(900);
   await cp.click('#viewToggle [data-view="list"]');
   await cp.waitForTimeout(250);
-  const rowR14 = cp.locator('#listRows .list-row', { hasText: 'R14' }).filter({ hasText: 'Phạm Thu Trang' });
-  expect('chủ trọ thấy lịch Trang vừa đặt', await rowR14.count(), 1);
-  await rowR14.locator('[data-confirm]').click();
+  const rowP09 = cp.locator('#listRows .list-row', { hasText: 'P09' }).filter({ hasText: 'Phạm Thu Trang' });
+  expect('chủ trọ thấy lịch Trang vừa đặt', await rowP09.count(), 1);
+  await rowP09.locator('[data-confirm]').click();
   expect('chủ trọ xác nhận được', await toast(cp, 'Đã xác nhận lịch'), 'Đã xác nhận lịch');
   await da.reload({ waitUntil: 'domcontentloaded' });
   await da.waitForSelector('.content-real .apt-item');
   await da.waitForTimeout(700);
   expect('Trang thấy lịch đã được xác nhận',
-    (await da.locator('#apptList .apt-item', { hasText: 'Hòa Lạc' }).locator('.apt-status').textContent()).trim(), 'Đã xác nhận');
+    (await da.locator('#apptList .apt-item', { hasText: 'Long Biên' }).locator('.apt-status').textContent()).trim(), 'Đã xác nhận');
 
   await cp.click('#openCreateBtn');
   await cp.waitForTimeout(250);
@@ -180,17 +180,17 @@ try {
   expect('modal vẫn mở để chọn lại', await cp.locator('#apptModalOverlay').evaluate((el) => el.classList.contains('open')), true);
 
   console.log('\n=== 7. Hết hạn giữ chỗ khi đồng hồ qua 24 giờ ===');
-  const giu = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r13', date: '2026-09-25', time: '09:00' });
-  const giu2 = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r16', date: '2026-09-26', time: '10:00' });
-  expect('Trang giữ chỗ r13 và r16', [giu.status, giu2.status], [201, 201]);
-  expect('An chưa đặt được r13 lúc này', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'r13', date: '2026-09-25', time: '09:00' })).status, 409);
+  const giu = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'p05', date: '2026-09-25', time: '09:00' });
+  const giu2 = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'p08', date: '2026-09-26', time: '10:00' });
+  expect('Trang giữ chỗ p05 và p08', [giu.status, giu2.status], [201, 201]);
+  expect('An chưa đặt được p05 lúc này', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'p05', date: '2026-09-25', time: '09:00' })).status, 409);
   await stopServer();
   await startServer('2026-09-19T09:00:00'); // 24 giờ 45 phút sau
   const sau = (await api('GET', '/api/lich-xem?nguoi=u-trang')).body.items;
-  const r13 = sau.find((i) => i.id === giu.body.item.id);
-  expect('lịch chưa được xác nhận tự huỷ vì quá hạn', `${r13.status}/${r13.cancelReason}`, 'cancelled/expired');
-  expect('lịch đã được xác nhận thì không hết hạn', sau.find((i) => i.roomId === 'r14').status, 'confirmed');
-  expect('khung giờ được nhả, An đặt được', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'r13', date: '2026-09-25', time: '09:00' })).status, 201);
+  const p05 = sau.find((i) => i.id === giu.body.item.id);
+  expect('lịch chưa được xác nhận tự huỷ vì quá hạn', `${p05.status}/${p05.cancelReason}`, 'cancelled/expired');
+  expect('lịch đã được xác nhận thì không hết hạn', sau.find((i) => i.roomId === 'p09').status, 'confirmed');
+  expect('khung giờ được nhả, An đặt được', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'p05', date: '2026-09-25', time: '09:00' })).status, 201);
   const muon = await api('PATCH', `/api/chu-tro/lich-xem/${giu2.body.item.id}`, { action: 'confirm' });
   expect('chủ trọ không xác nhận được lịch đã quá hạn', muon.status, 409);
 

@@ -100,7 +100,7 @@ for (const t of targets) {
   await shot('modal-create');
 
   // Điền hợp lệ -> đóng modal, tăng số lịch sắp tới
-  await page.selectOption('#mRoom', 'r14');
+  await page.selectOption('#mRoom', 'p04');
   await page.fill('#mPhone', '0912345678');
   await page.fill('#mDate', '2026-09-25');
   await page.selectOption('#mTime', '10:00');

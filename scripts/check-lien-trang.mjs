@@ -82,7 +82,7 @@ expect('không có mã trùng', new Set(ids).size, ids.length);
 await page.click('#sideNav .side-link[href="tim-phong.html"]');
 await page.waitForURL('**/tim-phong.html');
 await page.waitForSelector('#roomList .room-row');
-expect('quay lại trang tìm phòng được', await page.locator('#roomList .room-row').count(), 18);
+expect('quay lại trang tìm phòng được', await page.locator('#roomList .room-row').count(), 9);
 
 expect('không có lỗi JS', errors.length, 0);
 if (errors.length) checks.push({ name: 'chi tiết lỗi JS', got: errors.join(' | ') });

@@ -135,7 +135,7 @@ try {
   console.log('\n=== 4. Danh tính khi đặt lịch ===');
   const c = client();
   await c('POST', '/api/dang-nhap', { phone: '0911222333', password: PW });
-  r = await c('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r12', date: '2026-09-21', time: '10:00' });
+  r = await c('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'p06', date: '2026-09-21', time: '10:00' });
   expect('đã đăng nhập: gửi nguoi=u-trang vẫn ghi lịch cho chính mình', [r.status, r.body.item && r.body.item.renterId], [201, newId]);
   expect('lịch mới hiện trong danh sách của mình', (await c('GET', '/api/lich-xem?nguoi=u-trang')).body.items.map((i) => i.renterId), [newId]);
   expect('người thuê đã đăng nhập không gọi được API chủ trọ', (await c('GET', '/api/chu-tro/lich-xem')).status, 403);

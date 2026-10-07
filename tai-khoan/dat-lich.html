@@ -313,7 +313,7 @@ body.modal-open{overflow:hidden}
             </button>
           </div>
 
-          <section class="card reveal" id="panelList">
+          <section class="card reveal" id="panelList" role="tabpanel" aria-label="Danh sách lịch xem">
             <div class="card-head">
               <div><h2>Danh sách lịch xem</h2><p>Bấm vào một lịch để đổi giờ, huỷ hoặc liên hệ chủ trọ</p></div>
             </div>
@@ -395,28 +395,6 @@ body.modal-open{overflow:hidden}
   </div>
 </div>
 
-<!-- Modal xác nhận thuê sau khi qua thời gian hẹn -->
-<div class="modal-overlay" id="decisionOverlay">
-  <div class="modal deposit-modal" role="dialog" aria-modal="true" aria-labelledby="decisionTitle">
-    <div class="modal-body">
-      <div class="deposit-check"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-      <h2 class="deposit-title" id="decisionTitle">Bạn có muốn thuê phòng này?</h2>
-      <p class="deposit-sub">Sau khi xem phòng, nếu bạn thấy phù hợp, hãy xác nhận để tiến hành đặt cọc.</p>
-      <div class="deposit-room">
-        <img id="decisionImage" src="" alt="" />
-        <div>
-          <h3 id="decisionRoom"></h3>
-          <div class="price" id="decisionPrice"></div>
-        </div>
-      </div>
-      <div class="deposit-actions">
-        <button class="btn btn-ghost" id="decisionReject" type="button">Không thuê</button>
-        <button class="btn btn-primary" id="decisionConfirm" type="button">Xác nhận đặt cọc</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
 
 <!-- Thông báo sau khi đặt lịch xem -->
@@ -463,10 +441,10 @@ body.modal-open{overflow:hidden}
   // Lịch của NGƯỜI KHÁC, mô phỏng "máy chủ báo khung giờ nào đã bị chiếm". Chỉ đọc,
   // không hiện trong danh sách của bạn và không lộ danh tính người đặt.
   var OTHER_BOOKINGS = [
-    { roomId:'r09', date:'2026-09-20', time:'10:00', status:'confirmed', createdAt:'2026-09-17T09:00:00' },
-    { roomId:'r09', date:'2026-09-19', time:'09:00', status:'pending',   createdAt:'2026-09-18T07:00:00' },
+    { roomId:'p01', date:'2026-09-20', time:'10:00', status:'confirmed', createdAt:'2026-09-17T09:00:00' },
+    { roomId:'p01', date:'2026-09-19', time:'09:00', status:'pending',   createdAt:'2026-09-18T07:00:00' },
     // Giữ chỗ từ 16/09, chủ trọ không xác nhận: đã quá hạn nên khung này KHÔNG còn bị chiếm
-    { roomId:'r09', date:'2026-09-19', time:'15:00', status:'pending',   createdAt:'2026-09-16T10:00:00' }
+    { roomId:'p01', date:'2026-09-19', time:'15:00', status:'pending',   createdAt:'2026-09-16T10:00:00' }
   ];
   function holdEnd(it){
     if(it.holdUntil) return new Date(it.holdUntil);
@@ -496,7 +474,14 @@ body.modal-open{overflow:hidden}
     if(!/^https?:$/.test(location.protocol) || !window.fetch) return Promise.resolve(false);
     return fetch('/api/suc-khoe', { cache:'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ if(j && j.ok){ API.on = true; API.now = j.now; } return API.on; })
+      .then(function(j){
+        if(j && j.ok){
+          API.on = true; API.now = j.now;
+          // Đã đăng nhập bằng tài khoản người thuê: dùng tài khoản thật, bỏ người thuê mô phỏng ?nguoi=
+          if(j.me && j.me.role === 'renter') MOCK_RENTER = { id:j.me.id, name:j.me.name, phone:j.me.phone };
+        }
+        return API.on;
+      })
       .catch(function(){ return false; });
   })();
   function apiCall(method, url, body){
@@ -536,27 +521,18 @@ body.modal-open{overflow:hidden}
   };
 
   /* ================= Danh mục phòng cho modal đặt lịch ================= */
+  // Nguồn sự thật: 9 phòng p01-p09 ở index.html, khớp ROOMS trong tim-phong.html và PHONG
+  // trong server/phong.mjs.
   var ROOM_OPTIONS = [
-    {id:'r09', title:'Phòng khép kín, gần các trường Bách Kinh Xây', district:'Hai Bà Trưng', address:'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội', price:3300000, phone:'0327882879', image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg'},
-    {id:'r10', title:'Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng', district:'Hai Bà Trưng', address:'26 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội', price:4500000, phone:'0967960926', image:'../assets/rooms/phongtrobachkinhxaygiare1.webp'},
-    {id:'r11', title:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', district:'Cầu Giấy', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội', price:3300000, phone:'0916667679', image:'../assets/rooms/210hqv1.webp'},
-    {id:'r12', title:'Phòng mới xây, đầy đủ tiện nghi', district:'Đống Đa', address:'Số nhà 20, ngách 79, ngõ Cẩm Văn, Phường Hàng Bột, Quận Đống Đa, Hà Nội', price:3500000, phone:'0838528543', image:'../assets/rooms/moixay1.webp'},
-    {id:'r13', title:'Phòng trọ khép kín Trần Thái Tông', district:'Cầu Giấy', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội', price:3500000, phone:'0904525414', image:'../assets/rooms/ttt1.webp'},
-    {id:'r14', title:'Phòng trọ sinh viên tại Hòa Lạc, gần ĐH FPT, ĐHQGHN', district:'Thạch Thất', address:'Đường Đại lộ Thăng Long, Xã Hòa Lạc, Huyện Thạch Thất, Hà Nội', price:1800000, phone:'0342150995', image:'../assets/rooms/hoalac1.webp'},
-    {id:'r15', title:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', district:'Nam Từ Liêm', address:'Ngõ 90 Đường Phúc Diễn, Quận Nam Từ Liêm, Hà Nội', price:4250000, phone:'0974942507', image:'../assets/rooms/ga1.webp'},
-    {id:'r16', title:'Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện', district:'Đống Đa', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội', price:3000000, phone:'0982165646', image:'../assets/rooms/dd1.webp'},
-    {id:'r17', title:'Trọ có 1 phòng ngủ 1 phòng khách', district:'Nam Từ Liêm', address:'Đường Tu Hoàng, Phường Xuân Phương, Quận Nam Từ Liêm, Hà Nội', price:4000000, phone:'0912415901', image:'../assets/rooms/1n1k1.webp'},
-    {id:'r18', title:'Phòng đầy đủ tiện nghi', district:'Hoàng Mai', address:'Số nhà 26A, ngõ 220 Định Công Thượng, Phường Định Công, Quận Hoàng Mai, Hà Nội', price:2700000, phone:'0972137955', image:'../assets/rooms/hmai1.webp'},
-    // Tám phòng dưới đây chưa có số chủ trọ trong dữ liệu mẫu. Giữ phone rỗng để
-    // nút "Liên hệ chủ trọ" tự ẩn, thay vì bịa số.
-    {id:'r01', title:'Phòng trọ gần Đại học Quốc Gia', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội', price:2800000, phone:'', image:'../assets/rooms/210hqv2.webp'},
-    {id:'r02', title:'Căn hộ mini có ban công', district:'Đống Đa', address:'58 Thái Hà, P. Trung Liệt, Đống Đa, Hà Nội', price:6200000, phone:'', image:'../assets/rooms/moixay2.webp'},
-    {id:'r03', title:'Ở ghép nữ, an ninh tốt', district:'Hai Bà Trưng', address:'12/8 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội', price:2100000, phone:'', image:'../assets/rooms/phongtrobachkinhxaygiare2.webp'},
-    {id:'r04', title:'Phòng có gác, cửa sổ lớn', district:'Thanh Xuân', address:'21 Vũ Trọng Phụng, P. Khương Trung, Thanh Xuân, Hà Nội', price:3400000, phone:'', image:'../assets/rooms/hmai2.webp'},
-    {id:'r05', title:'Studio khép kín gần Hồ Tây', district:'Ba Đình', address:'9 Đội Cấn, P. Cống Vị, Ba Đình, Hà Nội', price:5300000, phone:'', image:'../assets/rooms/1n1k2.webp'},
-    {id:'r06', title:'Phòng khép kín, nuôi thú cưng', district:'Hoàng Mai', address:'70 Tân Mai, P. Tân Mai, Hoàng Mai, Hà Nội', price:3100000, phone:'', image:'../assets/rooms/dd2.webp'},
-    {id:'r07', title:'Ở ghép nam, gần sân vận động Mỹ Đình', district:'Nam Từ Liêm', address:'5 Lê Đức Thọ, P. Mỹ Đình 2, Nam Từ Liêm, Hà Nội', price:1900000, phone:'', image:'../assets/rooms/ga2.webp'},
-    {id:'r08', title:'Phòng rộng, có bếp riêng', district:'Đống Đa', address:'112 Tôn Thất Tùng, P. Khương Thượng, Đống Đa, Hà Nội', price:3900000, phone:'', image:'../assets/rooms/ttt2.webp'}
+    {id:'p01', title:'Phòng gác lửng, thoáng sáng', district:'Cầu Giấy', address:'12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội', price:2800000, phone:'0912345678', image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg'},
+    {id:'p02', title:'Căn hộ mini full nội thất', district:'Đống Đa', address:'27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội', price:4200000, phone:'0938221574', image:'../assets/rooms/phongtrobachkinhxaygiare1.webp'},
+    {id:'p03', title:'Phòng ban công riêng, đón nắng', district:'Hai Bà Trưng', address:'88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội', price:3100000, phone:'0906887302', image:'../assets/rooms/210hqv1.webp'},
+    {id:'p04', title:'Studio hiện đại gần trung tâm', district:'Thanh Xuân', address:'12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội', price:3900000, phone:'0977415688', image:'../assets/rooms/moixay1.webp'},
+    {id:'p05', title:'Phòng khép kín, an ninh tốt', district:'Ba Đình', address:'56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội', price:2500000, phone:'0913664129', image:'../assets/rooms/ttt1.webp'},
+    {id:'p06', title:'Phòng rộng, phù hợp gia đình', district:'Hoàng Mai', address:'203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội', price:4600000, phone:'0904332871', image:'../assets/rooms/hoalac1.webp'},
+    {id:'p07', title:'Phòng trọ giá mềm cho sinh viên', district:'Từ Liêm', address:'9 Lê Đức Thọ, P. Mỹ Đình, Từ Liêm, Hà Nội', price:1800000, phone:'0968110447', image:'../assets/rooms/ga1.webp'},
+    {id:'p08', title:'Phòng có gác, cửa sổ hướng vườn', district:'Tây Hồ', address:'74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội', price:3400000, phone:'0915209633', image:'../assets/rooms/dd1.webp'},
+    {id:'p09', title:'Căn hộ dịch vụ 2 phòng ngủ', district:'Long Biên', address:'15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội', price:6500000, phone:'0902778916', image:'../assets/rooms/hmai1.webp'}
   ];
   function roomById(id){
     for(var i=0;i<ROOM_OPTIONS.length;i++){ if(ROOM_OPTIONS[i].id===id) return ROOM_OPTIONS[i]; }
@@ -565,11 +541,11 @@ body.modal-open{overflow:hidden}
 
   /* ================= Dữ liệu mẫu ban đầu ================= */
   var SEED_APPTS = [
-    { id:101, roomId:'r09', room:'Phòng khép kín, gần các trường Bách Kinh Xây', address:'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội', price:3300000, image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg', landlordPhone:'0327882879', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-20', time:'09:00', dur:30, status:'pending', urgent:false, note:'', createdAt:'2026-09-17T20:10:00', source:'seed' },
-    { id:102, roomId:'r11', room:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội', price:3300000, image:'../assets/rooms/210hqv1.webp', landlordPhone:'0916667679', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-18', time:'15:00', dur:30, status:'confirmed', urgent:false, note:'Hẹn gặp trước cổng khu trọ.', createdAt:'2026-09-16T09:00:00', source:'seed' },
-    { id:103, roomId:'r13', room:'Phòng trọ khép kín Trần Thái Tông', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội', price:3500000, image:'../assets/rooms/ttt1.webp', landlordPhone:'0904525414', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-22', time:'17:30', dur:30, status:'confirmed', urgent:false, note:'', createdAt:'2026-09-17T11:30:00', source:'seed' },
-    { id:104, roomId:'r16', room:'Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội', price:3000000, image:'../assets/rooms/dd1.webp', landlordPhone:'0982165646', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-10', time:'10:00', dur:30, status:'completed', urgent:false, note:'Đã xem, phòng ổn nhưng hơi xa trung tâm.', createdAt:'2026-09-08T08:00:00', source:'seed' },
-    { id:105, roomId:'r10', room:'Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng', address:'26 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội', price:4500000, image:'../assets/rooms/phongtrobachkinhxaygiare1.webp', landlordPhone:'0967960926', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-08', time:'13:30', dur:30, status:'cancelled', urgent:false, note:'Đổi ý, đã tìm được phòng khác gần hơn.', createdAt:'2026-09-05T14:20:00', source:'seed' }
+    { id:101, roomId:'p01', room:'Phòng gác lửng, thoáng sáng', address:'12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội', price:2800000, image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg', landlordPhone:'0912345678', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-20', time:'09:00', dur:30, status:'pending', urgent:false, note:'', createdAt:'2026-09-17T20:10:00', source:'seed' },
+    { id:102, roomId:'p03', room:'Phòng ban công riêng, đón nắng', address:'88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội', price:3100000, image:'../assets/rooms/210hqv1.webp', landlordPhone:'0906887302', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-18', time:'15:00', dur:30, status:'confirmed', urgent:false, note:'Hẹn gặp trước cổng khu trọ.', createdAt:'2026-09-16T09:00:00', source:'seed' },
+    { id:103, roomId:'p05', room:'Phòng khép kín, an ninh tốt', address:'56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội', price:2500000, image:'../assets/rooms/ttt1.webp', landlordPhone:'0913664129', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-22', time:'17:30', dur:30, status:'confirmed', urgent:false, note:'', createdAt:'2026-09-17T11:30:00', source:'seed' },
+    { id:104, roomId:'p08', room:'Phòng có gác, cửa sổ hướng vườn', address:'74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội', price:3400000, image:'../assets/rooms/dd1.webp', landlordPhone:'0915209633', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-10', time:'10:00', dur:30, status:'completed', urgent:false, note:'Đã xem, phòng ổn nhưng hơi xa trung tâm.', createdAt:'2026-09-08T08:00:00', source:'seed' },
+    { id:105, roomId:'p02', room:'Căn hộ mini full nội thất', address:'27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội', price:4200000, image:'../assets/rooms/phongtrobachkinhxaygiare1.webp', landlordPhone:'0938221574', tenant:MOCK_RENTER.name, phone:MOCK_RENTER.phone, date:'2026-09-08', time:'13:30', dur:30, status:'cancelled', urgent:false, note:'Đổi ý, đã tìm được phòng khác gần hơn.', createdAt:'2026-09-05T14:20:00', source:'seed' }
   ];
 
   /* ================= Kho lưu localStorage (có dự phòng bộ nhớ) ================= */
@@ -614,16 +590,22 @@ body.modal-open{overflow:hidden}
     for(var i=0;i<obj.items.length;i++){ if(obj.items[i].id > max) max = obj.items[i].id; }
     return max+1;
   }
-  // Lịch chờ quá hạn giữ chỗ thì chuyển sang huỷ (mô phỏng tác vụ dọn định kỳ của máy chủ)
+  // Mô phỏng hai tác vụ dọn định kỳ của máy chủ: lịch "chờ xác nhận" quá hạn giữ chỗ thì
+  // tự huỷ (cancelled/expired, khớp tim-phong.html và server/db.mjs), còn lịch "đã xác nhận"
+  // đã qua giờ hẹn thì coi là đã xem xong (completed) để người thuê quyết định thuê hay
+  // không ở trang thanh toán.
   function sweepExpired(){
     var obj = readStore() || MEM;
     if(!obj) return;
     var changed = false;
     obj.items.forEach(function(it){
-      if((it.status === 'pending' || it.status === 'confirmed') && !isActive(it)){
+      if(it.status === 'pending' && !isActive(it)){
+        it.status = 'cancelled';
+        it.cancelReason = 'expired';
+        changed = true;
+      } else if(it.status === 'confirmed' && !isActive(it)){
         it.status = 'completed';
         it.completedAt = isoNow();
-        it.cancelReason = null;
         changed = true;
       }
     });
@@ -679,7 +661,15 @@ body.modal-open{overflow:hidden}
 
   /* ================= Kho dữ liệu: máy chủ hoặc mô phỏng ================= */
   // Mọi hàm trả về Promise, nên phần giao diện chỉ viết một lần cho cả hai chế độ.
-  function mustOk(j){ if(j.httpStatus !== 200) throw new Error(j.message || 'Lỗi máy chủ'); return j; }
+  function mustOk(j){
+    if(j.httpStatus !== 200){
+      var err = new Error(j.message || 'Lỗi máy chủ');
+      err.httpStatus = j.httpStatus;
+      err.code = j.error;
+      throw err;
+    }
+    return j;
+  }
   function khoResult(j, okStatus){
     if(j.httpStatus === okStatus) return { ok:true, item:j.item };
     if(j.httpStatus === 409 && j.error === 'slot_taken') return { ok:false, owner:j.owner };
@@ -741,7 +731,7 @@ body.modal-open{overflow:hidden}
   }
 
   /* ================= State ================= */
-  var S = { tab:'upcoming', status:'all', q:'', editId:null, cancelId:null, appts:[], lastFocus:null, decisionId:null };
+  var S = { tab:'upcoming', status:'all', q:'', editId:null, cancelId:null, appts:[], lastFocus:null, loadError:null };
 
   function isUpcoming(a){ return a.status==='pending' || a.status==='confirmed'; }
 
@@ -749,45 +739,6 @@ body.modal-open{overflow:hidden}
     return new Date((a.date || todayStr()) + 'T' + (a.time || '00:00') + ':00');
   }
 
-  function findDueDecision(){
-    var now = new Date(SIM_NOW.getTime());
-    for(var i=0;i<S.appts.length;i++){
-      var a = S.appts[i];
-      if(a.status === 'completed' && !a.decisionHandled && appointmentDueTime(a).getTime() <= now.getTime()){
-        return a;
-      }
-    }
-    return null;
-  }
-
-  function openDecisionModal(a){
-    if(!a) return;
-    patchAppt(a.id, { decisionHandled: true });
-    S.decisionId = a.id;
-    var img = document.getElementById('decisionImage');
-    var room = document.getElementById('decisionRoom');
-    var price = document.getElementById('decisionPrice');
-    img.src = a.image || '';
-    img.alt = a.room || 'Phòng trọ';
-    room.textContent = a.room || 'Phòng trọ';
-    price.textContent = vnd(a.price || 0);
-    S.lastFocus = document.activeElement;
-    document.body.classList.add('modal-open');
-    document.getElementById('decisionOverlay').classList.add('open');
-  }
-
-  function closeDecisionModal(){
-    S.decisionId = null;
-    document.getElementById('decisionOverlay').classList.remove('open');
-    if(!document.querySelector('.modal-overlay.open')) document.body.classList.remove('modal-open');
-    if(S.lastFocus && S.lastFocus.focus) S.lastFocus.focus();
-  }
-
-  function maybeShowDecisionModal(){
-    if(S.decisionId) return;
-    var a = findDueDecision();
-    if(a) openDecisionModal(a);
-  }
   function pastLabel(a){
     if(a.status==='completed') return 'Đã xem xong · ' + fmtDateShort(a.date);
     if(a.status==='cancelled') return a.cancelReason==='expired' ? 'Tự huỷ vì chủ trọ chưa xác nhận trong ' + HOLD_HOURS + ' giờ' : 'Đã huỷ lịch này';
@@ -814,7 +765,7 @@ body.modal-open{overflow:hidden}
     return { upcoming:upcoming, pending:pending, confirmed:confirmed, completed:completed };
   }
   function statHtml(key,tone,label,value,sub,svgPath){
-    return '<button type="button" class="stat'+(tone?' '+tone:'')+'" data-stat="'+key+'">'+
+    return '<button type="button" class="stat'+(tone?' '+tone:'')+'" data-stat="'+key+'" aria-pressed="false">'+
       '<div class="stat-top"><span class="stat-label">'+label+'</span><span class="stat-icon">'+icon(svgPath)+'</span></div>'+
       '<div class="stat-value">'+value+'</div><div class="stat-sub">'+sub+'</div>'+
     '</button>';
@@ -840,7 +791,9 @@ body.modal-open{overflow:hidden}
       (S.tab==='upcoming' && (S.status==='pending'||S.status==='confirmed') ? S.status :
       (S.tab==='upcoming' && S.status==='all' ? 'all-upcoming' : null));
     document.querySelectorAll('#statGrid .stat').forEach(function(btn){
-      btn.classList.toggle('is-active-filter', !!key && btn.getAttribute('data-stat')===key);
+      var on = !!key && btn.getAttribute('data-stat')===key;
+      btn.classList.toggle('is-active-filter', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
   }
 
@@ -906,6 +859,23 @@ body.modal-open{overflow:hidden}
       (btns ? '<div class="empty-actions">'+btns+'</div>' : '');
   }
   function fillEmptyState(el){
+    if(S.loadError){
+      var err = S.loadError;
+      if(err.httpStatus === 401){
+        el.innerHTML = emptyHtml('Cần đăng nhập', err.message || 'Vui lòng đăng nhập để xem lịch xem phòng của bạn.',[
+          {href:'../index.html', cls:'btn-primary', label:'Về trang chủ để đăng nhập'}
+        ]);
+      } else if(err.httpStatus === 403){
+        el.innerHTML = emptyHtml('Không dùng được chức năng này', err.message || 'Tài khoản đang đăng nhập không phải tài khoản người thuê.',[
+          {href:'../index.html', cls:'btn-primary', label:'Về trang chủ'}
+        ]);
+      } else {
+        el.innerHTML = emptyHtml('Chưa tải được lịch xem phòng', err.message || 'Không kết nối được tới máy chủ. Hãy thử tải lại trang.',[
+          {action:'reload', cls:'btn-primary', label:'Tải lại trang'}
+        ]);
+      }
+      return;
+    }
     var hasAny = S.appts.length > 0;
     var filtered = S.status !== 'all' || !!S.q;
     if(!hasAny){
@@ -940,11 +910,18 @@ body.modal-open{overflow:hidden}
   }
   function renderAll(){
     return khoList().then(function(items){
+      S.loadError = null;
       S.appts = items;
       renderStats();
       renderList();
-      maybeShowDecisionModal();
-    }).catch(function(){ showToast('Mất kết nối','Không tải được lịch xem từ máy chủ. Hãy thử tải lại trang.'); });
+    }).catch(function(err){
+      // Hiện đúng lý do máy chủ từ chối (401 chưa đăng nhập, 403 không phải người thuê...)
+      // thay vì chỉ một câu "Mất kết nối" chung chung che mất nguyên nhân thật.
+      S.loadError = err || null;
+      S.appts = [];
+      renderStats();
+      renderList();
+    });
   }
 
   /* ================= Toast ================= */
@@ -1097,7 +1074,16 @@ body.modal-open{overflow:hidden}
   function doRebook(id){
     var a = findAppt(id); if(!a) return;
     openCreateModal();
-    document.getElementById('mRoom').value = a.roomId;
+    var sel = document.getElementById('mRoom');
+    sel.value = a.roomId;
+    // Phòng có thể không còn trong danh mục hiện tại (xem ghi chú ở openRescheduleModal)
+    if(sel.value !== a.roomId){
+      var opt = document.createElement('option');
+      opt.value = a.roomId;
+      opt.textContent = a.room || a.roomId;
+      sel.appendChild(opt);
+      sel.value = a.roomId;
+    }
     document.getElementById('mPhone').value = a.phone;
     updateRoomHint();
     refreshTimeSlots();
@@ -1252,36 +1238,6 @@ body.modal-open{overflow:hidden}
     });
   });
 
-  document.getElementById('decisionReject').addEventListener('click', function(){
-    var id = S.decisionId;
-    if(!id) return closeDecisionModal();
-    var a = findAppt(id);
-    patchAppt(id, { decisionHandled: true, status: 'completed' });
-    khoCancel(id).then(function(res){
-      if(!res.ok){ showToast('Chưa xoá được', res.error || 'Hãy thử lại.'); return; }
-      renderAll().then(function(){
-        S.decisionId = null;
-        closeDecisionModal();
-        showToast('Đã xoá lịch hẹn', 'Lịch xem ' + (a ? a.room : 'phòng này') + ' đã bị xoá khỏi danh sách của bạn.');
-      });
-    }, function(){
-      showToast('Mất kết nối','Không xoá được lịch hẹn. Hãy thử lại.');
-    });
-  });
-
-  document.getElementById('decisionConfirm').addEventListener('click', function(){
-    var id = S.decisionId;
-    if(!id) return closeDecisionModal();
-    var a = findAppt(id);
-    patchAppt(id, { decisionHandled: true, status: 'completed' });
-    if(a){
-      localStorage.setItem('an-cu-deposit-appt', JSON.stringify({ id: a.id, room: a.room, address: a.address, image: a.image, price: a.price, date: a.date, time: a.time }));
-    }
-    S.decisionId = null;
-    closeDecisionModal();
-    window.location.href = 'thanh-toan-tien-nha.html?xem=' + encodeURIComponent(id);
-  });
-
   /* ================= Tabs / chip lọc / tìm kiếm ================= */
   function setTab(tab){
     S.tab = tab;
@@ -1333,6 +1289,8 @@ body.modal-open{overflow:hidden}
     if(openCreate){ openCreateModal(); return; }
     var doReset = e.target.closest('[data-action="reset-filters"]');
     if(doReset){ document.getElementById('resetBtn').click(); return; }
+    var doReload = e.target.closest('[data-action="reload"]');
+    if(doReload){ window.location.reload(); return; }
   });
 
   /* ================= Sidebar di động ================= */
@@ -1371,16 +1329,20 @@ body.modal-open{overflow:hidden}
   }
 
   /* ================= Khởi động ================= */
+  function updateAccountHeader(){
+    var nm = document.querySelector('.acc-btn .nm'), av = document.querySelector('.acc-btn .av');
+    if(nm) nm.textContent = MOCK_RENTER.name;
+    if(av){ var w = MOCK_RENTER.name.split(/\s+/); av.textContent = (w[0].charAt(0) + w[w.length-1].charAt(0)).toUpperCase(); }
+  }
   function boot(){
     var rawExists = false;
     try{ rawExists = !!window.localStorage.getItem(STORE_KEY); }catch(e){}
     var wasCorrupt = rawExists && !readStore();
-    var nm = document.querySelector('.acc-btn .nm'), av = document.querySelector('.acc-btn .av');
-    if(nm) nm.textContent = MOCK_RENTER.name;
-    if(av){ var w = MOCK_RENTER.name.split(' '); av.textContent = (w[0].charAt(0) + w[w.length-1].charAt(0)).toUpperCase(); }
     API_READY.then(function(on){
       if(!on) seedOnce();
       else wasCorrupt = false;
+      // Cập nhật tên/chữ tắt sau khi API_READY xong, để phản ánh đúng tài khoản đã đăng nhập
+      updateAccountHeader();
       fillRoomSelect();
       return renderAll();
     }).then(function(){

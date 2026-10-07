@@ -115,6 +115,6 @@ alter table viewing_appointments add constraint no_overlap_active
 ## Giới hạn của prototype
 
 - **Đăng nhập chưa bắt buộc.** Chưa đăng nhập vẫn tự khai là người thuê demo qua `?nguoi=` được (để giữ chế độ demo và `test:lich`); tài khoản đăng ký mới thì chỉ thao tác được khi có phiên. API chủ trọ chặn người thuê đã đăng nhập, nhưng chưa đăng nhập vẫn gọi được.
-- **Trang chủ trọ ở chế độ máy chủ hiện lịch của mọi phòng**, gồm cả phòng của người thuê dưới mã `R01`–`R18`, vì dữ liệu mẫu chưa gán phòng nào cho chủ trọ nào.
+- **Trang chủ trọ ở chế độ máy chủ hiện lịch của mọi phòng**, gồm cả phòng của người thuê dưới mã `P01`–`P09`, vì dữ liệu mẫu chưa gán phòng nào cho chủ trọ nào.
 - **"Bây giờ" đứng yên** ở mốc mô phỏng, trừ khi đổi bằng `AN_CU_NOW`.
 - Chế độ `file://` vẫn chỉ là mô phỏng một người dùng, dùng để xem giao diện.

@@ -306,15 +306,15 @@ function seed(q) {
 
   const T = NGUOI_THUE['u-trang'], A = NGUOI_THUE['u-an'], L = NGUOI_THUE['u-linh'], H = NGUOI_THUE['u-huy'];
   // Lịch của Phạm Thu Trang (khớp dữ liệu mẫu của tai-khoan/dat-lich.html)
-  add('r09', T.id, T.name, T.phone, '2026-09-20', '09:00', 'pending',   '2026-09-17T20:10:00');
-  add('r11', T.id, T.name, T.phone, '2026-09-18', '15:00', 'confirmed', '2026-09-16T09:00:00', 'Hẹn gặp trước cổng khu trọ.');
-  add('r13', T.id, T.name, T.phone, '2026-09-22', '17:30', 'confirmed', '2026-09-17T11:30:00');
-  add('r16', T.id, T.name, T.phone, '2026-09-10', '10:00', 'completed', '2026-09-08T08:00:00', 'Đã xem, phòng ổn nhưng hơi xa trung tâm.');
-  add('r10', T.id, T.name, T.phone, '2026-09-08', '13:30', 'cancelled', '2026-09-05T14:20:00', 'Đổi ý, đã tìm được phòng khác gần hơn.', 0, 'renter');
-  // Lịch của người khác trên cùng phòng r09
-  add('r09', A.id, A.name, A.phone, '2026-09-20', '10:00', 'confirmed', '2026-09-17T09:00:00');
-  add('r09', L.id, L.name, L.phone, '2026-09-19', '09:00', 'pending',   '2026-09-18T07:00:00');
-  add('r09', H.id, H.name, H.phone, '2026-09-19', '15:00', 'pending',   '2026-09-16T10:00:00'); // đã quá hạn giữ chỗ
+  add('p01', T.id, T.name, T.phone, '2026-09-20', '09:00', 'pending',   '2026-09-17T20:10:00');
+  add('p03', T.id, T.name, T.phone, '2026-09-18', '15:00', 'confirmed', '2026-09-16T09:00:00', 'Hẹn gặp trước cổng khu trọ.');
+  add('p05', T.id, T.name, T.phone, '2026-09-22', '17:30', 'confirmed', '2026-09-17T11:30:00');
+  add('p08', T.id, T.name, T.phone, '2026-09-10', '10:00', 'completed', '2026-09-08T08:00:00', 'Đã xem, phòng ổn nhưng hơi xa trung tâm.');
+  add('p02', T.id, T.name, T.phone, '2026-09-08', '13:30', 'cancelled', '2026-09-05T14:20:00', 'Đổi ý, đã tìm được phòng khác gần hơn.', 0, 'renter');
+  // Lịch của người khác trên cùng phòng p01
+  add('p01', A.id, A.name, A.phone, '2026-09-20', '10:00', 'confirmed', '2026-09-17T09:00:00');
+  add('p01', L.id, L.name, L.phone, '2026-09-19', '09:00', 'pending',   '2026-09-18T07:00:00');
+  add('p01', H.id, H.name, H.phone, '2026-09-19', '15:00', 'pending',   '2026-09-16T10:00:00'); // đã quá hạn giữ chỗ
   // Lịch chủ trọ tự tạo (khớp APPTS của quan-ly/yeucauvalichhen.html)
   const LL = [
     ['2026-09-18', '09:00', 'P.102', 'Trần Minh Anh', '0987 654 321', 'confirmed', 0],

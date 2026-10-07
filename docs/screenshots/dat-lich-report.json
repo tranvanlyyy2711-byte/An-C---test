@@ -105,9 +105,39 @@
         "ok": true
       },
       {
-        "name": "toast hiện Đã gửi yêu cầu",
-        "got": "Đã gửi yêu cầu",
-        "want": "Đã gửi yêu cầu",
+        "name": "hiện thông báo đã đặt lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thông báo đúng phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thông báo đúng giờ",
+        "got": "10:00 - 10:30",
+        "want": "10:00 - 10:30",
+        "ok": true
+      },
+      {
+        "name": "focus ở nút xác nhận",
+        "got": "bookedOk",
+        "want": "bookedOk",
+        "ok": true
+      },
+      {
+        "name": "thông báo không tràn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm xác nhận thì đóng thông báo",
+        "got": false,
+        "want": false,
         "ok": true
       },
       {
@@ -261,9 +291,39 @@
         "ok": true
       },
       {
-        "name": "toast hiện Đã gửi yêu cầu",
-        "got": "Đã gửi yêu cầu",
-        "want": "Đã gửi yêu cầu",
+        "name": "hiện thông báo đã đặt lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thông báo đúng phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thông báo đúng giờ",
+        "got": "10:00 - 10:30",
+        "want": "10:00 - 10:30",
+        "ok": true
+      },
+      {
+        "name": "focus ở nút xác nhận",
+        "got": "bookedOk",
+        "want": "bookedOk",
+        "ok": true
+      },
+      {
+        "name": "thông báo không tràn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm xác nhận thì đóng thông báo",
+        "got": false,
+        "want": false,
         "ok": true
       },
       {
@@ -435,9 +495,39 @@
         "ok": true
       },
       {
-        "name": "toast hiện Đã gửi yêu cầu",
-        "got": "Đã gửi yêu cầu",
-        "want": "Đã gửi yêu cầu",
+        "name": "hiện thông báo đã đặt lịch",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thông báo đúng phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "thông báo đúng giờ",
+        "got": "10:00 - 10:30",
+        "want": "10:00 - 10:30",
+        "ok": true
+      },
+      {
+        "name": "focus ở nút xác nhận",
+        "got": "bookedOk",
+        "want": "bookedOk",
+        "ok": true
+      },
+      {
+        "name": "thông báo không tràn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm xác nhận thì đóng thông báo",
+        "got": false,
+        "want": false,
         "ok": true
       },
       {
