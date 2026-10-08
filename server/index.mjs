@@ -1,7 +1,7 @@
 // Máy chủ prototype An Cư: phục vụ các trang tĩnh + API lịch xem phòng trên SQLite.
 //   npm start                 -> http://localhost:5500
 //   PORT=5600 npm start       -> đổi cổng
-//   AN_CU_DB=đường/dẫn.sqlite -> đổi file dữ liệu (mặc định data/an-cu.sqlite)
+//   AN_CU_DB=đường/dẫn.sqlite -> đổi file dữ liệu (mặc định 'Trang admin/an-cu.sqlite')
 //   AN_CU_NOW=2026-09-19T09:00:00 -> đóng băng "bây giờ" ở một mốc (mặc định: giờ thật của máy),
 //                                    dùng cho kiểm thử và để thử hết hạn giữ chỗ.
 import { createServer } from 'http';
@@ -17,7 +17,7 @@ import { NGUOI_THUE } from './phong.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const port = Number(process.argv[2] || process.env.PORT || 5500);
-const dbFile = process.env.AN_CU_DB || join(root, 'data', 'an-cu.sqlite');
+const dbFile = process.env.AN_CU_DB || join(root, 'Trang admin', 'an-cu.sqlite');
 const FIXED_NOW = process.env.AN_CU_NOW ? new Date(process.env.AN_CU_NOW) : null;
 if (FIXED_NOW && Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
 const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());

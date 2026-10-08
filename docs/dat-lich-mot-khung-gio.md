@@ -41,7 +41,7 @@ CREATE UNIQUE INDEX one_active_per_slot
 ## Cách chạy
 
 ```bash
-npm start            # http://localhost:5500, dữ liệu ở data/an-cu.sqlite
+npm start            # http://localhost:5500, dữ liệu ở 'Trang admin/an-cu.sqlite'
 npm run test:lich    # kiểm thử đầu-cuối với cơ sở dữ liệu tạm
 ```
 

@@ -164,7 +164,7 @@ Trước khi coi một thay đổi là xong: `npm run lint` và `npm run typeche
 **Prototype HTML hiện tại** (chưa phải Next.js) có máy chủ riêng cho lịch xem phòng, dùng SQLite tích hợp của Node, không thêm dependency:
 
 ```bash
-npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở data/ (không commit)
+npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở 'Trang admin/' (không commit)
 npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
 npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
