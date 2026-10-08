@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { networkInterfaces } from 'os';
 import { openDb, ApiError } from './db.mjs';
 import { createAuth, sessionCookie, clearCookie } from './auth.mjs';
+import { createAdmin, PLANS } from './quan-tri.mjs';
 import { NGUOI_THUE } from './phong.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -23,6 +24,7 @@ const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());
 
 const store = openDb({ file: dbFile, now });
 const auth = createAuth(store.db, ApiError);
+const admin = createAdmin(store.db, ApiError, now);
 
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -117,6 +119,32 @@ async function api(req, res, url) {
     return send(res, 200, { taken: store.takenFor({ roomId: qs.get('phong'), date: qs.get('ngay'), nguoi: renterId(qs.get('nguoi')), excludeId: qs.get('boQua') }) });
   }
 
+  // ----- Quản trị -----
+  const sub = (prefix) => (p.startsWith(prefix) ? p.slice(prefix.length) : null);
+  if (p.startsWith('/api/quan-tri/')) {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản quản trị.');
+    if (me.role !== 'admin') throw new ApiError(403, 'not_admin', 'Chỉ tài khoản quản trị mới dùng được chức năng này.');
+  }
+  if (p === '/api/quan-tri/tong-quan' && m === 'GET') return send(res, 200, { summary: admin.summary(), plans: PLANS });
+  if (p === '/api/quan-tri/tai-khoan' && m === 'GET') {
+    return send(res, 200, { items: admin.listUsers({ role: qs.get('vaiTro'), q: qs.get('tim'), status: qs.get('trangThai') }) });
+  }
+  if ((id = sub('/api/quan-tri/tai-khoan/')) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action !== 'lock' && body.action !== 'unlock') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    return send(res, 200, { item: admin.setUserStatus(id, body.action === 'lock' ? 'locked' : 'active', me.id) });
+  }
+  if (p === '/api/quan-tri/goi' && m === 'GET') return send(res, 200, { items: admin.listPlans() });
+  if (p === '/api/quan-tri/goi' && m === 'POST') return send(res, 201, { item: admin.createPlan(await readJson(req)) });
+  if ((id = sub('/api/quan-tri/goi/')) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action !== 'cancel') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    return send(res, 200, { item: admin.cancelPlan(id) });
+  }
+  if ((id = sub('/api/quan-tri/hoa-don/')) && m === 'PATCH') {
+    return send(res, 200, { item: admin.payInvoice(id, await readJson(req)) });
+  }
+
   // ----- Chủ trọ -----
   // Người thuê đã đăng nhập thì không gọi được API chủ trọ. Chưa đăng nhập vẫn cho qua
   // (chế độ demo, trang quan-ly/* chưa có bước đăng nhập bắt buộc).
@@ -138,7 +166,7 @@ async function api(req, res, url) {
 
 // Chỉ phục vụ đúng những gì các trang cần. Mọi thứ khác trong thư mục dự án (.git, node_modules,
 // scripts, server, data, CLAUDE.md...) trả 404, để mở máy chủ ra mạng ngoài không lộ mã nguồn hay dữ liệu.
-const PUBLIC_DIRS = new Set(['quan-ly', 'tai-khoan', 'assets']);
+const PUBLIC_DIRS = new Set(['quan-ly', 'tai-khoan', 'quan-tri', 'assets']);
 
 async function staticFile(req, res, url) {
   let urlPath;

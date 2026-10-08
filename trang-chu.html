@@ -1891,7 +1891,10 @@
           .then(function(j){ if(j && j.ok){ AUTH_API.on = true; AUTH_API.me = j.me || null; } return AUTH_API; })
           .catch(function(){ return AUTH_API; });
 
-    function areaOf(user){ return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html'; }
+    function areaOf(user){
+      if (user && user.role === 'admin') return 'quan-tri/tong-quan.html';
+      return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html';
+    }
     function shortName(user){
       if(!user) return '';
       if(user.name === user.phone) return user.phone;

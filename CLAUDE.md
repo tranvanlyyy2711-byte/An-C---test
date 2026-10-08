@@ -168,6 +168,7 @@ npm start              # trang tĩnh + API lịch xem, http://localhost:5500, d�
 npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
 npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
+npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịch vụ, lịch thanh toán
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```
 
@@ -176,6 +177,17 @@ node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API —
 Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`.
 
 Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999`. Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
+
+**Khu quản trị** (`quan-tri/tong-quan.html`, API `/api/quan-tri/*` trong `server/quan-tri.mjs`): chỉ tài khoản
+`role = 'admin'` mới vào được. Tài khoản quản trị mẫu: `0900000001` / `matkhau123`. Form đăng ký công khai
+chỉ nhận `renter` và `landlord`, không tạo được admin.
+
+- **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. Khoá là xoá mọi phiên
+  của người đó và chặn đăng nhập (`users.status = 'locked'`). Không khoá được tài khoản admin hay chính mình.
+- **Gói dịch vụ:** `plan_subscriptions` (mỗi chủ trọ tối đa MỘT gói còn hiệu lực, bảo đảm bằng chỉ mục duy nhất
+  có điều kiện) và `plan_invoices` (lịch thanh toán từng kỳ `YYYY-MM`, có hạn đóng). Kỳ `pending` quá hạn tự
+  chuyển `overdue` ở đầu mỗi thao tác đọc/ghi, cùng cách làm với lịch xem phòng. Prototype chỉ **ghi nhận**
+  thanh toán, không xử lý thanh toán trực tuyến (vẫn ngoài phạm vi v1).
 
 ---
 

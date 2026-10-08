@@ -12,7 +12,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'fs';
 import { dirname } from 'path';
 import { PHONG, NGUOI_THUE } from './phong.mjs';
-import { AUTH_SCHEMA, seedDemoUsers } from './auth.mjs';
+import { AUTH_SCHEMA, seedDemoUsers, migrateAuth } from './auth.mjs';
 
 export const HOLD_HOURS = 24;
 // Người thuê chọn giờ tự do đến từng phút, trong khung nhận lịch [OPEN_FROM, LAST_START]
@@ -100,6 +100,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     db.exec("ALTER TABLE viewing_appointments ADD COLUMN renter_memo TEXT NOT NULL DEFAULT ''");
   }
   db.exec(AUTH_SCHEMA);
+  migrateAuth(db);
   seedDemoUsers(db);
 
   const q = {
