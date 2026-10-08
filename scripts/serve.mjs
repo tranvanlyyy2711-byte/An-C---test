@@ -25,7 +25,7 @@ const types = {
 createServer(async (req, res) => {
   try {
     let urlPath = decodeURIComponent(req.url.split('?')[0]);
-    if (urlPath === '/') urlPath = '/index.html';
+    if (urlPath === '/') urlPath = '/trang-chu.html';
     const filePath = normalize(join(root, urlPath));
     if (!filePath.startsWith(root)) { res.writeHead(403); res.end('Forbidden'); return; }
     const data = await readFile(filePath);

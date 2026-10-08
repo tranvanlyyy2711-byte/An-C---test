@@ -5,8 +5,8 @@
 const IMG = '../assets/rooms/';
 
 // Phòng hiển thị cho người thuê (khớp ROOMS trong tai-khoan/tim-phong.html).
-// Nguồn sự thật: 9 phòng p01-p09 ở index.html (trang chủ công khai). Số chủ trọ lấy từ
-// owner.phone của index.html (bỏ khoảng trắng); ảnh đổi sang file nội bộ thay vì Unsplash.
+// Nguồn sự thật: 9 phòng p01-p09 ở trang-chu.html (trang chủ công khai). Số chủ trọ lấy từ
+// owner.phone của trang-chu.html (bỏ khoảng trắng); ảnh đổi sang file nội bộ thay vì Unsplash.
 const PHONG_NGUOI_THUE = [
   ['p01', 'Phòng gác lửng, thoáng sáng', '12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội', 2800000, '0912345678', 'phong-lac-trung-vinh-tuy.jpg'],
   ['p02', 'Căn hộ mini full nội thất', '27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội', 4200000, '0938221574', 'phongtrobachkinhxaygiare1.webp'],

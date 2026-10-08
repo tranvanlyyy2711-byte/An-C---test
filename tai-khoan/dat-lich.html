@@ -368,7 +368,7 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
 <div class="dash-shell">
   <div class="side-backdrop" id="sideBackdrop"></div>
   <aside class="side-nav" id="sideNav">
-    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
     <div class="side-role"><span>Khu vực</span><b>Người thuê</b></div>
     <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
       <a href="tim-phong.html" class="side-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Tìm phòng</a>
@@ -677,7 +677,7 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
   };
 
   /* ================= Danh mục phòng ================= */
-  // Nguồn sự thật: 9 phòng p01-p09 ở index.html, khớp ROOMS trong tim-phong.html và PHONG trong server/phong.mjs.
+  // Nguồn sự thật: 9 phòng p01-p09 ở trang-chu.html, khớp ROOMS trong tim-phong.html và PHONG trong server/phong.mjs.
   var ROOM_OPTIONS = [
     {id:'p01', title:'Phòng gác lửng, thoáng sáng', district:'Cầu Giấy', address:'12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội', price:2800000, phone:'0912345678', image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg'},
     {id:'p02', title:'Căn hộ mini full nội thất', district:'Đống Đa', address:'27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội', price:4200000, phone:'0938221574', image:'../assets/rooms/phongtrobachkinhxaygiare1.webp'},
@@ -1119,8 +1119,8 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     var html = '';
     if(err){
       var t, d, act;
-      if(err.httpStatus === 401){ t = 'Cần đăng nhập'; d = err.message || 'Vui lòng đăng nhập để xem lịch xem phòng của bạn.'; act = '<a class="btn btn-primary btn-sm" href="../index.html">Về trang chủ để đăng nhập</a>'; }
-      else if(err.httpStatus === 403){ t = 'Không dùng được chức năng này'; d = err.message || 'Tài khoản đang đăng nhập không phải tài khoản người thuê.'; act = '<a class="btn btn-primary btn-sm" href="../index.html">Về trang chủ</a>'; }
+      if(err.httpStatus === 401){ t = 'Cần đăng nhập'; d = err.message || 'Vui lòng đăng nhập để xem lịch xem phòng của bạn.'; act = '<a class="btn btn-primary btn-sm" href="../trang-chu.html">Về trang chủ để đăng nhập</a>'; }
+      else if(err.httpStatus === 403){ t = 'Không dùng được chức năng này'; d = err.message || 'Tài khoản đang đăng nhập không phải tài khoản người thuê.'; act = '<a class="btn btn-primary btn-sm" href="../trang-chu.html">Về trang chủ</a>'; }
       else { t = 'Chưa tải được lịch xem phòng'; d = err.message || 'Không kết nối được tới máy chủ. Hãy thử tải lại trang.'; act = '<button type="button" class="btn btn-primary btn-sm" data-action="reload">Tải lại trang</button>'; }
       html = ICON_ERR + '<div class="notice-text"><b>'+esc(t)+'</b><span>'+esc(d)+'</span></div><div class="notice-actions">'+act+'</div>';
       el.className = 'notice is-error';

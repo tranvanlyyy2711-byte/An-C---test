@@ -57,7 +57,7 @@
   button{font:inherit}
   ::selection{background:rgba(34,139,34,.25)}
 
-  /* ---------- Buttons (tái dùng từ index.html) ---------- */
+  /* ---------- Buttons (tái dùng từ trang-chu.html) ---------- */
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     height:46px;padding:0 22px;border-radius:var(--radius);
@@ -148,7 +148,7 @@
   .dash-head h1{font-size:clamp(1.7rem,3vw,2.3rem);margin-bottom:8px}
   .dash-head p{color:var(--text-muted);font-size:.98rem}
 
-  /* ---------- Bộ tìm phòng (tái dùng .finder/.fld từ index.html) ---------- */
+  /* ---------- Bộ tìm phòng (tái dùng .finder/.fld từ trang-chu.html) ---------- */
   .finder{
     background:var(--surface);border:1px solid var(--border);
     border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;
@@ -627,7 +627,7 @@
 
 <!-- Thanh trên cùng: chỉ hiện khi sidebar thu gọn (≤960px) -->
 <div class="topbar" id="topbar">
-  <a href="../index.html" class="brand"><span class="mark">A</span> An Cư</a>
+  <a href="../trang-chu.html" class="brand"><span class="mark">A</span> An Cư</a>
   <button class="menu-toggle" id="menuBtn" aria-label="Mở menu điều hướng" aria-expanded="false" aria-controls="sideNav">
     <span></span>
   </button>
@@ -637,7 +637,7 @@
   <div class="side-backdrop" id="sideBackdrop"></div>
 
   <aside class="side-nav" id="sideNav">
-    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
     <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
       <a href="tim-phong.html" class="side-link active" aria-current="page" data-route="/tai-khoan/tim-phong">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -1265,7 +1265,7 @@
     // Dữ liệu mẫu riêng cho khu người thuê (khác bộ ROOMS ở trang công khai),
     // có thêm mapX/mapY (%) để định vị ghim trên bản đồ placeholder và
     // distance (khoảng cách ước lượng tới vị trí tìm kiếm) phục vụ dashboard cá nhân.
-    // Nguồn sự thật: 9 phòng p01-p09 ở index.html (trang chủ công khai). Ảnh đổi sang file nội bộ
+    // Nguồn sự thật: 9 phòng p01-p09 ở trang-chu.html (trang chủ công khai). Ảnh đổi sang file nội bộ
     // trong assets/rooms/ thay vì Unsplash từ xa, để khu người thuê không trống ảnh khi mất mạng.
     var ROOMS = [
       { id:'p01', title:'Phòng gác lửng, thoáng sáng', type:'Phòng trọ', price:2800000, area:22, people:2, floor:2,
@@ -1374,7 +1374,7 @@
     var SVG_PEOPLE = '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>';
     var SVG_WALK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
-    // Bộ lọc vị trí Khu vực / Phường-Xã — cùng cấu trúc và dữ liệu với trang chủ (index.html),
+    // Bộ lọc vị trí Khu vực / Phường-Xã — cùng cấu trúc và dữ liệu với trang chủ (trang-chu.html),
     // không tạo danh mục địa chỉ riêng cho trang người thuê.
     var wardOptions = [
       'Ba Đình','Bạch Mai','Cầu Giấy','Cửa Nam','Định Công','Đông Ngạc','Đống Đa','Giảng Võ','Hai Bà Trưng','Hoà̀n Kiếm','Hoàng Liệt','Hoàng Mai','Hồng Hà','Khương Đình','Kim Liên','Láng','Lĩnh Nam','Long Biên','Ngọc Hà','Nghĩa Đô','Ô Chợ Dừa','Phú Diễn','Phú Thượng','Phương Liệt','Sơn Tây','Tây Hồ','Tây Mỗ','Tây Tựu','Thanh Xuân','Thượng Cát','Từ Liêm','Tùng Thiện','Tương Mai','Văn Miếu - Quốc Tử Giám','Việt Hưng','Vĩnh Hưng','Vĩnh Tuy','Xuân Đỉnh','Xuân Phương','Yên Hòa','Yên Nghĩa','Yên Sở'

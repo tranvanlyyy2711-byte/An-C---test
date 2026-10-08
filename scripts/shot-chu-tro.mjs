@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 const outDir = resolve(root, 'docs/screenshots');
 mkdirSync(outDir, { recursive: true });
-const url = 'file://' + resolve(root, 'index.html').replace(/\\/g, '/');
+const url = 'file://' + resolve(root, 'trang-chu.html').replace(/\\/g, '/');
 const tag = process.argv[2] || 'chu-tro';
 
 const targets = [

@@ -144,12 +144,12 @@ async function staticFile(req, res, url) {
   let urlPath;
   try { urlPath = decodeURIComponent(url.pathname); }
   catch { res.writeHead(400); res.end('Bad request'); return; } // "%" sai định dạng: trước đây làm sập máy chủ
-  if (urlPath === '/') urlPath = '/index.html';
+  if (urlPath === '/') urlPath = '/trang-chu.html';
   const filePath = normalize(join(root, urlPath));
   if (filePath !== root && !filePath.startsWith(root + sep)) { res.writeHead(403); res.end('Forbidden'); return; }
   const parts = filePath.slice(root.length + 1).split(sep);
   const allowed = parts.every((s) => s && !s.startsWith('.'))
-    && ((parts.length === 1 && parts[0] === 'index.html') || PUBLIC_DIRS.has(parts[0]));
+    && ((parts.length === 1 && (parts[0] === 'trang-chu.html' || parts[0] === 'index.html')) || PUBLIC_DIRS.has(parts[0]));
   if (!allowed) { res.writeHead(404); res.end('Not found: ' + url.pathname); return; }
   try {
     const data = await readFile(filePath);
