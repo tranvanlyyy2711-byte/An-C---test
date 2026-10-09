@@ -76,6 +76,18 @@ async function api(req, res, url) {
     return send(res, 200, { item: store.updateForLandlord(id[1], await readJson(req)) });
   }
 
+  // ----- Tiền cọc khi xem -----
+  if (p === '/api/thanh-toan' && m === 'GET') return send(res, 200, { items: store.depositsForRenter(qs.get('nguoi')) });
+  if ((id = p.match(/^\/api\/thanh-toan\/(\d+)$/)) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action === 'submit') return send(res, 200, { item: store.submitDepositForRenter(id[1], body) });
+    throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+  }
+  if (p === '/api/chu-tro/thanh-toan' && m === 'GET') return send(res, 200, { items: store.depositsAll() });
+  if ((id = p.match(/^\/api\/chu-tro\/thanh-toan\/(\d+)$/)) && m === 'PATCH') {
+    return send(res, 200, { item: store.updateDepositForLandlord(id[1], await readJson(req)) });
+  }
+
   throw new ApiError(404, 'not_found', 'Không có API này.');
 }
 

@@ -175,7 +175,64 @@ try {
   expect('chủ trọ đặt chồng lên lịch 16:00 bị chặn', await toast(cp, 'Khung giờ đã có lịch'), 'Khung giờ đã có lịch');
   expect('modal vẫn mở để chọn lại', await cp.locator('#apptModalOverlay').evaluate((el) => el.classList.contains('open')), true);
 
-  console.log('\n=== 7. Hết hạn giữ chỗ khi đồng hồ qua 24 giờ ===');
+  console.log('\n=== 7. Tiền cọc khi xem: mục Lịch xem phòng / Thanh toán ===');
+  const cocTrang = (await api('GET', '/api/thanh-toan?nguoi=u-trang')).body.items;
+  const c14 = cocTrang.find((d) => d.roomId === 'r14');
+  expect('xác nhận lịch r14 sinh đúng một khoản cọc', cocTrang.filter((d) => d.roomId === 'r14').length, 1);
+  expect('cọc bằng một tháng tiền phòng, chưa đóng', `${c14.amount}/${c14.status}`, '1800000/unpaid');
+  expect('An không thấy khoản cọc của Trang', (await api('GET', '/api/thanh-toan?nguoi=u-an')).body.items.some((d) => d.id === c14.id), false);
+  expect('An không báo chuyển thay Trang được', (await api('PATCH', `/api/thanh-toan/${c14.id}`, { nguoi: 'u-an', action: 'submit' })).status, 403);
+
+  const ready = (p) => p.waitForSelector('body:not(.is-loading)');
+  const tt = await openPage(ctxA, '/tai-khoan/thanh-toan.html');
+  await ready(tt);
+  const choTrang = (await api('GET', '/api/lich-xem?nguoi=u-trang')).body.items.filter((i) => i.status === 'pending');
+  expect('người thuê thấy mọi lịch chờ xác nhận ở mục Lịch xem phòng', await tt.locator('#apptList .apt-item').count(), choTrang.length);
+  await tt.click('#tabPay');
+  const theCoc = tt.locator(`#payList .apt-item[data-dep="${c14.id}"]`);
+  expect('người thuê thấy khoản cọc r14 chưa đóng', (await theCoc.locator('.apt-status').textContent()).trim(), 'Chưa đóng cọc');
+  await theCoc.locator('[data-submit]').click();
+  await tt.waitForSelector('#submitOverlay.open');
+  await tt.click('#submitOk');
+  expect('người thuê báo đã chuyển khoản', await toast(tt, 'Đã báo chuyển khoản'), 'Đã báo chuyển khoản');
+  await tt.screenshot({ path: resolve(outDir, 'may-chu-thanh-toan-nguoi-thue-desktop.png'), fullPage: true });
+
+  const ct = await openPage(ctxC, '/quan-ly/thanh-toan.html#thanh-toan');
+  await ready(ct);
+  const dongCoc = ct.locator(`#payRows .list-row[data-dep="${c14.id}"]`);
+  expect('chủ trọ thấy khoản Trang vừa báo chuyển', (await dongCoc.locator('.lr-actions .apt-status').textContent()).trim(), 'Chờ xác nhận tiền');
+  await dongCoc.locator('[data-dep-confirm]').click();
+  await ct.waitForSelector('#askOverlay.open');
+  await ct.click('#askOk');
+  expect('chủ trọ xác nhận đã nhận tiền', await toast(ct, 'Đã nhận cọc'), 'Đã nhận cọc');
+  await ct.screenshot({ path: resolve(outDir, 'may-chu-thanh-toan-chu-tro-desktop.png'), fullPage: true });
+  await tt.reload({ waitUntil: 'domcontentloaded' });
+  await ready(tt);
+  expect('người thuê thấy chủ trọ đã nhận cọc',
+    (await tt.locator(`#payList .apt-item[data-dep="${c14.id}"] .apt-status`).textContent()).trim(), 'Đã nhận cọc');
+  expect('không xác nhận nhận tiền hai lần', (await api('PATCH', `/api/chu-tro/thanh-toan/${c14.id}`, { action: 'confirm' })).status, 409);
+
+  // Chủ trọ xác nhận lịch ngay trong mục Lịch xem phòng của trang Thanh toán
+  const r09 = choTrang.find((i) => i.roomId === 'r09');
+  await ct.click('#tabAppts');
+  await ct.locator(`#apptRows .list-row[data-appt="${r09.id}"] [data-confirm-appt]`).click();
+  await ct.waitForSelector('#askOverlay.open');
+  await ct.click('#askOk');
+  expect('chủ trọ xác nhận lịch từ trang Thanh toán', await toast(ct, 'Đã xác nhận lịch'), 'Đã xác nhận lịch');
+  expect('lịch vừa xác nhận rời mục chờ, khoản cọc xuất hiện',
+    [await ct.locator(`#apptRows .list-row[data-appt="${r09.id}"]`).count(),
+      (await api('GET', '/api/thanh-toan?nguoi=u-trang')).body.items.filter((d) => d.appointmentId === r09.id).length], [0, 1]);
+
+  const cocAn = (await api('GET', '/api/thanh-toan?nguoi=u-an')).body.items.find((d) => d.status === 'unpaid');
+  const cung = await Promise.all(Array.from({ length: 10 }, () => api('PATCH', `/api/chu-tro/thanh-toan/${cocAn.id}`, { action: 'confirm' })));
+  expect('10 lần bấm "Đã nhận tiền" cùng lúc: đúng 1 lần ghi', cung.filter((r) => r.status === 200).length, 1);
+
+  const c13 = (await api('GET', '/api/thanh-toan?nguoi=u-trang')).body.items.find((d) => d.roomId === 'r13' && d.status === 'unpaid');
+  await api('PATCH', `/api/lich-xem/${c13.appointmentId}`, { nguoi: 'u-trang', action: 'cancel' });
+  expect('huỷ lịch thì khoản cọc chưa đóng huỷ theo',
+    (await api('GET', '/api/thanh-toan?nguoi=u-trang')).body.items.find((d) => d.id === c13.id).status, 'cancelled');
+
+  console.log('\n=== 8. Hết hạn giữ chỗ khi đồng hồ qua 24 giờ ===');
   const giu = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r13', date: '2026-09-25', time: '09:00' });
   const giu2 = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r16', date: '2026-09-26', time: '10:00' });
   expect('Trang giữ chỗ r13 và r16', [giu.status, giu2.status], [201, 201]);
@@ -189,6 +246,8 @@ try {
   expect('khung giờ được nhả, An đặt được', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'r13', date: '2026-09-25', time: '09:00' })).status, 201);
   const muon = await api('PATCH', `/api/chu-tro/lich-xem/${giu2.body.item.id}`, { action: 'confirm' });
   expect('chủ trọ không xác nhận được lịch đã quá hạn', muon.status, 409);
+  expect('lịch quá hạn không sinh khoản cọc',
+    (await api('GET', '/api/thanh-toan?nguoi=u-trang')).body.items.some((d) => d.appointmentId === giu2.body.item.id), false);
 
   expect('không có lỗi JavaScript trên các trang', errors.length, 0);
   if (errors.length) console.log(errors.join('\n'));

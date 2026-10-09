@@ -1,0 +1,440 @@
+[
+  {
+    "page": "thanh-toan-nguoi-thue",
+    "viewport": "desktop",
+    "ok": true,
+    "checks": [
+      {
+        "name": "tab Lịch xem phòng mở mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có lịch chờ xác nhận",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab lịch)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "tab Thanh toán hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có khoản cọc",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab thanh toán)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lọc \"Đã huỷ\" ra trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "modal đóng sau khi xác nhận",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "toast hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "page": "thanh-toan-nguoi-thue",
+    "viewport": "tablet",
+    "ok": true,
+    "checks": [
+      {
+        "name": "tab Lịch xem phòng mở mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có lịch chờ xác nhận",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab lịch)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "tab Thanh toán hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có khoản cọc",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab thanh toán)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lọc \"Đã huỷ\" ra trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "modal đóng sau khi xác nhận",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "toast hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "page": "thanh-toan-nguoi-thue",
+    "viewport": "mobile",
+    "ok": true,
+    "checks": [
+      {
+        "name": "tab Lịch xem phòng mở mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có lịch chờ xác nhận",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab lịch)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "tab Thanh toán hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có khoản cọc",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab thanh toán)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lọc \"Đã huỷ\" ra trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "modal đóng sau khi xác nhận",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "toast hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "page": "thanh-toan-chu-tro",
+    "viewport": "desktop",
+    "ok": true,
+    "checks": [
+      {
+        "name": "tab Lịch xem phòng mở mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có lịch chờ xác nhận",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab lịch)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "tab Thanh toán hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có khoản cọc",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab thanh toán)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lọc \"Đã huỷ\" ra trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "modal đóng sau khi xác nhận",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "toast hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "page": "thanh-toan-chu-tro",
+    "viewport": "tablet",
+    "ok": true,
+    "checks": [
+      {
+        "name": "tab Lịch xem phòng mở mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có lịch chờ xác nhận",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab lịch)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "tab Thanh toán hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có khoản cọc",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab thanh toán)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lọc \"Đã huỷ\" ra trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "modal đóng sau khi xác nhận",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "toast hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ]
+  },
+  {
+    "page": "thanh-toan-chu-tro",
+    "viewport": "mobile",
+    "ok": true,
+    "checks": [
+      {
+        "name": "tab Lịch xem phòng mở mặc định",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có lịch chờ xác nhận",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab lịch)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "tab Thanh toán hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "có khoản cọc",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang (tab thanh toán)",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có touch target < 44px",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "lọc \"Đã huỷ\" ra trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "modal đóng sau khi xác nhận",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "toast hiện",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      }
+    ]
+  }
+]

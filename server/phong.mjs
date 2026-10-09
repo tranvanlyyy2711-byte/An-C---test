@@ -28,14 +28,21 @@ const PHONG_NGUOI_THUE = [
 ];
 
 // Phòng của nhà trọ trong trang chủ trọ (khớp ROOM_CODES trong quan-ly/yeucauvalichhen.html).
-const PHONG_CHU_TRO = ['P.101', 'P.102', 'P.103', 'P.201', 'P.202', 'P.203', 'P.301', 'P.302'];
+// Giá lấy theo quan-ly/tong-quan.html; P.103 và P.203 chưa có giá ở đó nên tạm đặt giá mẫu.
+const PHONG_CHU_TRO = [
+  ['P.101', 3500000], ['P.102', 3200000], ['P.103', 3300000], ['P.201', 4100000],
+  ['P.202', 3800000], ['P.203', 3600000], ['P.301', 3500000], ['P.302', 3000000],
+];
+
+// Tiền cọc khi xem phòng: một tháng tiền phòng. Máy chủ tự tính, không nhận số tiền từ trình duyệt.
+const tienCoc = (price) => price;
 
 export const PHONG = {};
 for (const [id, title, address, price, phone, img] of PHONG_NGUOI_THUE) {
-  PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, phone, image: IMG + img };
+  PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, deposit: tienCoc(price), phone, image: IMG + img };
 }
-for (const code of PHONG_CHU_TRO) {
-  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price: 0, phone: '', image: '' };
+for (const [code, price] of PHONG_CHU_TRO) {
+  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price, deposit: tienCoc(price), phone: '', image: '' };
 }
 
 // Người thuê mô phỏng. Chưa có đăng nhập thật nên trình duyệt tự khai mình là ai qua

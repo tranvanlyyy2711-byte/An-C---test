@@ -95,7 +95,7 @@ supabase/
   seed.sql
 ```
 
-Route công khai dùng **slug tiếng Việt** (`/tim-tro`, `/phong/[id]`, `/dang-nhap`) để SEO. Khu quản lý dùng `/quan-ly/...` với các trang: `nha-tro`, `phong`, `hop-dong`, `hoa-don`, `tin-nhan`, `lich-xem`. Khu người thuê: `/tai-khoan/` với `da-luu`, `lich-xem`, `tin-nhan`, `hop-dong`.
+Route công khai dùng **slug tiếng Việt** (`/tim-tro`, `/phong/[id]`, `/dang-nhap`) để SEO. Khu quản lý dùng `/quan-ly/...` với các trang: `nha-tro`, `phong`, `hop-dong`, `hoa-don`, `tin-nhan`, `lich-xem`, `thanh-toan`. Khu người thuê: `/tai-khoan/` với `da-luu`, `lich-xem`, `tin-nhan`, `hop-dong`, `thanh-toan`. Trang `thanh-toan` có hai tab "Lịch xem phòng" (lịch chờ xác nhận) và "Thanh toán" (tiền cọc khi xem).
 
 ---
 
@@ -109,6 +109,7 @@ Tên bảng số nhiều, snake_case. Mọi bảng **bật RLS**.
 - `room_images` — `room_id`, `url`, `sort_order`.
 - `favorites` — `renter_id`, `room_id` (unique cặp).
 - `viewing_appointments` (lịch xem) — `room_id`, `renter_id`, `landlord_id`, `scheduled_at`, `status` `'requested' | 'confirmed' | 'cancelled' | 'completed'`, `note`.
+- `viewing_deposits` (tiền cọc khi xem) — `appointment_id` (unique), `amount` (VND, = 1 tháng tiền phòng), `status` `'unpaid' | 'submitted' | 'paid' | 'cancelled'`, `submitted_at`, `paid_at`, `reject_note`. Sinh khi chủ trọ xác nhận lịch; chủ trọ xác nhận đã nhận tiền thủ công (không phải thanh toán trực tuyến). Xem `docs/coc-khi-xem.md`.
 - `conversations` — `room_id`, `renter_id`, `landlord_id` (unique bộ ba).
 - `messages` — `conversation_id`, `sender_id`, `body`, `read_at`.
 - `contracts` (hợp đồng) — `room_id`, `tenant_id`, `landlord_id`, `start_date`, `end_date`, `monthly_rent`, `deposit`, `terms`, `status` `'draft' | 'active' | 'ended'`.
@@ -168,7 +169,7 @@ npm start              # trang tĩnh + API lịch xem, http://localhost:5500, d�
 npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
 ```
 
-Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`.
+Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`. Tiền cọc khi xem và mục Thanh toán: xem `docs/coc-khi-xem.md` (chụp kiểm tra: `node scripts/shot-thanh-toan.mjs`).
 
 ---
 

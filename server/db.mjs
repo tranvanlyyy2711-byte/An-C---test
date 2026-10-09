@@ -46,6 +46,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_active_per_slot
   WHERE status IN ('pending','confirmed');
 
 CREATE INDEX IF NOT EXISTS idx_renter ON viewing_appointments (renter_id);
+
+-- Tiền cọc khi xem phòng. Sinh ra khi chủ trọ xác nhận lịch, mỗi lịch tối đa MỘT khoản.
+-- Chưa có cổng thanh toán: người thuê chuyển khoản hoặc trả tiền mặt ngoài hệ thống,
+-- chủ trọ bấm "Đã nhận tiền" để xác nhận.
+CREATE TABLE IF NOT EXISTS viewing_deposits (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  appointment_id INTEGER NOT NULL UNIQUE REFERENCES viewing_appointments (id),
+  amount         INTEGER NOT NULL CHECK (amount > 0),   -- VND, số nguyên
+  status         TEXT    NOT NULL CHECK (status IN ('unpaid','submitted','paid','cancelled')),
+  submitted_at   TEXT,                 -- người thuê báo đã chuyển (ISO UTC)
+  paid_at        TEXT,                 -- chủ trọ xác nhận đã nhận (ISO UTC)
+  reject_note    TEXT,                 -- chủ trọ báo chưa nhận được tiền
+  created_at     TEXT    NOT NULL
+);
 `;
 
 export class ApiError extends Error {
@@ -82,9 +96,21 @@ export function openDb({ file, now }) {
     insert: db.prepare(`INSERT INTO viewing_appointments
       (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, hold_expires_at, cancel_reason, note, urgent, source, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+    depGet: db.prepare('SELECT * FROM viewing_deposits WHERE id = ?'),
+    depByAppt: db.prepare('SELECT * FROM viewing_deposits WHERE appointment_id = ?'),
+    depOfRenter: db.prepare(`SELECT d.* FROM viewing_deposits d JOIN viewing_appointments a ON a.id = d.appointment_id
+                             WHERE a.renter_id = ? ORDER BY a.date, a.time`),
+    depAll: db.prepare(`SELECT d.* FROM viewing_deposits d JOIN viewing_appointments a ON a.id = d.appointment_id
+                        ORDER BY a.date, a.time`),
+    // OR IGNORE + UNIQUE(appointment_id): xác nhận lại lịch đã đổi giờ không sinh khoản thứ hai
+    depInsert: db.prepare(`INSERT OR IGNORE INTO viewing_deposits
+      (appointment_id, amount, status, submitted_at, paid_at, created_at) VALUES (?, ?, ?, ?, ?, ?)`),
+    depCancelOpen: db.prepare(`UPDATE viewing_deposits SET status = 'cancelled'
+                               WHERE appointment_id = ? AND status IN ('unpaid','submitted')`),
   };
 
   if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q);
+  if (db.prepare('SELECT COUNT(*) AS n FROM viewing_deposits').get().n === 0) seedDeposits(db, q, now());
 
   const nowIso = () => now().toISOString();
   const holdIso = () => new Date(now().getTime() + HOLD_HOURS * 3600000).toISOString();
@@ -108,11 +134,29 @@ export function openDb({ file, now }) {
     const p = PHONG[r.room_id] || {};
     return {
       id: r.id, roomId: r.room_id, room: p.title || r.room_id, roomCode: p.code || r.room_id,
-      address: p.address || '', price: p.price || 0, image: p.image || '', landlordPhone: p.phone || '',
+      address: p.address || '', price: p.price || 0, depositAmount: p.deposit || 0, image: p.image || '', landlordPhone: p.phone || '',
       renterId: r.renter_id, tenant: r.tenant_name, phone: r.tenant_phone,
       date: r.date, time: r.time, dur: r.dur, status: r.status, urgent: !!r.urgent, note: r.note,
       createdAt: r.created_at, holdUntil: r.hold_expires_at, cancelReason: r.cancel_reason, source: r.source,
     };
+  }
+
+  // Khoản cọc kèm thông tin buổi xem, để giao diện không phải ghép hai danh sách
+  function toDeposit(d) {
+    const a = toItem(q.get.get(d.appointment_id));
+    return {
+      id: d.id, appointmentId: d.appointment_id, amount: d.amount, status: d.status,
+      ref: `ANCU-COC-${d.id}`, submittedAt: d.submitted_at, paidAt: d.paid_at, rejectNote: d.reject_note, createdAt: d.created_at,
+      roomId: a.roomId, room: a.room, roomCode: a.roomCode, address: a.address, image: a.image, landlordPhone: a.landlordPhone,
+      renterId: a.renterId, tenant: a.tenant, phone: a.phone, date: a.date, time: a.time, apptStatus: a.status,
+    };
+  }
+
+  function createDeposit(row) {
+    const room = PHONG[row.room_id];
+    if (!room || !(room.deposit > 0)) return null;
+    q.depInsert.run(row.id, room.deposit, 'unpaid', null, null, nowIso());
+    return toDeposit(q.depByAppt.get(row.id));
   }
 
   // ---------- Kiểm tra đầu vào ----------
@@ -218,6 +262,8 @@ export function openDb({ file, now }) {
       if (row.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền huỷ lịch này.');
       mustBeActive(row);
       db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'renter' WHERE id = ?`).run(row.id);
+      // Huỷ lịch thì khoản cọc chưa nhận cũng huỷ theo. Cọc đã nhận giữ nguyên để chủ trọ hoàn tay.
+      q.depCancelOpen.run(row.id);
       return toItem(q.get.get(row.id));
     });
   }
@@ -262,9 +308,10 @@ export function openDb({ file, now }) {
             : 'Lịch không còn ở trạng thái chờ xác nhận.';
           throw new ApiError(409, 'not_pending', msg);
         }
-        // Xác nhận thì khung giờ được giữ hẳn, không còn hạn giữ chỗ
+        // Xác nhận thì khung giờ được giữ hẳn, không còn hạn giữ chỗ.
+        // Khoản cọc sinh ra trong cùng giao dịch: không thể có lịch đã xác nhận mà thiếu khoản cọc.
         db.prepare(`UPDATE viewing_appointments SET status = 'confirmed', hold_expires_at = NULL WHERE id = ?`).run(row.id);
-        return toItem(q.get.get(row.id));
+        return { ...toItem(q.get.get(row.id)), deposit: createDeposit(row) };
       }
       if (body.action === 'reschedule') {
         mustBeActive(row);
@@ -280,12 +327,86 @@ export function openDb({ file, now }) {
     });
   }
 
+  // ================= Tiền cọc khi xem =================
+  function loadDeposit(id) {
+    const d = q.depGet.get(Number(id));
+    if (!d) throw new ApiError(404, 'not_found', 'Không tìm thấy khoản cọc.');
+    return d;
+  }
+
+  function depositsForRenter(nguoi) {
+    renterOf(nguoi);
+    sweep();
+    return q.depOfRenter.all(nguoi).map(toDeposit);
+  }
+
+  // Người thuê báo "đã chuyển khoản". Chỉ chủ trọ mới chuyển được sang "đã nhận".
+  function submitDepositForRenter(id, { nguoi }) {
+    const u = renterOf(nguoi);
+    return tx(() => {
+      const d = loadDeposit(id);
+      if (q.get.get(d.appointment_id).renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền với khoản cọc này.');
+      if (d.status !== 'unpaid') {
+        const msg = d.status === 'paid' ? 'Chủ trọ đã xác nhận nhận tiền khoản này rồi.'
+          : d.status === 'submitted' ? 'Bạn đã báo chuyển khoản, đang chờ chủ trọ xác nhận.'
+          : 'Khoản cọc này đã huỷ theo lịch xem.';
+        throw new ApiError(409, 'not_unpaid', msg);
+      }
+      db.prepare(`UPDATE viewing_deposits SET status = 'submitted', submitted_at = ?, reject_note = NULL WHERE id = ?`).run(nowIso(), d.id);
+      return toDeposit(q.depGet.get(d.id));
+    });
+  }
+
+  function depositsAll() {
+    sweep();
+    return q.depAll.all().map(toDeposit);
+  }
+
+  function updateDepositForLandlord(id, body) {
+    return tx(() => {
+      const d = loadDeposit(id);
+      if (body.action === 'confirm') {
+        // Nhận cả khi khách chưa bấm "đã chuyển": khách có thể trả tiền mặt lúc xem phòng
+        if (d.status !== 'unpaid' && d.status !== 'submitted') {
+          throw new ApiError(409, 'not_open', d.status === 'paid' ? 'Khoản cọc này đã được xác nhận rồi.' : 'Khoản cọc này đã huỷ.');
+        }
+        db.prepare(`UPDATE viewing_deposits SET status = 'paid', paid_at = ?, reject_note = NULL WHERE id = ?`).run(nowIso(), d.id);
+        return toDeposit(q.depGet.get(d.id));
+      }
+      if (body.action === 'reject') {
+        if (d.status !== 'submitted') throw new ApiError(409, 'not_submitted', 'Chỉ báo "chưa nhận được" với khoản khách đã báo chuyển.');
+        const note = String(body.note || '').trim().slice(0, 300) || 'Chủ trọ chưa nhận được tiền. Hãy kiểm tra lại giao dịch.';
+        db.prepare(`UPDATE viewing_deposits SET status = 'unpaid', submitted_at = NULL, reject_note = ? WHERE id = ?`).run(note, d.id);
+        return toDeposit(q.depGet.get(d.id));
+      }
+      throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    });
+  }
+
   return {
     db, sweep, now,
     listForRenter, takenFor, createForRenter, rescheduleForRenter, cancelForRenter,
     listAll, createForLandlord, updateForLandlord,
+    depositsForRenter, submitDepositForRenter, depositsAll, updateDepositForLandlord,
     close: () => db.close(),
   };
+}
+
+// Khoản cọc cho các lịch đã xác nhận từ trước khi có tính năng này (cơ sở dữ liệu cũ hoặc mới gieo).
+// Đã xem xong hoặc giờ xem đã qua: coi như đã nhận cọc tại buổi xem. Xem hôm nay: khách đã báo chuyển.
+// Xem các ngày tới: chưa đóng cọc.
+function seedDeposits(db, q, now) {
+  const today = ymd(now);
+  const nowIso = now.toISOString();
+  const rows = db.prepare(`SELECT * FROM viewing_appointments WHERE status IN ('confirmed','completed') ORDER BY date, time`).all();
+  for (const r of rows) {
+    const room = PHONG[r.room_id];
+    if (!room || !(room.deposit > 0)) continue;
+    const at = new Date(`${r.date}T${r.time}:00`).toISOString();
+    if (r.status === 'completed' || r.date < today) q.depInsert.run(r.id, room.deposit, 'paid', null, at, r.created_at);
+    else if (r.date === today) q.depInsert.run(r.id, room.deposit, 'submitted', nowIso, null, r.created_at);
+    else q.depInsert.run(r.id, room.deposit, 'unpaid', null, null, r.created_at);
+  }
 }
 
 // ================= Dữ liệu mẫu cho cơ sở dữ liệu mới =================

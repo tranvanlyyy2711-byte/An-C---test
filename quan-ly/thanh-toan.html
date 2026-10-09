@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thanh toán — An Cư</title>
+<meta name="description" content="Khu vực chủ trọ: lịch xem phòng đang chờ xác nhận và tiền cọc khi xem cần xác nhận đã nhận." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
+  --border:rgba(34,139,34,.12);--border-strong:rgba(34,139,34,.2);
+  --text:#102010;--text-muted:#4B5C4B;--text-dim:#667565;
+  --accent:#228B22;--accent-hover:#1D7C1D;--accent-fg:#FFFFFF;
+  --success:#228B22;--success-ink:#1B7A1B;--warning:#F5B14C;
+  --warning-ink:#8A5A11;--danger:#FF6B6B;--danger-ink:#B4291F;
+  --info:#2F6FED;--info-ink:#1D4FBE;
+  --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--ease:cubic-bezier(.16,1,.3,1);
+  --sidebar-w:264px;--header-h:72px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:clip}
+h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;line-height:1.15;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
+button{cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .45s var(--ease),transform .45s var(--ease);transition-delay:var(--d,0s)}.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+/* ===== Sidebar + Header (giống trang Yêu cầu & lịch hẹn) ===== */
+.dash-shell{display:flex;min-height:100vh}.side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(16,32,16,.4);backdrop-filter:blur(4px)}
+.side-nav{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;display:flex;flex-direction:column;padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px}.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800}.side-logo{padding:6px 10px 20px}
+.side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}.side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}.side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
+.side-menu{display:flex;flex-direction:column;gap:4px}.side-link{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);transition:.18s var(--ease)}.side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}.side-link.active{color:var(--text);background:rgba(34,139,34,.1);font-weight:600}.side-link.active svg{stroke:var(--accent)}.side-count{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);background:rgba(34,139,34,.1);border:1px solid var(--border-strong);padding:2px 8px;border-radius:999px}.side-sep{height:1px;background:var(--border);margin:12px}
+.dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w)}.app-header{position:sticky;top:0;z-index:110;height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 32px;background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.menu-toggle{display:none;width:44px;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);align-items:center;justify-content:center}.menu-toggle svg{width:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.prop-switch{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text)}.prop-ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:rgba(34,139,34,.08);border:1px solid var(--border-strong)}.prop-ico svg{width:17px;stroke:var(--accent);fill:none;stroke-width:1.5}.prop-tx{text-align:left}.prop-tx b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px}.prop-tx span{display:block;font-size:12px;color:var(--text-dim)}
+.header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}.icon-btn{position:relative;width:44px;height:44px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text)}.icon-btn svg{width:19px;stroke:currentColor;fill:none;stroke-width:1.6}.icon-btn .dot{position:absolute;top:7px;right:7px;min-width:17px;height:17px;border-radius:999px;background:var(--danger-ink);color:#fff;border:2px solid var(--surface);font-size:10px;display:grid;place-items:center}.acc-btn{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 12px 0 6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font-weight:700;font-size:13px}.nm{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
+
+/* ===== Chung ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 20px;border-radius:var(--radius);font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14px;border:1px solid transparent;white-space:nowrap;transition:.18s var(--ease)}.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn-primary{background:linear-gradient(135deg,#228B22,#2E9E37);color:#fff;box-shadow:0 10px 28px -10px rgba(34,139,34,.85)}.btn-primary:hover{background:linear-gradient(135deg,#1F7F20,#2A9234)}
+.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-strong)}.btn-ghost:hover{border-color:var(--accent);background:rgba(34,139,34,.04)}
+.btn-danger-ghost{background:var(--surface);color:var(--danger-ink);border-color:rgba(180,41,31,.3)}.btn-danger-ghost:hover{background:rgba(255,107,107,.08)}
+.btn-sm{height:44px;padding:0 14px;font-size:13.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,.side-link:focus-visible,input:focus-visible,select:focus-visible,.icon-sm:focus-visible,.stat:focus-visible,.tab-btn:focus-visible,.chip:focus-visible,.modal-close:focus-visible,.crumbs a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dash-body{padding:28px 32px 56px}.container-fluid{width:100%;max-width:1400px;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}.page-head h1{font-size:clamp(1.6rem,2.6vw,2.05rem);margin-bottom:6px}.page-head p{color:var(--text-muted);font-size:.95rem}
+.crumbs{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-dim);margin-bottom:2px}
+.crumbs a{display:inline-flex;align-items:center;min-height:44px;color:var(--accent-hover);font-weight:600}
+.crumbs a:hover{text-decoration:underline}
+.crumbs span[aria-current]{color:var(--text-muted);font-weight:600}
+
+/* ===== Thẻ thống kê ===== */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat{border:1px solid var(--border);border-radius:var(--radius-lg);background:linear-gradient(180deg,#fff,#F6FBF6);padding:20px;text-align:left;width:100%;transition:.25s var(--ease)}
+.stat:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 14px 32px -18px rgba(16,48,16,.25)}
+.stat.is-active-filter{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.12)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.stat-label{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted)}
+.stat-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(34,139,34,.08);border:1px solid var(--border-strong);flex-shrink:0}.stat-icon svg{width:18px;stroke:var(--accent);fill:none;stroke-width:1.6}
+.stat.warn .stat-icon{background:rgba(245,177,76,.14);border-color:rgba(245,177,76,.34)}.stat.warn .stat-icon svg{stroke:var(--warning-ink)}
+.stat.info .stat-icon{background:rgba(47,111,237,.1);border-color:rgba(47,111,237,.28)}.stat.info .stat-icon svg{stroke:var(--info-ink)}
+.stat.neutral .stat-icon{background:var(--surface-2);border-color:var(--border-strong)}.stat.neutral .stat-icon svg{stroke:var(--text-dim)}
+.stat-value{font-family:'Be Vietnam Pro',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.02em}.stat-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+
+/* ===== Tabs ===== */
+.tabbar{display:inline-flex;padding:5px;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;margin-bottom:20px}
+.tab-btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--text-muted);font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600;white-space:nowrap;transition:.18s var(--ease)}
+.tab-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 4px 14px -6px rgba(16,48,16,.25)}.tab-btn.active svg{stroke:var(--accent)}
+.tab-btn .side-count{margin-left:2px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ===== Card + danh sách ===== */
+.card{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-head h2{font-size:16.5px}.card-head p{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.card-body{padding:18px 20px 20px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.field{height:44px;width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);padding:0 12px;font-size:16px}
+.search-wrap{position:relative;flex:1;min-width:220px}.search-wrap svg{position:absolute;left:12px;top:13px;width:18px;stroke:var(--text-dim);fill:none;stroke-width:1.7}.search-wrap input{padding-left:40px}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;white-space:nowrap;transition:.16s var(--ease)}
+.chip:hover{border-color:var(--accent);color:var(--text)}
+.chip.active{background:rgba(34,139,34,.1);border-color:var(--accent);color:var(--accent-hover)}
+
+.list-rows{display:flex;flex-direction:column;gap:10px}
+.list-row{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:var(--surface)}
+.list-row:hover{border-color:var(--border-strong);background:var(--surface-2)}
+.lr-date b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px}
+.lr-date span{display:block;font-size:11.5px;color:var(--text-dim)}
+.lr-info{min-width:0}
+.lr-info b{display:block;font-size:14px;overflow-wrap:anywhere}
+.lr-info span{display:block;font-size:12.5px;color:var(--text-dim);margin-top:1px}
+.lr-info .lr-alert{color:var(--danger-ink);font-weight:600}
+.lr-info .lr-amount{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:16px;letter-spacing:-.01em;color:var(--text);margin:0 0 2px}
+.lr-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.lr-info .lr-badge{display:none;margin-top:8px;font-size:11.5px;color:inherit}
+
+.apt-status{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;border:1px solid}
+.apt-status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.apt-status.is-confirmed{color:var(--success-ink);background:rgba(34,139,34,.09);border-color:rgba(34,139,34,.22)}
+.apt-status.is-pending{color:var(--warning-ink);background:rgba(245,177,76,.15);border-color:rgba(245,177,76,.35)}
+.apt-status.is-info{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(47,111,237,.26)}
+.apt-status.is-cancelled{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.22)}
+.icon-sm{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;color:var(--text-muted)}
+.icon-sm:hover{border-color:var(--accent);color:var(--accent);background:rgba(34,139,34,.05)}
+.icon-sm svg{width:17px;stroke:currentColor;fill:none;stroke-width:1.8}
+.urgent-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--danger-ink);background:rgba(255,107,107,.12);border:1px solid rgba(180,41,31,.22);padding:2px 8px;border-radius:999px;margin-top:6px}
+
+/* ===== Trạng thái rỗng / skeleton / toast ===== */
+.empty-state{padding:52px 20px;text-align:center;color:var(--text-muted)}
+.empty-state svg{width:40px;height:40px;stroke:var(--text-dim);fill:none;stroke-width:1.4;margin-bottom:12px}
+.empty-state h3{font-size:15px;margin-bottom:6px;color:var(--text)}
+.empty-state p{font-size:13.5px;margin-bottom:16px}
+.skeleton{border-radius:var(--radius-lg);background:linear-gradient(100deg,var(--surface-2) 30%,#E4EFE4 50%,var(--surface-2) 70%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+body.is-loading .content-real{display:none}
+body:not(.is-loading) .content-skel{display:none}
+.skel-stat{height:112px}.skel-list{height:360px}
+@media(prefers-reduced-motion:reduce){.skeleton{animation:none;background:var(--surface-2)}}
+.toast{position:fixed;right:24px;bottom:24px;z-index:200;max-width:360px;padding:14px 16px;border-radius:var(--radius);background:#102010;color:#fff;box-shadow:0 20px 50px rgba(16,32,16,.25);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s var(--ease);font-size:14px}.toast.show{transform:none;opacity:1}.toast b{display:block;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:2px}.toast span{color:rgba(255,255,255,.78);font-size:12.5px}
+
+/* ===== Modal xác nhận ===== */
+body.modal-open{overflow:hidden}
+.modal-overlay{position:fixed;inset:0;z-index:180;background:rgba(16,32,16,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:.2s var(--ease)}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{width:100%;max-width:420px;background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 40px 90px -30px rgba(16,48,16,.4);transform:translateY(14px) scale(.98);transition:.22s var(--ease);max-height:88vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:none}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal-head h2{font-size:16.5px}
+.modal-close{width:46px;height:46px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;color:var(--text-muted);flex-shrink:0}
+.modal-close:hover{border-color:var(--accent);color:var(--accent)}
+.modal-close svg{width:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.modal-body{padding:18px 20px;font-size:14px;color:var(--text-muted);line-height:1.6}
+.modal-body b{color:var(--text)}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 20px}
+
+@media(max-width:1180px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:960px){
+  .menu-toggle{display:flex}
+  .side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);transition:transform .26s var(--ease)}
+  body.nav-open .side-nav{transform:none}body.nav-open .side-backdrop{display:block;top:var(--header-h)}
+  .dash-main{margin-left:0}.app-header{padding:0 20px}.dash-body{padding:24px 20px 48px}
+  .prop-tx span,.nm{display:none}
+  .list-row{grid-template-columns:84px 1fr}
+  .lr-actions{grid-column:1/-1;justify-content:flex-start}
+}
+@media(max-width:640px){
+  .app-header{padding:0 16px;gap:8px}.dash-body{padding:20px 16px 40px}
+  .stat-grid{grid-template-columns:1fr;gap:12px}
+  .page-head{align-items:flex-start}
+  .tabbar{width:100%}.tab-btn{flex:1;justify-content:center;padding:0 10px}
+  .chip-row{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;width:100%}
+  .search-wrap{min-width:0;flex-basis:100%}
+  .list-row{grid-template-columns:1fr;gap:6px}
+  .lr-actions .apt-status{display:none}
+  .lr-info .lr-badge{display:inline-flex}
+  .lr-actions .btn{flex:1 1 0;min-width:0;padding:0 10px;font-size:12.5px}
+  .lr-actions .icon-sm{flex:0 0 44px}
+  .toast{left:16px;right:16px;bottom:16px}
+  .card-head{flex-direction:column;align-items:flex-start}
+  .modal{max-height:100dvh;border-radius:0;max-width:100%}
+  .modal-overlay{padding:0}
+  .modal-foot .btn{flex:1}
+}
+</style>
+</head>
+<body class="is-loading">
+<div class="dash-shell">
+  <div class="side-backdrop" id="sideBackdrop"></div>
+  <aside class="side-nav" id="sideNav">
+    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <div class="side-role"><span>Khu vực</span><b>Chủ trọ</b></div>
+    <nav class="side-menu" aria-label="Điều hướng khu vực chủ trọ">
+      <a href="tong-quan.html" class="side-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Tổng quan</a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Tin đăng</a>
+      <a href="phong-dien-nuoc.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 7h4M10 11h4M10 15h4"/></svg>Phòng & điện nước</a>
+      <a href="yeucauvalichhen.html" class="side-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>Yêu cầu & lịch hẹn<span class="side-count">5</span></a>
+      <a href="nguoi-thue.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Người thuê</a>
+      <a href="hop-dong-dien-tu.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h6M8 13h8M8 17h5"/></svg>Hợp đồng điện tử</a>
+      <a href="thanh-toan.html" class="side-link active" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>Thanh toán<span class="side-count" id="navPay">0</span></a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg>Báo cáo</a>
+      <div class="side-sep"></div>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>Hỗ trợ</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+    <header class="app-header">
+      <button class="menu-toggle" id="menuBtn" aria-label="Mở menu" aria-expanded="false" aria-controls="sideNav"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <button class="prop-switch" type="button"><span class="prop-ico"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M10 21v-5h4v5"/></svg></span><span class="prop-tx"><b>Nhà trọ An Bình</b><span>Cầu Giấy, Hà Nội · 24 phòng</span></span></button>
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Thông báo"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+        <button class="acc-btn"><span class="av">TH</span><span class="nm">Trần Hoà</span></button>
+      </div>
+    </header>
+
+    <main class="dash-body">
+      <div class="container-fluid">
+
+        <div class="page-head reveal">
+          <div>
+            <nav class="crumbs" aria-label="Vị trí trang"><a href="yeucauvalichhen.html">Lịch xem phòng</a><span aria-hidden="true">/</span><span aria-current="page">Thanh toán</span></nav>
+            <h1>Thanh toán</h1>
+            <p>Lịch xem đang chờ bạn xác nhận và tiền cọc khi xem cần đối chiếu.</p>
+          </div>
+        </div>
+
+        <div class="content-skel">
+          <section class="stat-grid" aria-hidden="true">
+            <div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div>
+          </section>
+          <div class="skeleton skel-list"></div>
+        </div>
+
+        <div class="content-real">
+          <section class="stat-grid" data-stagger aria-label="Thống kê thanh toán" id="statGrid"></section>
+
+          <div class="tabbar reveal" role="tablist" aria-label="Chuyển mục">
+            <button class="tab-btn active" id="tabAppts" type="button" role="tab" aria-selected="true" aria-controls="panelAppts">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Lịch xem phòng<span class="side-count" id="cntAppts">0</span>
+            </button>
+            <button class="tab-btn" id="tabPay" type="button" role="tab" aria-selected="false" aria-controls="panelPay">
+              <svg viewBox="0 0 24 24"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>Thanh toán<span class="side-count" id="cntPay">0</span>
+            </button>
+          </div>
+
+          <!-- ===== Panel: Lịch xem chờ xác nhận ===== -->
+          <section class="card reveal tab-panel active" id="panelAppts" role="tabpanel" aria-labelledby="tabAppts">
+            <div class="card-head"><div><h2>Lịch xem chờ xác nhận</h2><p>Xác nhận lịch thì khoản cọc khi xem tự sinh ở mục Thanh toán</p></div></div>
+            <div class="card-body">
+              <div class="toolbar">
+                <label class="search-wrap"><span class="sr-only">Tìm lịch chờ xác nhận</span><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="field" id="apptSearch" type="search" placeholder="Tìm theo phòng hoặc tên khách" /></label>
+              </div>
+              <div class="list-rows" id="apptRows"></div>
+              <div class="empty-state" id="apptEmpty" hidden></div>
+            </div>
+          </section>
+
+          <!-- ===== Panel: Tiền cọc khi xem ===== -->
+          <section class="card reveal tab-panel" id="panelPay" role="tabpanel" aria-labelledby="tabPay">
+            <div class="card-head"><div><h2>Tiền cọc khi xem phòng</h2><p>Đối chiếu tài khoản hoặc tiền mặt rồi bấm “Đã nhận tiền”</p></div></div>
+            <div class="card-body">
+              <div class="toolbar">
+                <label class="search-wrap"><span class="sr-only">Tìm khoản cọc</span><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="field" id="paySearch" type="search" placeholder="Tìm theo phòng, tên khách hoặc mã cọc" /></label>
+                <div class="chip-row" id="payChips" role="group" aria-label="Lọc theo trạng thái">
+                  <button type="button" class="chip active" data-status="all" aria-pressed="true">Tất cả</button>
+                  <button type="button" class="chip" data-status="unpaid" aria-pressed="false">Chưa đóng cọc</button>
+                  <button type="button" class="chip" data-status="submitted" aria-pressed="false">Chờ xác nhận tiền</button>
+                  <button type="button" class="chip" data-status="paid" aria-pressed="false">Đã nhận cọc</button>
+                  <button type="button" class="chip" data-status="cancelled" aria-pressed="false">Đã huỷ</button>
+                </div>
+              </div>
+              <div class="list-rows" id="payRows"></div>
+              <div class="empty-state" id="payEmpty" hidden></div>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal xác nhận (dùng chung cho xác nhận lịch / đã nhận tiền / chưa nhận được) -->
+<div class="modal-overlay" id="askOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="askTitle">
+    <div class="modal-head"><h2 id="askTitle"></h2><button class="modal-close" id="askClose" type="button" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body"><p id="askText"></p></div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="askKeep" type="button">Để sau</button><button class="btn btn-primary" id="askOk" type="button">Xác nhận</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= Thời gian ================= */
+  var SIM_NOW = new Date(2026,8,18,8,15,0);
+  function pad2(n){ return (n<10?'0':'')+n; }
+  function ymd(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+  function parseYmd(s){ var p=s.split('-'); return new Date(Number(p[0]),Number(p[1])-1,Number(p[2])); }
+  var DAY_NAMES = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+  var STAMP = new Intl.DateTimeFormat('vi-VN', { timeZone:'Asia/Ho_Chi_Minh', hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', hour12:false });
+  function fmtStamp(iso){
+    var p = {}; STAMP.formatToParts(new Date(iso)).forEach(function(x){ p[x.type] = x.value; });
+    return p.hour+':'+p.minute+' ngày '+p.day+'/'+p.month;
+  }
+
+  /* ================= Tiện ích ================= */
+  var nf = new Intl.NumberFormat('vi-VN');
+  function vnd(n){ return nf.format(n) + '₫'; }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function icon(p){ return '<svg viewBox="0 0 24 24">'+p+'</svg>'; }
+  function phoneHref(p){ return 'tel:' + String(p||'').replace(/\s+/g,''); }
+  var ICON_PHONE = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.95.34 1.88.63 2.78a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.11-.45c.9.29 1.83.5 2.78.63A2 2 0 0 1 22 16.92Z"/>';
+  function callBtn(phone){ return phone ? '<a class="icon-sm" href="'+phoneHref(phone)+'" aria-label="Gọi '+esc(phone)+'">'+icon(ICON_PHONE)+'</a>' : ''; }
+  function dateCell(s){ var d=parseYmd(s); return '<div class="lr-date"><b>'+pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'</b><span>'+DAY_NAMES[d.getDay()]+'</span></div>'; }
+
+  /* ================= Máy chủ ================= */
+  var API = { on:false, now:null };
+  var API_READY = (function(){
+    if(!/^https?:$/.test(location.protocol) || !window.fetch) return Promise.resolve(false);
+    return fetch('/api/suc-khoe', { cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ if(j && j.ok){ API.on = true; API.now = j.now; } return API.on; })
+      .catch(function(){ return false; });
+  })();
+  function apiCall(method, url, body){
+    return fetch(url, { method:method, cache:'no-store',
+      headers: body ? { 'Content-Type':'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; });
+    });
+  }
+  function mustOk(j){ if(j.httpStatus !== 200) throw new Error(j.message || 'Lỗi máy chủ'); return j; }
+  API_READY.then(function(on){ if(on && API.now) SIM_NOW = new Date(API.now); });
+
+  /* ================= Dữ liệu mẫu cho chế độ file:// ================= */
+  // Cùng lịch mẫu với yeucauvalichhen.html; khoản cọc sinh theo đúng luật của máy chủ.
+  var GIA = { 'P.101':3500000,'P.102':3200000,'P.103':3300000,'P.201':4100000,'P.202':3800000,'P.203':3600000,'P.301':3500000,'P.302':3000000 };
+  var MOCK_APPTS = [
+    {id:1,date:'2026-09-18',time:'09:00',room:'P.102',tenant:'Trần Minh Anh',phone:'0987 654 321',status:'confirmed'},
+    {id:2,date:'2026-09-18',time:'15:30',room:'P.301',tenant:'Phạm Tuấn',phone:'0912 345 678',status:'pending',urgent:true},
+    {id:3,date:'2026-09-18',time:'18:00',room:'P.203',tenant:'Lê Hoài Nam',phone:'0977 123 456',status:'confirmed'},
+    {id:4,date:'2026-09-15',time:'10:00',room:'P.202',tenant:'Nguyễn Thảo Vy',phone:'0901 222 333',status:'completed'},
+    {id:6,date:'2026-09-20',time:'09:30',room:'P.302',tenant:'Vũ Thị Hạnh',phone:'0966 777 888',status:'pending',urgent:true},
+    {id:7,date:'2026-09-22',time:'16:00',room:'P.102',tenant:'Bùi Anh Tuấn',phone:'0944 888 999',status:'pending'},
+    {id:8,date:'2026-09-25',time:'11:00',room:'P.201',tenant:'Ngô Gia Bảo',phone:'0988 111 222',status:'confirmed'},
+    {id:9,date:'2026-09-10',time:'09:00',room:'P.301',tenant:'Hoàng Yến',phone:'0977 222 111',status:'completed'},
+    {id:10,date:'2026-09-29',time:'15:00',room:'P.103',tenant:'Trịnh Minh Đức',phone:'0911 333 444',status:'pending'},
+    {id:12,date:'2026-09-05',time:'17:00',room:'P.302',tenant:'Đinh Văn Long',phone:'0933 666 777',status:'confirmed'},
+    {id:15,date:'2026-09-24',time:'09:00',room:'P.302',tenant:'Kiều Anh Dũng',phone:'0966 999 000',status:'confirmed'}
+  ];
+  var MOCK_DEPS = [];
+  function mockDeposit(a, status){
+    var id = MOCK_DEPS.length + 1;
+    var at = new Date(parseYmd(a.date).getTime() + (Number(a.time.slice(0,2))*60 + Number(a.time.slice(3)))*60000).toISOString();
+    MOCK_DEPS.push({ id:id, appointmentId:a.id, amount:GIA[a.room], status:status, ref:'ANCU-COC-'+id,
+      submittedAt: status==='submitted' ? SIM_NOW.toISOString() : null, paidAt: status==='paid' ? at : null, rejectNote:null,
+      roomCode:a.room, tenant:a.tenant, phone:a.phone, renterId:null, date:a.date, time:a.time, apptStatus:a.status });
+  }
+  (function(){
+    var today = ymd(SIM_NOW);
+    MOCK_APPTS.forEach(function(a){
+      if(a.status==='completed' || (a.status==='confirmed' && a.date < today)) mockDeposit(a, 'paid');
+      else if(a.status==='confirmed') mockDeposit(a, a.date===today ? 'submitted' : 'unpaid');
+    });
+  })();
+
+  /* ================= Kho dữ liệu: máy chủ hoặc mô phỏng ================= */
+  function khoLoad(){
+    return API_READY.then(function(){
+      if(!API.on) return { appts:MOCK_APPTS.slice(), deps:MOCK_DEPS.slice() };
+      return Promise.all([
+        apiCall('GET','/api/chu-tro/lich-xem').then(mustOk),
+        apiCall('GET','/api/chu-tro/thanh-toan').then(mustOk)
+      ]).then(function(r){
+        return {
+          appts: r[0].items.map(function(it){ return { id:it.id, date:it.date, time:it.time, room:it.roomCode, tenant:it.tenant, phone:it.phone, status:it.status, urgent:it.urgent, depositAmount:it.depositAmount }; }),
+          deps: r[1].items
+        };
+      });
+    });
+  }
+  function result(j){ return j.httpStatus === 200 ? { ok:true, item:j.item } : { ok:false, error:j.message || 'Máy chủ từ chối yêu cầu.' }; }
+  function khoConfirmAppt(id){
+    return API_READY.then(function(){
+      if(API.on) return apiCall('PATCH','/api/chu-tro/lich-xem/'+id,{ action:'confirm' }).then(result);
+      var a = MOCK_APPTS.filter(function(x){ return x.id===id; })[0];
+      if(!a || a.status!=='pending') return { ok:false, error:'Lịch không còn ở trạng thái chờ xác nhận.' };
+      a.status = 'confirmed'; mockDeposit(a, 'unpaid');
+      return { ok:true, item:{ deposit:MOCK_DEPS[MOCK_DEPS.length-1] } };
+    });
+  }
+  function khoDeposit(id, action){
+    return API_READY.then(function(){
+      if(API.on) return apiCall('PATCH','/api/chu-tro/thanh-toan/'+id,{ action:action }).then(result);
+      var d = MOCK_DEPS.filter(function(x){ return x.id===id; })[0];
+      if(!d) return { ok:false, error:'Không tìm thấy khoản cọc.' };
+      if(action==='confirm'){
+        if(d.status!=='unpaid' && d.status!=='submitted') return { ok:false, error:'Khoản cọc này đã được xử lý.' };
+        d.status='paid'; d.paidAt=SIM_NOW.toISOString(); d.rejectNote=null;
+      } else {
+        if(d.status!=='submitted') return { ok:false, error:'Chỉ báo “chưa nhận được” với khoản khách đã báo chuyển.' };
+        d.status='unpaid'; d.submittedAt=null; d.rejectNote='Chủ trọ chưa nhận được tiền. Hãy kiểm tra lại giao dịch.';
+      }
+      return { ok:true, item:d };
+    });
+  }
+
+  /* ================= Từ vựng trạng thái (dùng chung với phía người thuê) ================= */
+  var DEP_STATUS = {
+    unpaid:{label:'Chưa đóng cọc',cls:'is-pending'},
+    submitted:{label:'Chờ xác nhận tiền',cls:'is-info'},
+    paid:{label:'Đã nhận cọc',cls:'is-confirmed'},
+    cancelled:{label:'Đã huỷ',cls:'is-cancelled'}
+  };
+  var DEP_RANK = { submitted:0, unpaid:1, paid:2, cancelled:3 };
+
+  /* ================= State ================= */
+  var S = { tab:'appts', status:'all', qA:'', qP:'', appts:[], deps:[], loadError:false, ask:null, lastFocus:null };
+  function pendingAppts(){
+    var q = S.qA.trim().toLowerCase();
+    return S.appts.filter(function(a){
+      return a.status==='pending' && (!q || (a.room+' '+a.tenant).toLowerCase().indexOf(q) !== -1);
+    }).sort(function(x,y){ return (x.date+x.time) < (y.date+y.time) ? -1 : 1; });
+  }
+  function currentDeps(){
+    var q = S.qP.trim().toLowerCase();
+    return S.deps.filter(function(d){
+      return (S.status==='all' || d.status===S.status) && (!q || (d.roomCode+' '+d.tenant+' '+d.ref).toLowerCase().indexOf(q) !== -1);
+    }).sort(function(x,y){
+      var r = DEP_RANK[x.status] - DEP_RANK[y.status]; if(r) return r;
+      var kx = x.date+x.time, ky = y.date+y.time, open = x.status==='unpaid' || x.status==='submitted';
+      return open ? (kx < ky ? -1 : 1) : (kx < ky ? 1 : -1);
+    });
+  }
+
+  /* ================= Render ================= */
+  var ICON_CLOCK = '<circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/>';
+  var ICON_WAIT = '<path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 7h8M8 11h8M8 15h5"/>';
+  var ICON_CHECK_MONEY = '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>';
+  var ICON_DONE = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/>';
+  function sum(a){ return a.reduce(function(t,d){ return t+d.amount; }, 0); }
+  function statHtml(key,tone,label,value,sub,svg){
+    return '<button type="button" class="stat'+(tone?' '+tone:'')+'" data-stat="'+key+'"><div class="stat-top"><span class="stat-label">'+label+'</span><span class="stat-icon">'+icon(svg)+'</span></div><p class="stat-value">'+value+'</p><p class="stat-sub">'+sub+'</p></button>';
+  }
+  function renderStats(){
+    var pend = S.appts.filter(function(a){ return a.status==='pending'; }).length;
+    var unpaid = S.deps.filter(function(d){ return d.status==='unpaid'; });
+    var sub = S.deps.filter(function(d){ return d.status==='submitted'; });
+    var paid = S.deps.filter(function(d){ return d.status==='paid'; });
+    document.getElementById('statGrid').innerHTML =
+      statHtml('appts','warn','Lịch chờ xác nhận', pend, 'Cần phản hồi cho khách', ICON_CLOCK) +
+      statHtml('submitted','info','Cần xác nhận tiền', sub.length, sub.length ? vnd(sum(sub))+' khách báo đã chuyển' : 'Không có khoản cần đối chiếu', ICON_CHECK_MONEY) +
+      statHtml('unpaid','warn','Chưa đóng cọc', unpaid.length, unpaid.length ? vnd(sum(unpaid))+' chờ khách đóng' : 'Khách đã đóng đủ', ICON_WAIT) +
+      statHtml('paid','neutral','Đã nhận cọc', vnd(sum(paid)), paid.length+' khoản đã xác nhận', ICON_DONE);
+    document.getElementById('cntAppts').textContent = pend;
+    document.getElementById('cntPay').textContent = unpaid.length + sub.length;
+    // Việc chủ trọ phải tự tay xử lý: lịch chờ xác nhận + tiền khách báo đã chuyển
+    document.getElementById('navPay').textContent = pend + sub.length;
+    markActiveStat();
+  }
+  function markActiveStat(){
+    var key = S.tab==='appts' ? 'appts' : (S.status!=='all' ? S.status : null);
+    document.querySelectorAll('#statGrid .stat').forEach(function(b){ b.classList.toggle('is-active-filter', b.getAttribute('data-stat')===key); });
+  }
+  function apptRow(a){
+    var urgent = a.urgent ? '<span class="urgent-tag">Cần xác nhận sớm</span>' : '';
+    var coc = a.depositAmount || GIA[a.room];
+    return '<div class="list-row" data-appt="'+a.id+'">'+ dateCell(a.date) +
+      '<div class="lr-info"><b>'+esc(a.time)+' · '+esc(a.room)+' — '+esc(a.tenant)+'</b><span>'+esc(a.phone)+(coc ? ' · Cọc khi xem '+vnd(coc) : '')+'</span>'+urgent+'<span class="apt-status is-pending lr-badge">Chờ xác nhận</span></div>'+
+      '<div class="lr-actions"><span class="apt-status is-pending">Chờ xác nhận</span>'+
+        '<a class="btn btn-ghost btn-sm" href="yeucauvalichhen.html">Đổi lịch</a>'+
+        '<button type="button" class="btn btn-primary btn-sm" data-confirm-appt="'+a.id+'">Xác nhận</button>'+ callBtn(a.phone) +
+      '</div></div>';
+  }
+  function depLine(d){
+    if(d.status==='submitted') return '<span>Khách báo đã chuyển lúc '+esc(fmtStamp(d.submittedAt))+'</span>';
+    if(d.status==='paid') return '<span>Đã nhận lúc '+esc(fmtStamp(d.paidAt))+'</span>';
+    if(d.status==='cancelled') return '<span>Đã huỷ theo lịch xem</span>';
+    return d.rejectNote ? '<span class="lr-alert">Đã báo khách: chưa nhận được tiền</span>' : '<span>Khách có thể chuyển trước hoặc trả tiền mặt khi xem</span>';
+  }
+  function depRow(d){
+    var st = DEP_STATUS[d.status];
+    var acts = '';
+    if(d.status==='submitted') acts = '<button type="button" class="btn btn-danger-ghost btn-sm" data-dep-reject="'+d.id+'">Chưa nhận được</button><button type="button" class="btn btn-primary btn-sm" data-dep-confirm="'+d.id+'">Đã nhận tiền</button>';
+    else if(d.status==='unpaid') acts = '<button type="button" class="btn btn-ghost btn-sm" data-dep-confirm="'+d.id+'">Đã nhận tiền</button>';
+    return '<div class="list-row" data-dep="'+d.id+'" data-status="'+d.status+'">'+ dateCell(d.date) +
+      '<div class="lr-info"><span class="lr-amount">'+vnd(d.amount)+'</span><b>'+esc(d.time)+' · '+esc(d.roomCode)+' — '+esc(d.tenant)+'</b><span>Mã '+esc(d.ref)+' · '+esc(d.phone)+'</span>'+depLine(d)+'<span class="apt-status '+st.cls+' lr-badge">'+st.label+'</span></div>'+
+      '<div class="lr-actions"><span class="apt-status '+st.cls+'">'+st.label+'</span>'+acts+callBtn(d.phone)+'</div></div>';
+  }
+  function emptyHtml(title, desc, btn){
+    return icon(ICON_WAIT)+'<h3>'+title+'</h3><p>'+desc+'</p>'+(btn ? '<button type="button" class="btn '+btn.cls+' btn-sm" data-action="'+btn.action+'">'+btn.label+'</button>' : '');
+  }
+  function fill(listId, emptyId, items, toHtml, empty){
+    var list = document.getElementById(listId), em = document.getElementById(emptyId);
+    if(S.loadError){ list.innerHTML=''; em.innerHTML = emptyHtml('Không tải được dữ liệu','Kiểm tra kết nối rồi thử lại.',{action:'retry',cls:'btn-primary',label:'Thử lại'}); em.hidden=false; return; }
+    if(!items.length){ list.innerHTML=''; em.innerHTML = emptyHtml.apply(null, empty); em.hidden=false; return; }
+    em.hidden = true; list.innerHTML = items.map(toHtml).join('');
+  }
+  function renderLists(){
+    fill('apptRows','apptEmpty', pendingAppts(), apptRow, S.qA
+      ? ['Không tìm thấy lịch','Thử từ khoá khác.',{action:'clear-a',cls:'btn-ghost',label:'Xoá từ khoá'}]
+      : ['Không có lịch nào chờ xác nhận','Lịch khách đặt sẽ hiện ở đây để bạn xác nhận.',null]);
+    var filtered = S.status!=='all' || S.qP;
+    fill('payRows','payEmpty', currentDeps(), depRow, filtered
+      ? ['Không có khoản cọc khớp bộ lọc','Thử bỏ bộ lọc hoặc từ khoá.',{action:'reset-p',cls:'btn-ghost',label:'Đặt lại bộ lọc'}]
+      : ['Chưa có khoản cọc nào','Xác nhận một lịch xem thì khoản cọc sẽ hiện ở đây.',{action:'to-appts',cls:'btn-ghost',label:'Xem lịch chờ xác nhận'}]);
+  }
+  function renderAll(){
+    return khoLoad().then(function(r){ S.loadError=false; S.appts=r.appts; S.deps=r.deps; })
+      .catch(function(){ S.loadError=true; showToast('Mất kết nối','Không tải được dữ liệu thanh toán từ máy chủ.'); })
+      .then(function(){ renderStats(); renderLists(); });
+  }
+
+  /* ================= Toast ================= */
+  function showToast(title,text){
+    var t = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastText').textContent = text;
+    t.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+  }
+
+  /* ================= Modal hỏi lại ================= */
+  var ov = document.getElementById('askOverlay');
+  function ask(opts){
+    S.ask = opts; S.lastFocus = document.activeElement;
+    document.getElementById('askTitle').textContent = opts.title;
+    document.getElementById('askText').innerHTML = opts.html;
+    var ok = document.getElementById('askOk');
+    ok.textContent = opts.ok;
+    ok.className = 'btn ' + (opts.danger ? 'btn-danger-ghost' : 'btn-primary');
+    document.body.classList.add('modal-open'); ov.classList.add('open');
+    setTimeout(function(){ ok.focus(); }, 60);
+  }
+  function closeAsk(){
+    ov.classList.remove('open'); document.body.classList.remove('modal-open');
+    if(S.lastFocus && S.lastFocus.focus) S.lastFocus.focus();
+  }
+  document.getElementById('askClose').addEventListener('click', closeAsk);
+  document.getElementById('askKeep').addEventListener('click', closeAsk);
+  ov.addEventListener('mousedown', function(e){ if(e.target===ov) closeAsk(); });
+  document.addEventListener('keydown', function(e){
+    if(!ov.classList.contains('open')) return;
+    if(e.key==='Escape'){ e.preventDefault(); closeAsk(); return; }
+    if(e.key!=='Tab') return;
+    var nodes = Array.prototype.slice.call(ov.querySelectorAll('button')), first = nodes[0], last = nodes[nodes.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  });
+  document.getElementById('askOk').addEventListener('click', function(){
+    var btn = this, a = S.ask; if(!a) return;
+    btn.disabled = true;
+    a.run().then(function(res){
+      btn.disabled = false;
+      closeAsk();
+      if(!res.ok){ showToast('Chưa thực hiện được', res.error); return renderAll(); }
+      return renderAll().then(function(){ showToast(a.doneTitle, a.doneText(res.item)); });
+    }, function(){ btn.disabled = false; showToast('Mất kết nối','Không gửi được tới máy chủ. Hãy thử lại.'); });
+  });
+
+  function findAppt(id){ return S.appts.filter(function(a){ return a.id===id; })[0]; }
+  function findDep(id){ return S.deps.filter(function(d){ return d.id===id; })[0]; }
+  function confirmAppt(id){
+    var a = findAppt(id); if(!a) return;
+    var coc = a.depositAmount || GIA[a.room];
+    ask({ title:'Xác nhận lịch xem?', ok:'Xác nhận lịch',
+      html:'Lịch <b>'+esc(a.time)+' ngày '+esc(a.date.slice(8)+'/'+a.date.slice(5,7))+'</b> xem phòng <b>'+esc(a.room)+'</b> của <b>'+esc(a.tenant)+'</b> sẽ được giữ chắc. '+(coc ? 'Khoản cọc khi xem <b>'+vnd(coc)+'</b> sẽ hiện ở mục Thanh toán.' : ''),
+      run:function(){ return khoConfirmAppt(id); }, doneTitle:'Đã xác nhận lịch',
+      doneText:function(it){ return a.room+' · '+a.tenant+(it && it.deposit ? '. Đã tạo khoản cọc '+vnd(it.deposit.amount)+'.' : '.'); } });
+  }
+  function confirmDep(id){
+    var d = findDep(id); if(!d) return;
+    ask({ title:'Đã nhận tiền cọc?', ok:'Đã nhận tiền',
+      html:'Xác nhận bạn đã nhận <b>'+vnd(d.amount)+'</b> tiền cọc xem phòng <b>'+esc(d.roomCode)+'</b> từ <b>'+esc(d.tenant)+'</b> (mã <b>'+esc(d.ref)+'</b>). Khách sẽ thấy trạng thái “Đã nhận cọc”.',
+      run:function(){ return khoDeposit(id,'confirm'); }, doneTitle:'Đã nhận cọc',
+      doneText:function(){ return vnd(d.amount)+' từ '+d.tenant+' · '+d.roomCode+'.'; } });
+  }
+  function rejectDep(id){
+    var d = findDep(id); if(!d) return;
+    ask({ title:'Chưa nhận được tiền?', ok:'Báo chưa nhận được', danger:true,
+      html:'Khoản <b>'+vnd(d.amount)+'</b> (mã <b>'+esc(d.ref)+'</b>) của <b>'+esc(d.tenant)+'</b> sẽ quay về “Chưa đóng cọc” và khách được báo kiểm tra lại giao dịch.',
+      run:function(){ return khoDeposit(id,'reject'); }, doneTitle:'Đã báo khách',
+      doneText:function(){ return d.tenant+' sẽ thấy khoản cọc chưa được nhận.'; } });
+  }
+
+  /* ================= Tabs / bộ lọc ================= */
+  function setTab(tab){
+    S.tab = tab;
+    [['appts','tabAppts','panelAppts'],['pay','tabPay','panelPay']].forEach(function(t){
+      var on = t[0]===tab;
+      document.getElementById(t[1]).classList.toggle('active', on);
+      document.getElementById(t[1]).setAttribute('aria-selected', on ? 'true' : 'false');
+      var p = document.getElementById(t[2]); p.classList.toggle('active', on); if(on) p.classList.add('in');
+    });
+    try{ history.replaceState(null, '', tab==='pay' ? '#thanh-toan' : '#lich-xem'); }catch(e){}
+    markActiveStat();
+  }
+  function setStatus(v){
+    S.status = v;
+    document.querySelectorAll('#payChips .chip').forEach(function(c){
+      var on = c.getAttribute('data-status')===v;
+      c.classList.toggle('active', on); c.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  document.getElementById('tabAppts').addEventListener('click', function(){ setTab('appts'); });
+  document.getElementById('tabPay').addEventListener('click', function(){ setTab('pay'); });
+  document.querySelector('.tabbar').addEventListener('keydown', function(e){
+    if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+    var next = S.tab==='appts' ? 'pay' : 'appts';
+    setTab(next); document.getElementById(next==='pay' ? 'tabPay' : 'tabAppts').focus();
+  });
+  document.getElementById('payChips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-status]'); if(!b) return;
+    setStatus(b.getAttribute('data-status')); renderLists(); markActiveStat();
+  });
+  document.getElementById('apptSearch').addEventListener('input', function(){ S.qA = this.value; renderLists(); });
+  document.getElementById('paySearch').addEventListener('input', function(){ S.qP = this.value; renderLists(); });
+  document.getElementById('statGrid').addEventListener('click', function(e){
+    var b = e.target.closest('[data-stat]'); if(!b) return;
+    var key = b.getAttribute('data-stat');
+    if(key==='appts'){ setTab('appts'); return; }
+    setStatus(key); setTab('pay'); renderLists(); markActiveStat();
+  });
+  document.querySelector('.content-real').addEventListener('click', function(e){
+    var t;
+    if((t = e.target.closest('[data-confirm-appt]'))){ confirmAppt(Number(t.getAttribute('data-confirm-appt'))); return; }
+    if((t = e.target.closest('[data-dep-confirm]'))){ confirmDep(Number(t.getAttribute('data-dep-confirm'))); return; }
+    if((t = e.target.closest('[data-dep-reject]'))){ rejectDep(Number(t.getAttribute('data-dep-reject'))); return; }
+    if(!(t = e.target.closest('[data-action]'))) return;
+    var act = t.getAttribute('data-action');
+    if(act==='retry') renderAll();
+    else if(act==='to-appts') setTab('appts');
+    else if(act==='clear-a'){ S.qA=''; document.getElementById('apptSearch').value=''; renderLists(); }
+    else if(act==='reset-p'){ S.qP=''; document.getElementById('paySearch').value=''; setStatus('all'); renderLists(); markActiveStat(); }
+  });
+
+  /* ================= Sidebar di động ================= */
+  var menuBtn = document.getElementById('menuBtn');
+  function closeNav(){ document.body.classList.remove('nav-open'); menuBtn.setAttribute('aria-expanded','false'); }
+  menuBtn.addEventListener('click', function(){ var o = document.body.classList.toggle('nav-open'); menuBtn.setAttribute('aria-expanded', String(o)); });
+  document.getElementById('sideBackdrop').addEventListener('click', closeNav);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('nav-open')) closeNav(); });
+
+  /* ================= Reveal khi cuộn ================= */
+  function initReveal(){
+    document.querySelectorAll('[data-stagger]').forEach(function(g){
+      Array.prototype.forEach.call(g.children, function(el,i){ el.classList.add('reveal'); el.style.setProperty('--d',(i*0.05)+'s'); });
+    });
+    var reveals = document.querySelectorAll('.reveal');
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ reveals.forEach(function(el){ el.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, {threshold:0.1});
+    reveals.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ================= Khởi động ================= */
+  if(location.hash==='#thanh-toan') setTab('pay');
+  renderAll().then(function(){
+    setTimeout(function(){ document.body.classList.remove('is-loading'); initReveal(); }, 400);
+  });
+  window.addEventListener('focus', function(){ if(API.on) renderAll(); });
+})();
+</script>
+</body>
+</html>
