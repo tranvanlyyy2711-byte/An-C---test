@@ -43,13 +43,14 @@
   .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
   .btn-sm{min-height:38px;padding:0 12px;font-size:13.5px}
   .btn[disabled]{opacity:.55;cursor:not-allowed}
+  .btn[hidden]{display:none}
 
   main{padding:28px 0 64px}
   .page-head{margin-bottom:22px}
   .page-head h1{font-size:clamp(1.6rem,3vw,2.1rem)}
   .page-head p{color:var(--text-muted);font-size:15px;margin-top:6px}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:14px;margin-bottom:24px}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
   .stat dt{font-size:13px;color:var(--text-dim)}
   .stat dd{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:1.55rem;letter-spacing:-.02em;margin-top:4px}
@@ -90,6 +91,8 @@
   .empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:14.5px}
   .msg{margin-bottom:16px;padding:12px 14px;border-radius:var(--radius-sm);font-size:14px;display:none}
   .msg.show{display:block}
+  .msg[hidden]{display:none}
+  .msg.info{background:rgba(29,79,190,.06);border:1px solid rgba(29,79,190,.22);color:var(--info-ink)}
   .msg.err{background:rgba(180,41,31,.06);border:1px solid rgba(180,41,31,.24);color:var(--danger-ink)}
   .msg.ok{background:rgba(34,139,34,.07);border:1px solid rgba(34,139,34,.24);color:var(--success-ink)}
 
@@ -100,6 +103,31 @@
   .inv .one .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .inv .one b{font-size:14px}
   .inv .one span{font-size:12.5px;color:var(--text-muted)}
+
+  /* Nhà trọ & người thuê */
+  .owner{padding:18px 20px;margin-bottom:14px}
+  .owner-h{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .owner-h h3{font-size:1.05rem}
+  .owner-h small{display:block;color:var(--text-dim);font-size:12.5px}
+  .owner-h .right{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .owner-sum{margin-top:8px;font-size:13px;color:var(--text-muted)}
+  .props{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+  .prop{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:var(--surface-2)}
+  .prop h4{font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:600}
+  .prop h4 small{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:12.5px;color:var(--text-dim)}
+  .rooms{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+  .room{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px}
+  .room-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .room-h b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
+  .room-h span{font-size:12.5px;color:var(--text-muted);white-space:nowrap}
+  .room-addr{display:block;font-size:12px;color:var(--text-dim);margin-top:2px}
+  .people{list-style:none;margin-top:9px;display:flex;flex-direction:column;gap:7px}
+  .people li{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding-top:7px;border-top:1px dashed var(--border)}
+  .people li:first-child{border-top:0;padding-top:0}
+  .people .who-n{flex:1 1 130px;min-width:0;font-size:13.5px}
+  .people .who-n b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+  .people .who-n small{display:block;color:var(--text-dim);font-size:12px}
+  .room .none{display:block;margin-top:9px;font-size:12.5px;color:var(--text-dim)}
 
   .gate{max-width:520px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center}
   .gate h2{font-size:1.3rem;margin-bottom:10px}
@@ -151,11 +179,13 @@
       <p>Quản lý tài khoản người thuê và chủ trọ, theo dõi gói dịch vụ đã mua cùng lịch thanh toán.</p>
     </div>
 
+    <p class="msg info show" id="demoNote" hidden></p>
     <dl class="stats" id="stats"></dl>
     <p class="msg" id="msg" role="alert"></p>
 
     <div class="tabs" role="tablist">
       <button type="button" class="tab active" data-tab="tai-khoan" role="tab" aria-selected="true">Tài khoản</button>
+      <button type="button" class="tab" data-tab="nha-tro" role="tab" aria-selected="false">Nhà trọ &amp; người thuê</button>
       <button type="button" class="tab" data-tab="thanh-toan" role="tab" aria-selected="false">Thanh toán gói</button>
     </div>
 
@@ -196,6 +226,18 @@
         </table>
         <p class="empty" id="userEmpty" hidden>Không có tài khoản nào khớp bộ lọc.</p>
       </div>
+    </section>
+
+    <!-- NHÀ TRỌ & NGƯỜI THUÊ -->
+    <section class="panel" data-panel="nha-tro">
+      <div class="toolbar">
+        <div class="fld">
+          <label for="fProp">Tìm chủ trọ, nhà trọ, phòng hoặc người thuê</label>
+          <input id="fProp" type="search" class="grow" placeholder="Tên chủ trọ, tên nhà trọ, mã phòng, tên hoặc số người thuê" />
+        </div>
+      </div>
+      <div id="propList"></div>
+      <p class="empty" id="propEmpty" hidden>Không có chủ trọ nào khớp từ khoá.</p>
     </section>
 
     <!-- THANH TOÁN GÓI -->
@@ -264,6 +306,11 @@
   var PLAN_STATUS = { trial:['Đang dùng thử','info'], active:['Đang dùng','ok'], cancelled:['Đã huỷ','mute'] };
   var INV_STATUS = { pending:['Chờ thu','wait'], paid:['Đã thu','ok'], overdue:['Quá hạn','bad'] };
 
+  // Bỏ dấu để tìm kiếm không phân biệt dấu (giống fold ở server/quan-tri.mjs)
+  function khongDau(v){
+    return String(v == null ? '' : v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  }
+
   var el = function(id){ return document.getElementById(id); };
   var msgBox = el('msg');
   function msg(text, kind){
@@ -271,7 +318,15 @@
     msgBox.className = 'msg' + (text ? ' show ' + (kind || 'ok') : '');
   }
 
+  // Có máy chủ (npm start) thì gọi API thật. Mở bằng file:// hoặc deploy tĩnh (Vercel) thì
+  // không có API, trang chạy trên dữ liệu mẫu lưu trong localStorage của chính trình duyệt này.
+  var demo = null;
+
   function api(method, path, body){
+    if (demo) {
+      try { return Promise.resolve(demoApi(method, path, body)); }
+      catch (err) { return Promise.reject(err); }
+    }
     return fetch(path, {
       method: method, cache: 'no-store', credentials: 'same-origin',
       headers: body ? { 'Content-Type': 'application/json' } : {},
@@ -283,6 +338,306 @@
       });
     });
   }
+
+  /* ================= Dữ liệu mẫu cho chế độ xem thử ================= */
+  var DEMO_KEY = 'an-cu-quan-tri-demo';
+  var PLAN_PRICE = { plus: 149000, pro: 399000 };
+  var PLAN_LABEL = { plus: 'Plus', pro: 'Pro' };
+  var TRIAL_DAYS = 15;
+
+  var d2 = function(n){ return (n < 10 ? '0' : '') + n; };
+  function dYmd(d){ return d.getUTCFullYear() + '-' + d2(d.getUTCMonth() + 1) + '-' + d2(d.getUTCDate()); }
+  function homNay(){ var n = new Date(); return n.getFullYear() + '-' + d2(n.getMonth() + 1) + '-' + d2(n.getDate()); }
+  function congNgay(s, n){ return dYmd(new Date(new Date(s + 'T00:00:00Z').getTime() + n * 86400000)); }
+  // Cộng tháng, giữ ngày trong tháng; tháng ngắn hơn thì lùi về ngày cuối tháng
+  function congThang(s, n){
+    var p = s.split('-').map(Number);
+    var cuoi = new Date(Date.UTC(p[0], p[1] - 1 + n + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(p[0], p[1] - 1 + n, Math.min(p[2], cuoi))).toISOString().slice(0, 10);
+  }
+
+  function demoSeed(){
+    var t = homNay();
+    var batDau = congNgay(t, -40);
+    var s = {
+      nextSub: 2, nextInv: 4,
+      users: [
+        { id:'ad-01',   role:'admin',    name:'Quản trị An Cư',  phone:'0900000001', email:'admin@ancu.test',  status:'active', createdAt:congNgay(t,-60), bookings:null },
+        { id:'l-binh',  role:'landlord', name:'Chủ trọ An Bình', phone:'0988000999', email:'chutro@ancu.test', status:'active', createdAt:congNgay(t,-55), bookings:null },
+        { id:'l-mai',   role:'landlord', name:'Chủ trọ Thu Mai', phone:'0977111222', email:'mai@ancu.test',    status:'active', createdAt:congNgay(t,-20), bookings:null },
+        { id:'u-trang', role:'renter',   name:'Phạm Thu Trang',  phone:'0901234567', email:'trang@ancu.test',  status:'active', createdAt:congNgay(t,-50), bookings:3 },
+        { id:'u-an',    role:'renter',   name:'Nguyễn Văn An',   phone:'0912000111', email:'an@ancu.test',     status:'active', createdAt:congNgay(t,-30), bookings:1 },
+        { id:'u-linh',  role:'renter',   name:'Trần Mỹ Linh',    phone:'0987000222', email:'linh@ancu.test',   status:'locked', createdAt:congNgay(t,-12), bookings:0 },
+        { id:'u-huy',   role:'renter',   name:'Lê Quang Huy',    phone:'0933000333', email:'huy@ancu.test',    status:'active', createdAt:congNgay(t,-5),  bookings:2 }
+      ],
+      props: demoNhaTro(t),
+      subs: [{ id:1, landlordId:'l-binh', plan:'plus', price:PLAN_PRICE.plus, months:3, status:'active',
+               startedAt:batDau, trialEndsAt:congNgay(batDau, TRIAL_DAYS), cancelledAt:null }],
+      invoices: []
+    };
+    var ky1 = congNgay(batDau, TRIAL_DAYS);
+    for (var i = 0; i < 3; i++) {
+      var han = congThang(ky1, i);
+      s.invoices.push({
+        id: i + 1, subscriptionId: 1, period: han.slice(0, 7), amount: PLAN_PRICE.plus, dueDate: han,
+        status: i === 0 ? 'paid' : 'pending', paidAt: i === 0 ? han : null, method: i === 0 ? 'chuyen-khoan' : null
+      });
+    }
+    return s;
+  }
+  // Nhà trọ mẫu cho chế độ xem thử (bản thật đọc NHA_TRO trong server/phong.mjs).
+  // ng(id, kind, ngay): id trỏ tới tài khoản trong demo.users; id null = khách chưa có tài khoản.
+  function demoNhaTro(t){
+    var ng = function(id, name, phone, kind, at){ return { id:id, name:name, phone:phone, kind:kind, at:at }; };
+    var P = function(id, code, title, price, address, people){
+      return { id:id, code:code, title:title, price:price, address:address, people:people };
+    };
+    return [
+      { id:'nt-an-binh', name:'Nhà trọ An Bình', address:'Cầu Giấy, Hà Nội', landlordId:'l-binh', rooms:[
+        P('P.101', 'P.101', 'Phòng P.101', 2600000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
+          [ng('u-trang', 'Phạm Thu Trang', '0901234567', 'tenant', congNgay(t, -35))]),
+        P('P.102', 'P.102', 'Phòng P.102', 2800000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
+          [ng(null, 'Trần Minh Anh', '0987654321', 'viewing', congNgay(t, 2))]),
+        P('P.201', 'P.201', 'Phòng P.201', 3200000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
+          [ng('u-huy', 'Lê Quang Huy', '0933000333', 'pending', congNgay(t, 6))]),
+        P('P.202', 'P.202', 'Phòng P.202', 3200000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', [])
+      ] },
+      { id:'nt-khuong-dinh', name:'Nhà trọ Khương Đình', address:'12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội', landlordId:'l-mai', rooms:[
+        P('p04', 'P04', 'Studio hiện đại gần trung tâm', 3900000, '12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội',
+          [ng('u-an', 'Nguyễn Văn An', '0912000111', 'tenant', congNgay(t, -20))])
+      ] },
+      { id:'nt-vinh-hung', name:'Nhà trọ Vĩnh Hưng', address:'203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội', landlordId:'l-mai', rooms:[
+        P('p06', 'P06', 'Phòng rộng, phù hợp gia đình', 4600000, '203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội',
+          [ng('u-linh', 'Trần Mỹ Linh', '0987000222', 'tenant', congNgay(t, -9))]),
+        P('p09', 'P09', 'Căn hộ dịch vụ 2 phòng ngủ', 6500000, '15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội',
+          [ng('u-trang', 'Phạm Thu Trang', '0901234567', 'viewing', congNgay(t, 4))])
+      ] }
+    ];
+  }
+
+  function demoLoad(){
+    try {
+      var raw = localStorage.getItem(DEMO_KEY);
+      if (raw) {
+        var o = JSON.parse(raw);
+        // Dữ liệu lưu từ bản trước có thể chưa có mục nhà trọ: bù vào từ dữ liệu mẫu
+        if (o && o.users && o.subs) { if (!o.props) o.props = demoNhaTro(homNay()); return o; }
+      }
+    } catch (e) { /* trình duyệt chặn localStorage: dùng bộ nhớ tạm */ }
+    return demoSeed();
+  }
+  function demoSave(){ try { localStorage.setItem(DEMO_KEY, JSON.stringify(demo)); } catch (e) {} }
+
+  function demoLoi(msg){ var e = new Error(msg); e.demo = true; return e; }
+  function demoQuet(){   // kỳ chưa thu mà quá hạn -> quá hạn
+    var t = homNay();
+    demo.invoices.forEach(function(i){ if (i.status === 'pending' && i.dueDate < t) i.status = 'overdue'; });
+  }
+  function demoNguoiDung(id){
+    var u = demo.users.filter(function(x){ return x.id === id; })[0];
+    if (!u) throw demoLoi('Không tìm thấy tài khoản này.');
+    return u;
+  }
+  function demoGoiList(){
+    demoQuet();
+    return demo.subs.map(function(s){
+      var u = demoNguoiDung(s.landlordId);
+      var mine = demo.invoices.filter(function(i){ return i.subscriptionId === s.id; })
+        .sort(function(a, b){ return a.dueDate < b.dueDate ? -1 : 1; });
+      var chuaThu = mine.filter(function(i){ return i.status !== 'paid'; });
+      return {
+        id: s.id, landlordId: s.landlordId, landlord: u.name, phone: u.phone, email: u.email,
+        plan: s.plan, planName: PLAN_LABEL[s.plan], price: s.price, months: s.months, status: s.status,
+        startedAt: s.startedAt, trialEndsAt: s.trialEndsAt, cancelledAt: s.cancelledAt,
+        paid: mine.filter(function(i){ return i.status === 'paid'; }).reduce(function(n, i){ return n + i.amount; }, 0),
+        due: chuaThu.reduce(function(n, i){ return n + i.amount; }, 0),
+        overdue: mine.filter(function(i){ return i.status === 'overdue'; }).length,
+        nextDue: chuaThu.length ? chuaThu[0].dueDate : null,
+        invoices: mine
+      };
+    }).sort(function(a, b){ return b.id - a.id; });
+  }
+  function demoTaiKhoanList(params){
+    demoQuet();
+    var goi = demoGoiList();
+    var key = (params.tim || '').trim().toLowerCase();
+    return demo.users.filter(function(u){
+      if (params.vaiTro && u.role !== params.vaiTro) return false;
+      if (params.trangThai && u.status !== params.trangThai) return false;
+      if (!key) return true;
+      return [u.name, u.phone, u.email, u.id].some(function(v){ return String(v || '').toLowerCase().indexOf(key) !== -1; });
+    }).map(function(u){
+      var s = goi.filter(function(g){ return g.landlordId === u.id; })[0];
+      return {
+        id: u.id, role: u.role, name: u.name, phone: u.phone, email: u.email, status: u.status,
+        createdAt: u.createdAt, bookings: u.role === 'renter' ? u.bookings : null,
+        plan: u.role === 'landlord' && s ? { id: s.id, plan: s.plan, status: s.status } : null
+      };
+    });
+  }
+
+  function demoNhaTroList(tim){
+    var key = khongDau(tim).trim();
+    var goi = demoGoiList();
+    var dem = function(nt, kind){
+      return nt.reduce(function(n, x){
+        return n + x.rooms.reduce(function(k, r){
+          return k + r.people.filter(function(ng){ return ng.kind === kind; }).length;
+        }, 0);
+      }, 0);
+    };
+    var khopPhong = function(r){
+      if ([r.code, r.title, r.address].some(function(v){ return khongDau(v).indexOf(key) !== -1; })) return true;
+      return r.people.some(function(ng){ return khongDau(ng.name).indexOf(key) !== -1 || khongDau(ng.phone).indexOf(key) !== -1; });
+    };
+    var items = demo.users.filter(function(u){ return u.role === 'landlord'; }).map(function(u){
+      var s = goi.filter(function(g){ return g.landlordId === u.id; })[0];
+      var props = demo.props.filter(function(nt){ return nt.landlordId === u.id; }).map(function(nt){
+        return { id:nt.id, name:nt.name, address:nt.address, rooms:nt.rooms.map(function(r){
+          var people = r.people.map(function(ng){
+            var acc = ng.id ? demo.users.filter(function(x){ return x.id === ng.id; })[0] : null;
+            return {
+              id: acc ? acc.id : null, name: acc ? acc.name : ng.name, phone: acc ? acc.phone : ng.phone,
+              userStatus: acc ? acc.status : null, kind: ng.kind,
+              since: ng.kind === 'tenant' ? ng.at : null, at: ng.at
+            };
+          });
+          var sl = function(kind){ return people.filter(function(x){ return x.kind === kind; }).length; };
+          return { id:r.id, code:r.code, title:r.title, address:r.address, price:r.price, people:people,
+                   tenants:sl('tenant'), pending:sl('pending'), viewings:sl('viewing') };
+        }) };
+      });
+      return {
+        landlordId:u.id, landlord:u.name, phone:u.phone, email:u.email, status:u.status, createdAt:u.createdAt,
+        plan: s ? { id:s.id, plan:s.plan, planName:PLAN_LABEL[s.plan], status:s.status } : null,
+        properties: props,
+        rooms: props.reduce(function(n, nt){ return n + nt.rooms.length; }, 0),
+        tenants: dem(props, 'tenant'), pending: dem(props, 'pending'), viewings: dem(props, 'viewing')
+      };
+    });
+
+    // Tìm chủ trọ thì giữ nguyên nhà trọ của người đó; tìm nhà trọ / phòng / người thuê thì
+    // chỉ giữ lại phần khớp từ khoá (giống listProperties ở server/quan-tri.mjs).
+    if (key) {
+      items = items.filter(function(it){
+        if ([it.landlord, it.phone, it.email, it.landlordId].some(function(v){ return khongDau(v).indexOf(key) !== -1; })) return true;
+        it.properties = it.properties.map(function(nt){
+          if (khongDau(nt.name).indexOf(key) !== -1 || khongDau(nt.address).indexOf(key) !== -1) return nt;
+          return { id:nt.id, name:nt.name, address:nt.address, rooms:nt.rooms.filter(khopPhong) };
+        }).filter(function(nt){ return nt.rooms.length > 0; });
+        if (!it.properties.length) return false;
+        it.rooms = it.properties.reduce(function(n, nt){ return n + nt.rooms.length; }, 0);
+        it.tenants = dem(it.properties, 'tenant');
+        it.pending = dem(it.properties, 'pending');
+        it.viewings = dem(it.properties, 'viewing');
+        return true;
+      });
+    }
+    return { items: items, chuaGan: [] };
+  }
+
+  function demoApi(method, path, body){
+    var duong = path.split('?')[0];
+    var params = {};
+    (path.split('?')[1] || '').split('&').filter(Boolean).forEach(function(kv){
+      var p = kv.split('='); params[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || '');
+    });
+
+    if (duong === '/api/toi') return { user: demoMe() };
+    if (duong === '/api/dang-xuat') return { ok: true };
+
+    if (duong === '/api/quan-tri/tai-khoan' && method === 'GET') return { items: demoTaiKhoanList(params) };
+    if (duong.indexOf('/api/quan-tri/tai-khoan/') === 0 && method === 'PATCH') {
+      var u = demoNguoiDung(decodeURIComponent(duong.slice('/api/quan-tri/tai-khoan/'.length)));
+      if (u.role === 'admin') throw demoLoi('Không khoá được tài khoản quản trị.');
+      u.status = body.action === 'lock' ? 'locked' : 'active';
+      demoSave();
+      return { item: demoTaiKhoanList({}).filter(function(x){ return x.id === u.id; })[0] };
+    }
+
+    if (duong === '/api/quan-tri/nha-tro' && method === 'GET') return demoNhaTroList(params.tim);
+
+    if (duong === '/api/quan-tri/goi' && method === 'GET') return { items: demoGoiList() };
+    if (duong === '/api/quan-tri/goi' && method === 'POST') {
+      var chuTro = demoNguoiDung(body.landlordId);
+      if (chuTro.role !== 'landlord') throw demoLoi('Chỉ chủ trọ mới đăng ký được gói dịch vụ.');
+      if (!PLAN_PRICE[body.plan]) throw demoLoi('Gói không hợp lệ (chỉ có Plus hoặc Pro).');
+      if (demo.subs.some(function(s){ return s.landlordId === chuTro.id && s.status !== 'cancelled'; })) {
+        throw demoLoi('Chủ trọ này đang có gói còn hiệu lực. Hãy huỷ gói cũ trước.');
+      }
+      var soKy = Number(body.months || 12);
+      var batDau = homNay();
+      var coThu = body.trial !== false;
+      var sub = {
+        id: demo.nextSub++, landlordId: chuTro.id, plan: body.plan, price: PLAN_PRICE[body.plan], months: soKy,
+        status: coThu ? 'trial' : 'active', startedAt: batDau,
+        trialEndsAt: coThu ? congNgay(batDau, TRIAL_DAYS) : null, cancelledAt: null
+      };
+      demo.subs.push(sub);
+      var dau = coThu ? sub.trialEndsAt : batDau;
+      for (var k = 0; k < soKy; k++) {
+        var han2 = congThang(dau, k);
+        demo.invoices.push({ id: demo.nextInv++, subscriptionId: sub.id, period: han2.slice(0, 7),
+          amount: sub.price, dueDate: han2, status: 'pending', paidAt: null, method: null });
+      }
+      demoSave();
+      return { item: demoGoiList().filter(function(s){ return s.id === sub.id; })[0] };
+    }
+    if (duong.indexOf('/api/quan-tri/goi/') === 0 && method === 'PATCH') {
+      var sid = Number(duong.slice('/api/quan-tri/goi/'.length));
+      var s2 = demo.subs.filter(function(x){ return x.id === sid; })[0];
+      if (!s2) throw demoLoi('Không tìm thấy gói này.');
+      if (s2.status === 'cancelled') throw demoLoi('Gói này đã huỷ rồi.');
+      s2.status = 'cancelled';
+      s2.cancelledAt = homNay();
+      demo.invoices = demo.invoices.filter(function(i){
+        return !(i.subscriptionId === sid && i.status === 'pending' && i.dueDate > homNay());
+      });
+      demoSave();
+      return { item: demoGoiList().filter(function(x){ return x.id === sid; })[0] };
+    }
+    if (duong.indexOf('/api/quan-tri/hoa-don/') === 0 && method === 'PATCH') {
+      var iid = Number(duong.slice('/api/quan-tri/hoa-don/'.length));
+      var inv = demo.invoices.filter(function(x){ return x.id === iid; })[0];
+      if (!inv) throw demoLoi('Không tìm thấy kỳ thanh toán này.');
+      if (body.paid === false) { inv.status = 'pending'; inv.paidAt = null; inv.method = null; }
+      else {
+        if (inv.status === 'paid') throw demoLoi('Kỳ này đã ghi nhận thanh toán rồi.');
+        inv.status = 'paid'; inv.paidAt = homNay(); inv.method = body.method || 'chuyen-khoan';
+      }
+      demoSave();
+      return { item: inv };
+    }
+
+    if (duong === '/api/quan-tri/tong-quan' && method === 'GET') {
+      var us = demoTaiKhoanList({});
+      var gs = demoGoiList();
+      var nt = demoNhaTroList('').items;
+      var dangChay = gs.filter(function(g){ return g.status !== 'cancelled'; });
+      return { summary: {
+        properties: {
+          total: nt.reduce(function(n, x){ return n + x.properties.length; }, 0),
+          rooms: nt.reduce(function(n, x){ return n + x.rooms; }, 0),
+          tenants: nt.reduce(function(n, x){ return n + x.tenants; }, 0)
+        },
+        users: {
+          total: us.length,
+          renters: us.filter(function(u){ return u.role === 'renter'; }).length,
+          landlords: us.filter(function(u){ return u.role === 'landlord'; }).length,
+          locked: us.filter(function(u){ return u.status === 'locked'; }).length
+        },
+        plans: {
+          active: dangChay.length,
+          trial: dangChay.filter(function(g){ return g.status === 'trial'; }).length,
+          overdue: dangChay.filter(function(g){ return g.overdue > 0; }).length,
+          revenue: gs.reduce(function(n, g){ return n + g.paid; }, 0),
+          due: dangChay.reduce(function(n, g){ return n + g.due; }, 0)
+        }
+      } };
+    }
+    throw demoLoi('Chế độ xem thử chưa hỗ trợ thao tác này.');
+  }
+  function demoMe(){ return { id: 'ad-01', role: 'admin', name: 'Quản trị An Cư', phone: '0900000001', email: 'admin@ancu.test', status: 'active' }; }
 
   // ---------- Tài khoản ----------
   var users = [];
@@ -316,6 +671,66 @@
     return api('GET', '/api/quan-tri/tai-khoan' + (qs.length ? '?' + qs.join('&') : '')).then(function(j){
       users = j.items;
       renderUsers();
+    });
+  }
+
+  // ---------- Nhà trọ & người thuê ----------
+  // Admin xem chủ trọ nào đang quản lý nhà trọ / phòng nào, ai đang thuê ở đó, và khoá được
+  // ngay cả chủ trọ lẫn người thuê khi có báo cáo.
+  var KIND = { tenant:['Đang thuê','ok'], pending:['Chờ duyệt thuê','wait'], viewing:['Đang hẹn xem','info'] };
+  var props = [];
+
+  function nutKhoa(id, status, nhan){
+    if (!id) return '<span class="tag mute">Chưa có tài khoản</span>';
+    if (status !== 'active' && status !== 'locked') return '';
+    var locked = status === 'locked';
+    return '<button type="button" class="btn btn-ghost btn-sm" data-lock="' + esc(id) + '" data-to="' + (locked ? 'unlock' : 'lock') + '">' +
+      (locked ? 'Mở khoá' : (nhan || 'Khoá')) + '</button>';
+  }
+
+  function renderProps(){
+    el('propList').innerHTML = props.map(function(it){
+      var locked = it.status === 'locked';
+      var goi = it.plan
+        ? '<span class="tag ' + PLAN_STATUS[it.plan.status][1] + '">Gói ' + esc(it.plan.planName) + ' · ' + PLAN_STATUS[it.plan.status][0] + '</span>'
+        : '<span class="tag mute">Chưa mua gói</span>';
+      var nhaTro = it.properties.map(function(nt){
+        var rooms = nt.rooms.map(function(r){
+          var people = r.people.map(function(ng){
+            var k = KIND[ng.kind] || KIND.viewing;
+            var phu = ng.kind === 'tenant' ? (ng.since ? 'Thuê từ ' + ngay(ng.since) : 'Đang thuê')
+              : (ng.kind === 'pending' ? 'Xin thuê từ ' + ngay(ng.at) : 'Hẹn xem ' + ngay(ng.at) + (ng.time ? ' ' + ng.time : ''));
+            var tt = ng.userStatus === 'locked' ? '<span class="tag bad">Đã khoá</span>' : '';
+            return '<li><span class="who-n"><b>' + esc(ng.name) + '</b><small>' + esc(ng.phone || 'Chưa có số') + ' · ' + phu + '</small></span>' +
+              '<span class="tag ' + k[1] + '">' + k[0] + '</span>' + tt +
+              nutKhoa(ng.id, ng.userStatus, 'Khoá') + '</li>';
+          }).join('');
+          return '<div class="room"><div class="room-h"><b>' + esc(r.code) + '</b><span>' + (r.price ? vnd(r.price) + '/tháng' : 'Chưa đăng giá') + '</span></div>' +
+            (r.title && r.title !== r.code ? '<span class="room-addr">' + esc(r.title) + '</span>' : '') +
+            (people ? '<ul class="people">' + people + '</ul>' : '<span class="none">Chưa có người thuê hay lịch xem nào.</span>') +
+            '</div>';
+        }).join('');
+        return '<div class="prop"><h4>' + esc(nt.name) + '<small>' + esc(nt.address) + '</small></h4>' +
+          (rooms ? '<div class="rooms">' + rooms + '</div>' : '<span class="none">Nhà trọ này chưa có phòng nào.</span>') + '</div>';
+      }).join('');
+      return '<article class="card owner"><div class="owner-h">' +
+          '<div><h3>' + esc(it.landlord) + '</h3><small>' + esc(it.phone) + (it.email ? ' · ' + esc(it.email) : '') + '</small></div>' +
+          '<div class="right"><span class="tag ' + (locked ? 'bad' : 'ok') + '">' + (locked ? 'Đã khoá' : 'Đang hoạt động') + '</span>' +
+            goi + nutKhoa(it.landlordId, it.status, 'Khoá chủ trọ') + '</div>' +
+        '</div>' +
+        '<p class="owner-sum">' + it.properties.length + ' nhà trọ · ' + it.rooms + ' phòng · ' +
+          it.tenants + ' người đang thuê · ' + it.pending + ' chờ duyệt thuê · ' + it.viewings + ' lịch hẹn xem</p>' +
+        (nhaTro ? '<div class="props">' + nhaTro + '</div>' : '<p class="owner-sum">Chủ trọ này chưa có nhà trọ nào trên hệ thống.</p>') +
+      '</article>';
+    }).join('');
+    el('propEmpty').hidden = props.length > 0;
+  }
+
+  function loadProps(){
+    var tim = el('fProp').value.trim();
+    return api('GET', '/api/quan-tri/nha-tro' + (tim ? '?tim=' + encodeURIComponent(tim) : '')).then(function(j){
+      props = j.items;
+      renderProps();
     });
   }
 
@@ -364,6 +779,7 @@
       el('stats').innerHTML = [
         ['Tài khoản', s.users.total, s.users.renters + ' người thuê · ' + s.users.landlords + ' chủ trọ'],
         ['Tài khoản bị khoá', s.users.locked, 'Không đăng nhập được'],
+        ['Nhà trọ', (s.properties ? s.properties.total : 0), (s.properties ? s.properties.rooms : 0) + ' phòng · ' + (s.properties ? s.properties.tenants : 0) + ' người đang thuê'],
         ['Gói đang chạy', s.plans.active, s.plans.trial + ' đang dùng thử · ' + s.plans.overdue + ' có kỳ quá hạn'],
         ['Đã thu', vnd(s.plans.revenue), 'Còn phải thu ' + vnd(s.plans.due)]
       ].map(function(x){
@@ -382,7 +798,7 @@
   }
 
   function refresh(){
-    return Promise.all([loadSummary(), loadUsers(), loadPlans(), fillLandlords()]);
+    return Promise.all([loadSummary(), loadUsers(), loadProps(), loadPlans(), fillLandlords()]);
   }
 
   // ---------- Sự kiện ----------
@@ -404,18 +820,29 @@
     clearTimeout(timer);
     timer = setTimeout(function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); }, 250);
   });
+  var timerProp = null;
+  el('fProp').addEventListener('input', function(){
+    clearTimeout(timerProp);
+    timerProp = setTimeout(function(){ loadProps().catch(function(e){ msg(e.message, 'err'); }); }, 250);
+  });
+
   el('fRole').addEventListener('change', function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); });
   el('fStatus').addEventListener('change', function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); });
 
-  el('userRows').addEventListener('click', function(e){
-    var btn = e.target.closest('[data-lock]');
-    if (!btn) return;
+  function doiTrangThai(btn){
     var to = btn.dataset.to;
     if (to === 'lock' && !confirm('Khoá tài khoản này? Người dùng sẽ bị đăng xuất khỏi mọi thiết bị và không đăng nhập lại được.')) return;
     btn.disabled = true;
     api('PATCH', '/api/quan-tri/tai-khoan/' + encodeURIComponent(btn.dataset.lock), { action: to })
       .then(function(){ msg(to === 'lock' ? 'Đã khoá tài khoản.' : 'Đã mở khoá tài khoản.', 'ok'); return refresh(); })
       .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
+  }
+
+  ['userRows', 'propList'].forEach(function(id){
+    el(id).addEventListener('click', function(e){
+      var btn = e.target.closest('[data-lock]');
+      if (btn) doiTrangThai(btn);
+    });
   });
 
   el('planForm').addEventListener('submit', function(e){
@@ -462,19 +889,40 @@
     el('gateText').textContent = text;
   }
 
+  function moKhuQuanTri(me, laDemo){
+    el('gate').hidden = true;
+    el('app').hidden = false;
+    el('who').innerHTML = laDemo ? 'Chế độ xem thử' : 'Xin chào, <b>' + esc(me.name) + '</b>';
+    el('logout').hidden = laDemo;
+    if (laDemo) {
+      el('demoNote').hidden = false;
+      el('demoNote').textContent = 'Chế độ xem thử: trang đang mở không qua máy chủ nên dùng dữ liệu mẫu lưu trong trình duyệt này. '
+        + 'Thao tác khoá tài khoản, ghi nhận gói và thanh toán đều chạy thật nhưng chỉ lưu ở máy bạn, không chia sẻ cho người khác. '
+        + 'Chạy npm start rồi đăng nhập bằng tài khoản quản trị để làm việc trên dữ liệu thật.';
+    }
+    return refresh();
+  }
+
+  function batCheDoXemThu(){
+    demo = demoLoad();
+    return moKhuQuanTri(demoMe(), true);
+  }
+
+  // Không chạy qua http(s) (mở file:// từ ổ đĩa) thì chắc chắn không có máy chủ
   if (!/^https?:$/.test(location.protocol)) {
-    gate('Cần mở qua máy chủ', 'Trang quản trị cần dữ liệu từ máy chủ. Hãy chạy npm start rồi mở http://localhost:5500/quan-tri/tong-quan.html');
+    batCheDoXemThu();
   } else {
-    api('GET', '/api/toi').then(function(j){
-      var me = j.user;
-      if (!me) return gate('Khu vực dành cho quản trị viên', 'Bạn chưa đăng nhập. Hãy đăng nhập bằng tài khoản quản trị để tiếp tục.');
-      if (me.role !== 'admin') return gate('Không có quyền truy cập', 'Tài khoản ' + me.name + ' không phải quản trị viên nên không mở được khu vực này.');
-      el('gate').hidden = true;
-      el('app').hidden = false;
-      el('who').innerHTML = 'Xin chào, <b>' + esc(me.name) + '</b>';
-      el('logout').hidden = false;
-      return refresh();
-    }).catch(function(err){ gate('Không kết nối được máy chủ', err.message); });
+    // Có http(s) nhưng vẫn có thể là bản tĩnh trên Vercel: thử gọi API, không có thì chuyển sang xem thử
+    fetch('/api/toi', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        if (!j || typeof j.user === 'undefined') return batCheDoXemThu();
+        var me = j.user;
+        if (!me) return gate('Khu vực dành cho quản trị viên', 'Bạn chưa đăng nhập. Hãy đăng nhập bằng tài khoản quản trị để tiếp tục.');
+        if (me.role !== 'admin') return gate('Không có quyền truy cập', 'Tài khoản ' + me.name + ' không phải quản trị viên nên không mở được khu vực này.');
+        return moKhuQuanTri(me, false);
+      });
   }
 })();
 </script>

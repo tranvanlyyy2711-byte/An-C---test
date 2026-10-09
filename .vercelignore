@@ -1,0 +1,12 @@
+# Không cần đẩy lên bản tĩnh trên Vercel
+node_modules
+server
+scripts
+docs
+An-C---test
+Trang admin
+data
+*.sqlite*
+.env*
+godly.design_website_pryzm_.png
+wireframe-nguoitimtro.jpg

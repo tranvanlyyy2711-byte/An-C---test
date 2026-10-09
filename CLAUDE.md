@@ -169,6 +169,8 @@ npm run test:lich      # kiểm thử "một khung giờ chỉ một người" �
 npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
 npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịch vụ, lịch thanh toán
+npm run test:tinh      # bản tĩnh (như trên Vercel): mọi trang mở được, không lỗi JS
+npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và bản tĩnh
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```
 
@@ -176,7 +178,7 @@ node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API —
 
 Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`.
 
-Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999`. Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
+Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999` (An Bình), `0977111222` (Thu Mai). Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
 
 **Khu quản trị** (`quan-tri/tong-quan.html`, API `/api/quan-tri/*` trong `server/quan-tri.mjs`): chỉ tài khoản
 `role = 'admin'` mới vào được. Tài khoản quản trị mẫu: `0900000001` / `matkhau123`. Form đăng ký công khai
@@ -184,10 +186,25 @@ chỉ nhận `renter` và `landlord`, không tạo được admin.
 
 - **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. Khoá là xoá mọi phiên
   của người đó và chặn đăng nhập (`users.status = 'locked'`). Không khoá được tài khoản admin hay chính mình.
+- **Nhà trọ & người thuê:** chủ trọ nào đang quản lý nhà trọ / phòng nào và ai đang thuê ở đó, khoá được cả
+  chủ trọ lẫn người thuê ngay tại chỗ khi có báo cáo. Prototype chưa có bảng `properties`, nên quyền sở hữu
+  khai trong `NHA_TRO` ở `server/phong.mjs` (đúng mô hình v1: `properties.landlord_id` → `rooms.property_id`).
+  Người đang thuê suy ra từ `rental_requests` có `status = 'approved'`; ngoài ra liệt kê người đang chờ duyệt
+  thuê và người đang hẹn xem. Khách do chủ trọ tự thêm (không có tài khoản) vẫn hiện nhưng không khoá được.
 - **Gói dịch vụ:** `plan_subscriptions` (mỗi chủ trọ tối đa MỘT gói còn hiệu lực, bảo đảm bằng chỉ mục duy nhất
   có điều kiện) và `plan_invoices` (lịch thanh toán từng kỳ `YYYY-MM`, có hạn đóng). Kỳ `pending` quá hạn tự
   chuyển `overdue` ở đầu mỗi thao tác đọc/ghi, cùng cách làm với lịch xem phòng. Prototype chỉ **ghi nhận**
   thanh toán, không xử lý thanh toán trực tuyến (vẫn ngoài phạm vi v1).
+
+**Chế độ xem thử (không có máy chủ).** Mở trang bằng `file://` hoặc deploy tĩnh (Vercel) thì không có
+`/api/*`. Khi đó trang quản trị tự chuyển sang dữ liệu mẫu lưu trong `localStorage` (khoá
+`an-cu-quan-tri-demo`) và hiện dải báo "Chế độ xem thử"; mọi thao tác vẫn chạy nhưng chỉ lưu trên máy
+người xem, không chia sẻ. Các trang người thuê và chủ trọ đã có sẵn cách dự phòng tương tự.
+
+**Deploy tĩnh lên Vercel:** `vercel.json` đặt `outputDirectory: "."`, không build; `.vercelignore` loại
+`server/`, `scripts/`, `node_modules/`, CSDL và `.env*`. Bản trên Vercel là **bản xem thử**: không có máy
+chủ nên không có đăng nhập thật, dữ liệu không dùng chung giữa người xem. Muốn chạy thật thì cần đưa
+dữ liệu lên Supabase theo mục Tech stack, vì Vercel không giữ được file SQLite.
 
 ---
 

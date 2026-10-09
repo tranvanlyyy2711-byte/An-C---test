@@ -129,7 +129,8 @@ try {
   expect('không có mật khẩu gốc trong CSDL', row.password_hash.includes(PW), false);
   const tokens = db.prepare('SELECT token_hash FROM sessions').all().map((t) => t.token_hash);
   expect('CSDL không lưu token phiên gốc', tokens.includes(sessionToken), false);
-  expect('có sẵn 6 tài khoản demo (4 người thuê, 1 chủ trọ, 1 quản trị)', db.prepare("SELECT COUNT(*) AS n FROM users WHERE email LIKE '%@ancu.test'").get().n, 6);
+  expect('có sẵn 7 tài khoản demo (4 người thuê, 2 chủ trọ, 1 quản trị)', db.prepare("SELECT COUNT(*) AS n FROM users WHERE email LIKE '%@ancu.test'").get().n, 7);
+  expect('có đúng hai tài khoản chủ trọ demo', db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'landlord' AND email LIKE '%@ancu.test'").get().n, 2);
   expect('có đúng một tài khoản quản trị', db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'admin'").get().n, 1);
   db.close();
 

@@ -134,6 +134,7 @@ async function api(req, res, url) {
     if (body.action !== 'lock' && body.action !== 'unlock') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
     return send(res, 200, { item: admin.setUserStatus(id, body.action === 'lock' ? 'locked' : 'active', me.id) });
   }
+  if (p === '/api/quan-tri/nha-tro' && m === 'GET') return send(res, 200, admin.listProperties({ q: qs.get('tim') }));
   if (p === '/api/quan-tri/goi' && m === 'GET') return send(res, 200, { items: admin.listPlans() });
   if (p === '/api/quan-tri/goi' && m === 'POST') return send(res, 201, { item: admin.createPlan(await readJson(req)) });
   if ((id = sub('/api/quan-tri/goi/')) && m === 'PATCH') {

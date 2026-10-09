@@ -6,6 +6,8 @@
 //   lịch xem phòng tự nhả khung giờ quá hạn (xem docs/dat-lich-mot-khung-gio.md).
 // Prototype chỉ GHI NHẬN thanh toán, không xử lý thanh toán trực tuyến (ngoài phạm vi v1).
 
+import { PHONG, NHA_TRO } from './phong.mjs';
+
 export const ADMIN_SCHEMA = `
 CREATE TABLE IF NOT EXISTS plan_subscriptions (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,6 +88,13 @@ export function createAdmin(db, ApiError, now) {
     unpay: db.prepare("UPDATE plan_invoices SET status = 'pending', paid_at = NULL, method = NULL WHERE id = ?"),
     sweep: db.prepare("UPDATE plan_invoices SET status = 'overdue' WHERE status = 'pending' AND due_date < ?"),
     cancelInvoices: db.prepare("DELETE FROM plan_invoices WHERE subscription_id = ? AND status = 'pending' AND due_date > ?"),
+    // Nhà trọ: ai đang thuê (yêu cầu thuê đã duyệt) và ai đang hẹn xem phòng nào
+    tenants: db.prepare(`SELECT room_id, renter_id, tenant_name, tenant_phone, want_date, status, decided_at, created_at
+                         FROM rental_requests WHERE status IN ('approved','pending','reviewing')
+                         ORDER BY CASE status WHEN 'approved' THEN 0 ELSE 1 END, want_date, id`),
+    guests: db.prepare(`SELECT room_id, renter_id, tenant_name, tenant_phone, date, time, status
+                        FROM viewing_appointments WHERE status IN ('pending','confirmed')
+                        ORDER BY date, time, id`),
   };
 
   const today = () => ymd(now());
@@ -219,9 +228,108 @@ export function createAdmin(db, ApiError, now) {
     });
   }
 
+  // ---------- Nhà trọ: chủ trọ nào quản lý phòng nào, ai đang thuê ở đó ----------
+  // Quyền sở hữu phòng nằm ở NHA_TRO (server/phong.mjs) vì prototype chưa có bảng properties.
+  // Người đang thuê = yêu cầu thuê đã được DUYỆT; ngoài ra liệt kê người đang chờ duyệt và
+  // người đang hẹn xem, để quản trị thấy đủ ai liên quan tới phòng khi có báo cáo.
+  const fold = (v) => String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+
+  function listProperties({ q: keyword } = {}) {
+    sweep();
+    const key = fold(keyword).trim();
+    const byId = new Map(q.users.all().map((u) => [u.id, u]));
+    const plans = new Map();
+    for (const s of q.subs.all()) if (!plans.has(s.landlord_id)) plans.set(s.landlord_id, s);
+
+    // Người theo phòng: đang thuê / chờ duyệt thuê / đang hẹn xem
+    const nguoiTheoPhong = new Map();
+    const push = (roomId, item) => {
+      if (!nguoiTheoPhong.has(roomId)) nguoiTheoPhong.set(roomId, []);
+      nguoiTheoPhong.get(roomId).push(item);
+    };
+    const nguoi = (id, name, phone) => {
+      const u = id ? byId.get(id) : null;
+      return {
+        id: u ? u.id : null,
+        name: (u && u.full_name) || name || (u && u.phone) || '',
+        phone: (u && u.phone) || phone || '',
+        userStatus: u ? u.status : null,          // null = khách không có tài khoản, không khoá được
+      };
+    };
+    for (const r of q.tenants.all()) {
+      push(r.room_id, {
+        ...nguoi(r.renter_id, r.tenant_name, r.tenant_phone),
+        kind: r.status === 'approved' ? 'tenant' : 'pending',
+        since: r.status === 'approved' ? r.want_date : null,
+        at: r.want_date,
+      });
+    }
+    for (const g of q.guests.all()) {
+      push(g.room_id, {
+        ...nguoi(g.renter_id, g.tenant_name, g.tenant_phone),
+        kind: 'viewing', since: null, at: g.date, time: g.time,
+      });
+    }
+
+    const KIND_ORDER = { tenant: 0, pending: 1, viewing: 2 };
+    const phongItem = (roomId) => {
+      const p = PHONG[roomId] || { code: roomId, title: roomId, address: '', price: 0 };
+      const people = (nguoiTheoPhong.get(roomId) || []).slice()
+        .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || String(a.at).localeCompare(String(b.at)));
+      return {
+        id: roomId, code: p.code, title: p.title, address: p.address, price: p.price, people,
+        tenants: people.filter((x) => x.kind === 'tenant').length,
+        pending: people.filter((x) => x.kind === 'pending').length,
+        viewings: people.filter((x) => x.kind === 'viewing').length,
+      };
+    };
+
+    const chuTroItem = (u, properties) => {
+      const sub = plans.get(u.id);
+      const dem = (lay) => properties.reduce((n, nt) => n + nt.rooms.reduce((k, r) => k + lay(r), 0), 0);
+      return {
+        landlordId: u.id, landlord: u.full_name || u.phone, phone: u.phone, email: u.email || '',
+        status: u.status, createdAt: u.created_at,
+        plan: sub ? { id: sub.id, plan: sub.plan, planName: PLANS[sub.plan].name, status: sub.status } : null,
+        properties,
+        rooms: properties.reduce((n, nt) => n + nt.rooms.length, 0),
+        tenants: dem((r) => r.tenants),
+        pending: dem((r) => r.pending),
+        viewings: dem((r) => r.viewings),
+      };
+    };
+
+    // Tìm theo tên/sđt chủ trọ (giữ nguyên mọi nhà trọ của người đó), hoặc theo tên nhà trọ,
+    // mã phòng, tên/sđt người thuê — khi đó chỉ giữ lại đúng nhà trọ và phòng khớp từ khoá.
+    const khopPhong = (r) => [r.code, r.title, r.address].some((v) => fold(v).includes(key))
+      || r.people.some((ng) => fold(ng.name).includes(key) || fold(ng.phone).includes(key));
+
+    const items = [];
+    for (const u of q.users.all()) {
+      if (u.role !== 'landlord') continue;
+      let properties = NHA_TRO.filter((nt) => nt.landlordId === u.id)
+        .map((nt) => ({ id: nt.id, name: nt.name, address: nt.address, rooms: nt.rooms.map(phongItem) }));
+      if (key && ![u.full_name, u.phone, u.email, u.id].some((v) => fold(v).includes(key))) {
+        properties = properties
+          .map((nt) => (fold(nt.name).includes(key) || fold(nt.address).includes(key)
+            ? nt : { ...nt, rooms: nt.rooms.filter(khopPhong) }))
+          .filter((nt) => nt.rooms.length > 0);
+        if (!properties.length) continue;
+      }
+      items.push(chuTroItem(u, properties));
+    }
+
+    // Phòng chưa gắn nhà trọ nào (tin đăng chưa thuộc chủ trọ nào trong hệ thống)
+    const daGan = new Set(NHA_TRO.flatMap((nt) => nt.rooms));
+    const chuaGan = Object.keys(PHONG).filter((id) => !daGan.has(id)).map(phongItem);
+
+    return { items, chuaGan };
+  }
+
   function summary() {
     const users = listUsers();
     const plans = listPlans();
+    const nhaTro = listProperties();
     const active = plans.filter((p) => p.status !== 'cancelled');
     return {
       users: {
@@ -229,6 +337,11 @@ export function createAdmin(db, ApiError, now) {
         renters: users.filter((u) => u.role === 'renter').length,
         landlords: users.filter((u) => u.role === 'landlord').length,
         locked: users.filter((u) => u.status === 'locked').length,
+      },
+      properties: {
+        total: nhaTro.items.reduce((n, it) => n + it.properties.length, 0),
+        rooms: nhaTro.items.reduce((n, it) => n + it.rooms, 0),
+        tenants: nhaTro.items.reduce((n, it) => n + it.tenants, 0),
       },
       plans: {
         active: active.length,
@@ -240,5 +353,5 @@ export function createAdmin(db, ApiError, now) {
     };
   }
 
-  return { listUsers, setUserStatus, listPlans, createPlan, cancelPlan, payInvoice, summary, sweep };
+  return { listUsers, setUserStatus, listPlans, createPlan, cancelPlan, payInvoice, listProperties, summary, sweep };
 }

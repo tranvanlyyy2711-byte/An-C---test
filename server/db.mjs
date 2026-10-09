@@ -126,7 +126,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
   };
 
-  if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q);
+  if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q, db);
 
   const nowIso = () => now().toISOString();
   const holdIso = () => new Date(now().getTime() + HOLD_HOURS * 3600000).toISOString();
@@ -432,7 +432,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
 }
 
 // ================= Dữ liệu mẫu cho cơ sở dữ liệu mới =================
-function seed(q) {
+function seed(q, db) {
   const iso = (local) => new Date(local).toISOString();
   const hold = (local) => new Date(new Date(local).getTime() + HOLD_HOURS * 3600000).toISOString();
   const add = (roomId, renterId, name, phone, date, time, status, createdLocal, note = '', urgent = 0, reason = null, source = 'seed') =>
@@ -472,4 +472,19 @@ function seed(q) {
   for (const [date, time, room, name, phone, status, urgent] of LL) {
     add(room, null, name, phone, date, time, status, '2026-09-01T08:00:00', '', urgent, status === 'cancelled' ? 'landlord' : null, 'chu-tro');
   }
+
+  // Hai yêu cầu thuê ĐÃ ĐƯỢC DUYỆT: người thuê đang ở trong phòng. Khu quản trị đọc chỗ này
+  // để biết ai đang thuê phòng nào (xem listProperties trong server/quan-tri.mjs).
+  // seen_at đặt luôn: người thuê đã xem kết quả duyệt từ trước, nên trang của họ không bật
+  // hộp thông báo "yêu cầu được duyệt" khi mở lên.
+  const insReq = db.prepare(`INSERT INTO rental_requests
+    (appointment_id, room_id, renter_id, tenant_name, tenant_phone, want_date, note, status, created_at, decided_at, seen_at)
+    VALUES (?, ?, ?, ?, ?, ?, '', 'approved', ?, ?, ?)`);
+  const dangThue = (roomId, u, xemNgay, donVao) => {
+    const r = add(roomId, u.id, u.name, u.phone, xemNgay, '10:30', 'completed', `${xemNgay}T08:00:00`);
+    insReq.run(Number(r.lastInsertRowid), roomId, u.id, u.name, u.phone, donVao,
+      iso(`${xemNgay}T12:00:00`), iso(`${xemNgay}T13:00:00`), iso(`${xemNgay}T14:00:00`));
+  };
+  dangThue('p04', A, '2026-09-05', '2026-09-15');
+  dangThue('p06', L, '2026-08-28', '2026-09-01');
 }

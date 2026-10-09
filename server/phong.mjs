@@ -30,6 +30,38 @@ for (const code of PHONG_CHU_TRO) {
   PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price: 0, phone: '', image: '' };
 }
 
+// ================= Nhà trọ và chủ sở hữu =================
+// Prototype chưa có bảng properties nên quyền sở hữu gắn tạm ở đây, theo đúng mô hình v1
+// (properties.landlord_id -> rooms.property_id): mỗi nhà trọ thuộc MỘT tài khoản chủ trọ
+// trong bảng users (xem DEMO_USERS ở server/auth.mjs). Khi lên Supabase, bảng properties
+// thay hẳn danh sách này. Địa chỉ nhà trọ lấy theo phòng đầu tiên của nó.
+const NHA_TRO_SEED = [
+  ['nt-an-binh',     'Nhà trọ An Bình',           'l-binh', PHONG_CHU_TRO],
+  ['nt-nghia-do',    'Nhà trọ Nguyễn Khánh Toàn', 'l-binh', ['p01']],
+  ['nt-ngoc-ha',     'Nhà trọ Ngọc Hà',           'l-binh', ['p05']],
+  ['nt-my-dinh',     'Nhà trọ Lê Đức Thọ',        'l-binh', ['p07']],
+  ['nt-kim-lien',    'Căn hộ mini Đào Duy Anh',   'l-mai',  ['p02']],
+  ['nt-bach-mai',    'Nhà trọ Bạch Mai',          'l-mai',  ['p03']],
+  ['nt-khuong-dinh', 'Nhà trọ Khương Đình',       'l-mai',  ['p04']],
+  ['nt-vinh-hung',   'Nhà trọ Vĩnh Hưng',         'l-mai',  ['p06']],
+  ['nt-au-co',       'Nhà trọ Âu Cơ',             'l-mai',  ['p08']],
+  ['nt-viet-hung',   'Căn hộ dịch vụ Việt Hưng',  'l-mai',  ['p09']],
+];
+
+export const NHA_TRO = NHA_TRO_SEED.map(([id, name, landlordId, rooms]) => ({
+  id,
+  name,
+  landlordId,
+  rooms: rooms.filter((r) => PHONG[r]),
+  address: (PHONG[rooms[0]] || {}).address || '',
+}));
+
+// roomId -> { nhaTroId, landlordId }: tra nhanh một phòng thuộc nhà trọ nào, của ai.
+export const CHU_CUA_PHONG = {};
+for (const nt of NHA_TRO) {
+  for (const roomId of nt.rooms) CHU_CUA_PHONG[roomId] = { nhaTroId: nt.id, landlordId: nt.landlordId };
+}
+
 // Người thuê mô phỏng. Chưa có đăng nhập thật nên trình duyệt tự khai mình là ai qua
 // tham số ?nguoi=. Khi có Supabase Auth, id này lấy từ auth.uid() ở phía máy chủ.
 export const NGUOI_THUE = {

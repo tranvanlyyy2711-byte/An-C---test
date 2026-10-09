@@ -127,6 +127,7 @@ export const DEMO_USERS = [
   { id: 'u-linh',  role: 'renter',   full_name: 'Trần Mỹ Linh',   phone: '0987000222', email: 'linh@ancu.test' },
   { id: 'u-huy',   role: 'renter',   full_name: 'Lê Quang Huy',   phone: '0933000333', email: 'huy@ancu.test' },
   { id: 'l-binh',  role: 'landlord', full_name: 'Chủ trọ An Bình', phone: '0988000999', email: 'chutro@ancu.test' },
+  { id: 'l-mai',   role: 'landlord', full_name: 'Chủ trọ Thu Mai', phone: '0977111222', email: 'mai@ancu.test' },
   { id: 'ad-01',   role: 'admin',    full_name: 'Quản trị An Cư',  phone: '0900000001', email: 'admin@ancu.test' },
 ];
 
