@@ -63,6 +63,14 @@ async function newPage(viewport = { width: 1440, height: 900 }) {
   return { ctx, p };
 }
 const txt = async (p, sel) => ((await p.locator(sel).first().textContent()) || '').replace(/\s+/g, ' ').trim();
+// Dưới 960px cột công cụ là ngăn kéo: mở ra rồi mới bấm được
+const bamCongCu = async (p, muc) => {
+  if (await p.locator('#menuBtn').isVisible()) {
+    await p.click('#menuBtn');
+    await p.waitForTimeout(320);
+  }
+  await p.click('.side-link[data-muc="' + muc + '"]');
+};
 
 try {
   rmSync(DB, { force: true });
@@ -120,11 +128,19 @@ try {
   expect('nhà trọ nào cũng có tên và địa chỉ',
     binh.properties.every((x) => x.name && x.address) && mai.properties.every((x) => x.name && x.address), true);
 
-  const p04 = mai.properties.flatMap((x) => x.rooms).find((r) => r.id === 'p04');
-  expect('phòng đã duyệt yêu cầu thuê thì hiện người đang thuê',
-    p04.people.filter((x) => x.kind === 'tenant').map((x) => [x.id, x.name]), [['u-an', 'Nguyễn Văn An']]);
-  expect('người đang thuê kèm trạng thái tài khoản để khoá được', p04.people[0].userStatus, 'active');
-  expect('đếm đúng số người đang thuê của chủ trọ', [binh.tenants, mai.tenants], [0, 2]);
+  // Bốn người thuê có tài khoản đang ở nhà trọ An Bình (khớp quan-ly/nguoi-thue.html)
+  const phongBinh = binh.properties.flatMap((x) => x.rooms);
+  const thueBinh = phongBinh.flatMap((r) => r.people.filter((x) => x.kind === 'tenant').map((x) => [r.code, x.id, x.name]));
+  expect('phòng đã duyệt yêu cầu thuê thì hiện người đang thuê', thueBinh.sort(), [
+    ['P.101', 'u-an', 'Nguyễn Văn An'],
+    ['P.201', 'u-linh', 'Trần Mỹ Linh'],
+    ['P.301', 'u-trang', 'Phạm Thu Trang'],
+    ['P.302', 'u-huy', 'Lê Quang Huy'],
+  ]);
+  const p101 = phongBinh.find((r) => r.id === 'P.101');
+  expect('người đang thuê kèm trạng thái tài khoản để khoá được', p101.people[0].userStatus, 'active');
+  expect('phòng của chủ trọ có giá khớp trang quản lý', p101.price, 3500000);
+  expect('đếm đúng số người đang thuê của chủ trọ', [binh.tenants, mai.tenants], [4, 0]);
 
   const p01 = binh.properties.flatMap((x) => x.rooms).find((r) => r.id === 'p01');
   expect('phòng chưa có người thuê thì hiện người đang hẹn xem', p01.viewings > 0 && p01.tenants === 0, true);
@@ -134,15 +150,21 @@ try {
 
   expect('tìm theo tên chủ trọ', (await a('GET', '/api/quan-tri/nha-tro?tim=thu mai')).body.items.map((x) => x.landlordId), ['l-mai']);
   expect('tìm theo mã phòng', (await a('GET', '/api/quan-tri/nha-tro?tim=P04')).body.items.map((x) => x.landlordId), ['l-mai']);
+  // Tìm theo tên người thuê: ra cả chủ trọ đang cho họ thuê lẫn chủ trọ họ đang hẹn xem phòng
+  const timTrang = (await a('GET', '/api/quan-tri/nha-tro?tim=phạm thu trang')).body.items;
+  expect('tìm theo tên người đang thuê', timTrang.map((x) => x.landlordId).sort(), ['l-binh', 'l-mai']);
+  expect('tìm theo tên: giữ đúng phòng người đó đang thuê',
+    timTrang.find((x) => x.landlordId === 'l-binh').properties.flatMap((nt) => nt.rooms)
+      .filter((r) => r.people.some((ng) => ng.kind === 'tenant')).map((r) => r.code), ['P.301']);
   expect('tìm theo tên nhà trọ không cần dấu', (await a('GET', '/api/quan-tri/nha-tro?tim=khuong dinh')).body.items.map((x) => x.landlordId), ['l-mai']);
-  expect('tìm theo số điện thoại người thuê', (await a('GET', '/api/quan-tri/nha-tro?tim=0912000111')).body.items.map((x) => x.landlordId).sort(), ['l-binh', 'l-mai']);
+  expect('tìm theo số điện thoại người thuê', (await a('GET', '/api/quan-tri/nha-tro?tim=0912000111')).body.items.map((x) => x.landlordId).sort(), ['l-binh']);
   const locP04 = (await a('GET', '/api/quan-tri/nha-tro?tim=P04')).body.items[0];
   expect('tìm theo phòng thì chỉ giữ lại nhà trọ và phòng khớp',
     [locP04.properties.length, locP04.properties[0].rooms.map((r) => r.id)], [1, ['p04']]);
   expect('từ khoá không khớp thì không trả về gì', (await a('GET', '/api/quan-tri/nha-tro?tim=khong-co-that')).body.items.length, 0);
 
   const tong = (await a('GET', '/api/quan-tri/tong-quan')).body.summary;
-  expect('ô số liệu nhà trọ khớp dữ liệu', [tong.properties.total, tong.properties.rooms, tong.properties.tenants], [10, 17, 2]);
+  expect('ô số liệu nhà trọ khớp dữ liệu', [tong.properties.total, tong.properties.rooms, tong.properties.tenants], [10, 17, 4]);
 
   // Khoá chủ trọ từ dữ liệu nhà trọ: trạng thái phải đổi ngay trong danh sách này
   await a('PATCH', '/api/quan-tri/tai-khoan/l-mai', { action: 'lock' });
@@ -151,19 +173,65 @@ try {
   await a('PATCH', '/api/quan-tri/tai-khoan/l-mai', { action: 'unlock' });
   await a('PATCH', '/api/quan-tri/tai-khoan/u-an', { action: 'lock' });
   expect('khoá người thuê thì phòng họ đang thuê cũng báo đã khoá',
-    (await a('GET', '/api/quan-tri/nha-tro?tim=P04')).body.items[0].properties[0].rooms[0].people[0].userStatus, 'locked');
+    (await a('GET', '/api/quan-tri/nha-tro?tim=0912000111')).body.items[0].properties[0].rooms[0].people[0].userStatus, 'locked');
   await a('PATCH', '/api/quan-tri/tai-khoan/u-an', { action: 'unlock' });
 
-  // ================= 4. Gói dịch vụ và lịch thanh toán =================
-  console.log('\n=== 4. Gói dịch vụ và lịch thanh toán ===');
+  // ================= 4. Tin đăng và duyệt tin =================
+  console.log('\n=== 4. Tin đăng: duyệt để chặn tin rác, tin lừa đảo ===');
+  const tin = (await a('GET', '/api/quan-tri/tin-dang')).body.items;
+  expect('thấy cả tin đã duyệt, chờ duyệt và bị từ chối',
+    ['approved', 'pending', 'rejected'].map((st) => tin.filter((t) => t.status === st).length), [9, 3, 1]);
+  expect('tin chờ duyệt xếp lên đầu', tin[0].status, 'pending');
+  expect('mỗi tin ghi rõ ai đăng', tin.every((t) => t.landlord && t.landlordPhone), true);
+  expect('lọc theo trạng thái', (await a('GET', '/api/quan-tri/tin-dang?trangThai=pending')).body.items.length, 3);
+  expect('tìm theo người đăng', (await a('GET', '/api/quan-tri/tin-dang?tim=thu mai')).body.items.every((t) => t.landlordId === 'l-mai'), true);
+
+  // Dấu hiệu đáng ngờ chấm tự động, chỉ là gợi ý cho người duyệt
+  const toTin = tin.find((t) => /GIÁ SỐC/.test(t.title));
+  expect('chấm dấu hiệu lừa đảo cho tin đáng ngờ', [
+    toTin.flags.includes('Giá thấp bất thường'),
+    toTin.flags.includes('Đẩy giao dịch sang Zalo'),
+    toTin.flags.includes('Không cho xem phòng trước'),
+    toTin.flags.includes('Số trong tin khác số tài khoản'),
+  ], [true, true, true, true]);
+  const tinSach = tin.find((t) => /Long Biên/.test(t.title));
+  expect('tin bình thường không bị gắn cờ', tinSach.flags.length, 0);
+
+  // Duyệt và từ chối
+  expect('từ chối mà không ghi lý do thì bị chặn',
+    (await a('PATCH', '/api/quan-tri/tin-dang/' + toTin.id, { action: 'tu-choi' })).body.error, 'reason_required');
+  r = await a('PATCH', '/api/quan-tri/tin-dang/' + toTin.id, { action: 'tu-choi', reason: 'Giá ảo, giục cọc qua Zalo, không cho xem phòng.' });
+  expect('từ chối tin lừa đảo', [r.status, r.body.item.status, r.body.item.reason.slice(0, 6)], [200, 'rejected', 'Giá ảo']);
+  expect('ghi lại ai duyệt', r.body.item.decidedBy, 'ad-01');
+  r = await a('PATCH', '/api/quan-tri/tin-dang/' + tinSach.id, { action: 'duyet' });
+  expect('duyệt tin bình thường', [r.status, r.body.item.status], [200, 'approved']);
+  expect('duyệt hai lần bị chặn', (await a('PATCH', '/api/quan-tri/tin-dang/' + tinSach.id, { action: 'duyet' })).body.error, 'same_status');
+  expect('thao tác lạ bị chặn', (await a('PATCH', '/api/quan-tri/tin-dang/' + tinSach.id, { action: 'xoa' })).body.error, 'bad_action');
+  expect('tin không có thật', (await a('PATCH', '/api/quan-tri/tin-dang/999999', { action: 'duyet' })).body.error, 'listing_not_found');
+  expect('số tin chờ duyệt giảm còn 1', (await a('GET', '/api/quan-tri/tong-quan')).body.summary.listings.pending, 1);
+
+  // Tin bị từ chối thì phòng của tin đó không nhận đặt lịch xem nữa
+  const tinP04 = (await a('GET', '/api/quan-tri/tin-dang?tim=p04')).body.items.find((t) => t.roomId === 'p04');
+  await a('PATCH', '/api/quan-tri/tin-dang/' + tinP04.id, { action: 'tu-choi', reason: 'Ảnh không đúng phòng thật.' });
+  const nguoiThue = client();
+  await nguoiThue('POST', '/api/dang-nhap', { phone: '0901234567', password: 'matkhau123' });
+  const datLich = await nguoiThue('POST', '/api/lich-xem', { roomId: 'p04', date: '2026-11-20', time: '09:00', phone: '0901234567' });
+  expect('tin bị gỡ thì không đặt lịch xem được', [datLich.status, datLich.body.error], [409, 'listing_not_approved']);
+  await a('PATCH', '/api/quan-tri/tin-dang/' + tinP04.id, { action: 'duyet' });
+  const datLai = await nguoiThue('POST', '/api/lich-xem', { roomId: 'p04', date: '2026-11-20', time: '09:00', phone: '0901234567' });
+  expect('duyệt lại thì đặt lịch xem bình thường', datLai.status, 201);
+
+  // ================= 5. Gói dịch vụ và lịch thanh toán =================
+  console.log('\n=== 5. Gói dịch vụ và lịch thanh toán ===');
   r = await a('POST', '/api/quan-tri/goi', { landlordId: 'l-binh', plan: 'plus', months: 3 });
   const sub = r.body.item;
   expect('ghi nhận gói Plus 3 kỳ', [r.status, sub.planName, sub.months, sub.status], [201, 'Plus', 3, 'trial']);
   expect('lên đủ 3 kỳ thanh toán', sub.invoices.length, 3);
-  expect('mỗi kỳ đúng giá gói', sub.invoices.map((i) => i.amount), [149000, 149000, 149000]);
+  expect('mỗi kỳ đúng giá gói', sub.invoices.map((i) => i.amount), [199000, 199000, 199000]);
   expect('kỳ đầu đến hạn sau 15 ngày dùng thử', sub.invoices[0].dueDate > sub.startedAt, true);
   expect('các kỳ cách nhau một tháng', sub.invoices.map((i) => i.period.slice(5)), [sub.invoices[0].period.slice(5), sub.invoices[1].period.slice(5), sub.invoices[2].period.slice(5)]);
-  expect('tổng còn phải thu', sub.due, 447000);
+  expect('tổng còn phải thu', sub.due, 597000);
+  expect('gói kèm hạn mức phòng và tài khoản', [sub.rooms, sub.accounts], [15, 1]);
 
   expect('một chủ trọ chỉ có một gói còn hiệu lực', (await a('POST', '/api/quan-tri/goi', { landlordId: 'l-binh', plan: 'pro' })).body.error, 'plan_exists');
   expect('không gán gói cho người thuê', (await a('POST', '/api/quan-tri/goi', { landlordId: 'u-trang', plan: 'plus' })).body.error, 'not_landlord');
@@ -173,8 +241,9 @@ try {
   expect('ghi nhận đã thu kỳ 1', [r.status, r.body.item.status, r.body.item.method], [200, 'paid', 'chuyen-khoan']);
   expect('thu hai lần bị chặn', (await a('PATCH', '/api/quan-tri/hoa-don/' + sub.invoices[0].id, {})).body.error, 'already_paid');
   let sau = (await a('GET', '/api/quan-tri/goi')).body.items[0];
-  expect('cập nhật đã thu / còn phải thu', [sau.paid, sau.due], [149000, 298000]);
-  expect('tổng quan cộng đúng doanh thu', (await a('GET', '/api/quan-tri/tong-quan')).body.summary.plans, { active: 1, trial: 1, overdue: 0, revenue: 149000, due: 298000 });
+  expect('cập nhật đã thu / còn phải thu', [sau.paid, sau.due], [199000, 398000]);
+  expect('tổng quan cộng đúng doanh thu', (await a('GET', '/api/quan-tri/tong-quan')).body.summary.plans,
+    { active: 1, plus: 1, pro: 0, trial: 1, overdue: 0, expiring: 0, revenue: 199000, due: 398000 });
   expect('bỏ đánh dấu thanh toán', (await a('PATCH', '/api/quan-tri/hoa-don/' + sub.invoices[0].id, { paid: false })).body.item.status, 'pending');
   await a('PATCH', '/api/quan-tri/hoa-don/' + sub.invoices[0].id, { method: 'tien-mat' });
 
@@ -202,8 +271,8 @@ try {
   expect('mỗi kỳ của một gói chỉ một dòng', db.prepare('SELECT COUNT(*) AS n FROM (SELECT subscription_id, period FROM plan_invoices GROUP BY subscription_id, period HAVING COUNT(*) > 1)').get().n, 0);
   db.close();
 
-  // ================= 5. Giao diện =================
-  console.log('\n=== 5. Giao diện khu quản trị ===');
+  // ================= 6. Giao diện =================
+  console.log('\n=== 6. Giao diện khu quản trị ===');
   const guest = await newPage();
   await guest.p.goto(B + '/quan-tri/tong-quan.html', { waitUntil: 'domcontentloaded' });
   await guest.p.waitForTimeout(400);
@@ -235,10 +304,48 @@ try {
     await u.p.fill('#loginPhone', ADMIN.phone);
     await u.p.fill('#loginPassword', ADMIN.password);
     await u.p.click('[data-auth-form="login"] .btn-submit');
-    await u.p.waitForURL('**/quan-tri/tong-quan.html', { timeout: 8000 });
+    await u.p.waitForURL('**/quan-tri/trang-chu.html', { timeout: 8000 });
+    await u.p.waitForSelector('#kpis .kpi');
+    if (name === 'desktop') {
+      expect('đăng nhập admin vào thẳng trang chủ quản trị', new URL(u.p.url()).pathname, '/quan-tri/trang-chu.html');
+      expect('trang chủ: đúng 4 chỉ số', await u.p.locator('#kpis .kpi').count(), 4);
+      expect('trang chủ: chỉ số đầu là doanh thu tháng này', await txt(u.p, '#kpis .kpi:first-child dt'), 'Doanh thu tháng này');
+      expect('trang chủ: đếm gói Plus / Pro đang chạy', await txt(u.p, '#kpis .kpi:nth-child(2) small'), '0 Plus · 1 Pro');
+      expect('trang chủ: đếm tin đăng chờ duyệt', await txt(u.p, '#kpis .kpi:nth-child(4) dt'), 'Tin đăng chờ duyệt');
+      expect('trang chủ: nói rõ chưa có hệ thống ticket', /chưa có hệ thống ticket/i.test(await txt(u.p, '#taskTickets')), true);
+      expect('cột công cụ bên trái: 5 mục dùng được', await u.p.locator('.side-nav a.side-link[data-muc]').count(), 5);
+      expect('cột công cụ bên trái: 3 mục ghi Chưa làm', await u.p.locator('.side-nav .side-link.is-off').count(), 3);
+      expect('cột công cụ: mục Tin đăng hiện số tin chờ duyệt',
+        await txt(u.p, '.side-link[data-muc="tin-dang"] .side-tag'), '1 chờ duyệt');
+      expect('trang chủ: đánh dấu đang ở Tổng quan', await txt(u.p, '.side-link.active'), 'Tổng quan');
+      expect('trang chủ: liệt kê phần chưa làm', await u.p.locator('#chuaLam li').count(), 6);
+      expect('trang chủ: nhắc số tin đang chờ duyệt', /1 tin/.test(await txt(u.p, '#taskListings')), true);
+      expect('trang chủ: tài khoản bị khoá — chưa có ai', /Không có tài khoản nào đang bị khoá/.test(await txt(u.p, '#taskLocked')), true);
+      // Ô chỉ số và danh sách bên dưới phải khớp nhau (cùng tính theo ngày của máy chủ)
+      const sapHet = Number((await txt(u.p, '#kpis .kpi:nth-child(3) dd')).split(' ')[0]);
+      const dongCho = await u.p.locator('#taskPlans li').count();
+      expect('trang chủ: số "sắp đến hạn" khớp danh sách cần xử lý', [sapHet > 0, dongCho > 0], [sapHet > 0, sapHet > 0]);
+    }
+    await u.p.screenshot({ path: resolve(outDir, `quan-tri-trang-chu-${name}.png`), fullPage: name === 'desktop' });
+    const tranTrangChu = await u.p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(`${name}: trang chủ quản trị không cuộn ngang`, tranTrangChu <= 0, true);
+
+    // Màn hình hẹp: chụp lại cột công cụ khi mở ngăn kéo
+    if (name !== 'desktop') {
+      await u.p.click('#menuBtn');
+      await u.p.waitForTimeout(350);
+      expect(`${name}: mở được cột công cụ`, await u.p.locator('.side-link[data-muc="tai-khoan"]').isVisible(), true);
+      await u.p.screenshot({ path: resolve(outDir, `quan-tri-cong-cu-${name}.png`) });
+      await u.p.keyboard.press('Escape');
+      await u.p.waitForTimeout(300);
+    }
+
+    // Từ trang chủ bấm sang khu quản lý tài khoản
+    await bamCongCu(u.p, 'tai-khoan');
     await u.p.waitForSelector('#userRows tr');
     if (name === 'desktop') {
-      expect('đăng nhập admin vào thẳng khu quản trị', new URL(u.p.url()).pathname, '/quan-tri/tong-quan.html');
+      expect('mở đúng khu Tài khoản từ trang chủ', await txt(u.p, '.side-link.active'), 'Tài khoản');
+      expect('thanh trên cùng ghi tên khu đang mở', await txt(u.p, '#appTitle'), 'Tài khoản');
       expect('hiện lời chào quản trị viên', await txt(u.p, '#who'), 'Xin chào, Quản trị An Cư');
       expect('bảng tài khoản liệt kê đủ 7 tài khoản', await u.p.locator('#userRows tr').count(), 7);
       expect('có 5 ô số liệu tổng quan', await u.p.locator('#stats .stat').count(), 5);
@@ -254,28 +361,61 @@ try {
     }
     await u.p.screenshot({ path: resolve(outDir, `quan-tri-tai-khoan-${name}.png`) });
 
+    // Khu Tin đăng: duyệt / từ chối ngay trên giao diện
+    await bamCongCu(u.p, 'tin-dang');
+    // Desktop chạy trước và duyệt hết tin chờ, nên các khổ sau có thể không còn tin nào ở bộ lọc mặc định
+    await u.p.waitForSelector('#postList .post, #postEmpty:not([hidden])');
+    await u.p.waitForSelector('#postList .post');
+    if (name === 'desktop') {
+      expect('mở đúng khu Tin đăng', await txt(u.p, '#appTitle'), 'Tin đăng');
+      // Mặc định hiện TẤT CẢ tin, cả đã duyệt lẫn chưa duyệt, kèm số lượng từng nhóm
+      expect('mặc định hiện tất cả tin đăng', await u.p.locator('#postList .post').count(), 13);
+      expect('có hàng đếm theo trạng thái', await u.p.locator('#postDem button').count(), 4);
+      expect('đếm đúng từng nhóm', (await u.p.locator('#postDem button').allTextContents()).map((x) => x.replace(/\s+/g, ' ').trim()),
+        ['Tất cả 13', 'Chờ duyệt 1', 'Đã duyệt 10', 'Đã từ chối 2']);
+      await u.p.click('#postDem button[data-loc="rejected"]');
+      await u.p.waitForFunction(() => document.querySelectorAll('#postList .post').length === 2, null, { timeout: 5000 }).catch(() => {});
+      expect('bấm ô đếm để lọc tin đã từ chối', await u.p.locator('#postList .post').count(), 2);
+      expect('tin bị từ chối hiện lý do', /Lý do từ chối/.test(await txt(u.p, '#postList .post-ly')), true);
+      expect('tin đã duyệt ghi ngày duyệt', /duyệt ngày/.test(await u.p.locator('#postDem button[data-loc="approved"]').click().then(() => u.p.waitForTimeout(200)).then(() => txt(u.p, '#postList .post-meta'))), true);
+      await u.p.click('#postDem button[data-loc="pending"]');
+      await u.p.waitForSelector('#postList .post');
+      expect('tin chờ duyệt ghi tên người đăng', /Lê Thu Mai|Trần Hoà/.test(await txt(u.p, '#postList .post-nguoi')), true);
+
+      await u.p.screenshot({ path: resolve(outDir, 'quan-tri-tin-dang-desktop.png'), fullPage: true });
+      u.p.once('dialog', (d) => d.accept());
+      await u.p.click('#postList .post [data-act="duyet"]');
+      await u.p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã duyệt tin đăng.', null, { timeout: 5000 }).catch(() => {});
+      expect('duyệt tin từ giao diện', await txt(u.p, '#msg'), 'Đã duyệt tin đăng.');
+      await u.p.waitForFunction(() => document.querySelectorAll('#postList .post').length === 0, null, { timeout: 5000 }).catch(() => {});
+      expect('duyệt xong thì hết tin chờ', await u.p.locator('#postList .post').count(), 0);
+      expect('ô đếm cập nhật theo', (await u.p.locator('#postDem button[data-loc="approved"]').textContent()).replace(/\s+/g, ' ').trim(), 'Đã duyệt 11');
+      expect('cột công cụ cập nhật số tin chờ', await txt(u.p, '.side-link[data-muc="tin-dang"] .side-tag'), 'Không có tin chờ');
+    }
+    if (name !== 'desktop') await u.p.screenshot({ path: resolve(outDir, `quan-tri-tin-dang-${name}.png`) });
+
     // Tab Nhà trọ & người thuê
-    await u.p.click('.tab[data-tab="nha-tro"]');
+    await bamCongCu(u.p, 'nha-tro');
     await u.p.waitForSelector('#propList .owner');
     if (name === 'desktop') {
       expect('tab Nhà trọ liệt kê từng chủ trọ', await u.p.locator('#propList .owner').count(), 2);
       expect('hiện đủ nhà trọ của hai chủ trọ', await u.p.locator('#propList .prop').count(), 10);
       expect('hiện người đang thuê trong phòng',
-        await u.p.locator('#propList .room:has-text("P04") .people .tag.ok').first().textContent(), 'Đang thuê');
+        await u.p.locator('#propList .room:has-text("P.101") .people .tag.ok').first().textContent(), 'Đang thuê');
 
       // Khoá người thuê ngay trong tab này
       u.p.once('dialog', (d) => d.accept());
-      await u.p.click('#propList .room:has-text("P04") .people [data-lock="u-an"]');
+      await u.p.click('#propList .room:has-text("P.101") .people [data-lock="u-an"]');
       await u.p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã khoá tài khoản.', null, { timeout: 5000 }).catch(() => {});
       expect('khoá người thuê từ tab Nhà trọ', await txt(u.p, '#msg'), 'Đã khoá tài khoản.');
-      await u.p.waitForSelector('#propList .room:has-text("P04") .people .tag.bad');
+      await u.p.waitForSelector('#propList .room:has-text("P.101") .people .tag.bad');
       expect('người thuê bị khoá hiện ngay trong phòng',
-        await u.p.locator('#propList .room:has-text("P04") .people .tag.bad').first().textContent(), 'Đã khoá');
-      await u.p.click('#propList .room:has-text("P04") .people [data-lock="u-an"]');
+        await u.p.locator('#propList .room:has-text("P.101") .people .tag.bad').first().textContent(), 'Đã khoá');
+      await u.p.click('#propList .room:has-text("P.101") .people [data-lock="u-an"]');
       await u.p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã mở khoá tài khoản.', null, { timeout: 5000 }).catch(() => {});
 
       // Tìm kiếm trong tab Nhà trọ
-      await u.p.fill('#fProp', 'thu mai');
+      await u.p.fill('#fProp', 'lê thu mai');
       await u.p.waitForFunction(() => document.querySelectorAll('#propList .owner').length === 1, null, { timeout: 5000 }).catch(() => {});
       expect('tìm theo tên chủ trọ trên giao diện', await u.p.locator('#propList .owner').count(), 1);
       await u.p.fill('#fProp', '');
@@ -283,7 +423,7 @@ try {
     }
     await u.p.screenshot({ path: resolve(outDir, `quan-tri-nha-tro-${name}.png`), fullPage: name === 'desktop' });
 
-    await u.p.click('.tab[data-tab="thanh-toan"]');
+    await bamCongCu(u.p, 'thanh-toan');
     await u.p.waitForSelector('#planRows tr');
     if (name === 'desktop') {
       expect('tab Thanh toán gói hiện gói đã mua', await u.p.locator('#planRows tr:not(.sub-rows)').count(), 2);

@@ -39,6 +39,7 @@ const B = `http://localhost:${PORT}`;
 const PAGES = [
   ['/', '#tim-tro', 'Trang chủ (qua index.html chuyển hướng)'],
   ['/trang-chu.html', '#roomGrid .room', 'Trang chủ'],
+  ['/quan-tri/trang-chu.html', '#kpis .kpi', 'Quản trị — trang chủ'],
   ['/quan-tri/tong-quan.html', '#userRows tr', 'Khu quản trị'],
   ['/tai-khoan/tim-phong.html', 'body', 'Người thuê — tìm phòng'],
   ['/tai-khoan/dat-lich.html', 'body', 'Người thuê — lịch xem'],

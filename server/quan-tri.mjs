@@ -42,9 +42,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_invoice_per_period ON plan_invoices (subsc
 CREATE INDEX IF NOT EXISTS idx_invoice_status ON plan_invoices (status, due_date);
 `;
 
+// Giá và hạn mức của từng gói (khớp bảng giá ở trang-chu.html). Không còn gói miễn phí:
+// chủ trọ phải có gói còn hiệu lực mới dùng được, 15 ngày đầu là dùng thử.
+// rooms / accounts mới chỉ để hiển thị và đối chiếu, prototype chưa chặn khi vượt hạn mức.
 export const PLANS = {
-  plus: { name: 'Plus', price: 149000 },
-  pro: { name: 'Pro', price: 399000 },
+  plus: { name: 'Plus', price: 199000, rooms: 15, accounts: 1 },
+  pro: { name: 'Pro', price: 499000, rooms: 60, accounts: 5 },
 };
 export const TRIAL_DAYS = 15;
 const METHODS = new Set(['chuyen-khoan', 'tien-mat', 'the', 'vi-dien-tu']);
@@ -95,6 +98,13 @@ export function createAdmin(db, ApiError, now) {
     guests: db.prepare(`SELECT room_id, renter_id, tenant_name, tenant_phone, date, time, status
                         FROM viewing_appointments WHERE status IN ('pending','confirmed')
                         ORDER BY date, time, id`),
+    // Tin đăng chờ duyệt
+    listings: db.prepare(`SELECT * FROM listings
+                          ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'rejected' THEN 1 ELSE 2 END,
+                                   created_at DESC, id DESC`),
+    listingById: db.prepare('SELECT * FROM listings WHERE id = ?'),
+    decide: db.prepare('UPDATE listings SET status = ?, reason = ?, decided_at = ?, decided_by = ? WHERE id = ?'),
+    countPending: db.prepare("SELECT COUNT(*) AS n FROM listings WHERE status = 'pending'"),
   };
 
   const today = () => ymd(now());
@@ -145,6 +155,75 @@ export function createAdmin(db, ApiError, now) {
     });
   }
 
+  // ---------- Tin đăng: duyệt để chặn tin rác, tin lừa đảo ----------
+  // Dấu hiệu đáng ngờ chấm tự động cho quản trị dễ nhìn. Đây chỉ là GỢI Ý, quyết định
+  // duyệt hay không vẫn là của người duyệt — không tự động từ chối tin nào.
+  const TU_KHOA_RUI_RO = [
+    ['chuyển khoản trước', 'Giục chuyển khoản trước'],
+    ['cọc giữ chỗ', 'Đòi cọc giữ chỗ'],
+    ['chốt cọc', 'Giục chốt cọc'],
+    ['cọc trước', 'Đòi cọc trước khi xem phòng'],
+    ['không cần xem phòng', 'Không cho xem phòng trước'],
+    ['zalo', 'Đẩy giao dịch sang Zalo'],
+    ['giá sốc', 'Lời rao giật tít'],
+    ['gấp kẻo hết', 'Tạo sức ép thời gian'],
+    ['trong hôm nay', 'Tạo sức ép thời gian'],
+  ];
+  const GIA_THAP = 1500000;
+
+  function dauHieu(r, chu) {
+    const co = [];
+    const mo = `${r.title} ${r.description}`.toLowerCase();
+    for (const [tu, nhan] of TU_KHOA_RUI_RO) if (mo.includes(tu) && !co.includes(nhan)) co.push(nhan);
+    if (r.price > 0 && r.price < GIA_THAP) co.push('Giá thấp bất thường');
+    if (chu && r.phone && r.phone.replace(/\D/g, '') !== String(chu.phone || '').replace(/\D/g, '')) {
+      co.push('Số trong tin khác số tài khoản');
+    }
+    if (chu && chu.status === 'locked') co.push('Tài khoản người đăng đang bị khoá');
+    if (!String(r.address || '').trim() || /không ghi/i.test(r.address)) co.push('Địa chỉ không rõ ràng');
+    return co;
+  }
+
+  function listingItem(r, byId) {
+    const chu = byId.get(r.landlord_id);
+    return {
+      id: r.id, roomId: r.room_id, title: r.title, address: r.address, price: r.price, area: r.area,
+      phone: r.phone, description: r.description, status: r.status, reason: r.reason,
+      createdAt: r.created_at, decidedAt: r.decided_at, decidedBy: r.decided_by,
+      landlordId: r.landlord_id,
+      landlord: chu ? (chu.full_name || chu.phone) : 'Tài khoản đã xoá',
+      landlordPhone: chu ? chu.phone : '',
+      landlordStatus: chu ? chu.status : null,
+      flags: dauHieu(r, chu),
+    };
+  }
+
+  function listListings({ status, q: keyword } = {}) {
+    const key = fold(keyword).trim();
+    const byId = new Map(q.users.all().map((u) => [u.id, u]));
+    return q.listings.all()
+      .filter((r) => !status || r.status === status)
+      .map((r) => listingItem(r, byId))
+      .filter((it) => !key || [it.title, it.address, it.landlord, it.landlordPhone, it.phone, it.roomId]
+        .some((v) => fold(v).includes(key)));
+  }
+
+  function decideListing(id, { action, reason } = {}, meId) {
+    const r = q.listingById.get(Number(id));
+    if (!r) throw new ApiError(404, 'listing_not_found', 'Không tìm thấy tin đăng này.');
+    const map = { duyet: 'approved', 'tu-choi': 'rejected', 'cho-duyet-lai': 'pending' };
+    const moi = map[action];
+    if (!moi) throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    if (moi === r.status) throw new ApiError(409, 'same_status', 'Tin đăng này đã ở trạng thái đó rồi.');
+    const ly = String(reason || '').trim().slice(0, 500);
+    if (moi === 'rejected' && !ly) throw new ApiError(400, 'reason_required', 'Hãy ghi lý do từ chối để chủ trọ biết đường sửa.');
+    return tx(() => {
+      q.decide.run(moi, moi === 'rejected' ? ly : '', moi === 'pending' ? null : now().toISOString(), moi === 'pending' ? null : meId, r.id);
+      const byId = new Map(q.users.all().map((u) => [u.id, u]));
+      return listingItem(q.listingById.get(r.id), byId);
+    });
+  }
+
   // ---------- Gói dịch vụ + lịch thanh toán ----------
   function invoiceItem(r) {
     return {
@@ -158,6 +237,7 @@ export function createAdmin(db, ApiError, now) {
     return {
       id: s.id, landlordId: s.landlord_id, landlord: s.full_name || s.phone, phone: s.phone, email: s.email || '',
       plan: s.plan, planName: PLANS[s.plan].name, price: s.price, months: s.months, status: s.status,
+      rooms: PLANS[s.plan].rooms, accounts: PLANS[s.plan].accounts,
       startedAt: s.started_at, trialEndsAt: s.trial_ends_at, cancelledAt: s.cancelled_at,
       paid: mine.filter((i) => i.status === 'paid').reduce((n, i) => n + i.amount, 0),
       due: unpaid.reduce((n, i) => n + i.amount, 0),
@@ -326,12 +406,32 @@ export function createAdmin(db, ApiError, now) {
     return { items, chuaGan };
   }
 
+  // Số liệu cho trang chủ khu quản trị. Những mục chưa làm (ticket hỗ trợ, duyệt tin đăng)
+  // trả về null — giao diện hiện "chưa có" thay vì bịa ra số 0 trông như đã chạy.
   function summary() {
     const users = listUsers();
     const plans = listPlans();
     const nhaTro = listProperties();
     const active = plans.filter((p) => p.status !== 'cancelled');
+
+    const homNay = today();
+    const trongVong7 = ymd(addDays(now(), 7));
+    const thang = homNay.slice(0, 7);
+    const t = now();
+    const truoc = t.getMonth() === 0 ? `${t.getFullYear() - 1}-12` : `${t.getFullYear()}-${pad(t.getMonth())}`;
+    const hoaDon = q.invoices.all();
+    const daThu = (ky) => hoaDon
+      .filter((i) => i.status === 'paid' && String(i.paid_at || '').slice(0, 7) === ky)
+      .reduce((n, i) => n + i.amount, 0);
+    // Gói sắp tới hạn: còn kỳ chưa thu, đến hạn trong 7 ngày tới
+    const sapHetHan = active.filter((p) => p.nextDue && p.nextDue >= homNay && p.nextDue <= trongVong7);
+
     return {
+      today: homNay,
+      revenue: { month: daThu(thang), prevMonth: daThu(truoc), total: plans.reduce((n, p) => n + p.paid, 0) },
+      // Chưa làm: hệ thống ticket hỗ trợ
+      support: { openTickets: null },
+      listings: { pending: q.countPending.get().n },
       users: {
         total: users.length,
         renters: users.filter((u) => u.role === 'renter').length,
@@ -345,13 +445,16 @@ export function createAdmin(db, ApiError, now) {
       },
       plans: {
         active: active.length,
+        plus: active.filter((p) => p.plan === 'plus').length,
+        pro: active.filter((p) => p.plan === 'pro').length,
         trial: active.filter((p) => p.status === 'trial').length,
         overdue: active.filter((p) => p.overdue > 0).length,
+        expiring: sapHetHan.length,
         revenue: plans.reduce((n, p) => n + p.paid, 0),
         due: active.reduce((n, p) => n + p.due, 0),
       },
     };
   }
 
-  return { listUsers, setUserStatus, listPlans, createPlan, cancelPlan, payInvoice, listProperties, summary, sweep };
+  return { listUsers, setUserStatus, listListings, decideListing, listPlans, createPlan, cancelPlan, payInvoice, listProperties, summary, sweep };
 }

@@ -10,8 +10,8 @@
       },
       {
         "name": "cuộn tới bảng giá: các gói hiện ra",
-        "got": 3,
-        "want": 3,
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
@@ -63,14 +63,12 @@
         "ok": true
       },
       {
-        "name": "bảng giá: 3 gói",
+        "name": "bảng giá: 2 gói, không còn gói miễn phí",
         "got": [
-          "Free",
           "Plus",
           "Pro"
         ],
         "want": [
-          "Free",
           "Plus",
           "Pro"
         ],
@@ -79,21 +77,31 @@
       {
         "name": "bảng giá: giá",
         "got": [
-          "0₫",
-          "149.000₫ / tháng",
-          "399.000₫ / tháng"
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
         ],
         "want": [
-          "0₫",
-          "149.000₫ / tháng",
-          "399.000₫ / tháng"
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
         ],
         "ok": true
       },
       {
-        "name": "Free: đăng phòng trọ miễn phí",
-        "got": "Đăng tin phòng trọ miễn phí",
-        "want": "Đăng tin phòng trọ miễn phí",
+        "name": "Plus: 15 phòng, 1 tài khoản",
+        "got": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "want": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "ok": true
+      },
+      {
+        "name": "Pro: 60 phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Pro: 5 tài khoản",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -164,8 +172,8 @@
       },
       {
         "name": "cuộn tới bảng giá: các gói hiện ra",
-        "got": 3,
-        "want": 3,
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
@@ -217,14 +225,12 @@
         "ok": true
       },
       {
-        "name": "bảng giá: 3 gói",
+        "name": "bảng giá: 2 gói, không còn gói miễn phí",
         "got": [
-          "Free",
           "Plus",
           "Pro"
         ],
         "want": [
-          "Free",
           "Plus",
           "Pro"
         ],
@@ -233,21 +239,31 @@
       {
         "name": "bảng giá: giá",
         "got": [
-          "0₫",
-          "149.000₫ / tháng",
-          "399.000₫ / tháng"
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
         ],
         "want": [
-          "0₫",
-          "149.000₫ / tháng",
-          "399.000₫ / tháng"
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
         ],
         "ok": true
       },
       {
-        "name": "Free: đăng phòng trọ miễn phí",
-        "got": "Đăng tin phòng trọ miễn phí",
-        "want": "Đăng tin phòng trọ miễn phí",
+        "name": "Plus: 15 phòng, 1 tài khoản",
+        "got": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "want": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "ok": true
+      },
+      {
+        "name": "Pro: 60 phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Pro: 5 tài khoản",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -318,8 +334,8 @@
       },
       {
         "name": "cuộn tới bảng giá: các gói hiện ra",
-        "got": 3,
-        "want": 3,
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
@@ -371,14 +387,12 @@
         "ok": true
       },
       {
-        "name": "bảng giá: 3 gói",
+        "name": "bảng giá: 2 gói, không còn gói miễn phí",
         "got": [
-          "Free",
           "Plus",
           "Pro"
         ],
         "want": [
-          "Free",
           "Plus",
           "Pro"
         ],
@@ -387,21 +401,31 @@
       {
         "name": "bảng giá: giá",
         "got": [
-          "0₫",
-          "149.000₫ / tháng",
-          "399.000₫ / tháng"
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
         ],
         "want": [
-          "0₫",
-          "149.000₫ / tháng",
-          "399.000₫ / tháng"
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
         ],
         "ok": true
       },
       {
-        "name": "Free: đăng phòng trọ miễn phí",
-        "got": "Đăng tin phòng trọ miễn phí",
-        "want": "Đăng tin phòng trọ miễn phí",
+        "name": "Plus: 15 phòng, 1 tài khoản",
+        "got": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "want": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "ok": true
+      },
+      {
+        "name": "Pro: 60 phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Pro: 5 tài khoản",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {

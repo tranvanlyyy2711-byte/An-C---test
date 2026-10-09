@@ -247,15 +247,33 @@
         "ok": true
       },
       {
-        "name": "xã Hòa Lạc, dưới 2 triệu, 2 người: ra 1 phòng",
+        "name": "chọn được xã trong danh sách",
+        "got": "Xã Hòa Lạc, Hà Nội",
+        "want": "Xã Hòa Lạc, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng",
+        "got": [
+          0,
+          true
+        ],
+        "want": [
+          0,
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "địa chỉ theo xã mới",
-        "got": "Xã Hòa Lạc, Hà Nội",
-        "want": "Xã Hòa Lạc, Hà Nội",
+        "name": "địa chỉ theo phường mới",
+        "got": "Phường Từ Liêm, Hà Nội",
+        "want": "Phường Từ Liêm, Hà Nội",
         "ok": true
       },
       {
@@ -289,7 +307,7 @@
         "ok": true
       },
       {
-        "name": "phường Kim Liên, 3–4 triệu, 1 người: ra 1 phòng",
+        "name": "phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
@@ -343,7 +361,7 @@
         "ok": true
       },
       {
-        "name": "phường Bạch Mai, 4–5 triệu, tự nhập 2 người: ra 1 phòng",
+        "name": "phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
@@ -555,9 +573,9 @@
         "ok": true
       },
       {
-        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 3 phòng",
-        "got": 3,
-        "want": 3,
+        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng",
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
@@ -568,8 +586,8 @@
       },
       {
         "name": "chi tiết: đúng phòng",
-        "got": "Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện",
-        "want": "Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện",
+        "got": "Căn hộ mini full nội thất",
+        "want": "Căn hộ mini full nội thất",
         "ok": true
       },
       {
@@ -579,21 +597,31 @@
         "ok": true
       },
       {
-        "name": "chi tiết: đúng 2 ảnh thật của tin",
+        "name": "chi tiết: đúng 4 ảnh thật của tin",
         "got": [
-          "assets/rooms/dd1.webp",
-          "assets/rooms/dd2.webp"
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
         ],
         "want": [
-          "assets/rooms/dd1.webp",
-          "assets/rooms/dd2.webp"
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
         ],
         "ok": true
       },
       {
-        "name": "liên hệ: hiện số chủ phòng",
-        "got": "0982 165 646",
-        "want": "0982 165 646",
+        "name": "liên hệ: hiện số đã đăng ký của chủ trọ",
+        "got": "0977 111 222",
+        "want": "0977 111 222",
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện tên chủ trọ sở hữu phòng",
+        "got": "Lê Thu Mai",
+        "want": "Lê Thu Mai",
         "ok": true
       },
       {
@@ -865,15 +893,33 @@
         "ok": true
       },
       {
-        "name": "xã Hòa Lạc, dưới 2 triệu, 2 người: ra 1 phòng",
+        "name": "chọn được xã trong danh sách",
+        "got": "Xã Hòa Lạc, Hà Nội",
+        "want": "Xã Hòa Lạc, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng",
+        "got": [
+          0,
+          true
+        ],
+        "want": [
+          0,
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "địa chỉ theo xã mới",
-        "got": "Xã Hòa Lạc, Hà Nội",
-        "want": "Xã Hòa Lạc, Hà Nội",
+        "name": "địa chỉ theo phường mới",
+        "got": "Phường Từ Liêm, Hà Nội",
+        "want": "Phường Từ Liêm, Hà Nội",
         "ok": true
       },
       {
@@ -907,7 +953,7 @@
         "ok": true
       },
       {
-        "name": "phường Kim Liên, 3–4 triệu, 1 người: ra 1 phòng",
+        "name": "phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
@@ -961,7 +1007,7 @@
         "ok": true
       },
       {
-        "name": "phường Bạch Mai, 4–5 triệu, tự nhập 2 người: ra 1 phòng",
+        "name": "phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
@@ -1173,9 +1219,9 @@
         "ok": true
       },
       {
-        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 3 phòng",
-        "got": 3,
-        "want": 3,
+        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng",
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
@@ -1186,8 +1232,8 @@
       },
       {
         "name": "chi tiết: đúng phòng",
-        "got": "Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện",
-        "want": "Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện",
+        "got": "Căn hộ mini full nội thất",
+        "want": "Căn hộ mini full nội thất",
         "ok": true
       },
       {
@@ -1197,21 +1243,31 @@
         "ok": true
       },
       {
-        "name": "chi tiết: đúng 2 ảnh thật của tin",
+        "name": "chi tiết: đúng 4 ảnh thật của tin",
         "got": [
-          "assets/rooms/dd1.webp",
-          "assets/rooms/dd2.webp"
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
         ],
         "want": [
-          "assets/rooms/dd1.webp",
-          "assets/rooms/dd2.webp"
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
         ],
         "ok": true
       },
       {
-        "name": "liên hệ: hiện số chủ phòng",
-        "got": "0982 165 646",
-        "want": "0982 165 646",
+        "name": "liên hệ: hiện số đã đăng ký của chủ trọ",
+        "got": "0977 111 222",
+        "want": "0977 111 222",
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện tên chủ trọ sở hữu phòng",
+        "got": "Lê Thu Mai",
+        "want": "Lê Thu Mai",
         "ok": true
       },
       {
@@ -1483,15 +1539,33 @@
         "ok": true
       },
       {
-        "name": "xã Hòa Lạc, dưới 2 triệu, 2 người: ra 1 phòng",
+        "name": "chọn được xã trong danh sách",
+        "got": "Xã Hòa Lạc, Hà Nội",
+        "want": "Xã Hòa Lạc, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng",
+        "got": [
+          0,
+          true
+        ],
+        "want": [
+          0,
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
-        "name": "địa chỉ theo xã mới",
-        "got": "Xã Hòa Lạc, Hà Nội",
-        "want": "Xã Hòa Lạc, Hà Nội",
+        "name": "địa chỉ theo phường mới",
+        "got": "Phường Từ Liêm, Hà Nội",
+        "want": "Phường Từ Liêm, Hà Nội",
         "ok": true
       },
       {
@@ -1525,7 +1599,7 @@
         "ok": true
       },
       {
-        "name": "phường Kim Liên, 3–4 triệu, 1 người: ra 1 phòng",
+        "name": "phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
@@ -1579,7 +1653,7 @@
         "ok": true
       },
       {
-        "name": "phường Bạch Mai, 4–5 triệu, tự nhập 2 người: ra 1 phòng",
+        "name": "phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng",
         "got": 1,
         "want": 1,
         "ok": true
@@ -1791,9 +1865,9 @@
         "ok": true
       },
       {
-        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 3 phòng",
-        "got": 3,
-        "want": 3,
+        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng",
+        "got": 2,
+        "want": 2,
         "ok": true
       },
       {
@@ -1804,8 +1878,8 @@
       },
       {
         "name": "chi tiết: đúng phòng",
-        "got": "Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện",
-        "want": "Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện",
+        "got": "Căn hộ mini full nội thất",
+        "want": "Căn hộ mini full nội thất",
         "ok": true
       },
       {
@@ -1815,21 +1889,31 @@
         "ok": true
       },
       {
-        "name": "chi tiết: đúng 2 ảnh thật của tin",
+        "name": "chi tiết: đúng 4 ảnh thật của tin",
         "got": [
-          "assets/rooms/dd1.webp",
-          "assets/rooms/dd2.webp"
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
         ],
         "want": [
-          "assets/rooms/dd1.webp",
-          "assets/rooms/dd2.webp"
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
         ],
         "ok": true
       },
       {
-        "name": "liên hệ: hiện số chủ phòng",
-        "got": "0982 165 646",
-        "want": "0982 165 646",
+        "name": "liên hệ: hiện số đã đăng ký của chủ trọ",
+        "got": "0977 111 222",
+        "want": "0977 111 222",
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện tên chủ trọ sở hữu phòng",
+        "got": "Lê Thu Mai",
+        "want": "Lê Thu Mai",
         "ok": true
       },
       {

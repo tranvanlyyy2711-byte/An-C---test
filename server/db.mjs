@@ -11,7 +11,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'fs';
 import { dirname } from 'path';
-import { PHONG, NGUOI_THUE } from './phong.mjs';
+import { PHONG, NGUOI_THUE, CHU_CUA_PHONG } from './phong.mjs';
 import { AUTH_SCHEMA, seedDemoUsers, migrateAuth } from './auth.mjs';
 
 export const HOLD_HOURS = 24;
@@ -69,6 +69,29 @@ CREATE TABLE IF NOT EXISTS rental_requests (
   seen_at         TEXT                  -- người thuê đã xem kết quả duyệt; NULL = chưa báo
 );
 CREATE UNIQUE INDEX IF NOT EXISTS one_request_per_viewing ON rental_requests (appointment_id);
+
+-- Tin đăng cho thuê và việc duyệt tin. Chủ trọ gửi tin, quản trị duyệt trước khi tin được
+-- công khai — chặn tin rác, tin lừa đảo. Tin gắn với một phòng trong danh mục (room_id) thì
+-- khi bị từ chối, phòng đó không nhận đặt lịch xem nữa.
+CREATE TABLE IF NOT EXISTS listings (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  room_id      TEXT,                  -- NULL: tin mới, chưa có trong danh mục phòng
+  landlord_id  TEXT    NOT NULL,      -- users.id của người đăng
+  title        TEXT    NOT NULL,
+  address      TEXT    NOT NULL,
+  price        INTEGER NOT NULL,
+  area         INTEGER,
+  phone        TEXT    NOT NULL DEFAULT '',   -- số liên hệ ghi trong tin
+  description  TEXT    NOT NULL DEFAULT '',
+  status       TEXT    NOT NULL CHECK (status IN ('pending','approved','rejected')),
+  reason       TEXT    NOT NULL DEFAULT '',   -- lý do từ chối
+  created_at   TEXT    NOT NULL,
+  decided_at   TEXT,
+  decided_by   TEXT
+);
+-- Mỗi phòng trong danh mục chỉ có một tin đăng
+CREATE UNIQUE INDEX IF NOT EXISTS one_listing_per_room ON listings (room_id) WHERE room_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_listing_status ON listings (status, created_at);
 `;
 
 export class ApiError extends Error {
@@ -127,6 +150,8 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   };
 
   if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q, db);
+  // Tin đăng seed riêng: CSDL cũ đã có lịch xem vẫn được bổ sung danh sách tin
+  if (db.prepare('SELECT COUNT(*) AS n FROM listings').get().n === 0) seedTinDang(db);
 
   const nowIso = () => now().toISOString();
   const holdIso = () => new Date(now().getTime() + HOLD_HOURS * 3600000).toISOString();
@@ -231,6 +256,14 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     const u = renterOf(nguoi);
     const room = PHONG[roomId];
     if (!room || room.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
+    // Tin đăng bị quản trị từ chối thì không nhận đặt lịch xem nữa
+    const tin = db.prepare('SELECT status FROM listings WHERE room_id = ?').get(roomId);
+    if (tin && tin.status !== 'approved') {
+      throw new ApiError(409, 'listing_not_approved',
+        tin.status === 'rejected'
+          ? 'Tin đăng của phòng này đã bị gỡ vì không qua kiểm duyệt. Vui lòng chọn phòng khác.'
+          : 'Tin đăng của phòng này đang chờ quản trị duyệt, chưa nhận đặt lịch xem.');
+    }
     checkDate(date);
     checkRenterTime(date, time);
     const ph = checkPhone(phone || u.phone);
@@ -431,6 +464,57 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   };
 }
 
+// ================= Dữ liệu mẫu: tin đăng và việc duyệt tin =================
+// 9 phòng đang công khai là tin đã duyệt; thêm vài tin mới gửi để quản trị tập duyệt,
+// trong đó có một tin mang đủ dấu hiệu lừa đảo (giá quá rẻ, giục cọc qua Zalo, số lạ).
+function seedTinDang(db) {
+  const ins = db.prepare(`INSERT INTO listings
+    (room_id, landlord_id, title, address, price, area, phone, description, status, reason, created_at, decided_at, decided_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  const iso = (local) => new Date(local).toISOString();
+
+  const MOTA = {
+    p01: 'Phòng có gác lửng, cửa sổ lớn, giờ giấc tự do. Xem phòng trực tiếp trước khi đặt cọc.',
+    p02: 'Căn hộ mini khép kín trong toà có thang máy, đầy đủ nội thất, có chỗ để xe.',
+    p03: 'Phòng ban công riêng, đón nắng, gần chợ và bến xe buýt.',
+    p04: 'Studio hiện đại, bếp riêng, phù hợp người đi làm.',
+    p05: 'Phòng khép kín, khu dân cư an ninh, có camera.',
+    p06: 'Phòng rộng cho gia đình nhỏ, có chỗ phơi đồ riêng.',
+    p07: 'Phòng giá mềm cho sinh viên, gần trường, đi lại thuận tiện.',
+    p08: 'Phòng có gác, cửa sổ hướng vườn, yên tĩnh.',
+    p09: 'Căn hộ dịch vụ 2 phòng ngủ, có thang máy và bảo vệ 24/7.',
+  };
+  for (const id of Object.keys(MOTA)) {
+    const r = PHONG[id];
+    const chu = CHU_CUA_PHONG[id];
+    if (!r || !chu) continue;
+    ins.run(id, chu.landlordId, r.title, r.address, r.price, null, r.phone, MOTA[id],
+      'approved', '', iso('2026-09-01T08:00:00'), iso('2026-09-01T10:00:00'), 'ad-01');
+  }
+
+  // Tin mới gửi, đang chờ duyệt
+  ins.run(null, 'l-mai', 'Phòng mới sửa, gần ĐH Thương Mại',
+    '45 Hồ Tùng Mậu, Phường Cầu Giấy, Hà Nội', 2900000, 20, '0977111222',
+    'Phòng mới sơn sửa, có điều hoà và nóng lạnh. Hẹn xem phòng trong ngày.',
+    'pending', '', iso('2026-10-05T09:20:00'), null, null);
+  ins.run(null, 'l-binh', 'CHO THUÊ CĂN HỘ FULL NỘI THẤT GIÁ SỐC',
+    'Quận Cầu Giấy, Hà Nội', 900000, 35, '0589123456',
+    'Căn hộ 35m2 full nội thất chỉ 900k/tháng. Chốt cọc 2 triệu qua Zalo trong hôm nay, '
+    + 'không cần xem phòng, ai chuyển khoản trước thì được. Liên hệ gấp kẻo hết.',
+    'pending', '', iso('2026-10-07T22:40:00'), null, null);
+  ins.run(null, 'l-mai', 'Phòng khép kín Long Biên, có thang máy',
+    '15 Việt Hưng, Phường Việt Hưng, Hà Nội', 3200000, 24, '0977111222',
+    'Phòng khép kín trong toà nhà có thang máy, gần chợ Việt Hưng.',
+    'pending', '', iso('2026-10-08T14:05:00'), null, null);
+
+  // Tin đã bị từ chối, giữ lại để tra cứu
+  ins.run(null, 'l-binh', 'Nhà nguyên căn 10 phòng, cho thuê 500k/phòng',
+    'Không ghi rõ địa chỉ', 500000, null, '0325000111',
+    'Cho thuê giá rẻ, đặt cọc giữ chỗ trước mới dẫn đi xem.',
+    'rejected', 'Giá không có thật và yêu cầu đặt cọc trước khi xem phòng — dấu hiệu lừa đảo.',
+    iso('2026-09-28T19:00:00'), iso('2026-09-29T08:30:00'), 'ad-01');
+}
+
 // ================= Dữ liệu mẫu cho cơ sở dữ liệu mới =================
 function seed(q, db) {
   const iso = (local) => new Date(local).toISOString();
@@ -485,6 +569,10 @@ function seed(q, db) {
     insReq.run(Number(r.lastInsertRowid), roomId, u.id, u.name, u.phone, donVao,
       iso(`${xemNgay}T12:00:00`), iso(`${xemNgay}T13:00:00`), iso(`${xemNgay}T14:00:00`));
   };
-  dangThue('p04', A, '2026-09-05', '2026-09-15');
-  dangThue('p06', L, '2026-08-28', '2026-09-01');
+  // Bốn người thuê có tài khoản đang ở trong nhà trọ An Bình — khớp danh sách người thuê và
+  // hợp đồng ở quan-ly/nguoi-thue.html, quan-ly/hop-dong-dien-tu.html.
+  dangThue('P.101', A, '2026-08-18', '2026-09-01');
+  dangThue('P.201', L, '2026-08-19', '2026-09-01');
+  dangThue('P.301', T, '2026-08-20', '2026-09-01');
+  dangThue('P.302', H, '2026-08-21', '2026-10-01');
 }

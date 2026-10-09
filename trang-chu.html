@@ -276,7 +276,7 @@
   .device-note{margin-top:22px;text-align:center;font-size:14px;color:var(--text-muted)}
 
   /* ---------- Bảng giá ---------- */
-  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+  .plans{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;align-items:stretch;max-width:880px;margin:0 auto}
   .plan{
     position:relative;display:flex;flex-direction:column;padding:30px 26px 26px;
     border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);
@@ -1084,8 +1084,8 @@
     <div class="cards" data-stagger>
       <div class="card reveal">
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></div>
-        <h3>Bắt đầu miễn phí</h3>
-        <p>Gói Free cho đăng tin phòng trọ miễn phí, không giới hạn thời gian, không cần thẻ thanh toán.</p>
+        <h3>Dùng thử 15 ngày</h3>
+        <p>Dùng đủ tính năng 15 ngày, không cần thẻ thanh toán. Thấy hợp mới trả tiền, huỷ lúc nào cũng được.</p>
       </div>
       <div class="card reveal">
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
@@ -1122,34 +1122,21 @@
     <div class="sec-head center reveal">
       <span class="eyebrow"><span class="dot"></span> Bảng giá</span>
       <h2>Bảng giá minh bạch, không phí ẩn</h2>
-      <p>Bắt đầu miễn phí, nâng cấp khi nhà trọ của bạn lớn hơn. Đổi hoặc huỷ gói bất cứ lúc nào.</p>
+      <p>Hai gói, tính theo số phòng bạn đang quản lý. Dùng thử 15 ngày không cần thẻ, đổi hoặc huỷ gói bất cứ lúc nào.</p>
     </div>
     <div class="plans" data-stagger>
-      <article class="plan reveal" id="plan-free">
-        <h3>Free</h3>
-        <p class="plan-for">Cho chủ trọ mới bắt đầu đăng tin</p>
-        <p class="plan-price">0₫</p>
-        <p class="plan-trial">Miễn phí, không giới hạn thời gian</p>
-        <ul>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Đăng tin phòng trọ miễn phí</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Quản lý tối đa 10 phòng</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Nhận lịch xem và tin nhắn từ người thuê</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Theo dõi phòng trống, đã thuê</span></li>
-        </ul>
-        <a href="#" class="btn btn-ghost" data-auth="register" data-auth-role="landlord">Đăng tin miễn phí</a>
-      </article>
       <article class="plan featured reveal" id="plan-plus">
         <span class="plan-tag">Phổ biến nhất</span>
         <h3>Plus</h3>
         <p class="plan-for">Cho nhà trọ, dãy trọ đang cho thuê</p>
-        <p class="plan-price">149.000₫ <small>/ tháng</small></p>
+        <p class="plan-price">199.000₫ <small>/ tháng</small></p>
         <p class="plan-trial">Dùng thử miễn phí 15 ngày</p>
         <ul>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Mọi tính năng của gói Free</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Tối đa 50 phòng, 3 nhà trọ</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><b>Tối đa 15 phòng</b>, 1 tài khoản quản lý</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Đăng tin phòng trọ không giới hạn lượt</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Nhận lịch xem và tin nhắn từ người thuê</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Ghi điện nước, tự tính hoá đơn</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hợp đồng điện tử</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Nhắc thanh toán tự động</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hợp đồng điện tử, nhắc thanh toán tự động</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Báo cáo doanh thu hằng tháng</span></li>
         </ul>
         <a href="#" class="btn btn-primary" data-auth="register" data-auth-role="landlord">Dùng thử 15 ngày</a>
@@ -1157,12 +1144,12 @@
       <article class="plan reveal" id="plan-pro">
         <h3>Pro</h3>
         <p class="plan-for">Cho chung cư mini, căn hộ dịch vụ, toà nhà cao cấp</p>
-        <p class="plan-price">399.000₫ <small>/ tháng</small></p>
+        <p class="plan-price">499.000₫ <small>/ tháng</small></p>
         <p class="plan-trial">Dùng thử miễn phí 15 ngày</p>
         <ul>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Mọi tính năng của gói Plus</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Không giới hạn phòng và toà nhà</span></li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Phân quyền cho quản lý, nhân viên</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><b>Tối đa 60 phòng</b>, nhiều nhà trọ trong một tài khoản</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><b>Tối đa 5 tài khoản</b>, phân quyền cho quản lý, nhân viên</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Báo cáo công nợ, xuất Excel</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Tin đăng nổi bật trong mục Tìm phòng</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hỗ trợ ưu tiên 1–1</span></li>
@@ -1170,7 +1157,7 @@
         <a href="#" class="btn btn-ghost" data-auth="register" data-auth-role="landlord">Chọn gói Pro</a>
       </article>
     </div>
-    <p class="plans-note reveal">Giá chưa gồm VAT. Dùng thử không cần thẻ thanh toán; hết 15 ngày, tài khoản tự về gói Free nếu bạn không nâng cấp.</p>
+    <p class="plans-note reveal">Giá chưa gồm VAT, tính theo tháng. Dùng thử không cần thẻ thanh toán; hết 15 ngày mà chưa thanh toán kỳ đầu, tài khoản tạm dừng đăng tin cho tới khi kích hoạt lại. Quá 60 phòng, liên hệ để báo giá riêng.</p>
   </div>
 </section>
 
@@ -1892,7 +1879,7 @@
           .catch(function(){ return AUTH_API; });
 
     function areaOf(user){
-      if (user && user.role === 'admin') return 'quan-tri/tong-quan.html';
+      if (user && user.role === 'admin') return 'quan-tri/trang-chu.html';
       return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html';
     }
     function shortName(user){
@@ -2039,87 +2026,82 @@
     var grid = document.getElementById('roomGrid');
     if(!grid) return;
 
-    // Chỉ dùng phòng có ảnh thật (assets/rooms/), ảnh khớp đúng tin và giá cho thuê.
-    // 9 tin phòng thật ở Hà Nội (tài liệu phòng trọ của nhóm), ảnh trong assets/rooms/.
-    // Chỉ ghi dữ liệu có trong tin: tầng, tiền cọc, chi phí chỉ có ở tin nào ghi rõ.
+    // 9 phòng p01-p09, cùng một bộ với tai-khoan/tim-phong.html (bộ chuẩn) và PHONG trong
+    // server/phong.mjs. Phường ghi theo danh sách 126 đơn vị của Hà Nội sau sáp nhập để bộ lọc
+    // vị trí tìm được; số điện thoại là số đã đăng ký của chủ trọ sở hữu phòng.
     var ROOMS = [
-      { id:'p01', city:'ha-noi', title:'Phòng khép kín gần các trường Bách Khoa – Kinh tế – Xây dựng', price:4500000, area:20, people:2,
-        ward:'Phường Bạch Mai', address:'36 Đường Đại Cồ Việt, Phường Bạch Mai, Hà Nội',
-        posted:1, postedAt:'05/08/2026', phone:'0967 960 926',
-        alt:'Phòng trọ mới, full nội thất gần Đại Cồ Việt',
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Camera an ninh','Ban công riêng','Không chung chủ'],
-        desc:'Xung quanh là các trường Đại học Bách Khoa, Kinh tế Quốc dân, Đại học Xây dựng. Phòng mới 100%, full nội thất, điều hoà nóng lạnh, giường tủ, kệ bếp. Camera an ninh đầy đủ, mặt tiền thông thoáng. Các phòng đều có ban công và lối thoát hiểm độc lập. Không chung chủ, không qua trung gian, không nhận cọc trước qua mọi hình thức: đến xem trực tiếp, phù hợp mới ở.',
+      { id:'p01', city:'ha-noi', title:'Phòng gác lửng, thoáng sáng', price:2800000, area:22, people:2, floor:2,
+        ward:'Phường Nghĩa Đô', address:'12 Nguyễn Khánh Toàn, Phường Nghĩa Đô, Hà Nội',
+        posted:4, postedAt:'16/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng',
+        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Nghĩa Tân 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+        images:['assets/rooms/phong-lac-trung-vinh-tuy.jpg','assets/rooms/phong-lac-trung-vinh-tuy-2.webp','assets/rooms/phong-lac-trung-vinh-tuy-3.webp'] },
+
+      { id:'p02', city:'ha-noi', title:'Căn hộ mini full nội thất', price:4200000, area:30, people:2, floor:4,
+        ward:'Phường Kim Liên', address:'27 Đào Duy Anh, Phường Kim Liên, Hà Nội',
+        posted:1, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng',
+        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Gần công viên Thống Nhất, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
         images:['assets/rooms/phongtrobachkinhxaygiare1.webp','assets/rooms/phongtrobachkinhxaygiare2.webp','assets/rooms/phongtrobachkinhxaygiare3.webp','assets/rooms/phongtrobachkinhxaygiare4.webp'] },
 
-      { id:'p02', city:'ha-noi', title:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', price:3300000, area:25, people:2,
-        ward:'Phường Nghĩa Đô', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Hà Nội',
-        posted:2, postedAt:'05/08/2026', phone:'0916 667 679',
-        alt:'Phòng trọ khép kín có bếp và điều hoà ở ngõ 210 Hoàng Quốc Việt',
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Chỗ để xe','Máy giặt chung','Công tơ điện riêng'],
-        desc:'Phòng trọ khép kín 25 m² bao gồm nhà vệ sinh, bếp, giường, tủ, điều hoà, bình nóng lạnh. Có công tơ riêng, chỗ để xe máy chung ở tầng 1, máy giặt và sân phơi chung ở tầng 5. Gần Học viện Quân sự, ĐH Điện lực, CĐ Du lịch, ĐH Quốc gia, ĐH Khoa học Công nghệ, ĐH Sư phạm, CĐ Sư phạm, ĐH Thương mại. Gần chợ Nghĩa Tân, chợ Trần Cung và nhiều trạm xe buýt. Khu dân trí cao, an ninh, yên tĩnh, sạch sẽ. Giá thuê từ 3,3 triệu/tháng tuỳ loại phòng.',
+      { id:'p03', city:'ha-noi', title:'Phòng ban công riêng, đón nắng', price:3100000, area:25, people:2, floor:3,
+        ward:'Phường Bạch Mai', address:'88 Bạch Mai, Phường Bạch Mai, Hà Nội',
+        posted:6, postedAt:'15/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng trọ có ban công riêng nhiều ánh sáng',
+        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần chợ Mơ và bến xe Nước Ngầm. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
         images:['assets/rooms/210hqv1.webp','assets/rooms/210hqv2.webp','assets/rooms/210hqv3.webp','assets/rooms/210hqv4.webp'] },
 
-      { id:'p03', city:'ha-noi', title:'Phòng mới xây, đầy đủ tiện nghi', price:3500000, area:30, people:2,
-        ward:'Phường Văn Miếu – Quốc Tử Giám', address:'Số nhà 20, ngách 79, ngõ Cẩm Văn, Phường Văn Miếu – Quốc Tử Giám, Hà Nội',
-        posted:3, postedAt:'05/08/2026', phone:'0838 528 543',
-        alt:'Phòng trọ mới xây, có điều hoà và tủ quần áo',
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Tủ quần áo'],
-        desc:'Nhà mới xây, đầy đủ tiện nghi: nóng lạnh, điều hoà, tủ quần áo, tủ phấn, đệm, giá bếp. Gần chợ, gần các bệnh viện và trường học cấp 1, 2, 3. Gần Học viện Âm nhạc, ĐH Mỹ thuật, CĐ Y tế, ĐH Công đoàn, ĐH Thuỷ lợi, ĐH Bách Khoa, ĐH Y.',
-        images:['assets/rooms/moixay1.webp','assets/rooms/moixay2.webp','assets/rooms/moixay3.webp'] },
+      { id:'p04', city:'ha-noi', title:'Studio hiện đại gần trung tâm', price:3900000, area:28, people:2, floor:5,
+        ward:'Phường Khương Đình', address:'12 Khương Đình, Phường Khương Đình, Hà Nội',
+        posted:2, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng studio hiện đại gần trung tâm thành phố',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách công viên Hạ Đình 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+        images:['assets/rooms/moixay1.webp','assets/rooms/moixay2.webp','assets/rooms/moixay3.webp','assets/rooms/moixay4.webp'] },
 
-      { id:'p04', city:'ha-noi', title:'Phòng trọ khép kín Trần Thái Tông', price:3500000, area:28, people:2,
-        ward:'Phường Cầu Giấy', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Phường Cầu Giấy, Hà Nội',
-        posted:4, postedAt:'05/08/2026', phone:'0904 525 414',
-        alt:'Phòng trọ khép kín gần ngã tư Trần Thái Tông – Xuân Thuỷ',
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Máy giặt chung','Khoá vân tay','Chỗ để xe'],
-        fees:['Điện 4.000đ/số','Nước 100.000đ/người','Dịch vụ chung 150.000đ/người (wifi, máy giặt…)'],
-        desc:'Gần ngã tư Trần Thái Tông – Xuân Thuỷ, cách Học viện Báo chí 200m, gần ĐH Quốc gia, ĐH Sư phạm, ĐH Ngoại ngữ, ĐH Thương mại. Tiện ích: giường, tủ, đệm, điều hoà, nóng lạnh, bàn bếp, máy giặt chung, khoá vân tay. Thang bộ, để xe miễn phí.',
+      { id:'p05', city:'ha-noi', title:'Phòng khép kín, an ninh tốt', price:2500000, area:20, people:2, floor:1,
+        ward:'Phường Ngọc Hà', address:'56 Ngọc Hà, Phường Ngọc Hà, Hà Nội',
+        posted:8, postedAt:'14/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt',
+        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Lăng Bác 1,2km, gần chợ và trạm xe buýt.',
         images:['assets/rooms/ttt1.webp','assets/rooms/ttt2.webp','assets/rooms/ttt3.webp'] },
 
-      { id:'p05', city:'ha-noi', title:'Phòng trọ sinh viên tại Hoà Lạc, gần ĐH FPT và ĐHQGHN', price:1800000, area:20, people:2,
-        ward:'Xã Hòa Lạc', address:'Đường Đại lộ Thăng Long, Xã Hòa Lạc, Hà Nội',
-        posted:5, postedAt:'05/08/2026', phone:'0342 150 995',
-        alt:'Phòng trọ sinh viên gần Đại học FPT Hoà Lạc',
-        amenities:['Máy lạnh','Nóng lạnh','Tủ lạnh','Wifi miễn phí','Có bếp riêng','Máy giặt chung','Chỗ sạc xe điện'],
-        fees:['Điện 3.400đ/số','Nước sạch theo hoá đơn','Dịch vụ 150.000đ/người/tháng (máy giặt, internet, vệ sinh, rác)'],
-        desc:'Ngay cổng sau trường ĐH FPT, gần ĐHQGHN Hoà Lạc và Học viện Tài chính. Thiết bị đầy đủ: điều hoà, nóng lạnh, tủ lạnh, wifi, giường tủ, bàn học, bàn bếp, máy giặt, có khu sạc xe điện. Gần điểm xe buýt 117, siêu thị, quán ăn, nhà hàng, phòng gym và chợ. An ninh đảm bảo, nội quy đầy đủ, thoáng mát.',
-        images:['assets/rooms/hoalac1.webp','assets/rooms/hoalac2.webp'] },
+      { id:'p06', city:'ha-noi', title:'Phòng rộng, phù hợp gia đình', price:4600000, area:35, people:3, floor:2,
+        ward:'Phường Vĩnh Hưng', address:'203 Vĩnh Hưng, Phường Vĩnh Hưng, Hà Nội',
+        posted:5, postedAt:'16/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình',
+        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Vĩnh Hưng và Times City 2km.',
+        images:['assets/rooms/hoalac1.webp','assets/rooms/hoalac2.webp','assets/rooms/hoalac3.webp'] },
 
-      { id:'p06', city:'ha-noi', title:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', price:4250000, area:25, people:2, floor:5,
-        ward:'Phường Phú Diễn', address:'Ngõ 90 Đường Phúc Diễn, Phường Phú Diễn, Hà Nội',
-        posted:6, postedAt:'05/08/2026', phone:'0974 942 507',
-        alt:'Phòng trọ có thang máy gần ga Cầu Diễn',
-        amenities:['Thang máy','Wifi miễn phí','Máy lạnh','Chỗ để xe'],
-        fees:['Điện 3.800đ/số','Nước 35.000đ/khối','Dịch vụ chung 150.000đ/người','Mạng 100.000đ/phòng','Thang máy 50.000đ/người'],
-        desc:'Ngõ 90 Phúc Diễn – 281 Hồ Tùng Mậu, gần chân ga Cầu Diễn. Hiện trống phòng 501. Không nhận thú cưng, không nhận khách nước ngoài. Hợp đồng 13 tháng.',
+      { id:'p07', city:'ha-noi', title:'Phòng trọ giá mềm cho sinh viên', price:1800000, area:16, people:1, floor:3,
+        ward:'Phường Từ Liêm', address:'9 Lê Đức Thọ, Phường Từ Liêm, Hà Nội',
+        posted:9, postedAt:'13/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên',
+        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê gần Đại học Thương Mại, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
         images:['assets/rooms/ga1.webp','assets/rooms/ga2.webp','assets/rooms/ga3.webp'] },
 
-      { id:'p07', city:'ha-noi', title:'Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện', price:3000000, area:30, people:2,
-        ward:'Phường Kim Liên', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Hà Nội',
-        posted:7, postedAt:'05/08/2026', phone:'0982 165 646',
-        alt:'Phòng trọ 30m² có ban công trên đường Tôn Thất Tùng',
-        amenities:['Máy lạnh','Nóng lạnh','Máy giặt chung','Ban công riêng','Giờ giấc tự do'],
-        desc:'Có phòng cho nữ thuê, diện tích 30 m², có ban công. Tiện nghi đầy đủ: tắm nóng lạnh, điều hoà, máy giặt, quạt, giường tủ. Phòng khép kín, đi khoá về mở, dân trí cao, an ninh tốt.',
+      { id:'p08', city:'ha-noi', title:'Phòng có gác, cửa sổ hướng vườn', price:3400000, area:26, people:2, floor:2,
+        ward:'Phường Tây Hồ', address:'74 Âu Cơ, Phường Tây Hồ, Hà Nội',
+        posted:7, postedAt:'15/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn',
+        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn đào của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Nhật Tân 1,5km.',
         images:['assets/rooms/dd1.webp','assets/rooms/dd2.webp'] },
 
-      { id:'p08', city:'ha-noi', title:'Trọ có 1 phòng ngủ 1 phòng khách', price:4000000, area:25, people:2, deposit:4000000,
-        ward:'Phường Xuân Phương', address:'Đường Tu Hoàng, Phường Xuân Phương, Hà Nội',
-        posted:8, postedAt:'05/08/2026', phone:'0912 415 901',
-        alt:'Phòng trọ 1 phòng ngủ 1 phòng khách, có ban công',
-        amenities:['Máy lạnh','Nóng lạnh','Tủ lạnh','Ban công riêng','Có bếp riêng','Máy giặt chung','Khoá vân tay','Giờ giấc tự do'],
-        fees:['Điện 3.800đ/số','Nước 30.000đ/khối','Internet 100.000đ/phòng','Dịch vụ chung 180.000đ/người'],
-        desc:'Địa chỉ 37 phố Nhổn, loại 1 phòng ngủ 1 phòng khách, đặt cọc 1 tháng. Phòng khép kín, nội thất gồm điều hoà, tủ lạnh, nóng lạnh, tủ quần áo, bếp, ban công thoáng mát, sân phơi và máy giặt ở tầng thượng. Cách mặt đường Nhổn 30m, cách ĐH Công nghiệp 150m, gần tàu điện trên cao và bến xe buýt. Nhà mới xây, không chung chủ, giờ giấc thoải mái, khoá vân tay, không nhận xe điện.',
-        images:['assets/rooms/1n1k1.webp','assets/rooms/1n1k2.webp','assets/rooms/1n1k3.webp'] },
-
-      { id:'p09', city:'ha-noi', title:'Phòng đầy đủ tiện nghi ở Định Công', price:2700000, area:25, people:2, floor:2,
-        ward:'Phường Định Công', address:'Số nhà 26A, ngõ 220 Định Công Thượng, Phường Định Công, Hà Nội',
-        posted:9, postedAt:'05/08/2026', phone:'0972 137 955',
-        alt:'Phòng trọ tầng 2 có cửa sổ rộng ở Định Công',
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Chỗ để xe','Máy giặt chung','Tủ lạnh'],
-        fees:['Điện, nước và internet tính theo hoá đơn nhà cung cấp'],
-        desc:'Giá 2.700.000đ/tháng nếu ở 1 người, ở 2 người giá 3 triệu, phòng tầng 2. Tầng 1 có chỗ để xe rộng rãi và khu bếp ăn đầy đủ đồ. Máy giặt và sân phơi ở tầng 4 rộng, thoáng, nhiều cây xanh. Phòng còn trống ở tầng 2 có cửa sổ rộng, đủ điều hoà, nóng lạnh, giường, tủ, bàn học. Mỗi tầng 2 phòng, vệ sinh chung sạch sẽ.',
-        images:['assets/rooms/hmai1.webp','assets/rooms/hmai2.webp','assets/rooms/hmai3.webp','assets/rooms/hmai4.webp','assets/rooms/hmai5.webp'] }
-    ];
+      { id:'p09', city:'ha-noi', title:'Căn hộ dịch vụ 2 phòng ngủ', price:6500000, area:48, people:3, floor:6,
+        ward:'Phường Việt Hưng', address:'15 Việt Hưng, Phường Việt Hưng, Hà Nội',
+        posted:3, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Đuống. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+        images:['assets/rooms/hmai1.webp','assets/rooms/hmai2.webp','assets/rooms/hmai3.webp','assets/rooms/hmai4.webp','assets/rooms/hmai5.webp'] },
+     ];
 
     var nf = new Intl.NumberFormat('vi-VN');
     function vnd(n){ return nf.format(n) + '₫'; }
@@ -2658,8 +2640,11 @@
       costs.innerHTML = (r.fees || []).map(function(fee){ return '<span>' + SVG_CHECK + esc(fee) + '</span>'; }).join('');
       costs.closest('.rd-block').hidden = !(r.fees && r.fees.length);
 
-      document.getElementById('rdOwnerAv').textContent = 'CT';
-      document.getElementById('rdOwnerName').textContent = 'Chủ trọ';
+      // Tên chủ trọ lấy theo tài khoản sở hữu phòng (xem NHA_TRO trong server/phong.mjs)
+      var chu = r.owner || 'Chủ trọ';
+      document.getElementById('rdOwnerAv').textContent = chu.split(' ').slice(-2)
+        .map(function(w){ return w.charAt(0); }).join('').toUpperCase();
+      document.getElementById('rdOwnerName').textContent = chu;
       document.getElementById('rdOwnerMeta').textContent = 'Tin đăng ngày ' + r.postedAt;
       document.getElementById('rdPhone').textContent = r.phone;
 

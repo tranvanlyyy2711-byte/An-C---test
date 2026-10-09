@@ -320,9 +320,9 @@
     "ok": true
   },
   {
-    "name": "chủ trọ thấy 2 yêu cầu thuê của Trang",
-    "got": 2,
-    "want": 2,
+    "name": "chủ trọ thấy 3 yêu cầu thuê của Trang",
+    "got": 3,
+    "want": 3,
     "ok": true
   },
   {
@@ -334,10 +334,12 @@
   {
     "name": "trạng thái trên máy chủ",
     "got": [
+      "P.301:approved",
       "p03:rejected",
       "p08:approved"
     ],
     "want": [
+      "P.301:approved",
       "p03:rejected",
       "p08:approved"
     ],

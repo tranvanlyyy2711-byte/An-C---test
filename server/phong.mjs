@@ -5,29 +5,34 @@
 const IMG = '../assets/rooms/';
 
 // Phòng hiển thị cho người thuê (khớp ROOMS trong tai-khoan/tim-phong.html).
-// Nguồn sự thật: 9 phòng p01-p09 ở trang-chu.html (trang chủ công khai). Số chủ trọ lấy từ
-// owner.phone của trang-chu.html (bỏ khoảng trắng); ảnh đổi sang file nội bộ thay vì Unsplash.
+// Số điện thoại liên hệ của mỗi tin là SỐ ĐÃ ĐĂNG KÝ của chủ trọ sở hữu nhà trọ đó (xem NHA_TRO
+// bên dưới): 0988000999 Trần Hoà, 0977111222 Lê Thu Mai. Nhờ vậy trang người thuê, trang chủ trọ và
+// khu quản trị cùng nói về một tài khoản. Ảnh dùng file nội bộ trong assets/rooms/.
 const PHONG_NGUOI_THUE = [
-  ['p01', 'Phòng gác lửng, thoáng sáng', '12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội', 2800000, '0912345678', 'phong-lac-trung-vinh-tuy.jpg'],
-  ['p02', 'Căn hộ mini full nội thất', '27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội', 4200000, '0938221574', 'phongtrobachkinhxaygiare1.webp'],
-  ['p03', 'Phòng ban công riêng, đón nắng', '88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội', 3100000, '0906887302', '210hqv1.webp'],
-  ['p04', 'Studio hiện đại gần trung tâm', '12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội', 3900000, '0977415688', 'moixay1.webp'],
-  ['p05', 'Phòng khép kín, an ninh tốt', '56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội', 2500000, '0913664129', 'ttt1.webp'],
-  ['p06', 'Phòng rộng, phù hợp gia đình', '203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội', 4600000, '0904332871', 'hoalac1.webp'],
-  ['p07', 'Phòng trọ giá mềm cho sinh viên', '9 Lê Đức Thọ, P. Mỹ Đình, Từ Liêm, Hà Nội', 1800000, '0968110447', 'ga1.webp'],
-  ['p08', 'Phòng có gác, cửa sổ hướng vườn', '74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội', 3400000, '0915209633', 'dd1.webp'],
-  ['p09', 'Căn hộ dịch vụ 2 phòng ngủ', '15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội', 6500000, '0902778916', 'hmai1.webp'],
+  ['p01', 'Phòng gác lửng, thoáng sáng', '12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội', 2800000, '0988000999', 'phong-lac-trung-vinh-tuy.jpg'],
+  ['p02', 'Căn hộ mini full nội thất', '27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội', 4200000, '0977111222', 'phongtrobachkinhxaygiare1.webp'],
+  ['p03', 'Phòng ban công riêng, đón nắng', '88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội', 3100000, '0977111222', '210hqv1.webp'],
+  ['p04', 'Studio hiện đại gần trung tâm', '12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội', 3900000, '0977111222', 'moixay1.webp'],
+  ['p05', 'Phòng khép kín, an ninh tốt', '56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội', 2500000, '0988000999', 'ttt1.webp'],
+  ['p06', 'Phòng rộng, phù hợp gia đình', '203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội', 4600000, '0977111222', 'hoalac1.webp'],
+  ['p07', 'Phòng trọ giá mềm cho sinh viên', '9 Lê Đức Thọ, P. Mỹ Đình, Từ Liêm, Hà Nội', 1800000, '0988000999', 'ga1.webp'],
+  ['p08', 'Phòng có gác, cửa sổ hướng vườn', '74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội', 3400000, '0977111222', 'dd1.webp'],
+  ['p09', 'Căn hộ dịch vụ 2 phòng ngủ', '15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội', 6500000, '0977111222', 'hmai1.webp'],
 ];
 
 // Phòng của nhà trọ trong trang chủ trọ (khớp ROOM_CODES trong quan-ly/yeucauvalichhen.html).
-const PHONG_CHU_TRO = ['P.101', 'P.102', 'P.103', 'P.201', 'P.202', 'P.203', 'P.301', 'P.302'];
+// Giá lấy theo danh sách phòng ở quan-ly/tong-quan.html để khu quản trị hiện cùng một con số.
+const PHONG_CHU_TRO = [
+  ['P.101', 3500000], ['P.102', 3200000], ['P.103', 3200000], ['P.201', 4100000],
+  ['P.202', 3800000], ['P.203', 3800000], ['P.301', 3500000], ['P.302', 3000000],
+];
 
 export const PHONG = {};
 for (const [id, title, address, price, phone, img] of PHONG_NGUOI_THUE) {
   PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, phone, image: IMG + img };
 }
-for (const code of PHONG_CHU_TRO) {
-  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price: 0, phone: '', image: '' };
+for (const [code, price] of PHONG_CHU_TRO) {
+  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price, phone: '', image: '' };
 }
 
 // ================= Nhà trọ và chủ sở hữu =================
@@ -36,7 +41,7 @@ for (const code of PHONG_CHU_TRO) {
 // trong bảng users (xem DEMO_USERS ở server/auth.mjs). Khi lên Supabase, bảng properties
 // thay hẳn danh sách này. Địa chỉ nhà trọ lấy theo phòng đầu tiên của nó.
 const NHA_TRO_SEED = [
-  ['nt-an-binh',     'Nhà trọ An Bình',           'l-binh', PHONG_CHU_TRO],
+  ['nt-an-binh',     'Nhà trọ An Bình',           'l-binh', PHONG_CHU_TRO.map(([ma]) => ma)],
   ['nt-nghia-do',    'Nhà trọ Nguyễn Khánh Toàn', 'l-binh', ['p01']],
   ['nt-ngoc-ha',     'Nhà trọ Ngọc Hà',           'l-binh', ['p05']],
   ['nt-my-dinh',     'Nhà trọ Lê Đức Thọ',        'l-binh', ['p07']],
@@ -48,13 +53,18 @@ const NHA_TRO_SEED = [
   ['nt-viet-hung',   'Căn hộ dịch vụ Việt Hưng',  'l-mai',  ['p09']],
 ];
 
-export const NHA_TRO = NHA_TRO_SEED.map(([id, name, landlordId, rooms]) => ({
-  id,
-  name,
-  landlordId,
-  rooms: rooms.filter((r) => PHONG[r]),
-  address: (PHONG[rooms[0]] || {}).address || '',
-}));
+export const NHA_TRO = NHA_TRO_SEED.map(([id, name, landlordId, rooms]) => {
+  // Địa chỉ nhà trọ = địa chỉ phòng đầu tiên, bỏ phần đầu trùng với tên nhà trọ
+  const diaChi = (PHONG[rooms[0]] || {}).address || '';
+  const dau = name + ', ';
+  return {
+    id,
+    name,
+    landlordId,
+    rooms: rooms.filter((r) => PHONG[r]),
+    address: diaChi.startsWith(dau) ? diaChi.slice(dau.length) : diaChi,
+  };
+});
 
 // roomId -> { nhaTroId, landlordId }: tra nhanh một phòng thuộc nhà trọ nào, của ai.
 export const CHU_CUA_PHONG = {};

@@ -39,12 +39,12 @@ for (const t of targets) {
   await moving.goto(url, { waitUntil: 'domcontentloaded' });
   await moving.waitForTimeout(300);
   expect('bảng giá chưa hiện khi chưa cuộn tới', await moving.locator('#bang-gia .plan').first().evaluate((el) => el.classList.contains('in')), false);
-  for (const id of ['free', 'plus', 'pro']) {   // trên điện thoại 3 gói xếp dọc: cuộn qua từng gói
+  for (const id of ['plus', 'pro']) {   // trên điện thoại 2 gói xếp dọc: cuộn qua từng gói
     await moving.locator('#plan-' + id).scrollIntoViewIfNeeded();
     await moving.waitForTimeout(250);
   }
   await moving.waitForTimeout(800);
-  expect('cuộn tới bảng giá: các gói hiện ra', await moving.locator('#bang-gia .plan.in').count(), 3);
+  expect('cuộn tới bảng giá: các gói hiện ra', await moving.locator('#bang-gia .plan.in').count(), 2);
   await moving.close();
 
   // --- Giảm chuyển động: kiểm nội dung + chụp ảnh ---
@@ -69,9 +69,11 @@ for (const t of targets) {
   expect('đa nền tảng: nói rõ dùng qua website', /website/i.test(await txt('#da-nen-tang .sec-head p')), true);
   expect('vì sao chọn: 6 lý do', (await all('#vi-sao .card h3')).length, 6);
 
-  expect('bảng giá: 3 gói', await all('#bang-gia .plan h3'), ['Free', 'Plus', 'Pro']);
-  expect('bảng giá: giá', await all('#bang-gia .plan-price'), ['0₫', '149.000₫ / tháng', '399.000₫ / tháng']);
-  expect('Free: đăng phòng trọ miễn phí', (await all('#plan-free li'))[0], 'Đăng tin phòng trọ miễn phí');
+  expect('bảng giá: 2 gói, không còn gói miễn phí', await all('#bang-gia .plan h3'), ['Plus', 'Pro']);
+  expect('bảng giá: giá', await all('#bang-gia .plan-price'), ['199.000₫ / tháng', '499.000₫ / tháng']);
+  expect('Plus: 15 phòng, 1 tài khoản', (await all('#plan-plus li'))[0], 'Tối đa 15 phòng, 1 tài khoản quản lý');
+  expect('Pro: 60 phòng', /60 phòng/.test((await all('#plan-pro li')).join(' ')), true);
+  expect('Pro: 5 tài khoản', /5 tài khoản/.test((await all('#plan-pro li')).join(' ')), true);
   expect('Plus: dùng thử 15 ngày', await txt('#plan-plus .plan-trial'), 'Dùng thử miễn phí 15 ngày');
   expect('Plus được đánh dấu nổi bật', await txt('#plan-plus .plan-tag'), 'Phổ biến nhất');
   expect('Pro: cho chung cư, căn hộ cao cấp', /chung cư/i.test(await txt('#plan-pro .plan-for')), true);

@@ -126,8 +126,8 @@ export const DEMO_USERS = [
   { id: 'u-an',    role: 'renter',   full_name: 'Nguyễn Văn An',  phone: '0912000111', email: 'an@ancu.test' },
   { id: 'u-linh',  role: 'renter',   full_name: 'Trần Mỹ Linh',   phone: '0987000222', email: 'linh@ancu.test' },
   { id: 'u-huy',   role: 'renter',   full_name: 'Lê Quang Huy',   phone: '0933000333', email: 'huy@ancu.test' },
-  { id: 'l-binh',  role: 'landlord', full_name: 'Chủ trọ An Bình', phone: '0988000999', email: 'chutro@ancu.test' },
-  { id: 'l-mai',   role: 'landlord', full_name: 'Chủ trọ Thu Mai', phone: '0977111222', email: 'mai@ancu.test' },
+  { id: 'l-binh',  role: 'landlord', full_name: 'Trần Hoà',    phone: '0988000999', email: 'chutro@ancu.test' },
+  { id: 'l-mai',   role: 'landlord', full_name: 'Lê Thu Mai',  phone: '0977111222', email: 'mai@ancu.test' },
   { id: 'ad-01',   role: 'admin',    full_name: 'Quản trị An Cư',  phone: '0900000001', email: 'admin@ancu.test' },
 ];
 
@@ -135,9 +135,15 @@ export function seedDemoUsers(db) {
   const ins = db.prepare('INSERT INTO users (id, role, phone, email, full_name, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
   const has = db.prepare('SELECT 1 FROM users WHERE id = ? OR phone = ?');
   const at = new Date().toISOString();
+  // Tên/điện thoại của tài khoản demo phải khớp giữa trang người thuê, trang chủ trọ và khu
+  // quản trị. CSDL tạo từ bản cũ vẫn giữ tên cũ nên đồng bộ lại — chỉ đụng tới 7 id demo.
+  const dongBo = db.prepare('UPDATE users SET full_name = ?, phone = ?, email = ? WHERE id = ?');
   // Thêm từng tài khoản còn thiếu, để CSDL cũ (chưa có admin) cũng được bổ sung
   for (const u of DEMO_USERS) {
-    if (has.get(u.id, u.phone)) continue;
+    if (has.get(u.id, u.phone)) {
+      dongBo.run(u.full_name, u.phone, u.email, u.id);
+      continue;
+    }
     ins.run(u.id, u.role, u.phone, u.email, u.full_name, hashPassword(DEMO_PASSWORD), at);
   }
 }

@@ -269,7 +269,8 @@ try {
   await cp.click('#tabBtnReq');
   await cp.waitForTimeout(200);
   const theTrang = (code) => cp.locator('#kanbanBoard .rcard', { hasText: 'Phạm Thu Trang' }).filter({ hasText: code });
-  expect('chủ trọ thấy 2 yêu cầu thuê của Trang', await cp.locator('#kanbanBoard .rcard', { hasText: 'Phạm Thu Trang' }).count(), 2);
+  // 3 = 2 yêu cầu vừa gửi trong kịch bản + 1 hợp đồng thuê P.301 có sẵn trong dữ liệu mẫu
+  expect('chủ trọ thấy 3 yêu cầu thuê của Trang', await cp.locator('#kanbanBoard .rcard', { hasText: 'Phạm Thu Trang' }).count(), 3);
   await theTrang('P03').locator('[data-to="tu_choi"]').click();
   await cp.waitForTimeout(150);
   await cp.fill('#rejectReason', 'Phòng đã có người đặt cọc trước');
@@ -281,7 +282,7 @@ try {
   await cp.waitForTimeout(400);
   await cp.screenshot({ path: resolve(outDir, 'may-chu-yeu-cau-thue-chu-tro-desktop.png') });
   const yc = (await api('GET', '/api/yeu-cau-thue?nguoi=u-trang')).body.items;
-  expect('trạng thái trên máy chủ', yc.map((r) => r.roomId + ':' + r.status).sort(), ['p03:rejected', 'p08:approved']);
+  expect('trạng thái trên máy chủ', yc.map((r) => r.roomId + ':' + r.status).sort(), ['P.301:approved', 'p03:rejected', 'p08:approved']);
   expect('lý do không duyệt lưu lại', yc.find((r) => r.roomId === 'p03').reason, 'Phòng đã có người đặt cọc trước');
 
   // Trang được báo: "không duyệt" trước, rồi "đã duyệt" và tự chuyển sang đặt cọc

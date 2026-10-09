@@ -112,9 +112,9 @@ for (const t of targets) {
   await pickLocation('nghia do', 'Nghĩa Đô');
   expect('ô vị trí hiện phường đã chọn kèm thành phố', await txt('#locationValue'), 'Phường Nghĩa Đô, Hà Nội');
   expect('bấm Áp dụng vị trí: chưa lọc', await cards(), 9);
-  await page.selectOption('#fPrice', '3000000-4000000');
+  await page.selectOption('#fPrice', '2000000-3000000');
   expect('chọn giá: chưa lọc', await cards(), 9);
-  await page.click('.qc[data-amen="Có bếp riêng"]');
+  await page.click('.qc[data-amen="Có gác lửng"]');
   expect('bấm chip Lọc nhanh: chưa lọc', await cards(), 9);
   await search();
   expect('thiếu số người: báo đúng ô còn thiếu', await txt('#finderErr'), 'Vui lòng chọn số người ở rồi bấm Tìm phòng.');
@@ -159,8 +159,13 @@ for (const t of targets) {
   await page.selectOption('#fPrice', '0-2000000');
   await page.selectOption('#fPeople', '2');
   await search();
-  expect('xã Hòa Lạc, dưới 2 triệu, 2 người: ra 1 phòng', await cards(), 1);
-  expect('địa chỉ theo xã mới', await txt('#roomGrid .room .addr'), 'Xã Hòa Lạc, Hà Nội');
+  expect('chọn được xã trong danh sách', await txt('#locationValue'), 'Xã Hòa Lạc, Hà Nội');
+  expect('xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng', [await cards(), await visible('#roomEmpty')], [0, true]);
+  await pickLocation('tu liem', 'Từ Liêm');
+  await page.selectOption('#fPeople', '1');
+  await search();
+  expect('phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng', await cards(), 1);
+  expect('địa chỉ theo phường mới', await txt('#roomGrid .room .addr'), 'Phường Từ Liêm, Hà Nội');
 
   // Nút Xoá bộ lọc trên hàng Lọc nhanh
   await page.click('.quick [data-room-reset]');
@@ -180,11 +185,12 @@ for (const t of targets) {
   await search();
   expect('phường Đống Đa không ra phòng của phường Kim Liên (quận Đống Đa cũ)', await cards(), 0);
   await pickLocation('kim lien', 'Kim Liên');
+  await page.selectOption('#fPrice', '4000000-5000000');
   await search();
-  expect('phường Kim Liên, 3–4 triệu, 1 người: ra 1 phòng', await cards(), 1);
+  expect('phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng', await cards(), 1);
 
   // ---- 8. Số người: phòng ở được nhiều người hơn vẫn hợp ----
-  await pickLocation('dinh cong', 'Định Công');
+  await pickLocation('ngoc ha', 'Ngọc Hà');
   await page.selectOption('#fPrice', '2000000-3000000');
   await page.selectOption('#fPeople', '1');
   await search();
@@ -198,7 +204,7 @@ for (const t of targets) {
 
   // ---- 8b. Số người: "Tuỳ chọn…" để tự nhập ----
   await pickLocation('bach mai', 'Bạch Mai');
-  await page.selectOption('#fPrice', '4000000-5000000');
+  await page.selectOption('#fPrice', '3000000-4000000');
   await page.selectOption('#fPeople', 'custom');
   await page.waitForTimeout(100);
   expect('chọn Tuỳ chọn: hiện ô nhập số người', await visible('#fPeopleCustom'), true);
@@ -211,7 +217,7 @@ for (const t of targets) {
   expect('nhập 12 người (quá 10): vẫn báo lỗi', await visible('#finderErr'), true);
   await page.fill('#fPeopleCustom', '2');
   await search();
-  expect('phường Bạch Mai, 4–5 triệu, tự nhập 2 người: ra 1 phòng', await cards(), 1);
+  expect('phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng', await cards(), 1);
   await toFinder();
   await page.waitForTimeout(150);
   await shot('people-custom');
@@ -269,23 +275,25 @@ for (const t of targets) {
     expect(slug + ' chưa có tin: không lẫn phòng Hà Nội', await cards(), 0);
   }
   await searchCity('ha-noi', '4000000-5000000', '2');
-  expect('cả Hà Nội, 4–5 triệu, 2 người: ra 3 phòng', await cards(), 3);
+  expect('cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng', await cards(), 2);
   expect('cả Hà Nội không lẫn phòng tỉnh khác', (await page.locator('#roomGrid .room .addr').allTextContents()).every((x) => x.trim().endsWith('Hà Nội')), true);
 
   // ---- 9. Chi tiết phòng, liên hệ, đăng nhập ----
   await pickLocation('kim lien', 'Kim Liên');
-  await page.selectOption('#fPrice', '3000000-4000000');
+  await page.selectOption('#fPrice', '4000000-5000000');
   await page.selectOption('#fPeople', '2');
   await search();
   await page.locator('#roomGrid .room').first().click();
   await page.waitForSelector('.rd-overlay.open');
   await page.waitForTimeout(300);
-  expect('chi tiết: đúng phòng', await txt('#rdTitle'), 'Phòng trọ tiện nghi giá tốt, gần chợ, trường học, bệnh viện');
+  expect('chi tiết: đúng phòng', await txt('#rdTitle'), 'Căn hộ mini full nội thất');
   expect('chi tiết: địa chỉ theo phường mới', await txt('#rdAddr'), 'Phường Kim Liên, Hà Nội');
-  expect('chi tiết: đúng 2 ảnh thật của tin', await page.locator('#rdThumbs img').evaluateAll((els) => els.map((i) => i.getAttribute('src'))), ['assets/rooms/dd1.webp', 'assets/rooms/dd2.webp']);
+  expect('chi tiết: đúng 4 ảnh thật của tin', await page.locator('#rdThumbs img').evaluateAll((els) => els.map((i) => i.getAttribute('src'))),
+    ['assets/rooms/phongtrobachkinhxaygiare1.webp', 'assets/rooms/phongtrobachkinhxaygiare2.webp', 'assets/rooms/phongtrobachkinhxaygiare3.webp', 'assets/rooms/phongtrobachkinhxaygiare4.webp']);
   await page.click('#rdContactBtn');
   await page.waitForTimeout(250);
-  expect('liên hệ: hiện số chủ phòng', await txt('#rdPhone'), '0982 165 646');
+  expect('liên hệ: hiện số đã đăng ký của chủ trọ', await txt('#rdPhone'), '0977 111 222');
+  expect('liên hệ: hiện tên chủ trọ sở hữu phòng', await txt('#rdOwnerName'), 'Lê Thu Mai');
   await shot('detail');
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect('không cuộn ngang', overflow <= 0, true);

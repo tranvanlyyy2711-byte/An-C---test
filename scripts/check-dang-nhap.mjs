@@ -152,7 +152,7 @@ try {
 
   const t = client();
   await t('POST', '/api/dang-nhap', { phone: '0901234567', password: 'matkhau123' });
-  expect('đăng nhập Trang demo thấy đủ 5 lịch mẫu', (await t('GET', '/api/lich-xem')).body.items.length, 5);
+  expect('đăng nhập Trang demo thấy đủ 6 lịch mẫu', (await t('GET', '/api/lich-xem')).body.items.length, 6);
 
   // ================= 2. Giao diện =================
   console.log('\n=== 5. Giao diện: đăng ký, header, đăng xuất ===');
