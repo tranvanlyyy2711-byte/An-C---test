@@ -113,6 +113,26 @@ try {
         await p.waitForSelector('#userRows tr:has-text("0933000333") .tag.ok');
         expect(`${nguon}: mở khoá lại`, await txt(p, '#userRows tr:has-text("0933000333") .tag'), 'Đang hoạt động');
 
+        // Hỗ trợ & thông báo trên dữ liệu mẫu
+        await p.click('.side-link[data-muc="ho-tro"]');
+        await p.waitForSelector('#tkList .tk');
+        expect(`${nguon}: có yêu cầu hỗ trợ mẫu`, await p.locator('#tkList .tk').count(), 3);
+        expect(`${nguon}: đếm theo trạng thái`, (await p.locator('#tkDem button').allTextContents()).map((x) => x.replace(/\s+/g, ' ').trim()),
+          ['Tất cả 3', 'Mới gửi 1', 'Đang xử lý 1', 'Đã xong 1']);
+        const tkMoi = await p.locator('#tkList .tk.moi [data-tk]').first().getAttribute('data-tk');
+        await p.fill(`#tkList [data-tra-loi="${tkMoi}"]`, 'Bên mình đã sửa lỗi này, anh thử lại giúp nhé.');
+        await p.click('#tkList .tk.moi [data-tt="tra-loi"]');
+        await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã gửi trả lời cho chủ trọ.', null, { timeout: 5000 }).catch(() => {});
+        expect(`${nguon}: trả lời hỗ trợ trên dữ liệu mẫu`, await txt(p, '#msg'), 'Đã gửi trả lời cho chủ trọ.');
+
+        await p.selectOption('#bcAi', 'landlord');
+        await p.fill('#bcTitle', 'Bảo trì đêm 20/10');
+        await p.fill('#bcBody', 'Hệ thống tạm dừng 23:00–01:00.');
+        await p.click('#bcGui');
+        await p.waitForFunction(() => /Đã gửi thông báo cho/.test(document.getElementById('msg').textContent), null, { timeout: 5000 }).catch(() => {});
+        expect(`${nguon}: gửi thông báo hàng loạt`, /Đã gửi thông báo cho 2 tài khoản/.test(await txt(p, '#msg')), true);
+        if (nguon === 'file') await p.screenshot({ path: resolve(outDir, 'quan-tri-ho-tro-xem-thu-desktop.png'), fullPage: true });
+
         // Duyệt tin đăng trên dữ liệu mẫu
         await p.click('.side-link[data-muc="tin-dang"]');
         await p.waitForSelector('#postList .post');
@@ -150,14 +170,26 @@ try {
         // Gói và lịch thanh toán
         await p.click('.side-link[data-muc="thanh-toan"]');
         await p.waitForSelector('#planRows tr');
-        expect(`${nguon}: có gói mẫu kèm lịch thanh toán`, await p.locator('#planRows .inv .one').count(), 3);
+        // Cả hai chủ trọ đang dùng gói Plus: 2 gói × 3 kỳ
+        expect(`${nguon}: có gói mẫu kèm lịch thanh toán`, await p.locator('#planRows .inv .one').count(), 6);
+        expect(`${nguon}: cả hai chủ trọ đều đang dùng Plus`,
+          (await p.locator('#planRows tr:not(.sub-rows) td[data-th="Gói"] b').allTextContents()).sort(), ['Plus', 'Plus']);
+
+        // Muốn đổi gói thì phải huỷ gói cũ trước
         await p.selectOption('#pLandlord', 'l-mai');
         await p.selectOption('#pPlan', 'pro');
         await p.selectOption('#pMonths', '3');
         await p.click('#planSubmit');
+        await p.waitForFunction(() => /đang có gói còn hiệu lực/.test(document.getElementById('msg').textContent), null, { timeout: 5000 }).catch(() => {});
+        expect(`${nguon}: chưa huỷ gói cũ thì không đăng ký gói mới được`, /đang có gói còn hiệu lực/.test(await txt(p, '#msg')), true);
+        p.once('dialog', (d) => d.accept());
+        await p.click('#planRows tr:has-text("Lê Thu Mai") [data-cancel]');
+        await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã huỷ gói.', null, { timeout: 5000 }).catch(() => {});
+        expect(`${nguon}: huỷ xong vẫn giữ nguyên chủ trọ đang chọn`, await p.inputValue('#pLandlord'), 'l-mai');
+        await p.click('#planSubmit');
         await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã ghi nhận gói và lên lịch thanh toán.', null, { timeout: 5000 }).catch(() => {});
         expect(`${nguon}: ghi nhận gói mới`, await txt(p, '#msg'), 'Đã ghi nhận gói và lên lịch thanh toán.');
-        expect(`${nguon}: gói mới lên đủ 3 kỳ`, await p.locator('#planRows .inv .one').count(), 6);
+        expect(`${nguon}: gói mới lên đủ 3 kỳ`, await p.locator('#planRows .inv .one').count(), 8);
         await p.click('#planRows .inv .one [data-pay][data-paid="1"]');
         await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã ghi nhận thanh toán.', null, { timeout: 5000 }).catch(() => {});
         expect(`${nguon}: ghi nhận thanh toán`, await txt(p, '#msg'), 'Đã ghi nhận thanh toán.');
@@ -167,7 +199,7 @@ try {
         await p.waitForSelector('.side-link.active');
         await p.click('.side-link[data-muc="thanh-toan"]');
         await p.waitForSelector('#planRows tr:not(.sub-rows)', { state: 'visible' });
-        expect(`${nguon}: tải lại vẫn giữ dữ liệu vừa nhập`, await p.locator('#planRows tr:not(.sub-rows)').count(), 2);
+        expect(`${nguon}: tải lại vẫn giữ dữ liệu vừa nhập`, await p.locator('#planRows tr:not(.sub-rows)').count(), 3);
       }
 
       if (nguon === 'file') await p.screenshot({ path: resolve(outDir, `quan-tri-xem-thu-${ten}.png`) });

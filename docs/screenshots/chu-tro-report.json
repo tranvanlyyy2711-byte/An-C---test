@@ -105,9 +105,21 @@
         "ok": true
       },
       {
-        "name": "Plus: dùng thử 15 ngày",
-        "got": "Dùng thử miễn phí 15 ngày",
-        "want": "Dùng thử miễn phí 15 ngày",
+        "name": "Plus: dùng được ngay sau khi thanh toán",
+        "got": "Dùng được ngay sau khi thanh toán",
+        "want": "Dùng được ngay sau khi thanh toán",
+        "ok": true
+      },
+      {
+        "name": "thẻ gói không còn mời dùng thử",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "nói rõ phải mua gói mới quản lý được",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -135,7 +147,7 @@
         "ok": true
       },
       {
-        "name": "bấm \"Dùng thử 15 ngày\": mở form đăng ký",
+        "name": "bấm \"Mua gói Plus\": mở form đăng ký",
         "got": true,
         "want": true,
         "ok": true
@@ -267,9 +279,21 @@
         "ok": true
       },
       {
-        "name": "Plus: dùng thử 15 ngày",
-        "got": "Dùng thử miễn phí 15 ngày",
-        "want": "Dùng thử miễn phí 15 ngày",
+        "name": "Plus: dùng được ngay sau khi thanh toán",
+        "got": "Dùng được ngay sau khi thanh toán",
+        "want": "Dùng được ngay sau khi thanh toán",
+        "ok": true
+      },
+      {
+        "name": "thẻ gói không còn mời dùng thử",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "nói rõ phải mua gói mới quản lý được",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -297,7 +321,7 @@
         "ok": true
       },
       {
-        "name": "bấm \"Dùng thử 15 ngày\": mở form đăng ký",
+        "name": "bấm \"Mua gói Plus\": mở form đăng ký",
         "got": true,
         "want": true,
         "ok": true
@@ -429,9 +453,21 @@
         "ok": true
       },
       {
-        "name": "Plus: dùng thử 15 ngày",
-        "got": "Dùng thử miễn phí 15 ngày",
-        "want": "Dùng thử miễn phí 15 ngày",
+        "name": "Plus: dùng được ngay sau khi thanh toán",
+        "got": "Dùng được ngay sau khi thanh toán",
+        "want": "Dùng được ngay sau khi thanh toán",
+        "ok": true
+      },
+      {
+        "name": "thẻ gói không còn mời dùng thử",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "nói rõ phải mua gói mới quản lý được",
+        "got": true,
+        "want": true,
         "ok": true
       },
       {
@@ -459,7 +495,7 @@
         "ok": true
       },
       {
-        "name": "bấm \"Dùng thử 15 ngày\": mở form đăng ký",
+        "name": "bấm \"Mua gói Plus\": mở form đăng ký",
         "got": true,
         "want": true,
         "ok": true

@@ -109,9 +109,9 @@
   },
   {
     "name": "chỉ đúng một người thắng",
-    "got": 1,
+    "got": 0,
     "want": 1,
-    "ok": true
+    "ok": false
   },
   {
     "name": "cơ sở dữ liệu chỉ có một lịch cho p07 25/09 17:30",

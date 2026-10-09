@@ -21,7 +21,6 @@ window.XemThu = (function(){
   var PLAN_PRICE = { plus: 199000, pro: 499000 };
   var PLAN_LIMIT = { plus: { rooms: 15, accounts: 1 }, pro: { rooms: 60, accounts: 5 } };
   var PLAN_LABEL = { plus: 'Plus', pro: 'Pro' };
-  var TRIAL_DAYS = 15;
 
   var d2 = function(n){ return (n < 10 ? '0' : '') + n; };
   function dYmd(d){ return d.getUTCFullYear() + '-' + d2(d.getUTCMonth() + 1) + '-' + d2(d.getUTCDate()); }
@@ -38,11 +37,13 @@ window.XemThu = (function(){
     var t = homNay();
     var batDau = congNgay(t, -40);
     var s = {
-      nextSub: 2, nextInv: 4,
+      nextSub: 3, nextInv: 7,
       users: [
         { id:'ad-01',   role:'admin',    name:'Quản trị An Cư',  phone:'0900000001', email:'admin@ancu.test',  status:'active', createdAt:congNgay(t,-60), bookings:null },
-        { id:'l-binh',  role:'landlord', name:'Trần Hoà',        phone:'0988000999', email:'chutro@ancu.test', status:'active', createdAt:congNgay(t,-55), bookings:null },
-        { id:'l-mai',   role:'landlord', name:'Lê Thu Mai',      phone:'0977111222', email:'mai@ancu.test',    status:'active', createdAt:congNgay(t,-20), bookings:null },
+        { id:'l-binh',  role:'landlord', name:'Trần Hoà',        phone:'0988000999', email:'chutro@ancu.test', status:'active', createdAt:congNgay(t,-55), bookings:null,
+          cccd:'001189012345', address:'Số 14, ngõ 72 Nguyễn Khánh Toàn, Phường Nghĩa Đô, Hà Nội' },
+        { id:'l-mai',   role:'landlord', name:'Lê Thu Mai',      phone:'0977111222', email:'mai@ancu.test',    status:'active', createdAt:congNgay(t,-20), bookings:null,
+          cccd:'', address:'' },
         { id:'u-trang', role:'renter',   name:'Phạm Thu Trang',  phone:'0901234567', email:'trang@ancu.test',  status:'active', createdAt:congNgay(t,-50), bookings:3 },
         { id:'u-an',    role:'renter',   name:'Nguyễn Văn An',   phone:'0912000111', email:'an@ancu.test',     status:'active', createdAt:congNgay(t,-30), bookings:1 },
         { id:'u-linh',  role:'renter',   name:'Trần Mỹ Linh',    phone:'0987000222', email:'linh@ancu.test',   status:'locked', createdAt:congNgay(t,-12), bookings:0 },
@@ -51,18 +52,29 @@ window.XemThu = (function(){
       props: demoNhaTro(t),
       posts: demoTinDang(t),
       nextPost: 7,
-      subs: [{ id:1, landlordId:'l-binh', plan:'plus', price:PLAN_PRICE.plus, months:3, status:'active',
-               startedAt:batDau, trialEndsAt:congNgay(batDau, TRIAL_DAYS), cancelledAt:null }],
+      tickets: demoTicket(t),
+      nextTicket: 4,
+      notis: demoThongBao(t),
+      nextNoti: 3,
+      // Cả hai chủ trọ đều đang dùng gói Plus (khớp seedGoi ở server/quan-tri.mjs)
+      subs: [
+        { id:1, landlordId:'l-binh', plan:'plus', price:PLAN_PRICE.plus, months:3, status:'active',
+          startedAt:batDau, trialEndsAt:null, cancelledAt:null },
+        { id:2, landlordId:'l-mai', plan:'plus', price:PLAN_PRICE.plus, months:3, status:'active',
+          startedAt:batDau, trialEndsAt:null, cancelledAt:null }
+      ],
       invoices: []
     };
-    var ky1 = congNgay(batDau, TRIAL_DAYS);
-    for (var i = 0; i < 3; i++) {
-      var han = congThang(ky1, i);
-      s.invoices.push({
-        id: i + 1, subscriptionId: 1, period: han.slice(0, 7), amount: PLAN_PRICE.plus, dueDate: han,
-        status: i === 0 ? 'paid' : 'pending', paidAt: i === 0 ? han : null, method: i === 0 ? 'chuyen-khoan' : null
-      });
-    }
+    var ky1 = batDau;
+    [1, 2].forEach(function(sid){
+      for (var i = 0; i < 3; i++) {
+        var han = congThang(ky1, i);
+        s.invoices.push({
+          id: s.invoices.length + 1, subscriptionId: sid, period: han.slice(0, 7), amount: PLAN_PRICE.plus, dueDate: han,
+          status: i === 0 ? 'paid' : 'pending', paidAt: i === 0 ? han : null, method: i === 0 ? 'chuyen-khoan' : null
+        });
+      }
+    });
     return s;
   }
   // Nhà trọ mẫu cho chế độ xem thử (bản thật đọc NHA_TRO trong server/phong.mjs).
@@ -180,6 +192,68 @@ window.XemThu = (function(){
     });
   }
 
+  // Yêu cầu hỗ trợ và thông báo mẫu
+  function demoTicket(t){
+    return [
+      { id:1, userId:'l-binh', kind:'loi-ky-thuat', subject:'Ghi điện nước xong không lưu được',
+        body:'Mình nhập chỉ số cuối kỳ cho phòng P.201 rồi bấm Lưu thì trang quay lại số cũ.',
+        status:'moi', createdAt:congNgay(t,-1), updatedAt:congNgay(t,-1), closedAt:null, replies:[] },
+      { id:2, userId:'l-mai', kind:'thanh-toan', subject:'Đã chuyển khoản gói Plus nhưng chưa thấy ghi nhận',
+        body:'Mình chuyển 199.000₫ sáng nay, nội dung ghi đúng số điện thoại nhưng trang vẫn báo kỳ này chờ thu.',
+        status:'dang-xu-ly', createdAt:congNgay(t,-2), updatedAt:congNgay(t,-2), closedAt:null,
+        replies:[{ id:1, authorId:'ad-01', fromAdmin:true, body:'Bên mình đang đối chiếu sao kê, có kết quả sẽ báo lại chị trong hôm nay ạ.', createdAt:congNgay(t,-2) }] },
+      { id:3, userId:'l-binh', kind:'tai-khoan', subject:'Xin đổi số điện thoại đăng nhập',
+        body:'Mình muốn đổi số đăng nhập sang 0988000111 vì số cũ sắp khoá.',
+        status:'da-xong', createdAt:congNgay(t,-9), updatedAt:congNgay(t,-9), closedAt:congNgay(t,-9),
+        replies:[{ id:2, authorId:'ad-01', fromAdmin:true, body:'Anh gửi ảnh căn cước để bên mình đối chiếu rồi đổi giúp anh nhé.', createdAt:congNgay(t,-9) }] }
+    ];
+  }
+  function demoThongBao(t){
+    return [
+      { id:1, userId:'l-binh', type:'bao-tri', title:'Bảo trì hệ thống đêm 12/10',
+        body:'An Cư bảo trì từ 23:00 ngày 12/10 đến 01:00 ngày 13/10.', channel:'in-app',
+        batchId:'bt-mau', ref:null, createdAt:congNgay(t,-8), readAt:congNgay(t,-8) },
+      { id:2, userId:'l-mai', type:'bao-tri', title:'Bảo trì hệ thống đêm 12/10',
+        body:'An Cư bảo trì từ 23:00 ngày 12/10 đến 01:00 ngày 13/10.', channel:'in-app',
+        batchId:'bt-mau', ref:null, createdAt:congNgay(t,-8), readAt:null }
+    ];
+  }
+
+  var TK_STT = { moi:0, 'dang-xu-ly':1, 'da-xong':2 };
+  function demoTicketList(params){
+    var key = khongDau(params.tim).trim();
+    var goi = demoGoiList();
+    return demo.tickets.map(function(x){
+      var u = demo.users.filter(function(y){ return y.id === x.userId; })[0] || {};
+      var g = goi.filter(function(y){ return y.landlordId === x.userId && y.status !== 'cancelled'; })[0];
+      return {
+        id:x.id, kind:x.kind, subject:x.subject, body:x.body, status:x.status,
+        createdAt:x.createdAt, updatedAt:x.updatedAt, closedAt:x.closedAt,
+        userId:x.userId, user:u.name || x.userId, userPhone:u.phone || '', userRole:u.role || null, userStatus:u.status || null,
+        plan: g ? { plan:g.plan, planName:g.planName, status:g.status } : null,
+        replies: (x.replies || []).map(function(r){
+          return { id:r.id, authorId:r.authorId, fromAdmin:r.fromAdmin, author:r.fromAdmin ? 'An Cư hỗ trợ' : (u.name || ''), body:r.body, createdAt:r.createdAt };
+        }),
+        answered: (x.replies || []).some(function(r){ return r.fromAdmin; })
+      };
+    }).filter(function(t){
+      if (params.trangThai && t.status !== params.trangThai) return false;
+      if (!key) return true;
+      return [t.subject, t.body, t.user, t.userPhone].some(function(v){ return khongDau(v).indexOf(key) !== -1; });
+    }).sort(function(a, b){ return (TK_STT[a.status] - TK_STT[b.status]) || (a.createdAt < b.createdAt ? 1 : -1); });
+  }
+
+  function demoNguoiNhan(nhom){
+    var ds = demo.users.filter(function(u){ return u.role !== 'admin' && u.status === 'active'; });
+    if (nhom === 'landlord') return ds.filter(function(u){ return u.role === 'landlord'; });
+    if (nhom === 'renter') return ds.filter(function(u){ return u.role === 'renter'; });
+    if (nhom === 'chua-mua-goi') {
+      var coGoi = demoGoiList().filter(function(g){ return g.status !== 'cancelled'; }).map(function(g){ return g.landlordId; });
+      return ds.filter(function(u){ return u.role === 'landlord' && coGoi.indexOf(u.id) === -1; });
+    }
+    return ds;
+  }
+
   function demoLoad(){
     try {
       var raw = localStorage.getItem(DEMO_KEY);
@@ -189,6 +263,9 @@ window.XemThu = (function(){
         if (o && o.users && o.subs) {
           if (!o.props) o.props = demoNhaTro(homNay());
           if (!o.posts) { o.posts = demoTinDang(homNay()); o.nextPost = 7; }
+          o.users.forEach(function(u){ if (u.role === 'landlord' && u.cccd === undefined) { u.cccd = ''; u.address = ''; } });
+          if (!o.tickets) { o.tickets = demoTicket(homNay()); o.nextTicket = 4; }
+          if (!o.notis) { o.notis = demoThongBao(homNay()); o.nextNoti = 3; }
           return o;
         }
       }
@@ -241,6 +318,9 @@ window.XemThu = (function(){
       return {
         id: u.id, role: u.role, name: u.name, phone: u.phone, email: u.email, status: u.status,
         createdAt: u.createdAt, bookings: u.role === 'renter' ? u.bookings : null,
+        // Giấy tờ chỉ chủ trọ mới phải khai
+        cccd: u.role === 'landlord' ? (u.cccd || '') : null,
+        address: u.role === 'landlord' ? (u.address || '') : null,
         plan: u.role === 'landlord' && s ? { id: s.id, plan: s.plan, status: s.status } : null
       };
     });
@@ -319,10 +399,111 @@ window.XemThu = (function(){
     if (duong === '/api/quan-tri/tai-khoan' && method === 'GET') return { items: demoTaiKhoanList(params) };
     if (duong.indexOf('/api/quan-tri/tai-khoan/') === 0 && method === 'PATCH') {
       var u = demoNguoiDung(decodeURIComponent(duong.slice('/api/quan-tri/tai-khoan/'.length)));
+      if (body.action === 'giay-to') {
+        if (u.role !== 'landlord') throw demoLoi('Chỉ chủ trọ mới cần khai căn cước và địa chỉ.');
+        var so = String(body.cccd == null ? u.cccd : body.cccd).replace(/\s/g, '');
+        if (so && !/^\d{12}$/.test(so)) throw demoLoi('Số căn cước công dân phải gồm đúng 12 chữ số.');
+        var dc = String(body.address == null ? u.address : body.address).trim();
+        if (so && !dc) throw demoLoi('Hãy nhập địa chỉ thường trú đi kèm căn cước.');
+        u.cccd = so; u.address = dc;
+        demoSave();
+        return { item: demoTaiKhoanList({}).filter(function(x){ return x.id === u.id; })[0] };
+      }
       if (u.role === 'admin') throw demoLoi('Không khoá được tài khoản quản trị.');
       u.status = body.action === 'lock' ? 'locked' : 'active';
       demoSave();
       return { item: demoTaiKhoanList({}).filter(function(x){ return x.id === u.id; })[0] };
+    }
+
+    var NHOM = { all:'Tất cả tài khoản', landlord:'Chủ trọ', renter:'Người thuê', 'chua-mua-goi':'Chủ trọ chưa mua gói' };
+
+    if (duong === '/api/quan-tri/ho-tro' && method === 'GET') return { items: demoTicketList(params) };
+    if (duong.indexOf('/api/quan-tri/ho-tro/') === 0 && method === 'PATCH') {
+      var tkId = Number(duong.slice('/api/quan-tri/ho-tro/'.length));
+      var tk = demo.tickets.filter(function(x){ return x.id === tkId; })[0];
+      if (!tk) throw demoLoi('Không tìm thấy yêu cầu hỗ trợ này.');
+      var luc = homNay();
+      if (body.action === 'tra-loi') {
+        var noi = String(body.body || '').trim();
+        if (!noi) throw demoLoi('Hãy nhập nội dung trả lời.');
+        tk.replies = tk.replies || [];
+        tk.replies.push({ id: tk.replies.length + 1, authorId:'ad-01', fromAdmin:true, body:noi, createdAt:luc });
+        if (tk.status === 'moi') tk.status = 'dang-xu-ly';
+        tk.updatedAt = luc;
+        demo.notis.push({ id: demo.nextNoti++, userId: tk.userId, type:'ho-tro', title:'Hỗ trợ đã trả lời: ' + tk.subject,
+          body: noi, channel:'in-app', batchId:null, ref:null, createdAt:luc, readAt:null });
+      } else if (body.action === 'trang-thai') {
+        if (['moi','dang-xu-ly','da-xong'].indexOf(body.status) === -1) throw demoLoi('Trạng thái không hợp lệ.');
+        tk.status = body.status;
+        tk.updatedAt = luc;
+        tk.closedAt = body.status === 'da-xong' ? luc : null;
+      } else {
+        throw demoLoi('Thao tác không hợp lệ.');
+      }
+      demoSave();
+      return { item: demoTicketList({}).filter(function(x){ return x.id === tkId; })[0] };
+    }
+
+    if (duong === '/api/quan-tri/thong-bao' && method === 'GET') {
+      var nhomGui = {};
+      var le = [];
+      demo.notis.slice().reverse().forEach(function(n){
+        if (!n.batchId) { le.push(n); return; }
+        if (nhomGui[n.batchId]) { nhomGui[n.batchId].sent++; if (n.readAt) nhomGui[n.batchId].read++; return; }
+        nhomGui[n.batchId] = { batchId:n.batchId, type:n.type, title:n.title, body:n.body, channel:n.channel,
+          createdAt:n.createdAt, sent:1, read:n.readAt ? 1 : 0 };
+      });
+      return {
+        batches: Object.keys(nhomGui).map(function(k){ return nhomGui[k]; }).sort(function(a, b){ return a.createdAt < b.createdAt ? 1 : -1; }),
+        rieng: le.slice(0, 30).map(function(n){
+          var u = demo.users.filter(function(x){ return x.id === n.userId; })[0] || {};
+          return { id:n.id, type:n.type, title:n.title, createdAt:n.createdAt, user:u.name || n.userId, read: !!n.readAt };
+        })
+      };
+    }
+    if (duong === '/api/quan-tri/thong-bao' && method === 'POST') {
+      var tieuDe = String(body.title || '').trim();
+      var noiDung = String(body.body || '').trim();
+      if (!tieuDe) throw demoLoi('Hãy nhập tiêu đề thông báo.');
+      if (!noiDung) throw demoLoi('Hãy nhập nội dung thông báo.');
+      var nhom = NHOM[body.doiTuong] ? body.doiTuong : 'all';
+      var ds = demoNguoiNhan(nhom);
+      if (!ds.length) throw demoLoi('Không có tài khoản nào thuộc nhóm này.');
+      var batch = (body.type || 'bao-tri') + '-' + Date.now();
+      var gio = homNay();
+      ds.forEach(function(u){
+        demo.notis.push({ id: demo.nextNoti++, userId:u.id, type: body.type || 'bao-tri', title:tieuDe, body:noiDung,
+          channel: body.channel === 'email' ? 'email' : 'in-app', batchId:batch, ref:null, createdAt:gio, readAt:null });
+      });
+      demoSave();
+      return { item: { batchId:batch, type: body.type || 'bao-tri', title:tieuDe, body:noiDung,
+        channel: body.channel === 'email' ? 'email' : 'in-app', doiTuong:nhom, doiTuongTen:NHOM[nhom], sent:ds.length, createdAt:gio } };
+    }
+    if (duong === '/api/quan-tri/nhac-han' && method === 'POST') {
+      demoQuet();
+      var t0 = homNay();
+      var bay = congNgay(t0, 7);
+      var can = [];
+      demoGoiList().forEach(function(g){
+        if (g.status === 'cancelled') return;
+        g.invoices.forEach(function(i){
+          if (i.status === 'paid' || i.dueDate > bay) return;
+          can.push({ landlordId:g.landlordId, landlord:g.landlord, period:i.period, dueDate:i.dueDate, amount:i.amount,
+            quaHan: i.status === 'overdue' || i.dueDate < t0, ref:'nhac-han:' + g.landlordId + ':' + i.period,
+            planName:g.planName });
+        });
+      });
+      var daGui = 0;
+      can.forEach(function(x){
+        if (demo.notis.some(function(n){ return n.ref === x.ref; })) return;
+        demo.notis.push({ id: demo.nextNoti++, userId:x.landlordId, type:'nhac-han',
+          title:'Gói ' + x.planName + (x.quaHan ? ' đã quá hạn thanh toán kỳ ' : ' đến hạn thanh toán kỳ ') + x.period,
+          body:'Kỳ ' + x.period + ' đến hạn ngày ' + x.dueDate + '.', channel:'in-app', batchId:null, ref:x.ref,
+          createdAt:t0, readAt:null });
+        daGui++;
+      });
+      demoSave();
+      return { canNhac: can.length, daGui: daGui, boQua: can.length - daGui, chiTiet: can };
     }
 
     if (duong === '/api/quan-tri/tin-dang' && method === 'GET') return { items: demoTinDangList(params) };
@@ -354,14 +535,12 @@ window.XemThu = (function(){
       }
       var soKy = Number(body.months || 12);
       var batDau = homNay();
-      var coThu = body.trial !== false;
       var sub = {
         id: demo.nextSub++, landlordId: chuTro.id, plan: body.plan, price: PLAN_PRICE[body.plan], months: soKy,
-        status: coThu ? 'trial' : 'active', startedAt: batDau,
-        trialEndsAt: coThu ? congNgay(batDau, TRIAL_DAYS) : null, cancelledAt: null
+        status: 'active', startedAt: batDau, trialEndsAt: null, cancelledAt: null
       };
       demo.subs.push(sub);
-      var dau = coThu ? sub.trialEndsAt : batDau;
+      var dau = batDau;
       for (var k = 0; k < soKy; k++) {
         var han2 = congThang(dau, k);
         demo.invoices.push({ id: demo.nextInv++, subscriptionId: sub.id, period: han2.slice(0, 7),
@@ -414,7 +593,7 @@ window.XemThu = (function(){
         today: t,
         revenue: { month: daThu(t.slice(0, 7)), prevMonth: daThu(truoc), total: gs.reduce(function(n, g){ return n + g.paid; }, 0) },
         // Chưa làm: hệ thống ticket hỗ trợ
-        support: { openTickets: null },
+        support: { openTickets: demo.tickets.filter(function(x){ return x.status !== 'da-xong'; }).length },
         listings: { pending: demo.posts.filter(function(x){ return x.status === 'pending'; }).length },
         properties: {
           total: nt.reduce(function(n, x){ return n + x.properties.length; }, 0),
@@ -431,7 +610,6 @@ window.XemThu = (function(){
           active: dangChay.length,
           plus: dangChay.filter(function(g){ return g.plan === 'plus'; }).length,
           pro: dangChay.filter(function(g){ return g.plan === 'pro'; }).length,
-          trial: dangChay.filter(function(g){ return g.status === 'trial'; }).length,
           overdue: dangChay.filter(function(g){ return g.overdue > 0; }).length,
           expiring: sapHetHan.length,
           revenue: gs.reduce(function(n, g){ return n + g.paid; }, 0),
@@ -448,7 +626,6 @@ window.XemThu = (function(){
     PLAN_PRICE: PLAN_PRICE,
     PLAN_LABEL: PLAN_LABEL,
     PLAN_LIMIT: PLAN_LIMIT,
-    TRIAL_DAYS: TRIAL_DAYS,
     tai: function(){ if (!demo) demo = demoLoad(); return demo; },
     api: function(method, path, body){ if (!demo) demo = demoLoad(); return demoApi(method, path, body); },
     toi: demoMe

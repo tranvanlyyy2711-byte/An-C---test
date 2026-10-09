@@ -1,7 +1,7 @@
 // Kiểm thử khối "Dành cho chủ trọ" trên trang chủ + chụp ảnh 1440 / 768 / 390px.
 // Chạy: node scripts/shot-chu-tro.mjs [tag]
 // Kiểm: thứ tự section (ngay dưới "Chủ trọ đang dùng An Cư tại"), đa nền tảng, vì sao chọn An Cư,
-// bảng giá Free / Plus (dùng thử 15 ngày) / Pro, nút đăng ký mở đúng vai trò chủ trọ, scroll reveal.
+// bảng giá Plus / Pro (không có gói miễn phí, không dùng thử), nút đăng ký mở đúng vai trò chủ trọ, scroll reveal.
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
@@ -74,7 +74,11 @@ for (const t of targets) {
   expect('Plus: 15 phòng, 1 tài khoản', (await all('#plan-plus li'))[0], 'Tối đa 15 phòng, 1 tài khoản quản lý');
   expect('Pro: 60 phòng', /60 phòng/.test((await all('#plan-pro li')).join(' ')), true);
   expect('Pro: 5 tài khoản', /5 tài khoản/.test((await all('#plan-pro li')).join(' ')), true);
-  expect('Plus: dùng thử 15 ngày', await txt('#plan-plus .plan-trial'), 'Dùng thử miễn phí 15 ngày');
+  expect('Plus: dùng được ngay sau khi thanh toán', await txt('#plan-plus .plan-trial'), 'Dùng được ngay sau khi thanh toán');
+  // Thẻ gói không còn mời dùng thử (phần ghi chú vẫn nói rõ "không có dùng thử")
+  expect('thẻ gói không còn mời dùng thử',
+    (await page.locator('#bang-gia .plan').allTextContents()).some((x) => /dùng thử/i.test(x)), false);
+  expect('nói rõ phải mua gói mới quản lý được', /mua gói Plus hoặc Pro/i.test(await txt('.plans-note')), true);
   expect('Plus được đánh dấu nổi bật', await txt('#plan-plus .plan-tag'), 'Phổ biến nhất');
   expect('Pro: cho chung cư, căn hộ cao cấp', /chung cư/i.test(await txt('#plan-pro .plan-for')), true);
   expect('menu có mục Bảng giá', await page.locator('.nav-links a[href="#bang-gia"], #mobileMenu a[href="#bang-gia"]').count(), 2);
@@ -85,7 +89,7 @@ for (const t of targets) {
   await shot('#bang-gia', 'bang-gia');
   await page.click('#plan-plus .btn');
   await page.waitForSelector('#authOverlay.open');
-  expect('bấm "Dùng thử 15 ngày": mở form đăng ký', await page.locator('.auth-pane[data-pane="register"]').evaluate((el) => el.classList.contains('active')), true);
+  expect('bấm "Mua gói Plus": mở form đăng ký', await page.locator('.auth-pane[data-pane="register"]').evaluate((el) => el.classList.contains('active')), true);
   expect('form đăng ký chọn sẵn vai trò chủ trọ', await page.locator('.role-pick input[value="landlord"]').isChecked(), true);
   await page.keyboard.press('Escape');
   await page.waitForTimeout(200);

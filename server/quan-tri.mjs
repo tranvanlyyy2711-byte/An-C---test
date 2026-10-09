@@ -15,9 +15,10 @@ CREATE TABLE IF NOT EXISTS plan_subscriptions (
   plan          TEXT    NOT NULL CHECK (plan IN ('plus','pro')),
   price         INTEGER NOT NULL,                 -- VND mỗi kỳ
   months        INTEGER NOT NULL,                 -- số kỳ đã lên lịch
+  -- 'trial' chỉ còn trong CSDL cũ; bản này không tạo gói dùng thử nữa (xem migrateGoi)
   status        TEXT    NOT NULL CHECK (status IN ('trial','active','cancelled')),
   started_at    TEXT    NOT NULL,                 -- YYYY-MM-DD
-  trial_ends_at TEXT,                             -- hết 15 ngày dùng thử
+  trial_ends_at TEXT,                             -- di tích của bản cũ, luôn NULL từ nay
   cancelled_at  TEXT,
   created_at    TEXT    NOT NULL
 );
@@ -42,14 +43,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_invoice_per_period ON plan_invoices (subsc
 CREATE INDEX IF NOT EXISTS idx_invoice_status ON plan_invoices (status, due_date);
 `;
 
-// Giá và hạn mức của từng gói (khớp bảng giá ở trang-chu.html). Không còn gói miễn phí:
-// chủ trọ phải có gói còn hiệu lực mới dùng được, 15 ngày đầu là dùng thử.
+// Giá và hạn mức của từng gói (khớp bảng giá ở trang-chu.html). Không có gói miễn phí và
+// KHÔNG CÒN DÙNG THỬ: chủ trọ phải mua Plus hoặc Pro mới quản lý phòng được.
 // rooms / accounts mới chỉ để hiển thị và đối chiếu, prototype chưa chặn khi vượt hạn mức.
 export const PLANS = {
   plus: { name: 'Plus', price: 199000, rooms: 15, accounts: 1 },
   pro: { name: 'Pro', price: 499000, rooms: 60, accounts: 5 },
 };
-export const TRIAL_DAYS = 15;
 const METHODS = new Set(['chuyen-khoan', 'tien-mat', 'the', 'vi-dien-tu']);
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -63,12 +63,50 @@ function addMonths(d, n) {
   return t;
 }
 
+// Mỗi chủ trọ demo một gói Plus 12 kỳ, bắt đầu 2 tháng trước: các kỳ đã tới hạn thì ghi
+// nhận đã thu, kỳ sau để chờ thu. Chỉ chạy khi bảng gói còn trống.
+function seedGoi(db, now) {
+  const chuTro = db.prepare("SELECT id FROM users WHERE role = 'landlord' ORDER BY id").all();
+  if (!chuTro.length) return;
+  const insSub = db.prepare(`INSERT INTO plan_subscriptions
+    (landlord_id, plan, price, months, status, started_at, trial_ends_at, cancelled_at, created_at)
+    VALUES (?, 'plus', ?, ?, 'active', ?, NULL, NULL, ?)`);
+  const insInv = db.prepare(`INSERT INTO plan_invoices
+    (subscription_id, period, amount, due_date, status, paid_at, method, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+
+  const gia = PLANS.plus.price;
+  const soKy = 12;
+  const batDau = addMonths(now(), -2);
+  const homNay = ymd(now());
+
+  for (const u of chuTro) {
+    const subId = insSub.run(u.id, gia, soKy, ymd(batDau), batDau.toISOString()).lastInsertRowid;
+    for (let i = 0; i < soKy; i++) {
+      const han = addMonths(batDau, i);
+      const hanYmd = ymd(han);
+      const daThu = hanYmd <= homNay;
+      insInv.run(subId, `${han.getFullYear()}-${pad(han.getMonth() + 1)}`, gia, hanYmd,
+        daThu ? 'paid' : 'pending', daThu ? han.toISOString() : null, daThu ? 'chuyen-khoan' : null,
+        batDau.toISOString());
+    }
+  }
+}
+
 export function createAdmin(db, ApiError, now) {
   db.exec(ADMIN_SCHEMA);
+  // Bản cũ có gói "dùng thử". Bỏ dùng thử rồi thì những gói đó thành gói đang dùng,
+  // kỳ thanh toán giữ nguyên — chủ trọ không mất hạn đã có.
+  db.exec("UPDATE plan_subscriptions SET status = 'active', trial_ends_at = NULL WHERE status = 'trial'");
+  // CSDL chưa có gói nào thì mỗi chủ trọ demo được gắn sẵn một gói Plus đang dùng,
+  // để trang quản lý của chủ trọ và khu quản trị có dữ liệu thật mà xem.
+  if (db.prepare('SELECT COUNT(*) AS n FROM plan_subscriptions').get().n === 0) seedGoi(db, now);
 
   const q = {
-    users: db.prepare(`SELECT id, role, phone, email, full_name, status, created_at FROM users ORDER BY created_at DESC, id`),
-    userById: db.prepare('SELECT id, role, phone, email, full_name, status, created_at FROM users WHERE id = ?'),
+    users: db.prepare(`SELECT id, role, phone, email, full_name, status, cccd, address, created_at
+                       FROM users ORDER BY created_at DESC, id`),
+    userById: db.prepare('SELECT id, role, phone, email, full_name, status, cccd, address, created_at FROM users WHERE id = ?'),
+    setGiayTo: db.prepare('UPDATE users SET cccd = ?, address = ? WHERE id = ?'),
     setStatus: db.prepare('UPDATE users SET status = ? WHERE id = ?'),
     dropSessions: db.prepare('DELETE FROM sessions WHERE user_id = ?'),
     bookingCount: db.prepare("SELECT COUNT(*) AS n FROM viewing_appointments WHERE renter_id = ? AND status IN ('pending','confirmed')"),
@@ -105,6 +143,27 @@ export function createAdmin(db, ApiError, now) {
     listingById: db.prepare('SELECT * FROM listings WHERE id = ?'),
     decide: db.prepare('UPDATE listings SET status = ?, reason = ?, decided_at = ?, decided_by = ? WHERE id = ?'),
     countPending: db.prepare("SELECT COUNT(*) AS n FROM listings WHERE status = 'pending'"),
+
+    // Hỗ trợ và thông báo
+    tickets: db.prepare(`SELECT * FROM support_tickets
+                         ORDER BY CASE status WHEN 'moi' THEN 0 WHEN 'dang-xu-ly' THEN 1 ELSE 2 END,
+                                  created_at DESC, id DESC`),
+    ticketById: db.prepare('SELECT * FROM support_tickets WHERE id = ?'),
+    ticketsOfUser: db.prepare('SELECT * FROM support_tickets WHERE user_id = ? ORDER BY created_at DESC, id DESC'),
+    insertTicket: db.prepare(`INSERT INTO support_tickets (user_id, kind, subject, body, status, created_at, updated_at, closed_at)
+                              VALUES (?, ?, ?, ?, 'moi', ?, ?, NULL)`),
+    setTicket: db.prepare('UPDATE support_tickets SET status = ?, updated_at = ?, closed_at = ? WHERE id = ?'),
+    touchTicket: db.prepare('UPDATE support_tickets SET updated_at = ? WHERE id = ?'),
+    replies: db.prepare('SELECT * FROM ticket_replies ORDER BY created_at, id'),
+    insertReply: db.prepare('INSERT INTO ticket_replies (ticket_id, author_id, from_admin, body, created_at) VALUES (?, ?, ?, ?, ?)'),
+    openTickets: db.prepare("SELECT COUNT(*) AS n FROM support_tickets WHERE status IN ('moi','dang-xu-ly')"),
+
+    notis: db.prepare('SELECT * FROM notifications ORDER BY created_at DESC, id DESC'),
+    notisOfUser: db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 50'),
+    insertNoti: db.prepare(`INSERT INTO notifications (user_id, type, title, body, channel, batch_id, ref, created_at, read_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)`),
+    readNoti: db.prepare('UPDATE notifications SET read_at = ? WHERE id = ? AND user_id = ? AND read_at IS NULL'),
+    readAllNoti: db.prepare('UPDATE notifications SET read_at = ? WHERE user_id = ? AND read_at IS NULL'),
   };
 
   const today = () => ymd(now());
@@ -131,6 +190,9 @@ export function createAdmin(db, ApiError, now) {
         return {
           id: u.id, role: u.role, name: u.full_name || u.phone, phone: u.phone, email: u.email || '',
           status: u.status, createdAt: u.created_at,
+          // Giấy tờ chỉ áp dụng cho chủ trọ; người thuê và quản trị không phải khai
+          cccd: u.role === 'landlord' ? (u.cccd || '') : null,
+          address: u.role === 'landlord' ? (u.address || '') : null,
           bookings: u.role === 'renter' ? q.bookingCount.get(u.id).n : null,
           plan: u.role === 'landlord' && sub ? { id: sub.id, plan: sub.plan, status: sub.status } : null,
         };
@@ -153,6 +215,18 @@ export function createAdmin(db, ApiError, now) {
       if (status === 'locked') q.dropSessions.run(u.id);   // khoá là đăng xuất khỏi mọi thiết bị
       return listUsers().find((x) => x.id === u.id);
     });
+  }
+
+  // Giấy tờ chủ trọ: CCCD 12 số và địa chỉ thường trú. Người thuê không có mục này.
+  function setGiayTo(id, { cccd, address } = {}) {
+    const u = mustUser(id);
+    if (u.role !== 'landlord') throw new ApiError(400, 'not_landlord', 'Chỉ chủ trọ mới cần khai căn cước và địa chỉ.');
+    const so = String(cccd == null ? u.cccd : cccd).replace(/\s/g, '');
+    if (so && !/^\d{12}$/.test(so)) throw new ApiError(400, 'bad_cccd', 'Số căn cước công dân phải gồm đúng 12 chữ số.', { field: 'cccd' });
+    const dc = String(address == null ? u.address : address).trim().slice(0, 300);
+    if (so && !dc) throw new ApiError(400, 'address_required', 'Hãy nhập địa chỉ thường trú đi kèm căn cước.', { field: 'address' });
+    q.setGiayTo.run(so, dc, u.id);
+    return listUsers().find((x) => x.id === u.id);
   }
 
   // ---------- Tin đăng: duyệt để chặn tin rác, tin lừa đảo ----------
@@ -224,6 +298,206 @@ export function createAdmin(db, ApiError, now) {
     });
   }
 
+  // ---------- Hỗ trợ: yêu cầu của chủ trọ ----------
+  const TICKET_KIND = new Set(['loi-ky-thuat', 'thanh-toan', 'tai-khoan', 'khac']);
+  const TICKET_STATUS = new Set(['moi', 'dang-xu-ly', 'da-xong']);
+
+  function ticketItem(r, byId, traLoi) {
+    const u = byId.get(r.user_id);
+    const cua = traLoi.filter((x) => x.ticket_id === r.id);
+    return {
+      id: r.id, kind: r.kind, subject: r.subject, body: r.body, status: r.status,
+      createdAt: r.created_at, updatedAt: r.updated_at, closedAt: r.closed_at,
+      userId: r.user_id,
+      user: u ? (u.full_name || u.phone) : 'Tài khoản đã xoá',
+      userPhone: u ? u.phone : '',
+      userRole: u ? u.role : null,
+      userStatus: u ? u.status : null,
+      plan: null,
+      replies: cua.map((x) => ({
+        id: x.id, authorId: x.author_id, fromAdmin: !!x.from_admin,
+        author: (byId.get(x.author_id) || {}).full_name || x.author_id,
+        body: x.body, createdAt: x.created_at,
+      })),
+      // Đã trả lời lần nào chưa — để quản trị thấy cái nào còn im lặng
+      answered: cua.some((x) => x.from_admin),
+    };
+  }
+
+  function listTickets({ status, q: keyword } = {}) {
+    const key = fold(keyword).trim();
+    const byId = new Map(q.users.all().map((u) => [u.id, u]));
+    const traLoi = q.replies.all();
+    const goi = new Map();
+    for (const g of listPlans()) if (g.status !== 'cancelled' && !goi.has(g.landlordId)) goi.set(g.landlordId, g);
+    return q.tickets.all()
+      .filter((r) => !status || r.status === status)
+      .map((r) => {
+        const it = ticketItem(r, byId, traLoi);
+        const g = goi.get(r.user_id);
+        it.plan = g ? { plan: g.plan, planName: g.planName, status: g.status } : null;
+        return it;
+      })
+      .filter((it) => !key || [it.subject, it.body, it.user, it.userPhone].some((v) => fold(v).includes(key)));
+  }
+
+  // Chủ trọ gửi yêu cầu hỗ trợ
+  function createTicket(userId, { kind, subject, body } = {}) {
+    const u = mustUser(userId);
+    const loai = TICKET_KIND.has(kind) ? kind : 'khac';
+    const tieuDe = String(subject || '').trim().slice(0, 150);
+    const noiDung = String(body || '').trim().slice(0, 2000);
+    if (!tieuDe) throw new ApiError(400, 'subject_required', 'Hãy ghi tiêu đề ngắn gọn cho yêu cầu.', { field: 'subject' });
+    if (noiDung.length < 10) throw new ApiError(400, 'body_required', 'Hãy mô tả rõ hơn (ít nhất 10 ký tự) để bên hỗ trợ hiểu vấn đề.', { field: 'body' });
+    const at = now().toISOString();
+    const id = q.insertTicket.run(u.id, loai, tieuDe, noiDung, at, at).lastInsertRowid;
+    const byId = new Map(q.users.all().map((x) => [x.id, x]));
+    return ticketItem(q.ticketById.get(id), byId, q.replies.all());
+  }
+
+  // Quản trị trả lời / đổi trạng thái. Trả lời xong gửi luôn thông báo cho người gửi.
+  function answerTicket(id, { action, body, status }, meId) {
+    const t = q.ticketById.get(Number(id));
+    if (!t) throw new ApiError(404, 'ticket_not_found', 'Không tìm thấy yêu cầu hỗ trợ này.');
+    const at = now().toISOString();
+    return tx(() => {
+      if (action === 'tra-loi') {
+        const noiDung = String(body || '').trim().slice(0, 2000);
+        if (!noiDung) throw new ApiError(400, 'body_required', 'Hãy nhập nội dung trả lời.', { field: 'body' });
+        q.insertReply.run(t.id, meId, 1, noiDung, at);
+        if (t.status === 'moi') q.setTicket.run('dang-xu-ly', at, null, t.id);
+        else q.touchTicket.run(at, t.id);
+        q.insertNoti.run(t.user_id, 'ho-tro', 'Hỗ trợ đã trả lời: ' + t.subject, noiDung, 'in-app', null, null, at);
+      } else if (action === 'trang-thai') {
+        if (!TICKET_STATUS.has(status)) throw new ApiError(400, 'bad_status', 'Trạng thái không hợp lệ.');
+        q.setTicket.run(status, at, status === 'da-xong' ? at : null, t.id);
+      } else {
+        throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+      }
+      const byId = new Map(q.users.all().map((x) => [x.id, x]));
+      return ticketItem(q.ticketById.get(t.id), byId, q.replies.all());
+    });
+  }
+
+  // ---------- Thông báo hàng loạt ----------
+  const NOTI_TYPE = new Set(['bao-tri', 'tinh-nang', 'nhac-han', 'ho-tro']);
+  const DOI_TUONG = {
+    all: 'Tất cả tài khoản',
+    landlord: 'Chủ trọ',
+    renter: 'Người thuê',
+    'chua-mua-goi': 'Chủ trọ chưa mua gói',
+  };
+
+  function nguoiNhan(doiTuong) {
+    const users = q.users.all().filter((u) => u.role !== 'admin' && u.status === 'active');
+    if (doiTuong === 'landlord') return users.filter((u) => u.role === 'landlord');
+    if (doiTuong === 'renter') return users.filter((u) => u.role === 'renter');
+    if (doiTuong === 'chua-mua-goi') {
+      const coGoi = new Set(listPlans().filter((g) => g.status !== 'cancelled').map((g) => g.landlordId));
+      return users.filter((u) => u.role === 'landlord' && !coGoi.has(u.id));
+    }
+    return users;
+  }
+
+  // Gửi một đợt thông báo. channel 'email' mới chỉ GHI NHẬN: prototype chưa nối dịch vụ gửi mail.
+  function sendBroadcast({ type, title, body, doiTuong, channel } = {}, meId) {
+    const loai = NOTI_TYPE.has(type) ? type : 'bao-tri';
+    const tieuDe = String(title || '').trim().slice(0, 150);
+    const noiDung = String(body || '').trim().slice(0, 2000);
+    const nhom = DOI_TUONG[doiTuong] ? doiTuong : 'all';
+    const kenh = channel === 'email' ? 'email' : 'in-app';
+    if (!tieuDe) throw new ApiError(400, 'title_required', 'Hãy nhập tiêu đề thông báo.', { field: 'title' });
+    if (!noiDung) throw new ApiError(400, 'body_required', 'Hãy nhập nội dung thông báo.', { field: 'body' });
+    const ds = nguoiNhan(nhom);
+    if (!ds.length) throw new ApiError(409, 'no_recipient', 'Không có tài khoản nào thuộc nhóm này.');
+    const at = now().toISOString();
+    const batch = `${loai}-${at}-${meId}`;
+    return tx(() => {
+      for (const u of ds) q.insertNoti.run(u.id, loai, tieuDe, noiDung, kenh, batch, null, at);
+      return { batchId: batch, type: loai, title: tieuDe, body: noiDung, channel: kenh, doiTuong: nhom,
+        doiTuongTen: DOI_TUONG[nhom], sent: ds.length, createdAt: at };
+    });
+  }
+
+  // Nhắc hết hạn gói: tự tạo thông báo cho chủ trọ có kỳ quá hạn hoặc sắp tới hạn trong 7 ngày.
+  // ref chặn gửi trùng, nên gọi lại nhiều lần cũng chỉ gửi một lần cho mỗi kỳ.
+  function nhacHetHan() {
+    sweep();
+    const homNay = today();
+    const trongVong7 = ymd(addDays(now(), 7));
+    const at = now().toISOString();
+    const ds = [];
+    for (const g of listPlans()) {
+      if (g.status === 'cancelled') continue;
+      for (const i of g.invoices) {
+        if (i.status === 'paid') continue;
+        if (i.dueDate > trongVong7) continue;
+        const quaHan = i.status === 'overdue' || i.dueDate < homNay;
+        ds.push({
+          landlordId: g.landlordId, landlord: g.landlord, period: i.period, dueDate: i.dueDate, amount: i.amount, quaHan,
+          ref: `nhac-han:${g.landlordId}:${i.period}`,
+          title: quaHan ? `Gói ${g.planName} đã quá hạn thanh toán kỳ ${i.period}` : `Gói ${g.planName} đến hạn thanh toán kỳ ${i.period}`,
+          body: quaHan
+            ? `Kỳ ${i.period} (${i.amount.toLocaleString('vi-VN')}₫) đã quá hạn ngày ${i.dueDate}. Vui lòng thanh toán để tiếp tục đăng tin và quản lý phòng.`
+            : `Kỳ ${i.period} (${i.amount.toLocaleString('vi-VN')}₫) đến hạn ngày ${i.dueDate}. Thanh toán sớm để gói không bị gián đoạn.`,
+        });
+      }
+    }
+    let daGui = 0;
+    for (const x of ds) {
+      try {
+        q.insertNoti.run(x.landlordId, 'nhac-han', x.title, x.body, 'in-app', null, x.ref, at);
+        daGui++;
+      } catch (e) {
+        if (!/UNIQUE constraint failed/i.test(String(e && e.message))) throw e;  // đã nhắc kỳ này rồi
+      }
+    }
+    return { canNhac: ds.length, daGui, boQua: ds.length - daGui, chiTiet: ds };
+  }
+
+  // Lịch sử các đợt gửi, gom theo batch
+  function listBroadcasts() {
+    const byId = new Map(q.users.all().map((u) => [u.id, u]));
+    const nhom = new Map();
+    const le = [];
+    for (const n of q.notis.all()) {
+      if (!n.batch_id) { le.push(n); continue; }
+      const cu = nhom.get(n.batch_id);
+      if (cu) { cu.sent++; if (n.read_at) cu.read++; continue; }
+      nhom.set(n.batch_id, {
+        batchId: n.batch_id, type: n.type, title: n.title, body: n.body, channel: n.channel,
+        createdAt: n.created_at, sent: 1, read: n.read_at ? 1 : 0,
+      });
+    }
+    return {
+      batches: [...nhom.values()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
+      // Thông báo gửi lẻ (trả lời hỗ trợ, nhắc hết hạn) gom theo loại để xem nhanh
+      rieng: le.slice(0, 30).map((n) => ({
+        id: n.id, type: n.type, title: n.title, createdAt: n.created_at,
+        user: (byId.get(n.user_id) || {}).full_name || n.user_id, read: !!n.read_at,
+      })),
+    };
+  }
+
+  // ---------- Thông báo của chính người dùng (chuông trên trang quản lý) ----------
+  function myNotifications(userId) {
+    const ds = q.notisOfUser.all(userId).map((n) => ({
+      id: n.id, type: n.type, title: n.title, body: n.body,
+      createdAt: n.created_at, read: !!n.read_at,
+    }));
+    return { items: ds, unread: ds.filter((x) => !x.read).length };
+  }
+  function readNotification(userId, id) {
+    if (id === 'tat-ca') { q.readAllNoti.run(now().toISOString(), userId); return myNotifications(userId); }
+    q.readNoti.run(now().toISOString(), Number(id), userId);
+    return myNotifications(userId);
+  }
+  function myTickets(userId) {
+    const byId = new Map(q.users.all().map((u) => [u.id, u]));
+    const traLoi = q.replies.all();
+    return q.ticketsOfUser.all(userId).map((r) => ticketItem(r, byId, traLoi));
+  }
+
   // ---------- Gói dịch vụ + lịch thanh toán ----------
   function invoiceItem(r) {
     return {
@@ -254,7 +528,8 @@ export function createAdmin(db, ApiError, now) {
   }
 
   // Đăng ký gói cho một chủ trọ và lên luôn lịch thanh toán từng kỳ.
-  function createPlan({ landlordId, plan, months, trial }) {
+  // Không có dùng thử: gói chạy ngay, kỳ đầu đến hạn ngay ngày đăng ký.
+  function createPlan({ landlordId, plan, months }) {
     const u = mustUser(landlordId);
     if (u.role !== 'landlord') throw new ApiError(400, 'not_landlord', 'Chỉ chủ trọ mới đăng ký được gói dịch vụ.');
     const info = PLANS[plan];
@@ -266,12 +541,10 @@ export function createAdmin(db, ApiError, now) {
       sweep();
       if (q.activeSub.get(u.id)) throw new ApiError(409, 'plan_exists', 'Chủ trọ này đang có gói còn hiệu lực. Hãy huỷ gói cũ trước.');
       const start = now();
-      const withTrial = trial !== false;
-      const info2 = { status: withTrial ? 'trial' : 'active', trialEnds: withTrial ? ymd(addDays(start, TRIAL_DAYS)) : null };
-      const res = q.insertSub.run(u.id, plan, info.price, n, info2.status, ymd(start), info2.trialEnds, now().toISOString());
+      const res = q.insertSub.run(u.id, plan, info.price, n, 'active', ymd(start), null, now().toISOString());
       const subId = res.lastInsertRowid;
-      // Kỳ đầu đến hạn sau khi hết dùng thử; các kỳ sau cách nhau một tháng
-      const first = withTrial ? addDays(start, TRIAL_DAYS) : start;
+      // Kỳ đầu đến hạn ngay hôm đăng ký; các kỳ sau cách nhau một tháng
+      const first = start;
       for (let i = 0; i < n; i++) {
         const due = addMonths(first, i);
         q.insertInvoice.run(subId, `${due.getFullYear()}-${pad(due.getMonth() + 1)}`, info.price, ymd(due), now().toISOString());
@@ -408,6 +681,25 @@ export function createAdmin(db, ApiError, now) {
 
   // Số liệu cho trang chủ khu quản trị. Những mục chưa làm (ticket hỗ trợ, duyệt tin đăng)
   // trả về null — giao diện hiện "chưa có" thay vì bịa ra số 0 trông như đã chạy.
+  // Gói của một chủ trọ, dùng cho trang quản lý của chính họ (/api/goi-cua-toi).
+  function planOf(landlordId) {
+    sweep();
+    const s = listPlans().find((x) => x.landlordId === landlordId && x.status !== 'cancelled');
+    if (!s) return { plan: null, plans: PLANS };
+    const chuaThu = s.invoices.filter((i) => i.status !== 'paid');
+    return {
+      plan: {
+        plan: s.plan, planName: s.planName, price: s.price, months: s.months, status: s.status,
+        rooms: s.rooms, accounts: s.accounts, startedAt: s.startedAt,
+        nextDue: s.nextDue, due: s.due, paid: s.paid,
+        overdue: s.overdue, unpaid: chuaThu.length,
+        // Hạn dùng = kỳ cuối cùng đã thu tiền
+        paidUntil: s.invoices.filter((i) => i.status === 'paid').map((i) => i.period).sort().pop() || null,
+      },
+      plans: PLANS,
+    };
+  }
+
   function summary() {
     const users = listUsers();
     const plans = listPlans();
@@ -429,8 +721,7 @@ export function createAdmin(db, ApiError, now) {
     return {
       today: homNay,
       revenue: { month: daThu(thang), prevMonth: daThu(truoc), total: plans.reduce((n, p) => n + p.paid, 0) },
-      // Chưa làm: hệ thống ticket hỗ trợ
-      support: { openTickets: null },
+      support: { openTickets: q.openTickets.get().n },
       listings: { pending: q.countPending.get().n },
       users: {
         total: users.length,
@@ -447,7 +738,6 @@ export function createAdmin(db, ApiError, now) {
         active: active.length,
         plus: active.filter((p) => p.plan === 'plus').length,
         pro: active.filter((p) => p.plan === 'pro').length,
-        trial: active.filter((p) => p.status === 'trial').length,
         overdue: active.filter((p) => p.overdue > 0).length,
         expiring: sapHetHan.length,
         revenue: plans.reduce((n, p) => n + p.paid, 0),
@@ -456,5 +746,8 @@ export function createAdmin(db, ApiError, now) {
     };
   }
 
-  return { listUsers, setUserStatus, listListings, decideListing, listPlans, createPlan, cancelPlan, payInvoice, listProperties, summary, sweep };
+  return { listUsers, setUserStatus, setGiayTo,
+    listTickets, createTicket, answerTicket, sendBroadcast, nhacHetHan, listBroadcasts,
+    myNotifications, readNotification, myTickets,
+    listListings, decideListing, listPlans, createPlan, cancelPlan, payInvoice, listProperties, planOf, summary, sweep };
 }

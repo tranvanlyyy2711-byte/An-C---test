@@ -92,6 +92,48 @@ CREATE TABLE IF NOT EXISTS listings (
 -- Mỗi phòng trong danh mục chỉ có một tin đăng
 CREATE UNIQUE INDEX IF NOT EXISTS one_listing_per_room ON listings (room_id) WHERE room_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_listing_status ON listings (status, created_at);
+
+-- Yêu cầu hỗ trợ của chủ trọ (báo lỗi kỹ thuật, hỏi thanh toán, hỏi tài khoản...).
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    TEXT    NOT NULL,                 -- người gửi (users.id)
+  kind       TEXT    NOT NULL CHECK (kind IN ('loi-ky-thuat','thanh-toan','tai-khoan','khac')),
+  subject    TEXT    NOT NULL,
+  body       TEXT    NOT NULL,
+  status     TEXT    NOT NULL CHECK (status IN ('moi','dang-xu-ly','da-xong')),
+  created_at TEXT    NOT NULL,
+  updated_at TEXT    NOT NULL,
+  closed_at  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_ticket_status ON support_tickets (status, created_at);
+
+-- Trao đổi trong một yêu cầu hỗ trợ: chủ trọ hỏi, quản trị trả lời.
+CREATE TABLE IF NOT EXISTS ticket_replies (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  ticket_id  INTEGER NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+  author_id  TEXT    NOT NULL,
+  from_admin INTEGER NOT NULL DEFAULT 0,
+  body       TEXT    NOT NULL,
+  created_at TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_reply_ticket ON ticket_replies (ticket_id, created_at);
+
+-- Thông báo trong ứng dụng. Gửi hàng loạt thì nhiều dòng cùng một batch_id.
+-- channel ghi nơi gửi: 'in-app' gửi thật; 'email' mới chỉ ghi nhận, prototype chưa nối SMTP.
+CREATE TABLE IF NOT EXISTS notifications (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    TEXT    NOT NULL,
+  type       TEXT    NOT NULL CHECK (type IN ('bao-tri','tinh-nang','nhac-han','ho-tro')),
+  title      TEXT    NOT NULL,
+  body       TEXT    NOT NULL DEFAULT '',
+  channel    TEXT    NOT NULL DEFAULT 'in-app',
+  batch_id   TEXT,
+  ref        TEXT,                              -- khoá chống gửi trùng (vd: nhac-han:l-binh:2026-11)
+  created_at TEXT    NOT NULL,
+  read_at    TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_noti_user ON notifications (user_id, created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS one_noti_per_ref ON notifications (ref) WHERE ref IS NOT NULL;
 `;
 
 export class ApiError extends Error {
@@ -144,6 +186,8 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     confirm: db.prepare(`UPDATE viewing_appointments SET status = 'confirmed', hold_expires_at = NULL
                          WHERE id = ? AND status = 'pending' AND (hold_expires_at IS NULL OR hold_expires_at > ?)
                          RETURNING *`),
+    // Trạng thái tin đăng của phòng, dùng để chặn đặt lịch với tin chưa qua kiểm duyệt
+    tinDang: db.prepare('SELECT status FROM listings WHERE room_id = ?'),
     insert: db.prepare(`INSERT INTO viewing_appointments
       (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, hold_expires_at, cancel_reason, note, urgent, source, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
@@ -152,6 +196,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q, db);
   // Tin đăng seed riêng: CSDL cũ đã có lịch xem vẫn được bổ sung danh sách tin
   if (db.prepare('SELECT COUNT(*) AS n FROM listings').get().n === 0) seedTinDang(db);
+  if (db.prepare('SELECT COUNT(*) AS n FROM support_tickets').get().n === 0) seedHoTro(db);
 
   const nowIso = () => now().toISOString();
   const holdIso = () => new Date(now().getTime() + HOLD_HOURS * 3600000).toISOString();
@@ -257,7 +302,7 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     const room = PHONG[roomId];
     if (!room || room.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
     // Tin đăng bị quản trị từ chối thì không nhận đặt lịch xem nữa
-    const tin = db.prepare('SELECT status FROM listings WHERE room_id = ?').get(roomId);
+    const tin = q.tinDang.get(roomId);
     if (tin && tin.status !== 'approved') {
       throw new ApiError(409, 'listing_not_approved',
         tin.status === 'rejected'
@@ -462,6 +507,40 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     listAll, createForLandlord, updateForLandlord,
     close: () => db.close(),
   };
+}
+
+// ================= Dữ liệu mẫu: yêu cầu hỗ trợ và thông báo =================
+// Vài yêu cầu chủ trọ đã gửi để quản trị có việc mà xử lý, kèm một thông báo bảo trì đã gửi.
+function seedHoTro(db) {
+  const iso = (local) => new Date(local).toISOString();
+  const insT = db.prepare(`INSERT INTO support_tickets (user_id, kind, subject, body, status, created_at, updated_at, closed_at)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+  const insR = db.prepare('INSERT INTO ticket_replies (ticket_id, author_id, from_admin, body, created_at) VALUES (?, ?, ?, ?, ?)');
+  const insN = db.prepare(`INSERT INTO notifications (user_id, type, title, body, channel, batch_id, ref, created_at, read_at)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+
+  const t1 = insT.run('l-binh', 'loi-ky-thuat', 'Ghi điện nước xong không lưu được',
+    'Mình nhập chỉ số cuối kỳ cho phòng P.201 rồi bấm Lưu thì trang quay lại số cũ. Thử trên cả điện thoại và máy tính đều vậy.',
+    'moi', iso('2026-10-08T09:15:00'), iso('2026-10-08T09:15:00'), null).lastInsertRowid;
+
+  const t2 = insT.run('l-mai', 'thanh-toan', 'Đã chuyển khoản gói Plus nhưng chưa thấy ghi nhận',
+    'Mình chuyển 199.000₫ sáng nay, nội dung ghi đúng số điện thoại nhưng trang vẫn báo kỳ này chờ thu. Nhờ kiểm tra giúp.',
+    'dang-xu-ly', iso('2026-10-07T14:40:00'), iso('2026-10-07T16:05:00'), null).lastInsertRowid;
+  insR.run(t2, 'ad-01', 1, 'Bên mình đang đối chiếu sao kê, có kết quả sẽ báo lại chị trong hôm nay ạ.', iso('2026-10-07T16:05:00'));
+
+  const t3 = insT.run('l-binh', 'tai-khoan', 'Xin đổi số điện thoại đăng nhập',
+    'Mình muốn đổi số đăng nhập sang 0988000111 vì số cũ sắp khoá.',
+    'da-xong', iso('2026-09-30T08:00:00'), iso('2026-09-30T10:30:00'), iso('2026-09-30T10:30:00')).lastInsertRowid;
+  insR.run(t3, 'ad-01', 1, 'Anh gửi ảnh căn cước để bên mình đối chiếu rồi đổi giúp anh nhé.', iso('2026-09-30T09:10:00'));
+  insR.run(t3, 'l-binh', 0, 'Mình gửi rồi nhé, cảm ơn bạn.', iso('2026-09-30T10:00:00'));
+
+  // Một đợt thông báo bảo trì đã gửi cho cả hai chủ trọ
+  const batch = 'bt-2026-10-01';
+  for (const u of ['l-binh', 'l-mai']) {
+    insN.run(u, 'bao-tri', 'Bảo trì hệ thống đêm 12/10',
+      'An Cư bảo trì từ 23:00 ngày 12/10 đến 01:00 ngày 13/10. Trong thời gian này trang có thể gián đoạn vài phút.',
+      'in-app', batch, null, iso('2026-10-01T08:00:00'), u === 'l-binh' ? iso('2026-10-01T09:12:00') : null);
+  }
 }
 
 // ================= Dữ liệu mẫu: tin đăng và việc duyệt tin =================

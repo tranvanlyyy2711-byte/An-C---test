@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
   full_name     TEXT NOT NULL DEFAULT '',
   password_hash TEXT NOT NULL,             -- scrypt$N$r$p$salt$hash (base64)
   status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','locked')),
+  -- Giấy tờ: CHỈ chủ trọ mới phải khai, người thuê không cần (xem khu quản trị)
+  cccd          TEXT NOT NULL DEFAULT '',    -- 12 số, không dấu cách
+  address       TEXT NOT NULL DEFAULT '',    -- địa chỉ thường trú
   created_at    TEXT NOT NULL
 );
 
@@ -37,6 +40,9 @@ export function migrateAuth(db) {
   if (!cols.some((c) => c.name === 'status')) {
     db.exec("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
   }
+  // Giấy tờ chủ trọ: thêm cho CSDL tạo từ bản cũ
+  if (!cols.some((c) => c.name === 'cccd')) db.exec("ALTER TABLE users ADD COLUMN cccd TEXT NOT NULL DEFAULT ''");
+  if (!cols.some((c) => c.name === 'address')) db.exec("ALTER TABLE users ADD COLUMN address TEXT NOT NULL DEFAULT ''");
   const sql = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'").get().sql;
   if (/'admin'/.test(sql)) return;
   db.exec('PRAGMA foreign_keys = OFF');
@@ -49,10 +55,13 @@ export function migrateAuth(db) {
       full_name     TEXT NOT NULL DEFAULT '',
       password_hash TEXT NOT NULL,
       status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','locked')),
+      cccd          TEXT NOT NULL DEFAULT '',
+      address       TEXT NOT NULL DEFAULT '',
       created_at    TEXT NOT NULL
     );
-    INSERT INTO users_moi (id, role, phone, email, full_name, password_hash, status, created_at)
-      SELECT id, role, phone, email, full_name, password_hash, COALESCE(status, 'active'), created_at FROM users;
+    INSERT INTO users_moi (id, role, phone, email, full_name, password_hash, status, cccd, address, created_at)
+      SELECT id, role, phone, email, full_name, password_hash, COALESCE(status, 'active'),
+             COALESCE(cccd, ''), COALESCE(address, ''), created_at FROM users;
     DROP TABLE users;
     ALTER TABLE users_moi RENAME TO users;
   `);
@@ -126,25 +135,28 @@ export const DEMO_USERS = [
   { id: 'u-an',    role: 'renter',   full_name: 'Nguyễn Văn An',  phone: '0912000111', email: 'an@ancu.test' },
   { id: 'u-linh',  role: 'renter',   full_name: 'Trần Mỹ Linh',   phone: '0987000222', email: 'linh@ancu.test' },
   { id: 'u-huy',   role: 'renter',   full_name: 'Lê Quang Huy',   phone: '0933000333', email: 'huy@ancu.test' },
-  { id: 'l-binh',  role: 'landlord', full_name: 'Trần Hoà',    phone: '0988000999', email: 'chutro@ancu.test' },
-  { id: 'l-mai',   role: 'landlord', full_name: 'Lê Thu Mai',  phone: '0977111222', email: 'mai@ancu.test' },
+  { id: 'l-binh',  role: 'landlord', full_name: 'Trần Hoà',    phone: '0988000999', email: 'chutro@ancu.test',
+    cccd: '001189012345', address: 'Số 14, ngõ 72 Nguyễn Khánh Toàn, Phường Nghĩa Đô, Hà Nội' },
+  { id: 'l-mai',   role: 'landlord', full_name: 'Lê Thu Mai',  phone: '0977111222', email: 'mai@ancu.test',
+    cccd: '001187654321', address: 'Số 27 Đào Duy Anh, Phường Kim Liên, Hà Nội' },
   { id: 'ad-01',   role: 'admin',    full_name: 'Quản trị An Cư',  phone: '0900000001', email: 'admin@ancu.test' },
 ];
 
 export function seedDemoUsers(db) {
-  const ins = db.prepare('INSERT INTO users (id, role, phone, email, full_name, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const ins = db.prepare(`INSERT INTO users (id, role, phone, email, full_name, password_hash, cccd, address, created_at)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
   const has = db.prepare('SELECT 1 FROM users WHERE id = ? OR phone = ?');
   const at = new Date().toISOString();
   // Tên/điện thoại của tài khoản demo phải khớp giữa trang người thuê, trang chủ trọ và khu
   // quản trị. CSDL tạo từ bản cũ vẫn giữ tên cũ nên đồng bộ lại — chỉ đụng tới 7 id demo.
-  const dongBo = db.prepare('UPDATE users SET full_name = ?, phone = ?, email = ? WHERE id = ?');
+  const dongBo = db.prepare('UPDATE users SET full_name = ?, phone = ?, email = ?, cccd = ?, address = ? WHERE id = ?');
   // Thêm từng tài khoản còn thiếu, để CSDL cũ (chưa có admin) cũng được bổ sung
   for (const u of DEMO_USERS) {
     if (has.get(u.id, u.phone)) {
-      dongBo.run(u.full_name, u.phone, u.email, u.id);
+      dongBo.run(u.full_name, u.phone, u.email, u.cccd || '', u.address || '', u.id);
       continue;
     }
-    ins.run(u.id, u.role, u.phone, u.email, u.full_name, hashPassword(DEMO_PASSWORD), at);
+    ins.run(u.id, u.role, u.phone, u.email, u.full_name, hashPassword(DEMO_PASSWORD), u.cccd || '', u.address || '', at);
   }
 }
 

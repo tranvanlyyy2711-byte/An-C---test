@@ -169,6 +169,7 @@ npm run test:lich      # kiểm thử "một khung giờ chỉ một người" �
 npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
 npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịch vụ, lịch thanh toán
+npm run test:goi       # gói đang dùng hiện đúng ở trang quản lý của chủ trọ
 npm run test:tinh      # bản tĩnh (như trên Vercel): mọi trang mở được, không lỗi JS
 npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và bản tĩnh
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
@@ -211,7 +212,10 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 - Dữ liệu mẫu của chế độ xem thử nằm ở `quan-tri/du-lieu-xem-thu.js` (`window.XemThu`), **hai trang dùng
   chung** nên số liệu luôn khớp. Thêm trường mới vào `summary()` thì phải thêm cả ở đây.
 
-- **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. Khoá là xoá mọi phiên
+- **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. **Giấy tờ
+  (`users.cccd`, `users.address`) chỉ dành cho chủ trọ** — người thuê và quản trị hiện "Không áp dụng",
+  API trả `null` cho hai trường này. Căn cước phải đúng 12 chữ số và đi kèm địa chỉ thường trú; sửa qua
+  `PATCH /api/quan-tri/tai-khoan/:id` với `action: 'giay-to'`. Khoá là xoá mọi phiên
   của người đó và chặn đăng nhập (`users.status = 'locked'`). Không khoá được tài khoản admin hay chính mình.
 - **Nhà trọ & người thuê:** chủ trọ nào đang quản lý nhà trọ / phòng nào và ai đang thuê ở đó, khoá được cả
   chủ trọ lẫn người thuê ngay tại chỗ khi có báo cáo. Prototype chưa có bảng `properties`, nên quyền sở hữu
@@ -224,8 +228,21 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
   đẩy sang Zalo, giá thấp bất thường, số lạ, tài khoản bị khoá, địa chỉ không rõ) — chỉ là **gợi ý cho
   người duyệt**, không tự động từ chối tin nào. Tin gắn với phòng trong danh mục (`listings.room_id`) mà
   không ở trạng thái `approved` thì máy chủ **từ chối đặt lịch xem** phòng đó.
-- **Gói dịch vụ:** hai gói, **không có gói miễn phí** — Plus `199.000₫/tháng` (tối đa 15 phòng, 1 tài khoản),
-  Pro `499.000₫/tháng` (tối đa 60 phòng, 5 tài khoản); cả hai dùng thử 15 ngày. Giá và hạn mức khai một chỗ
+- **Hỗ trợ & thông báo:** `support_tickets` + `ticket_replies` + `notifications` trong `server/db.mjs`.
+  Chủ trọ gửi yêu cầu ở trang quản lý (`POST /api/ho-tro`), quản trị trả lời và đổi trạng thái
+  (`moi` → `dang-xu-ly` → `da-xong`); mỗi lần trả lời sinh một thông báo cho người gửi. **Gửi hàng loạt**
+  chọn nhóm (tất cả / chủ trọ / người thuê / chủ trọ chưa mua gói), mỗi đợt một `batch_id` để đếm số
+  người nhận và số người đã đọc. **Nhắc hết hạn gói** quét kỳ quá hạn hoặc tới hạn trong 7 ngày, `ref`
+  (`nhac-han:<landlord>:<kỳ>`) chặn gửi trùng nên bấm nhiều lần cũng chỉ nhắc một lần mỗi kỳ.
+  Kênh `email` **mới chỉ ghi nhận** — prototype chưa nối SMTP / Zalo ZNS, giao diện nói rõ điều đó.
+  Chuông thông báo ở `quan-ly/tong-quan.html` đọc `GET /api/thong-bao` và đánh dấu đã đọc qua `PATCH`.
+- **Gói dịch vụ:** hai gói, **không có gói miễn phí và không có dùng thử** — Plus `199.000₫/tháng` (tối đa
+  15 phòng, 1 tài khoản), Pro `499.000₫/tháng` (tối đa 60 phòng, 5 tài khoản). Chủ trọ phải mua gói mới
+  quản lý phòng được; gói chạy ngay khi đăng ký, kỳ đầu đến hạn luôn hôm đó. Gói `trial` của bản cũ được
+  `createAdmin` chuyển sang `active` khi khởi động. Trang quản lý của chủ trọ (`quan-ly/tong-quan.html`)
+  hiện dải gói đang dùng qua `GET /api/goi-cua-toi`; chưa mua thì báo "Chưa kích hoạt gói dịch vụ" kèm
+  lối sang bảng giá. **CSDL chưa có gói nào thì mỗi chủ trọ demo được seed sẵn một gói Plus 12 kỳ**
+  (bắt đầu 2 tháng trước, kỳ đã tới hạn ghi nhận đã thu) — `seedGoi` trong `server/quan-tri.mjs`. Giá và hạn mức khai một chỗ
   ở `PLANS` trong `server/quan-tri.mjs`, phải khớp bảng giá `#bang-gia` của `trang-chu.html`. Hạn mức hiện
   mới để hiển thị, prototype chưa chặn khi vượt. Chủ trọ chưa có gói hiện là **"Chưa kích hoạt gói"**.
   `plan_subscriptions` (mỗi chủ trọ tối đa MỘT gói còn hiệu lực, bảo đảm bằng chỉ mục duy nhất
