@@ -56,7 +56,7 @@
   button{font:inherit}
   ::selection{background:rgba(34,139,34,.22)}
 
-  /* ---------- Buttons (tái dùng từ index.html) ---------- */
+  /* ---------- Buttons (tái dùng từ trang-chu.html) ---------- */
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     height:46px;padding:0 22px;border-radius:var(--radius);
@@ -229,6 +229,48 @@
   .page-head p{color:var(--text-muted);font-size:.95rem}
 
   /* ---------- 4 ô số liệu ---------- */
+  /* Hộp gửi yêu cầu hỗ trợ */
+  .ht-lop{position:fixed;inset:0;z-index:200;display:none;place-items:center;padding:20px;background:rgba(16,32,16,.45);backdrop-filter:blur(4px)}
+  .ht-lop.mo{display:grid}
+  .ht-hop{width:min(520px,100%);max-height:88vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:24px}
+  .ht-hop h3{font-size:1.1rem;margin-bottom:4px}
+  .ht-hop > p{font-size:13.5px;color:var(--text-muted);margin-bottom:16px}
+  .ht-hop label{display:block;font-size:12.5px;font-weight:600;color:var(--text-dim);margin-bottom:6px}
+  .ht-hop input,.ht-hop select,.ht-hop textarea{width:100%;min-height:44px;padding:0 12px;margin-bottom:14px;font-size:16px;
+    font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+  .ht-hop textarea{min-height:110px;padding:10px 12px;resize:vertical}
+  .ht-hop input:focus,.ht-hop select:focus,.ht-hop textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .ht-hop .nut{display:flex;gap:10px;justify-content:flex-end}
+  .ht-msg{margin-bottom:12px;padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;display:none}
+  .ht-msg.hien{display:block}
+  .ht-msg.ok{background:rgba(34,139,34,.07);border:1px solid rgba(34,139,34,.24);color:var(--success-ink)}
+  .ht-msg.err{background:rgba(180,41,31,.06);border:1px solid rgba(180,41,31,.24);color:var(--danger-ink)}
+  .ht-cu{margin-top:18px;border-top:1px solid var(--border);padding-top:14px}
+  .ht-cu h4{font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;margin-bottom:8px}
+  .ht-cu .mot{padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;font-size:13px}
+  .ht-cu .mot b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+  .ht-cu .mot small{color:var(--text-dim);font-size:12px}
+  .ht-cu .tl{margin-top:6px;padding:8px 10px;border-radius:var(--radius-sm);background:rgba(34,139,34,.07);font-size:12.5px}
+
+  /* Dải gói dịch vụ đang dùng */
+  .goi-bar{
+    display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:22px;padding:16px 20px;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  }
+  .goi-bar .ten{font-family:'Be Vietnam Pro',sans-serif;font-size:1.05rem;font-weight:700}
+  .goi-bar .mo{font-size:13.5px;color:var(--text-muted)}
+  .goi-bar .phai{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  .goi-bar .chip{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;
+  }
+  .goi-bar .chip.ok{background:rgba(34,139,34,.1);color:var(--success-ink)}
+  .goi-bar .chip.wait{background:rgba(138,90,17,.1);color:var(--warning-ink)}
+  .goi-bar .chip.bad{background:rgba(180,41,31,.08);color:var(--danger-ink)}
+  .goi-bar.chua-mua{border-color:rgba(138,90,17,.32);background:linear-gradient(180deg,rgba(138,90,17,.05),var(--surface))}
+  .goi-bar[hidden]{display:none}
+
   .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
   .stat{
     border:1px solid var(--border);border-radius:var(--radius-lg);
@@ -350,7 +392,12 @@
     .acc-btn{padding:0 8px}
   }
   @media (max-width:640px){
-    .app-header{padding:0 16px;gap:10px}
+    /* Thanh trên cùng phải co lại vừa màn hình, nếu không cả trang bị cuộn ngang */
+    .app-header{padding:0 16px;gap:10px;overflow:hidden}
+    .app-header .pop-wrap{min-width:0}
+    .prop-switch{min-width:0;padding:0 10px}
+    .prop-switch .tx{min-width:0;overflow:hidden}
+    .header-actions{gap:8px;flex-shrink:0}
     .dash-body{padding:20px 16px 40px}
     .stat-grid{grid-template-columns:1fr;gap:14px}
     .page-head{align-items:flex-start}
@@ -383,12 +430,39 @@
 </head>
 <body>
 
+<div class="ht-lop" id="htLop" role="dialog" aria-modal="true" aria-labelledby="htTitle">
+  <form class="ht-hop" id="htForm">
+    <h3 id="htTitle">Gửi yêu cầu hỗ trợ</h3>
+    <p>Báo lỗi kỹ thuật hoặc hỏi về thanh toán, tài khoản. Bên hỗ trợ trả lời ngay trong chuông thông báo.</p>
+    <p class="ht-msg" id="htMsg" role="alert"></p>
+    <label for="htKind">Loại yêu cầu</label>
+    <select id="htKind">
+      <option value="loi-ky-thuat">Lỗi kỹ thuật</option>
+      <option value="thanh-toan">Thanh toán, hoá đơn</option>
+      <option value="tai-khoan">Tài khoản</option>
+      <option value="khac">Khác</option>
+    </select>
+    <label for="htSubject">Tiêu đề</label>
+    <input id="htSubject" maxlength="150" placeholder="Ghi điện nước xong không lưu được" />
+    <label for="htBody">Mô tả chi tiết</label>
+    <textarea id="htBody" maxlength="2000" placeholder="Bạn đang làm gì thì gặp lỗi? Phòng nào, thiết bị nào?"></textarea>
+    <div class="nut">
+      <button type="button" class="btn btn-ghost" id="htDong">Đóng</button>
+      <button type="submit" class="btn btn-primary" id="htGui">Gửi yêu cầu</button>
+    </div>
+    <div class="ht-cu" id="htCu" hidden>
+      <h4>Yêu cầu đã gửi</h4>
+      <div id="htDs"></div>
+    </div>
+  </form>
+</div>
+
 <div class="dash-shell">
   <div class="side-backdrop" id="sideBackdrop"></div>
 
   <!-- ---------- SIDEBAR CHỦ TRỌ ---------- -->
   <aside class="side-nav" id="sideNav">
-    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
 
     <div class="side-role">
       <span>Khu vực</span>
@@ -428,14 +502,14 @@
         Thanh toán
         <span class="side-count">4</span>
       </a>
-      <a href="#" class="side-link" data-route="/quan-ly/bao-cao">
+      <a href="bao-cao.html" class="side-link" data-route="/quan-ly/bao-cao">
         <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg>
         Báo cáo
       </a>
 
       <div class="side-sep" role="presentation"></div>
 
-      <a href="#" class="side-link" data-route="/quan-ly/ho-tro">
+      <a href="#" class="side-link" id="moHoTro" data-route="/quan-ly/ho-tro">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
         Hỗ trợ
       </a>
@@ -528,7 +602,7 @@
             <p class="pop-title">Tài khoản chủ trọ</p>
             <button type="button" class="pop-item" role="menuitem">
               <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <span class="gr"><b>Trần Hoà</b><span>0912 345 678</span></span>
+              <span class="gr"><b>Trần Hoà</b><span>0988 000 999</span></span>
             </button>
             <div class="pop-sep" role="presentation"></div>
             <button type="button" class="pop-item" role="menuitem">
@@ -563,6 +637,9 @@
             Xem báo cáo tháng
           </a>
         </div>
+
+        <!-- Gói dịch vụ đang dùng. Không có gói thì không quản lý phòng được, nên báo ngay ở đầu trang. -->
+        <section class="goi-bar reveal" id="goiBar" hidden aria-label="Gói dịch vụ"></section>
 
         <!-- 4 ô số liệu -->
         <section class="stat-grid" data-stagger aria-label="Số liệu tổng quan">
@@ -665,12 +742,12 @@
     unpaidAmount: 12600000,
     unpaidInvoices: 4,
     rooms: [
-      { code:'P.101', tenant:'Nguyễn An',   price:3500000, status:'rented' },
+      { code:'P.101', tenant:'Nguyễn Văn An',   price:3500000, status:'rented' },
       { code:'P.102', tenant:null,          price:3200000, status:'vacant' },
-      { code:'P.201', tenant:'Trần Hà',     price:4100000, status:'expiring' },
+      { code:'P.201', tenant:'Trần Mỹ Linh',     price:4100000, status:'expiring' },
       { code:'P.202', tenant:'Lê Minh Tú',  price:3800000, status:'rented' },
-      { code:'P.301', tenant:'Phạm Thu',    price:3500000, status:'overdue' },
-      { code:'P.302', tenant:null,          price:3000000, status:'vacant' }
+      { code:'P.301', tenant:'Phạm Thu Trang',    price:3500000, status:'overdue' },
+      { code:'P.302', tenant:'Lê Quang Huy', price:3000000, status:'rented' }
     ],
     tasks: [
       { title:'Chốt điện nước tháng 09', sub:'12 phòng chưa ghi số', action:'Hôm nay', tone:'warn',
@@ -842,6 +919,170 @@
     backdrop.addEventListener('click', close);
     document.querySelectorAll('.side-link').forEach(function(a){ a.addEventListener('click', close); });
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
+  })();
+
+  // ---------- Chuông thông báo (lấy từ máy chủ) ----------
+  (function(){
+    var pop = document.getElementById('notiPop');
+    var dem = document.getElementById('notiCount');
+    var btn = document.getElementById('notiBtn');
+    if (!pop || !dem || !btn) return;
+    var esc = function(x){ return String(x == null ? '' : x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var ICON = {
+      'bao-tri': '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4Z"/></svg>',
+      'tinh-nang': '<svg viewBox="0 0 24 24"><path d="M13 2 4.1 13.4a1 1 0 0 0 .8 1.6H10l-1 7 8.9-11.4a1 1 0 0 0-.8-1.6H12l1-7Z"/></svg>',
+      'nhac-han': '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+      'ho-tro': '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>'
+    };
+    function khiNao(iso){
+      var giay = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+      if (giay < 3600) return Math.max(1, Math.round(giay / 60)) + ' phút trước';
+      if (giay < 86400) return Math.round(giay / 3600) + ' giờ trước';
+      return Math.round(giay / 86400) + ' ngày trước';
+    }
+    function ve(j){
+      dem.textContent = j.unread;
+      dem.style.display = j.unread ? '' : 'none';
+      btn.setAttribute('aria-label', 'Thông báo, ' + j.unread + ' mục chưa đọc');
+      pop.innerHTML = '<p class="pop-title">Thông báo</p>' +
+        (j.items.length
+          ? j.items.slice(0, 8).map(function(n){
+              return '<button type="button" class="pop-item" data-noti="' + n.id + '">' + (ICON[n.type] || ICON['ho-tro']) +
+                '<span class="gr"><b>' + esc(n.title) + '</b><span>' + esc(n.body).slice(0, 110) + '</span>' +
+                '<time>' + khiNao(n.createdAt) + (n.read ? '' : ' · chưa đọc') + '</time></span></button>';
+            }).join('')
+          : '<button type="button" class="pop-item"><span class="gr"><b>Chưa có thông báo nào</b></span></button>') +
+        (j.unread ? '<div class="pop-sep" role="presentation"></div>' +
+          '<button type="button" class="pop-item" data-noti="tat-ca"><span class="gr"><b>Đánh dấu đã đọc hết</b></span></button>' : '');
+    }
+    function nap(){
+      return fetch('/api/thong-bao', { cache: 'no-store', credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .catch(function(){ return null; })
+        .then(function(j){ if (j) ve(j); });
+    }
+    pop.addEventListener('click', function(e){
+      var b = e.target.closest('[data-noti]');
+      if (!b) return;
+      fetch('/api/thong-bao/' + b.dataset.noti, { method: 'PATCH', credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){ if (j) ve(j); });
+    });
+    nap();
+  })();
+
+  // ---------- Gửi yêu cầu hỗ trợ ----------
+  (function(){
+    var lop = document.getElementById('htLop');
+    var mo = document.getElementById('moHoTro');
+    if (!lop || !mo) return;
+    var esc = function(x){ return String(x == null ? '' : x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var KIND = { 'loi-ky-thuat':'Lỗi kỹ thuật', 'thanh-toan':'Thanh toán', 'tai-khoan':'Tài khoản', khac:'Khác' };
+    var TT = { moi:'Mới gửi', 'dang-xu-ly':'Đang xử lý', 'da-xong':'Đã xong' };
+    function bao(text, loai){
+      var o = document.getElementById('htMsg');
+      o.textContent = text || '';
+      o.className = 'ht-msg' + (text ? ' hien ' + loai : '');
+    }
+    function napCu(){
+      return fetch('/api/ho-tro', { cache: 'no-store', credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .catch(function(){ return null; })
+        .then(function(j){
+          if (!j || !j.items.length) { document.getElementById('htCu').hidden = true; return; }
+          document.getElementById('htCu').hidden = false;
+          document.getElementById('htDs').innerHTML = j.items.slice(0, 5).map(function(t){
+            var tl = t.replies.filter(function(r){ return r.fromAdmin; }).slice(-1)[0];
+            return '<div class="mot"><b>' + esc(t.subject) + '</b>' +
+              '<small>' + esc(KIND[t.kind] || 'Khác') + ' · ' + esc(TT[t.status] || t.status) + '</small>' +
+              (tl ? '<div class="tl"><b>An Cư trả lời</b>' + esc(tl.body) + '</div>' : '') + '</div>';
+          }).join('');
+        });
+    }
+    function moHop(e){
+      if (e) e.preventDefault();
+      bao('', '');
+      lop.classList.add('mo');
+      document.getElementById('htSubject').focus();
+      napCu();
+    }
+    function dong(){ lop.classList.remove('mo'); }
+    mo.addEventListener('click', moHop);
+    document.getElementById('htDong').addEventListener('click', dong);
+    lop.addEventListener('click', function(e){ if (e.target === lop) dong(); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && lop.classList.contains('mo')) dong(); });
+
+    document.getElementById('htForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var nut = document.getElementById('htGui');
+      nut.disabled = true;
+      fetch('/api/ho-tro', {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: document.getElementById('htKind').value,
+          subject: document.getElementById('htSubject').value.trim(),
+          body: document.getElementById('htBody').value.trim()
+        })
+      }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, j: j }; }); })
+        .then(function(kq){
+          if (!kq.ok) { bao(kq.j.message || 'Không gửi được, thử lại giúp nhé.', 'err'); return; }
+          bao('Đã gửi yêu cầu. Bên hỗ trợ sẽ trả lời trong chuông thông báo.', 'ok');
+          document.getElementById('htSubject').value = '';
+          document.getElementById('htBody').value = '';
+          return napCu();
+        })
+        .catch(function(){ bao('Không gửi được, thử lại giúp nhé.', 'err'); })
+        .then(function(){ nut.disabled = false; });
+    });
+  })();
+
+  // ---------- Gói dịch vụ đang dùng ----------
+  // Không có dùng thử: chủ trọ phải mua Plus hoặc Pro mới quản lý phòng được.
+  (function(){
+    var bar = document.getElementById('goiBar');
+    var vnd = function(n){ return new Intl.NumberFormat('vi-VN').format(Number(n) || 0) + '₫'; };
+    var esc = function(x){ return String(x == null ? '' : x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    function ngay(v){
+      if (!v) return '—';
+      var d = String(v).slice(0, 10).split('-');
+      return d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : v;
+    }
+    function ky(v){ var x = String(v || '').split('-'); return x.length === 2 ? 'tháng ' + x[1] + '/' + x[0] : '—'; }
+
+    function veChuaMua(plans){
+      var gia = plans && plans.plus ? vnd(plans.plus.price) : '199.000₫';
+      bar.className = 'goi-bar reveal in chua-mua';
+      bar.innerHTML = '<div><p class="ten">Chưa kích hoạt gói dịch vụ</p>' +
+        '<p class="mo">Cần mua gói Plus (' + gia + '/tháng, 15 phòng) hoặc Pro để đăng tin và quản lý phòng.</p></div>' +
+        '<div class="phai"><span class="chip wait">Chưa mua gói</span>' +
+        '<a class="btn btn-primary btn-sm" href="../trang-chu.html#bang-gia">Xem bảng giá</a></div>';
+      bar.hidden = false;
+    }
+
+    function veGoi(g){
+      var canThu = g.unpaid > 0;
+      var chip = g.overdue
+        ? '<span class="chip bad">' + g.overdue + ' kỳ quá hạn</span>'
+        : (canThu ? '<span class="chip wait">Kỳ tới ' + ngay(g.nextDue) + '</span>'
+                  : '<span class="chip ok">Đã thanh toán đủ</span>');
+      bar.className = 'goi-bar reveal in';
+      bar.innerHTML = '<div><p class="ten">Gói ' + esc(g.planName) + ' · ' + vnd(g.price) + '/tháng</p>' +
+        '<p class="mo">Tối đa ' + g.rooms + ' phòng · ' + g.accounts + ' tài khoản quản lý · bắt đầu ' + ngay(g.startedAt) +
+        (g.paidUntil ? ' · đã đóng tới ' + ky(g.paidUntil) : ' · chưa đóng kỳ nào') + '</p></div>' +
+        '<div class="phai"><span class="chip ok">Đang dùng</span>' + chip +
+        (canThu ? '<span class="chip wait">Còn phải thu ' + vnd(g.due) + '</span>' : '') +
+        '<a class="btn btn-ghost btn-sm" href="../trang-chu.html#bang-gia">Đổi gói</a></div>';
+      bar.hidden = false;
+    }
+
+    fetch('/api/goi-cua-toi', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        // Không có máy chủ (file:// hoặc bản tĩnh) thì bỏ qua, không bịa gói
+        if (!j) return;
+        if (j.plan) veGoi(j.plan); else veChuaMua(j.plans);
+      });
   })();
 
   // ---------- Reveal khi cuộn ----------

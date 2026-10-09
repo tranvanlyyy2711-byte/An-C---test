@@ -76,6 +76,8 @@ button{cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;overflow:h
 .tab-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8}
 .tab-btn:hover{color:var(--text)}.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 4px 14px -6px rgba(16,48,16,.25)}.tab-btn.active svg{stroke:var(--accent)}
 .tab-btn .side-count{margin-left:2px}
+.tab-group{display:flex;gap:4px}
+.tab-out{color:var(--text-muted)}
 .tab-panel{display:none}.tab-panel.active{display:block}
 
 /* ===== Card + danh sách ===== */
@@ -160,6 +162,7 @@ body.modal-open{overflow:hidden}
   .stat-grid{grid-template-columns:1fr;gap:12px}
   .page-head{align-items:flex-start}
   .tabbar{width:100%}.tab-btn{flex:1;justify-content:center;padding:0 10px}
+  .tabbar{flex-wrap:wrap;border-radius:24px}.tab-group{flex:1 1 100%}.tab-out{flex:1 1 100%}
   .chip-row{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;width:100%}
   .search-wrap{min-width:0;flex-basis:100%}
   .list-row{grid-template-columns:1fr;gap:6px}
@@ -179,7 +182,7 @@ body.modal-open{overflow:hidden}
 <div class="dash-shell">
   <div class="side-backdrop" id="sideBackdrop"></div>
   <aside class="side-nav" id="sideNav">
-    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
     <div class="side-role"><span>Khu vực</span><b>Chủ trọ</b></div>
     <nav class="side-menu" aria-label="Điều hướng khu vực chủ trọ">
       <a href="tong-quan.html" class="side-link"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Tổng quan</a>
@@ -189,7 +192,7 @@ body.modal-open{overflow:hidden}
       <a href="nguoi-thue.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Người thuê</a>
       <a href="hop-dong-dien-tu.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h6M8 13h8M8 17h5"/></svg>Hợp đồng điện tử</a>
       <a href="thanh-toan.html" class="side-link active" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>Thanh toán<span class="side-count" id="navPay">0</span></a>
-      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg>Báo cáo</a>
+      <a href="bao-cao.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg>Báo cáo</a>
       <div class="side-sep"></div>
       <a href="#" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>Hỗ trợ</a>
     </nav>
@@ -226,13 +229,16 @@ body.modal-open{overflow:hidden}
         <div class="content-real">
           <section class="stat-grid" data-stagger aria-label="Thống kê thanh toán" id="statGrid"></section>
 
-          <div class="tabbar reveal" role="tablist" aria-label="Chuyển mục">
+          <div class="tabbar reveal">
+            <div class="tab-group" role="tablist" aria-label="Chuyển mục">
             <button class="tab-btn active" id="tabAppts" type="button" role="tab" aria-selected="true" aria-controls="panelAppts">
               <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Lịch xem phòng<span class="side-count" id="cntAppts">0</span>
             </button>
             <button class="tab-btn" id="tabPay" type="button" role="tab" aria-selected="false" aria-controls="panelPay">
               <svg viewBox="0 0 24 24"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>Thanh toán<span class="side-count" id="cntPay">0</span>
             </button>
+            </div>
+            <a class="tab-btn tab-out" href="hoa-don.html">Hoá đơn tiền nhà<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           </div>
 
           <!-- ===== Panel: Lịch xem chờ xác nhận ===== -->
@@ -602,7 +608,7 @@ body.modal-open{overflow:hidden}
   }
   document.getElementById('tabAppts').addEventListener('click', function(){ setTab('appts'); });
   document.getElementById('tabPay').addEventListener('click', function(){ setTab('pay'); });
-  document.querySelector('.tabbar').addEventListener('keydown', function(e){
+  document.querySelector('.tab-group').addEventListener('keydown', function(e){
     if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
     var next = S.tab==='appts' ? 'pay' : 'appts';
     setTab(next); document.getElementById(next==='pay' ? 'tabPay' : 'tabAppts').focus();

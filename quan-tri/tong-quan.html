@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Khu quản trị — An Cư</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F7FBF7; --surface:#FFFFFF; --surface-2:#F1F8F1;
+    --border:rgba(34,139,34,.12); --border-strong:rgba(34,139,34,.2);
+    --text:#102010; --text-muted:#4B5C4B; --text-dim:#667565;
+    --accent:#228B22; --accent-hover:#1D7C1D; --accent-fg:#FFFFFF;
+    --success-ink:#1B7A1B; --warning-ink:#8A5A11; --danger-ink:#B4291F; --info-ink:#1D4FBE;
+    --radius-sm:8px; --radius:12px; --radius-lg:16px;
+    --sidebar-w:264px; --header-h:68px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:light}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Be Vietnam Pro','Inter',sans-serif;font-weight:700;line-height:1.15;letter-spacing:-.02em}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  header{position:sticky;top:0;z-index:20;background:rgba(247,251,247,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+  .bar{display:flex;align-items:center;gap:16px;height:68px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px;color:var(--text)}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(120deg,#228B22,#36A44A);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+  .brand small{display:block;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--text-dim);letter-spacing:0}
+  .bar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .who{font-size:14px;color:var(--text-muted);white-space:nowrap}
+  .who b{color:var(--text)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--radius-sm);
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;background:none;color:var(--text);
+    transition:background .18s var(--ease),border-color .18s var(--ease),color .18s var(--ease)}
+  .btn-primary{background:var(--accent);color:var(--accent-fg)}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-ghost{border-color:var(--border-strong);background:var(--surface)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-sm{min-height:38px;padding:0 12px;font-size:13.5px}
+  .btn[disabled]{opacity:.55;cursor:not-allowed}
+  .btn[hidden]{display:none}
+
+
+  /* ---------- Khung: công cụ bên trái + nội dung (giống khu chủ trọ) ---------- */
+  .dash-shell{display:flex;min-height:100vh}
+  .side-nav{
+    position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;
+    display:flex;flex-direction:column;
+    padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto;
+  }
+  .side-logo{padding:6px 10px 20px}
+  .side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
+  .side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+  .side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
+  .side-menu{display:flex;flex-direction:column;gap:4px}
+  .side-link{
+    display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);
+    transition:background .18s var(--ease),color .18s var(--ease);
+  }
+  .side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}
+  .side-link.active{color:var(--text);background:rgba(34,139,34,.1)}
+  .side-link.active svg{stroke:var(--accent)}
+  .side-link:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  /* Mục chưa làm: hiện cho biết sẽ có, nhưng không bấm được và nói rõ lý do */
+  .side-link.is-off{color:var(--text-dim);cursor:default}
+  .side-link.is-off:hover{background:none;color:var(--text-dim)}
+  .side-tag{margin-left:auto;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;
+    color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .side-sep{height:1px;background:var(--border);margin:12px 12px}
+  .side-note{margin:14px 10px 0;font-size:12px;line-height:1.5;color:var(--text-dim)}
+  .side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(16,32,16,.4);backdrop-filter:blur(4px)}
+
+  .dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w);display:flex;flex-direction:column}
+  .app-header{
+    position:sticky;top:0;z-index:110;height:var(--header-h);flex-shrink:0;
+    display:flex;align-items:center;gap:16px;padding:0 32px;
+    background:rgba(255,255,255,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+  }
+  .app-title{font-family:'Be Vietnam Pro',sans-serif;font-size:16px;font-weight:600}
+  .header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .menu-toggle{display:none;width:44px;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+  .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before{top:-5px}.menu-toggle span::after{top:5px}
+  body.nav-open .menu-toggle span{background:transparent}
+  body.nav-open .menu-toggle span::before{top:0;transform:rotate(45deg)}
+  body.nav-open .menu-toggle span::after{top:0;transform:rotate(-45deg)}
+  .dash-body{padding:28px 32px 64px;max-width:1280px;width:100%}
+
+  @media (max-width:960px){
+    .menu-toggle{display:flex}
+    /* Công cụ bên trái thành ngăn kéo, nằm dưới thanh trên cùng để nút vẫn bấm được khi đang mở */
+    .side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);
+      transition:transform .26s var(--ease);box-shadow:0 30px 60px -20px rgba(16,48,16,.28)}
+    body.nav-open .side-nav{transform:none}
+    body.nav-open .side-backdrop{display:block;top:var(--header-h)}
+    .dash-main{margin-left:0}
+    .app-header{padding:0 20px;gap:12px}
+    .dash-body{padding:24px 20px 48px}
+  }
+  @media (max-width:640px){
+    .app-header{padding:0 16px;gap:10px}
+    .dash-body{padding:20px 16px 40px}
+    .who{display:none}
+  }
+
+  main{padding:0}
+  .page-head{margin-bottom:22px}
+  .page-head h1{font-size:clamp(1.6rem,3vw,2.1rem)}
+  .page-head p{color:var(--text-muted);font-size:15px;margin-top:6px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:14px;margin-bottom:24px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .stat dt{font-size:13px;color:var(--text-dim)}
+  .stat dd{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:1.55rem;letter-spacing:-.02em;margin-top:4px}
+  .stat small{display:block;font-size:12.5px;color:var(--text-muted);font-weight:500}
+
+  .tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+  .tab{min-height:46px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:none;cursor:pointer;
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;color:var(--text-muted)}
+  .tab.active{color:var(--text);border-bottom-color:var(--accent)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .panel{display:none}
+  .panel.active{display:block}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px}
+  .toolbar .fld{min-width:0;max-width:100%}
+  .fld select,.fld input{max-width:100%}
+  .fld label{display:block;font-size:12.5px;font-weight:600;color:var(--text-dim);margin-bottom:6px}
+  .fld select,.fld input{min-height:44px;padding:0 12px;font-size:16px;font-family:'Inter',sans-serif;color:var(--text);
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .fld .grow{width:260px;max-width:100%}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:13px 16px;text-align:left;font-size:14.5px;border-bottom:1px solid var(--border);vertical-align:middle}
+  th{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;color:var(--text-dim);background:var(--surface-2);white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  td b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+  td small{display:block;color:var(--text-dim);font-size:12.5px}
+  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .act{text-align:right;white-space:nowrap}
+
+  .tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',sans-serif}
+  .tag.ok{background:rgba(34,139,34,.1);color:var(--success-ink)}
+  .tag.wait{background:rgba(138,90,17,.1);color:var(--warning-ink)}
+  .tag.bad{background:rgba(180,41,31,.08);color:var(--danger-ink)}
+  .tag.info{background:rgba(29,79,190,.08);color:var(--info-ink)}
+  .tag.mute{background:var(--surface-2);color:var(--text-muted)}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:14.5px}
+  .msg{margin-bottom:16px;padding:12px 14px;border-radius:var(--radius-sm);font-size:14px;display:none}
+  .msg.show{display:block}
+  .msg[hidden]{display:none}
+  .msg.info{background:rgba(29,79,190,.06);border:1px solid rgba(29,79,190,.22);color:var(--info-ink)}
+  .msg.err{background:rgba(180,41,31,.06);border:1px solid rgba(180,41,31,.24);color:var(--danger-ink)}
+  .msg.ok{background:rgba(34,139,34,.07);border:1px solid rgba(34,139,34,.24);color:var(--success-ink)}
+
+  .sub-rows{background:var(--surface-2)}
+  .sub-rows td{padding:0 16px 14px}
+  .inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+  .inv .one{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px;display:flex;flex-direction:column;gap:6px}
+  .inv .one .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .inv .one b{font-size:14px}
+  .inv .one span{font-size:12.5px;color:var(--text-muted)}
+
+  /* Nhà trọ & người thuê */
+  .owner{padding:18px 20px;margin-bottom:14px}
+  .owner-h{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .owner-h h3{font-size:1.05rem}
+  .owner-h small{display:block;color:var(--text-dim);font-size:12.5px}
+  .owner-h .right{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .owner-sum{margin-top:8px;font-size:13px;color:var(--text-muted)}
+  .props{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+  .prop{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:var(--surface-2)}
+  .prop h4{font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:600}
+  .prop h4 small{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:12.5px;color:var(--text-dim)}
+  .rooms{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+  .room{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px}
+  .room-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .room-h b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
+  .room-h span{font-size:12.5px;color:var(--text-muted);white-space:nowrap}
+  .room-addr{display:block;font-size:12px;color:var(--text-dim);margin-top:2px}
+  .people{list-style:none;margin-top:9px;display:flex;flex-direction:column;gap:7px}
+  .people li{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding-top:7px;border-top:1px dashed var(--border)}
+  .people li:first-child{border-top:0;padding-top:0}
+  .people .who-n{flex:1 1 130px;min-width:0;font-size:13.5px}
+  .people .who-n b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+  .people .who-n small{display:block;color:var(--text-dim);font-size:12px}
+  .room .none{display:block;margin-top:9px;font-size:12.5px;color:var(--text-dim)}
+
+  /* Hỗ trợ: yêu cầu của chủ trọ */
+  .tk{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
+  .tk.moi{border-color:rgba(138,90,17,.3);background:linear-gradient(180deg,rgba(138,90,17,.04),var(--surface))}
+  .tk-h{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px}
+  .tk-h h3{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:600;flex:1 1 300px;min-width:0}
+  .tk-meta{margin-top:4px;font-size:12.5px;color:var(--text-dim)}
+  .tk-body{margin-top:10px;font-size:13.5px;line-height:1.6;color:var(--text-muted)}
+  .tk-chat{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .tk-chat .d{padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;line-height:1.55}
+  .tk-chat .d.cua-ad{background:rgba(34,139,34,.07);border:1px solid var(--border)}
+  .tk-chat .d.cua-nguoi{background:var(--surface-2);border:1px solid var(--border)}
+  .tk-chat .d b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;margin-bottom:2px}
+  .tk-chat .d small{display:block;margin-top:3px;font-size:11.5px;color:var(--text-dim)}
+  .tk-form{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .tk-form textarea{flex:1 1 320px;min-height:72px;padding:10px 12px;font-size:15px;font-family:'Inter',sans-serif;
+    color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);resize:vertical}
+  .tk-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .tk-act{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+
+  /* Gửi thông báo hàng loạt */
+  .bc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+  .bc-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+  .bc-form h3,.bc-list h3{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px}
+  .bc-form > p,.bc-list > p{font-size:13px;color:var(--text-dim);margin-bottom:14px}
+  .bc-form label{display:block;font-size:12.5px;font-weight:600;color:var(--text-dim);margin:0 0 6px}
+  .bc-form input,.bc-form select,.bc-form textarea{width:100%;padding:0 12px;min-height:44px;margin-bottom:12px;font-size:16px;
+    font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+  .bc-form textarea{min-height:96px;padding:10px 12px;resize:vertical}
+  .bc-form input:focus,.bc-form select:focus,.bc-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .bc-form .hai{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .bc-list .mot{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px}
+  .bc-list .mot b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
+  .bc-list .mot small{display:block;font-size:12.5px;color:var(--text-dim);margin-top:3px}
+  .bc-note{margin-top:10px;font-size:12.5px;color:var(--text-muted);line-height:1.55}
+
+  /* Giấy tờ chủ trọ */
+  .giay-to{font-size:13px;line-height:1.5}
+  .giay-to b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600;letter-spacing:.02em}
+  .giay-to small{display:block;color:var(--text-dim);font-size:12px}
+  .giay-to .thieu{color:var(--warning-ink);font-weight:600}
+  .giay-to .khong{color:var(--text-dim)}
+
+  /* Hộp sửa giấy tờ */
+  .lop-phu{position:fixed;inset:0;z-index:200;display:none;place-items:center;padding:20px;background:rgba(16,32,16,.45);backdrop-filter:blur(4px)}
+  .lop-phu.mo{display:grid}
+  .hop{width:min(460px,100%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+  .hop h3{font-size:1.1rem;margin-bottom:4px}
+  .hop > p{font-size:13.5px;color:var(--text-muted);margin-bottom:16px}
+  .hop label{display:block;font-size:12.5px;font-weight:600;color:var(--text-dim);margin-bottom:6px}
+  .hop input{width:100%;min-height:44px;padding:0 12px;margin-bottom:14px;font-size:16px;font-family:'Inter',sans-serif;
+    color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+  .hop input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .hop .nut{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+
+  /* Tin đăng chờ duyệt */
+  .post-dem{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .post-dem button{
+    display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:999px;cursor:pointer;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;color:var(--text-muted);
+    background:var(--surface);border:1px solid var(--border);
+    transition:border-color .18s var(--ease),color .18s var(--ease),background .18s var(--ease);
+  }
+  .post-dem button:hover{border-color:var(--accent);color:var(--accent)}
+  .post-dem button.on{background:rgba(34,139,34,.1);border-color:var(--border-strong);color:var(--text)}
+  .post-dem button b{font-weight:700}
+  .posts{display:flex;flex-direction:column;gap:12px}
+  .post{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .post.co-co{border-color:rgba(180,41,31,.28);background:linear-gradient(180deg,rgba(180,41,31,.035),var(--surface))}
+  .post-h{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px}
+  .post-h h3{font-family:'Be Vietnam Pro',sans-serif;font-size:15.5px;font-weight:600;line-height:1.35;flex:1 1 320px;min-width:0}
+  .post-h .gia{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:15px;white-space:nowrap}
+  .post-meta{margin-top:4px;font-size:13px;color:var(--text-dim)}
+  .post-nguoi{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:13.5px}
+  .post-nguoi b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+  .post-desc{margin-top:10px;font-size:13.5px;color:var(--text-muted);line-height:1.6}
+  .post-co{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .post-act{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .post-ly{margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);background:rgba(180,41,31,.06);
+    border:1px solid rgba(180,41,31,.2);color:var(--danger-ink);font-size:13px}
+
+  .gate{max-width:520px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center}
+  .gate h2{font-size:1.3rem;margin-bottom:10px}
+  .gate p{color:var(--text-muted);font-size:14.5px;margin-bottom:20px}
+
+  @media (max-width:860px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:760px){
+    .wrap{padding:0 16px}
+    .bar{height:auto;padding:12px 0;flex-wrap:wrap}
+    .bar .right{width:100%;justify-content:space-between}
+    thead{display:none}
+    table,tbody,tr,td{display:block;width:100%}
+    tr{border-bottom:1px solid var(--border);padding:12px 4px}
+    tr:last-child{border-bottom:0}
+    td{border:0;padding:4px 12px;font-size:14px}
+    td::before{content:attr(data-th);display:block;font-size:12px;color:var(--text-dim);font-weight:600}
+    .num,.act{text-align:left}
+    .act{padding-top:10px}
+    .sub-rows td{padding:0 12px 12px}
+  }
+</style>
+</head>
+<body>
+
+<div class="dash-shell">
+  <div class="side-backdrop" id="sideBackdrop"></div>
+
+  <!-- CÔNG CỤ QUẢN TRỊ (bên trái) — giữ đồng bộ giữa quan-tri/trang-chu.html và
+       quan-tri/tong-quan.html; mỗi trang tự đánh dấu .active cho mục đang mở.
+       Mục ghi "Chưa làm" là phần chưa có trong bản này: để đó cho biết sẽ có, không bấm được. -->
+  <aside class="side-nav" id="sideNav">
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <div class="side-role"><span>Khu vực</span><b>Quản trị</b></div>
+    <nav class="side-menu" aria-label="Công cụ khu quản trị">
+      <a href="trang-chu.html" class="side-link" data-muc="tong-quan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Tổng quan</a>
+      <a href="tong-quan.html#tai-khoan" class="side-link" data-muc="tai-khoan"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> Tài khoản</a>
+      <a href="tong-quan.html#nha-tro" class="side-link" data-muc="nha-tro"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg> Nhà trọ &amp; người thuê</a>
+      <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Gói &amp; thanh toán</a>
+      <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Tin đăng<span class="side-tag">Chờ duyệt</span></a>
+      <a href="tong-quan.html#ho-tro" class="side-link" data-muc="ho-tro"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ<span class="side-tag">Chờ xử lý</span></a>
+      <div class="side-sep" role="presentation"></div>
+      <span class="side-link is-off" data-muc="bao-cao" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg> Báo cáo tài chính<span class="side-tag">Chưa làm</span></span>
+      <span class="side-link is-off" data-muc="cau-hinh" aria-disabled="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15"/></svg> Cấu hình hệ thống<span class="side-tag">Chưa làm</span></span>
+    </nav>
+    <p class="side-note">Mục chưa làm sẽ mở dần. Số liệu của phần đã chạy xem ở Tổng quan.</p>
+  </aside>
+
+  <div class="dash-main">
+    <header class="app-header">
+      <button type="button" class="menu-toggle" id="menuBtn" aria-label="Mở công cụ quản trị" aria-expanded="false"><span></span></button>
+      <b class="app-title" id="appTitle">Tài khoản</b>
+      <div class="header-actions">
+        <span class="who" id="who"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout" hidden>Đăng xuất</button>
+      </div>
+    </header>
+
+    <main class="dash-body">
+  <div id="gate" class="gate" hidden>
+    <h2 id="gateTitle">Khu vực dành cho quản trị viên</h2>
+    <p id="gateText">Vui lòng đăng nhập bằng tài khoản quản trị để tiếp tục.</p>
+    <a class="btn btn-primary" href="../trang-chu.html">Về trang chủ để đăng nhập</a>
+  </div>
+
+  <div id="app" hidden>
+    <div class="page-head">
+      <h1 id="pageTitle">Tài khoản</h1>
+      <p id="pageDesc">Tài khoản người thuê và chủ trọ đã đăng ký, khoá hoặc mở khoá khi cần.</p>
+    </div>
+
+    <p class="msg info show" id="demoNote" hidden></p>
+    <dl class="stats" id="stats"></dl>
+    <p class="msg" id="msg" role="alert"></p>
+
+    <!-- TÀI KHOẢN -->
+    <section class="panel active" data-panel="tai-khoan">
+      <div class="toolbar">
+        <div class="fld">
+          <label for="fRole">Vai trò</label>
+          <select id="fRole">
+            <option value="">Tất cả</option>
+            <option value="renter">Người thuê</option>
+            <option value="landlord">Chủ trọ</option>
+            <option value="admin">Quản trị</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="fStatus">Trạng thái</label>
+          <select id="fStatus">
+            <option value="">Tất cả</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="locked">Đã khoá</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="fSearch">Tìm tài khoản</label>
+          <input id="fSearch" type="search" class="grow" placeholder="Tên, số điện thoại hoặc email" />
+        </div>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Tài khoản</th><th>Vai trò</th><th>Giấy tờ</th><th>Trạng thái</th><th>Ngày tạo</th><th>Gói / Hoạt động</th><th class="act">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="userRows"></tbody>
+        </table>
+        <p class="empty" id="userEmpty" hidden>Không có tài khoản nào khớp bộ lọc.</p>
+      </div>
+    </section>
+
+    <!-- NHÀ TRỌ & NGƯỜI THUÊ -->
+    <section class="panel" data-panel="nha-tro">
+      <div class="toolbar">
+        <div class="fld">
+          <label for="fProp">Tìm chủ trọ, nhà trọ, phòng hoặc người thuê</label>
+          <input id="fProp" type="search" class="grow" placeholder="Tên chủ trọ, tên nhà trọ, mã phòng, tên hoặc số người thuê" />
+        </div>
+      </div>
+      <div id="propList"></div>
+      <p class="empty" id="propEmpty" hidden>Không có chủ trọ nào khớp từ khoá.</p>
+    </section>
+
+    <!-- HỘP SỬA GIẤY TỜ CHỦ TRỌ -->
+    <div class="lop-phu" id="gtLop" role="dialog" aria-modal="true" aria-labelledby="gtTitle">
+      <form class="hop" id="gtForm">
+        <h3 id="gtTitle">Giấy tờ chủ trọ</h3>
+        <p id="gtWho"></p>
+        <label for="gtCccd">Số căn cước công dân (12 số)</label>
+        <input id="gtCccd" inputmode="numeric" maxlength="12" placeholder="001189012345" />
+        <label for="gtAddr">Địa chỉ thường trú</label>
+        <input id="gtAddr" maxlength="300" placeholder="Số nhà, đường, phường, tỉnh/thành" />
+        <p class="msg" id="gtMsg" role="alert"></p>
+        <div class="nut">
+          <button type="button" class="btn btn-ghost" id="gtHuy">Đóng</button>
+          <button type="submit" class="btn btn-primary" id="gtLuu">Lưu giấy tờ</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- HỖ TRỢ & THÔNG BÁO -->
+    <section class="panel" data-panel="ho-tro">
+      <div class="toolbar">
+        <div class="fld">
+          <label for="fTkStatus">Yêu cầu hỗ trợ</label>
+          <select id="fTkStatus">
+            <option value="">Tất cả</option>
+            <option value="moi">Mới gửi</option>
+            <option value="dang-xu-ly">Đang xử lý</option>
+            <option value="da-xong">Đã xong</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="fTk">Tìm yêu cầu</label>
+          <input id="fTk" type="search" class="grow" placeholder="Tiêu đề, nội dung hoặc người gửi" />
+        </div>
+      </div>
+
+      <div class="post-dem" id="tkDem"></div>
+      <div id="tkList"></div>
+      <p class="empty" id="tkEmpty" hidden>Không có yêu cầu hỗ trợ nào khớp bộ lọc.</p>
+
+      <div class="bc-grid" style="margin-top:26px">
+        <form class="bc-form" id="bcForm">
+          <h3>Gửi thông báo hàng loạt</h3>
+          <p>Thông báo bảo trì, tính năng mới… gửi vào chuông thông báo của người nhận.</p>
+          <div class="hai">
+            <div>
+              <label for="bcType">Loại</label>
+              <select id="bcType">
+                <option value="bao-tri">Bảo trì hệ thống</option>
+                <option value="tinh-nang">Tính năng mới</option>
+              </select>
+            </div>
+            <div>
+              <label for="bcAi">Gửi cho</label>
+              <select id="bcAi">
+                <option value="all">Tất cả tài khoản</option>
+                <option value="landlord">Chủ trọ</option>
+                <option value="renter">Người thuê</option>
+                <option value="chua-mua-goi">Chủ trọ chưa mua gói</option>
+              </select>
+            </div>
+          </div>
+          <label for="bcTitle">Tiêu đề</label>
+          <input id="bcTitle" maxlength="150" placeholder="Bảo trì hệ thống đêm 20/10" />
+          <label for="bcBody">Nội dung</label>
+          <textarea id="bcBody" maxlength="2000" placeholder="An Cư bảo trì từ 23:00 ngày 20/10 đến 01:00 ngày 21/10…"></textarea>
+          <label for="bcKenh">Kênh gửi</label>
+          <select id="bcKenh">
+            <option value="in-app">Trong ứng dụng (gửi thật)</option>
+            <option value="email">Email (mới ghi nhận, chưa nối dịch vụ gửi mail)</option>
+          </select>
+          <button type="submit" class="btn btn-primary" id="bcGui">Gửi thông báo</button>
+          <p class="bc-note">Prototype chưa nối dịch vụ gửi email. Chọn "Email" chỉ ghi lại đợt gửi để sau này nối SMTP / Zalo ZNS.</p>
+        </form>
+
+        <div class="bc-list">
+          <h3>Nhắc hết hạn gói</h3>
+          <p>Gửi cho chủ trọ có kỳ quá hạn hoặc tới hạn trong 7 ngày. Mỗi kỳ chỉ nhắc một lần.</p>
+          <button type="button" class="btn btn-ghost" id="bcNhac">Gửi nhắc hết hạn</button>
+          <p class="bc-note" id="nhacInfo"></p>
+
+          <h3 style="margin-top:22px">Đã gửi gần đây</h3>
+          <p>Các đợt gửi hàng loạt và số người đã đọc.</p>
+          <div id="bcList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIN ĐĂNG -->
+    <section class="panel" data-panel="tin-dang">
+      <div class="toolbar">
+        <div class="fld">
+          <label for="fPostStatus">Trạng thái</label>
+          <select id="fPostStatus">
+            <option value="">Tất cả</option>
+            <option value="pending">Chờ duyệt</option>
+            <option value="approved">Đã duyệt</option>
+            <option value="rejected">Đã từ chối</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="fPost">Tìm tin đăng</label>
+          <input id="fPost" type="search" class="grow" placeholder="Tiêu đề, địa chỉ, người đăng hoặc số điện thoại" />
+        </div>
+      </div>
+
+      <div class="post-dem" id="postDem"></div>
+      <div class="posts" id="postList"></div>
+      <p class="empty" id="postEmpty" hidden>Không có tin đăng nào khớp bộ lọc.</p>
+    </section>
+
+    <!-- THANH TOÁN GÓI -->
+    <section class="panel" data-panel="thanh-toan">
+      <form class="toolbar" id="planForm">
+        <div class="fld">
+          <label for="pLandlord">Chủ trọ</label>
+          <select id="pLandlord" class="grow" required></select>
+        </div>
+        <div class="fld">
+          <label for="pPlan">Gói</label>
+          <select id="pPlan">
+            <option value="plus">Plus — 199.000₫ · 15 phòng</option>
+            <option value="pro">Pro — 499.000₫ · 60 phòng</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="pMonths">Số kỳ (tháng)</label>
+          <select id="pMonths">
+            <option value="3">3 kỳ</option>
+            <option value="6">6 kỳ</option>
+            <option value="12" selected>12 kỳ</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" id="planSubmit">Ghi nhận gói</button>
+      </form>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Chủ trọ</th><th>Gói</th><th>Trạng thái</th><th>Bắt đầu</th>
+              <th class="num">Đã thu</th><th class="num">Còn phải thu</th><th>Kỳ tới</th><th class="act">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="planRows"></tbody>
+        </table>
+        <p class="empty" id="planEmpty" hidden>Chưa có chủ trọ nào mua gói.</p>
+      </div>
+    </section>
+  </div>
+    </main>
+  </div>
+</div>
+
+<script src="du-lieu-xem-thu.js"></script>
+<script>
+(function(){
+  'use strict';
+  var nf = new Intl.NumberFormat('vi-VN');
+  var vnd = function(n){ return nf.format(Number(n) || 0) + '₫'; };
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // YYYY-MM-DD hoặc ISO -> dd/mm/yyyy
+  function ngay(s){
+    if(!s) return '—';
+    var d = String(s).slice(0, 10).split('-');
+    return d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : s;
+  }
+  function ky(period){ var p = String(period).split('-'); return 'Tháng ' + p[1] + '/' + p[0]; }
+
+  var ROLE = { renter:'Người thuê', landlord:'Chủ trọ', admin:'Quản trị' };
+  // 'trial' chỉ còn trong dữ liệu cũ — bản này không tạo gói dùng thử nữa
+  var PLAN_STATUS = { trial:['Đang dùng (gói cũ)','ok'], active:['Đang dùng','ok'], cancelled:['Đã huỷ','mute'] };
+  var INV_STATUS = { pending:['Chờ thu','wait'], paid:['Đã thu','ok'], overdue:['Quá hạn','bad'] };
+
+  // Bỏ dấu để tìm kiếm không phân biệt dấu (giống fold ở server/quan-tri.mjs)
+  function khongDau(v){
+    return String(v == null ? '' : v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  }
+
+  var el = function(id){ return document.getElementById(id); };
+  var msgBox = el('msg');
+  function msg(text, kind){
+    msgBox.textContent = text || '';
+    msgBox.className = 'msg' + (text ? ' show ' + (kind || 'ok') : '');
+  }
+
+  // Có máy chủ (npm start) thì gọi API thật. Mở bằng file:// hoặc deploy tĩnh (Vercel) thì
+  // không có API, trang chạy trên dữ liệu mẫu lưu trong localStorage của chính trình duyệt này.
+  var demo = null;
+
+  function api(method, path, body){
+    if (demo) {
+      try { return Promise.resolve(demoApi(method, path, body)); }
+      catch (err) { return Promise.reject(err); }
+    }
+    return fetch(path, {
+      method: method, cache: 'no-store', credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        if (!r.ok) throw new Error(j.message || 'Máy chủ gặp lỗi, vui lòng thử lại.');
+        return j;
+      });
+    });
+  }
+
+  /* ================= Dữ liệu mẫu cho chế độ xem thử ================= */
+  // Bộ dữ liệu mẫu nằm ở quan-tri/du-lieu-xem-thu.js để trang chủ khu quản trị dùng chung.
+  function demoLoad(){ return XemThu.tai(); }
+  function demoApi(method, path, body){ return XemThu.api(method, path, body); }
+  function demoMe(){ return XemThu.toi(); }
+
+  // ---------- Tài khoản ----------
+  var users = [];
+  function renderUsers(){
+    var rows = el('userRows');
+    rows.innerHTML = users.map(function(u){
+      var locked = u.status === 'locked';
+      var extra = u.role === 'landlord'
+        ? (u.plan ? '<span class="tag ' + (PLAN_STATUS[u.plan.status][1]) + '">Gói ' + esc(u.plan.plan === 'pro' ? 'Pro' : 'Plus') + ' · ' + PLAN_STATUS[u.plan.status][0] + '</span>' : '<span class="tag wait">Chưa kích hoạt gói</span>')
+        : (u.role === 'renter' ? esc(u.bookings) + ' lịch xem đang hiệu lực' : '—');
+      var act = u.role === 'admin'
+        ? '<span class="tag mute">Không khoá được</span>'
+        : '<button type="button" class="btn btn-ghost btn-sm" data-lock="' + esc(u.id) + '" data-to="' + (locked ? 'unlock' : 'lock') + '">' + (locked ? 'Mở khoá' : 'Khoá') + '</button>';
+      // Giấy tờ: chỉ chủ trọ mới phải khai (cccd = null với vai trò khác)
+      var giayTo = u.cccd === null
+        ? '<span class="giay-to khong">Không áp dụng</span>'
+        : (u.cccd
+            ? '<span class="giay-to"><b>' + esc(u.cccd) + '</b><small>' + esc(u.address || 'Chưa có địa chỉ') + '</small></span>'
+            : '<span class="giay-to thieu">Chưa khai</span>');
+      if (u.role === 'landlord') {
+        act = '<button type="button" class="btn btn-ghost btn-sm" data-giayto="' + esc(u.id) + '">' +
+          (u.cccd ? 'Sửa giấy tờ' : 'Khai giấy tờ') + '</button> ' + act;
+      }
+      return '<tr>' +
+        '<td data-th="Tài khoản"><b>' + esc(u.name) + '</b><small>' + esc(u.phone) + (u.email ? ' · ' + esc(u.email) : '') + '</small></td>' +
+        '<td data-th="Vai trò">' + esc(ROLE[u.role] || u.role) + '</td>' +
+        '<td data-th="Giấy tờ">' + giayTo + '</td>' +
+        '<td data-th="Trạng thái"><span class="tag ' + (locked ? 'bad' : 'ok') + '">' + (locked ? 'Đã khoá' : 'Đang hoạt động') + '</span></td>' +
+        '<td data-th="Ngày tạo">' + ngay(u.createdAt) + '</td>' +
+        '<td data-th="Gói / Hoạt động">' + extra + '</td>' +
+        '<td data-th="Thao tác" class="act">' + act + '</td>' +
+      '</tr>';
+    }).join('');
+    el('userEmpty').hidden = users.length > 0;
+  }
+
+  function loadUsers(){
+    var qs = [];
+    if (el('fRole').value) qs.push('vaiTro=' + encodeURIComponent(el('fRole').value));
+    if (el('fStatus').value) qs.push('trangThai=' + encodeURIComponent(el('fStatus').value));
+    if (el('fSearch').value.trim()) qs.push('tim=' + encodeURIComponent(el('fSearch').value.trim()));
+    return api('GET', '/api/quan-tri/tai-khoan' + (qs.length ? '?' + qs.join('&') : '')).then(function(j){
+      users = j.items;
+      renderUsers();
+    });
+  }
+
+  // ---------- Nhà trọ & người thuê ----------
+  // Admin xem chủ trọ nào đang quản lý nhà trọ / phòng nào, ai đang thuê ở đó, và khoá được
+  // ngay cả chủ trọ lẫn người thuê khi có báo cáo.
+  var KIND = { tenant:['Đang thuê','ok'], pending:['Chờ duyệt thuê','wait'], viewing:['Đang hẹn xem','info'] };
+  var props = [];
+
+  function nutKhoa(id, status, nhan){
+    if (!id) return '<span class="tag mute">Chưa có tài khoản</span>';
+    if (status !== 'active' && status !== 'locked') return '';
+    var locked = status === 'locked';
+    return '<button type="button" class="btn btn-ghost btn-sm" data-lock="' + esc(id) + '" data-to="' + (locked ? 'unlock' : 'lock') + '">' +
+      (locked ? 'Mở khoá' : (nhan || 'Khoá')) + '</button>';
+  }
+
+  function renderProps(){
+    el('propList').innerHTML = props.map(function(it){
+      var locked = it.status === 'locked';
+      var goi = it.plan
+        ? '<span class="tag ' + PLAN_STATUS[it.plan.status][1] + '">Gói ' + esc(it.plan.planName) + ' · ' + PLAN_STATUS[it.plan.status][0] + '</span>'
+        : '<span class="tag wait">Chưa kích hoạt gói</span>';
+      var nhaTro = it.properties.map(function(nt){
+        var rooms = nt.rooms.map(function(r){
+          var people = r.people.map(function(ng){
+            var k = KIND[ng.kind] || KIND.viewing;
+            var phu = ng.kind === 'tenant' ? (ng.since ? 'Thuê từ ' + ngay(ng.since) : 'Đang thuê')
+              : (ng.kind === 'pending' ? 'Xin thuê từ ' + ngay(ng.at) : 'Hẹn xem ' + ngay(ng.at) + (ng.time ? ' ' + ng.time : ''));
+            var tt = ng.userStatus === 'locked' ? '<span class="tag bad">Đã khoá</span>' : '';
+            return '<li><span class="who-n"><b>' + esc(ng.name) + '</b><small>' + esc(ng.phone || 'Chưa có số') + ' · ' + phu + '</small></span>' +
+              '<span class="tag ' + k[1] + '">' + k[0] + '</span>' + tt +
+              nutKhoa(ng.id, ng.userStatus, 'Khoá') + '</li>';
+          }).join('');
+          return '<div class="room"><div class="room-h"><b>' + esc(r.code) + '</b><span>' + (r.price ? vnd(r.price) + '/tháng' : 'Chưa đăng giá') + '</span></div>' +
+            (r.title && r.title !== r.code ? '<span class="room-addr">' + esc(r.title) + '</span>' : '') +
+            (people ? '<ul class="people">' + people + '</ul>' : '<span class="none">Chưa có người thuê hay lịch xem nào.</span>') +
+            '</div>';
+        }).join('');
+        return '<div class="prop"><h4>' + esc(nt.name) + '<small>' + esc(nt.address) + '</small></h4>' +
+          (rooms ? '<div class="rooms">' + rooms + '</div>' : '<span class="none">Nhà trọ này chưa có phòng nào.</span>') + '</div>';
+      }).join('');
+      return '<article class="card owner"><div class="owner-h">' +
+          '<div><h3>' + esc(it.landlord) + '</h3><small>' + esc(it.phone) + (it.email ? ' · ' + esc(it.email) : '') + '</small></div>' +
+          '<div class="right"><span class="tag ' + (locked ? 'bad' : 'ok') + '">' + (locked ? 'Đã khoá' : 'Đang hoạt động') + '</span>' +
+            goi + nutKhoa(it.landlordId, it.status, 'Khoá chủ trọ') + '</div>' +
+        '</div>' +
+        '<p class="owner-sum">' + it.properties.length + ' nhà trọ · ' + it.rooms + ' phòng · ' +
+          it.tenants + ' người đang thuê · ' + it.pending + ' chờ duyệt thuê · ' + it.viewings + ' lịch hẹn xem</p>' +
+        (nhaTro ? '<div class="props">' + nhaTro + '</div>' : '<p class="owner-sum">Chủ trọ này chưa có nhà trọ nào trên hệ thống.</p>') +
+      '</article>';
+    }).join('');
+    el('propEmpty').hidden = props.length > 0;
+  }
+
+  function loadProps(){
+    var tim = el('fProp').value.trim();
+    return api('GET', '/api/quan-tri/nha-tro' + (tim ? '?tim=' + encodeURIComponent(tim) : '')).then(function(j){
+      props = j.items;
+      renderProps();
+    });
+  }
+
+  // ---------- Hỗ trợ: yêu cầu của chủ trọ ----------
+  var TK_STATUS = { moi:['Mới gửi','wait'], 'dang-xu-ly':['Đang xử lý','info'], 'da-xong':['Đã xong','ok'] };
+  var TK_KIND = { 'loi-ky-thuat':'Lỗi kỹ thuật', 'thanh-toan':'Thanh toán', 'tai-khoan':'Tài khoản', khac:'Khác' };
+  var tickets = [];
+  var allTickets = [];
+
+  function renderTickets(){
+    el('tkList').innerHTML = tickets.map(function(t){
+      var st = TK_STATUS[t.status] || TK_STATUS.moi;
+      var chat = t.replies.map(function(r){
+        return '<div class="d ' + (r.fromAdmin ? 'cua-ad' : 'cua-nguoi') + '"><b>' +
+          esc(r.fromAdmin ? 'An Cư hỗ trợ' : t.user) + '</b>' + esc(r.body) +
+          '<small>' + ngay(r.createdAt) + '</small></div>';
+      }).join('');
+      var nut = [];
+      if (t.status !== 'dang-xu-ly') nut.push('<button type="button" class="btn btn-ghost btn-sm" data-tk="' + t.id + '" data-tt="dang-xu-ly">Đánh dấu đang xử lý</button>');
+      if (t.status !== 'da-xong') nut.push('<button type="button" class="btn btn-ghost btn-sm" data-tk="' + t.id + '" data-tt="da-xong">Đóng yêu cầu</button>');
+      if (t.status === 'da-xong') nut.push('<button type="button" class="btn btn-ghost btn-sm" data-tk="' + t.id + '" data-tt="moi">Mở lại</button>');
+      return '<article class="tk' + (t.status === 'moi' ? ' moi' : '') + '">' +
+        '<div class="tk-h"><h3>' + esc(t.subject) + '</h3>' +
+          '<span class="tag mute">' + esc(TK_KIND[t.kind] || 'Khác') + '</span>' +
+          '<span class="tag ' + st[1] + '">' + st[0] + '</span></div>' +
+        '<p class="tk-meta">' + esc(t.user) + ' · ' + esc(t.userPhone) +
+          (t.plan ? ' · gói ' + esc(t.plan.planName) : ' · chưa mua gói') +
+          ' · gửi ' + ngay(t.createdAt) +
+          (t.status !== 'da-xong' && !t.answered ? ' · <b>chưa trả lời lần nào</b>' : '') + '</p>' +
+        '<p class="tk-body">' + esc(t.body) + '</p>' +
+        (chat ? '<div class="tk-chat">' + chat + '</div>' : '') +
+        '<div class="tk-form"><textarea data-tra-loi="' + t.id + '" placeholder="Trả lời chủ trọ…" aria-label="Nội dung trả lời"></textarea>' +
+          '<div class="tk-act"><button type="button" class="btn btn-primary btn-sm" data-tk="' + t.id + '" data-tt="tra-loi">Gửi trả lời</button>' +
+          nut.join('') + '</div></div>' +
+      '</article>';
+    }).join('');
+    el('tkEmpty').hidden = tickets.length > 0;
+  }
+
+  function renderTkDem(){
+    var dem = function(st){ return st ? allTickets.filter(function(t){ return t.status === st; }).length : allTickets.length; };
+    var hien = el('fTkStatus').value;
+    el('tkDem').innerHTML = [['', 'Tất cả'], ['moi', 'Mới gửi'], ['dang-xu-ly', 'Đang xử lý'], ['da-xong', 'Đã xong']]
+      .map(function(x){
+        return '<button type="button" data-tkloc="' + x[0] + '" class="' + (hien === x[0] ? 'on' : '') + '">' +
+          x[1] + ' <b>' + dem(x[0]) + '</b></button>';
+      }).join('');
+  }
+  function locTickets(){
+    var st = el('fTkStatus').value;
+    tickets = st ? allTickets.filter(function(t){ return t.status === st; }) : allTickets;
+    renderTkDem();
+    renderTickets();
+    var nhan = document.querySelector('.side-link[data-muc="ho-tro"] .side-tag');
+    var choXuLy = allTickets.filter(function(t){ return t.status !== 'da-xong'; }).length;
+    if (nhan) nhan.textContent = choXuLy ? choXuLy + ' chờ xử lý' : 'Không có yêu cầu';
+  }
+  function loadTickets(){
+    var tim = el('fTk').value.trim();
+    return api('GET', '/api/quan-tri/ho-tro' + (tim ? '?tim=' + encodeURIComponent(tim) : '')).then(function(j){
+      allTickets = j.items;
+      locTickets();
+    });
+  }
+
+  // ---------- Thông báo hàng loạt ----------
+  var NOTI_TYPE = { 'bao-tri':'Bảo trì', 'tinh-nang':'Tính năng mới', 'nhac-han':'Nhắc hết hạn', 'ho-tro':'Trả lời hỗ trợ' };
+  function loadBroadcasts(){
+    return api('GET', '/api/quan-tri/thong-bao').then(function(j){
+      el('bcList').innerHTML = j.batches.length
+        ? j.batches.slice(0, 8).map(function(b){
+            return '<div class="mot"><b>' + esc(b.title) + '</b>' +
+              '<small>' + esc(NOTI_TYPE[b.type] || b.type) + ' · ' + (b.channel === 'email' ? 'Email (ghi nhận)' : 'Trong ứng dụng') +
+              ' · gửi ' + b.sent + ' người · đã đọc ' + b.read + ' · ' + ngay(b.createdAt) + '</small></div>';
+          }).join('')
+        : '<p class="bc-note">Chưa gửi đợt thông báo nào.</p>';
+    });
+  }
+
+  // ---------- Tin đăng: duyệt trước khi tin được công khai ----------
+  var POST_STATUS = { pending:['Chờ duyệt','wait'], approved:['Đã duyệt','ok'], rejected:['Đã từ chối','bad'] };
+  var posts = [];
+
+  function renderPosts(){
+    el('postList').innerHTML = posts.map(function(t){
+      var st = POST_STATUS[t.status];
+      var co = t.flags.map(function(c){ return '<span class="tag bad">' + esc(c) + '</span>'; }).join('');
+      var nut = [];
+      if (t.status !== 'approved') nut.push('<button type="button" class="btn btn-primary btn-sm" data-post="' + t.id + '" data-act="duyet">Duyệt tin</button>');
+      if (t.status !== 'rejected') nut.push('<button type="button" class="btn btn-ghost btn-sm" data-post="' + t.id + '" data-act="tu-choi">Từ chối</button>');
+      if (t.status !== 'pending') nut.push('<button type="button" class="btn btn-ghost btn-sm" data-post="' + t.id + '" data-act="cho-duyet-lai">Đưa về chờ duyệt</button>');
+      return '<article class="post' + (t.flags.length ? ' co-co' : '') + '">' +
+        '<div class="post-h"><h3>' + esc(t.title) + '</h3>' +
+          '<span class="gia">' + vnd(t.price) + '/tháng</span>' +
+          '<span class="tag ' + st[1] + '">' + st[0] + '</span></div>' +
+        '<p class="post-meta">' + esc(t.address) + (t.area ? ' · ' + t.area + ' m²' : '') +
+          ' · gửi ' + ngay(t.createdAt) + (t.roomId ? ' · mã phòng ' + esc(String(t.roomId).toUpperCase()) : ' · tin mới, chưa có trong danh mục') +
+          (t.decidedAt ? ' · ' + (t.status === 'approved' ? 'duyệt' : 'xử lý') + ' ngày ' + ngay(t.decidedAt) : '') + '</p>' +
+        '<div class="post-nguoi"><span>Người đăng:</span><b>' + esc(t.landlord) + '</b>' +
+          '<span>' + esc(t.landlordPhone) + '</span>' +
+          (t.landlordStatus === 'locked' ? '<span class="tag bad">Tài khoản đã khoá</span>' : '') +
+          (t.phone && t.phone.replace(/\D/g, '') !== String(t.landlordPhone).replace(/\D/g, '')
+            ? '<span>· số ghi trong tin: ' + esc(t.phone) + '</span>' : '') +
+          '<a class="btn btn-ghost btn-sm" style="margin-left:auto" href="#nha-tro" data-xem-chu="' + esc(t.landlordId) + '">Xem chủ trọ</a></div>' +
+        '<p class="post-desc">' + esc(t.description) + '</p>' +
+        (co ? '<div class="post-co">' + co + '</div>' : '') +
+        (t.status === 'rejected' && t.reason ? '<p class="post-ly"><b>Lý do từ chối:</b> ' + esc(t.reason) + '</p>' : '') +
+        '<div class="post-act">' + nut.join('') + '</div>' +
+      '</article>';
+    }).join('');
+    el('postEmpty').hidden = posts.length > 0;
+  }
+
+  // Lấy toàn bộ tin khớp từ khoá rồi lọc trạng thái tại chỗ, để đếm được từng nhóm
+  var allPosts = [];
+  function renderDem(){
+    var dem = function(st){ return st ? allPosts.filter(function(t){ return t.status === st; }).length : allPosts.length; };
+    var hien = el('fPostStatus').value;
+    el('postDem').innerHTML = [['', 'Tất cả'], ['pending', 'Chờ duyệt'], ['approved', 'Đã duyệt'], ['rejected', 'Đã từ chối']]
+      .map(function(x){
+        return '<button type="button" data-loc="' + x[0] + '" class="' + (hien === x[0] ? 'on' : '') + '">' +
+          x[1] + ' <b>' + dem(x[0]) + '</b></button>';
+      }).join('');
+  }
+  function locPosts(){
+    var st = el('fPostStatus').value;
+    posts = st ? allPosts.filter(function(t){ return t.status === st; }) : allPosts;
+    renderDem();
+    renderPosts();
+  }
+  function loadPosts(){
+    var tim = el('fPost').value.trim();
+    return api('GET', '/api/quan-tri/tin-dang' + (tim ? '?tim=' + encodeURIComponent(tim) : '')).then(function(j){
+      allPosts = j.items;
+      locPosts();
+      capSoChoDuyet();
+    });
+  }
+
+  // Số tin chờ duyệt hiện ngay trên mục Tin đăng ở cột công cụ bên trái
+  function capSoChoDuyet(){
+    return api('GET', '/api/quan-tri/tong-quan').then(function(j){
+      var n = j.summary.listings ? j.summary.listings.pending : 0;
+      var o = document.querySelector('.side-link[data-muc="tin-dang"] .side-tag');
+      if (o) { o.textContent = n ? n + ' chờ duyệt' : 'Không có tin chờ'; o.className = 'side-tag' + (n ? ' co-viec' : ''); }
+    });
+  }
+
+  // ---------- Gói + lịch thanh toán ----------
+  var plans = [];
+  function renderPlans(){
+    var rows = el('planRows');
+    rows.innerHTML = plans.map(function(s){
+      var st = PLAN_STATUS[s.status];
+      var invoices = s.invoices.map(function(i){
+        var is = INV_STATUS[i.status];
+        var btn = i.status === 'paid'
+          ? '<button type="button" class="btn btn-ghost btn-sm" data-pay="' + i.id + '" data-paid="0">Bỏ đánh dấu</button>'
+          : '<button type="button" class="btn btn-primary btn-sm" data-pay="' + i.id + '" data-paid="1">Ghi nhận đã thu</button>';
+        return '<div class="one"><div class="top"><b>' + ky(i.period) + '</b><span class="tag ' + is[1] + '">' + is[0] + '</span></div>' +
+          '<span>' + vnd(i.amount) + ' · hạn ' + ngay(i.dueDate) + (i.paidAt ? ' · đã thu ' + ngay(i.paidAt) : '') + '</span>' + btn + '</div>';
+      }).join('');
+      var cancel = s.status === 'cancelled' ? '' :
+        '<button type="button" class="btn btn-ghost btn-sm" data-cancel="' + s.id + '">Huỷ gói</button>';
+      return '<tr>' +
+          '<td data-th="Chủ trọ"><b>' + esc(s.landlord) + '</b><small>' + esc(s.phone) + '</small></td>' +
+          '<td data-th="Gói"><b>' + esc(s.planName) + '</b><small>' + vnd(s.price) + '/tháng · ' + s.months + ' kỳ</small>' +
+            (s.rooms ? '<small>' + s.rooms + ' phòng · ' + s.accounts + ' tài khoản</small>' : '') + '</td>' +
+          '<td data-th="Trạng thái"><span class="tag ' + st[1] + '">' + st[0] + '</span>' +
+
+            (s.overdue ? '<small>' + s.overdue + ' kỳ quá hạn</small>' : '') + '</td>' +
+          '<td data-th="Bắt đầu">' + ngay(s.startedAt) + '</td>' +
+          '<td data-th="Đã thu" class="num">' + vnd(s.paid) + '</td>' +
+          '<td data-th="Còn phải thu" class="num">' + vnd(s.due) + '</td>' +
+          '<td data-th="Kỳ tới">' + ngay(s.nextDue) + '</td>' +
+          '<td data-th="Thao tác" class="act">' + cancel + '</td>' +
+        '</tr>' +
+        '<tr class="sub-rows"><td colspan="8" data-th="Lịch thanh toán">' +
+          (invoices ? '<div class="inv">' + invoices + '</div>' : '<span class="tag mute">Không còn kỳ nào</span>') +
+        '</td></tr>';
+    }).join('');
+    el('planEmpty').hidden = plans.length > 0;
+  }
+
+  function loadPlans(){
+    return api('GET', '/api/quan-tri/goi').then(function(j){ plans = j.items; renderPlans(); });
+  }
+
+  function loadSummary(){
+    return api('GET', '/api/quan-tri/tong-quan').then(function(j){
+      var s = j.summary;
+      el('stats').innerHTML = [
+        ['Tài khoản', s.users.total, s.users.renters + ' người thuê · ' + s.users.landlords + ' chủ trọ'],
+        ['Tài khoản bị khoá', s.users.locked, 'Không đăng nhập được'],
+        ['Nhà trọ', (s.properties ? s.properties.total : 0), (s.properties ? s.properties.rooms : 0) + ' phòng · ' + (s.properties ? s.properties.tenants : 0) + ' người đang thuê'],
+        ['Gói đang chạy', s.plans.active, s.plans.plus + ' Plus · ' + s.plans.pro + ' Pro · ' + s.plans.overdue + ' có kỳ quá hạn'],
+        ['Đã thu', vnd(s.plans.revenue), 'Còn phải thu ' + vnd(s.plans.due)]
+      ].map(function(x){
+        return '<div class="stat"><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>';
+      }).join('');
+    });
+  }
+
+  function fillLandlords(){
+    var sel = el('pLandlord');
+    var dangChon = sel.value;          // giữ nguyên người đang chọn sau khi làm mới danh sách
+    return api('GET', '/api/quan-tri/tai-khoan?vaiTro=landlord').then(function(j){
+      sel.innerHTML = j.items.map(function(u){
+        return '<option value="' + esc(u.id) + '">' + esc(u.name) + ' · ' + esc(u.phone) + (u.plan ? ' (đang có gói)' : '') + '</option>';
+      }).join('') || '<option value="">Chưa có chủ trọ nào</option>';
+      if (dangChon && sel.querySelector('option[value="' + dangChon + '"]')) sel.value = dangChon;
+    });
+  }
+
+  function refresh(){
+    return Promise.all([loadSummary(), loadUsers(), loadProps(), loadPosts(), loadTickets(), loadBroadcasts(), loadPlans(), fillLandlords()]);
+  }
+
+  // ---------- Sự kiện ----------
+  // Đổi khu đang xem. Điều hướng nằm ở cột công cụ bên trái: tong-quan.html#thanh-toan
+  var TIEU_DE = {
+    'tai-khoan': ['Tài khoản', 'Tài khoản người thuê và chủ trọ đã đăng ký, khoá hoặc mở khoá khi cần.'],
+    'nha-tro': ['Nhà trọ & người thuê', 'Chủ trọ nào đang quản lý nhà trọ, phòng nào và ai đang thuê ở đó.'],
+    'tin-dang': ['Tin đăng & nội dung', 'Duyệt tin cho thuê trước khi công khai, chặn tin rác và tin lừa đảo.'],
+    'ho-tro': ['Hỗ trợ & thông báo', 'Trả lời yêu cầu của chủ trọ, gửi thông báo hàng loạt và nhắc hết hạn gói.'],
+    'thanh-toan': ['Gói & thanh toán', 'Chủ trọ đang dùng gói nào, lịch thanh toán từng kỳ và tình trạng thu tiền.']
+  };
+  function moKhu(ten){
+    var panel = document.querySelector('.panel[data-panel="' + ten + '"]');
+    if (!panel) ten = 'tai-khoan';
+    el('pageTitle').textContent = TIEU_DE[ten][0];
+    el('pageDesc').textContent = TIEU_DE[ten][1];
+    document.querySelectorAll('.panel').forEach(function(pn){
+      pn.classList.toggle('active', pn.dataset.panel === ten);
+    });
+    danhDauMuc(ten);
+  }
+  window.addEventListener('hashchange', function(){ moKhu(location.hash.slice(1)); });
+
+  var timer = null;
+  el('fSearch').addEventListener('input', function(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); }, 250);
+  });
+  var timerTk = null;
+  el('fTk').addEventListener('input', function(){
+    clearTimeout(timerTk);
+    timerTk = setTimeout(function(){ loadTickets().catch(function(e){ msg(e.message, 'err'); }); }, 250);
+  });
+  el('fTkStatus').addEventListener('change', locTickets);
+  el('tkDem').addEventListener('click', function(e){
+    var b = e.target.closest('[data-tkloc]');
+    if (!b) return;
+    el('fTkStatus').value = b.dataset.tkloc;
+    locTickets();
+  });
+
+  el('tkList').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-tk]');
+    if (!btn) return;
+    var id = btn.dataset.tk;
+    var body = { action: 'trang-thai', status: btn.dataset.tt };
+    if (btn.dataset.tt === 'tra-loi') {
+      var o = el('tkList').querySelector('[data-tra-loi="' + id + '"]');
+      if (!o || !o.value.trim()) { msg('Hãy nhập nội dung trả lời.', 'err'); if (o) o.focus(); return; }
+      body = { action: 'tra-loi', body: o.value.trim() };
+    }
+    btn.disabled = true;
+    api('PATCH', '/api/quan-tri/ho-tro/' + id, body)
+      .then(function(){
+        msg(body.action === 'tra-loi' ? 'Đã gửi trả lời cho chủ trọ.' : 'Đã đổi trạng thái yêu cầu.', 'ok');
+        return refresh();
+      })
+      .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
+  });
+
+  el('bcForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var nut = el('bcGui');
+    nut.disabled = true;
+    api('POST', '/api/quan-tri/thong-bao', {
+      type: el('bcType').value, title: el('bcTitle').value.trim(), body: el('bcBody').value.trim(),
+      doiTuong: el('bcAi').value, channel: el('bcKenh').value
+    }).then(function(j){
+      msg('Đã gửi thông báo cho ' + j.item.sent + ' tài khoản (' + j.item.doiTuongTen.toLowerCase() + ').', 'ok');
+      el('bcTitle').value = '';
+      el('bcBody').value = '';
+      return refresh();
+    }).catch(function(err){ msg(err.message, 'err'); })
+      .then(function(){ nut.disabled = false; });
+  });
+
+  el('bcNhac').addEventListener('click', function(){
+    var nut = el('bcNhac');
+    nut.disabled = true;
+    api('POST', '/api/quan-tri/nhac-han', {})
+      .then(function(j){
+        el('nhacInfo').textContent = j.canNhac
+          ? 'Có ' + j.canNhac + ' kỳ cần nhắc: vừa gửi ' + j.daGui + ', bỏ qua ' + j.boQua + ' kỳ đã nhắc trước đó.'
+          : 'Không có kỳ nào quá hạn hay tới hạn trong 7 ngày — chưa cần nhắc ai.';
+        msg(j.daGui ? 'Đã gửi ' + j.daGui + ' lời nhắc hết hạn.' : 'Không có lời nhắc nào cần gửi.', 'ok');
+        return refresh();
+      })
+      .catch(function(err){ msg(err.message, 'err'); })
+      .then(function(){ nut.disabled = false; });
+  });
+
+  var timerPost = null;
+  el('fPost').addEventListener('input', function(){
+    clearTimeout(timerPost);
+    timerPost = setTimeout(function(){ loadPosts().catch(function(e){ msg(e.message, 'err'); }); }, 250);
+  });
+  el('fPostStatus').addEventListener('change', locPosts);
+  el('postDem').addEventListener('click', function(e){
+    var b = e.target.closest('[data-loc]');
+    if (!b) return;
+    el('fPostStatus').value = b.dataset.loc;
+    locPosts();
+  });
+
+  el('postList').addEventListener('click', function(e){
+    var xem = e.target.closest('[data-xem-chu]');
+    if (xem) { el('fProp').value = xem.dataset.xemChu; moKhu('nha-tro'); loadProps().catch(function(err){ msg(err.message, 'err'); }); return; }
+    var btn = e.target.closest('[data-post]');
+    if (!btn) return;
+    var act = btn.dataset.act;
+    var body = { action: act };
+    if (act === 'tu-choi') {
+      var ly = prompt('Vì sao không duyệt tin này? Lý do sẽ gửi cho chủ trọ.', 'Tin có dấu hiệu lừa đảo: ');
+      if (ly === null || !ly.trim()) return;
+      body.reason = ly.trim();
+    } else if (act === 'duyet' && !confirm('Duyệt tin này? Tin sẽ được công khai cho người thuê.')) return;
+    btn.disabled = true;
+    api('PATCH', '/api/quan-tri/tin-dang/' + btn.dataset.post, body)
+      .then(function(){
+        msg(act === 'duyet' ? 'Đã duyệt tin đăng.' : act === 'tu-choi' ? 'Đã từ chối tin đăng.' : 'Đã đưa tin về chờ duyệt.', 'ok');
+        return refresh();
+      })
+      .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
+  });
+
+  var timerProp = null;
+  el('fProp').addEventListener('input', function(){
+    clearTimeout(timerProp);
+    timerProp = setTimeout(function(){ loadProps().catch(function(e){ msg(e.message, 'err'); }); }, 250);
+  });
+
+  el('fRole').addEventListener('change', function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); });
+  el('fStatus').addEventListener('change', function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); });
+
+  function doiTrangThai(btn){
+    var to = btn.dataset.to;
+    if (to === 'lock' && !confirm('Khoá tài khoản này? Người dùng sẽ bị đăng xuất khỏi mọi thiết bị và không đăng nhập lại được.')) return;
+    btn.disabled = true;
+    api('PATCH', '/api/quan-tri/tai-khoan/' + encodeURIComponent(btn.dataset.lock), { action: to })
+      .then(function(){ msg(to === 'lock' ? 'Đã khoá tài khoản.' : 'Đã mở khoá tài khoản.', 'ok'); return refresh(); })
+      .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
+  }
+
+  // ---------- Khai / sửa giấy tờ chủ trọ ----------
+  var gtDangSua = null;
+  function moGiayTo(u){
+    gtDangSua = u.id;
+    el('gtWho').textContent = u.name + ' · ' + u.phone;
+    el('gtCccd').value = u.cccd || '';
+    el('gtAddr').value = u.address || '';
+    el('gtMsg').textContent = '';
+    el('gtMsg').className = 'msg';
+    el('gtLop').classList.add('mo');
+    el('gtCccd').focus();
+  }
+  function dongGiayTo(){ el('gtLop').classList.remove('mo'); gtDangSua = null; }
+  el('gtHuy').addEventListener('click', dongGiayTo);
+  el('gtLop').addEventListener('click', function(e){ if (e.target === el('gtLop')) dongGiayTo(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && el('gtLop').classList.contains('mo')) dongGiayTo(); });
+
+  el('gtForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    if (!gtDangSua) return;
+    var nut = el('gtLuu');
+    nut.disabled = true;
+    api('PATCH', '/api/quan-tri/tai-khoan/' + encodeURIComponent(gtDangSua),
+      { action: 'giay-to', cccd: el('gtCccd').value.trim(), address: el('gtAddr').value.trim() })
+      .then(function(){ dongGiayTo(); msg('Đã lưu giấy tờ chủ trọ.', 'ok'); return refresh(); })
+      .catch(function(err){
+        el('gtMsg').textContent = err.message;
+        el('gtMsg').className = 'msg show err';
+      })
+      .then(function(){ nut.disabled = false; });
+  });
+
+  el('userRows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-giayto]');
+    if (!b) return;
+    var u = users.filter(function(x){ return x.id === b.dataset.giayto; })[0];
+    if (u) moGiayTo(u);
+  });
+
+  ['userRows', 'propList'].forEach(function(id){
+    el(id).addEventListener('click', function(e){
+      var btn = e.target.closest('[data-lock]');
+      if (btn) doiTrangThai(btn);
+    });
+  });
+
+  el('planForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = el('planSubmit');
+    btn.disabled = true;
+    api('POST', '/api/quan-tri/goi', {
+      landlordId: el('pLandlord').value,
+      plan: el('pPlan').value,
+      months: Number(el('pMonths').value)
+    }).then(function(){ msg('Đã ghi nhận gói và lên lịch thanh toán.', 'ok'); return refresh(); })
+      .catch(function(err){ msg(err.message, 'err'); })
+      .then(function(){ btn.disabled = false; });
+  });
+
+  el('planRows').addEventListener('click', function(e){
+    var pay = e.target.closest('[data-pay]');
+    if (pay) {
+      pay.disabled = true;
+      api('PATCH', '/api/quan-tri/hoa-don/' + pay.dataset.pay, { paid: pay.dataset.paid === '1', method: 'chuyen-khoan' })
+        .then(function(){ msg(pay.dataset.paid === '1' ? 'Đã ghi nhận thanh toán.' : 'Đã bỏ đánh dấu kỳ này.', 'ok'); return refresh(); })
+        .catch(function(err){ msg(err.message, 'err'); pay.disabled = false; });
+      return;
+    }
+    var cancel = e.target.closest('[data-cancel]');
+    if (!cancel) return;
+    if (!confirm('Huỷ gói này? Các kỳ chưa tới hạn sẽ bị xoá, kỳ đã thu và kỳ quá hạn vẫn giữ lại.')) return;
+    cancel.disabled = true;
+    api('PATCH', '/api/quan-tri/goi/' + cancel.dataset.cancel, { action: 'cancel' })
+      .then(function(){ msg('Đã huỷ gói.', 'ok'); return refresh(); })
+      .catch(function(err){ msg(err.message, 'err'); cancel.disabled = false; });
+  });
+
+  el('logout').addEventListener('click', function(){
+    api('POST', '/api/dang-xuat').catch(function(){}).then(function(){ location.href = '../trang-chu.html'; });
+  });
+
+
+  /* ---------- Công cụ bên trái: ngăn kéo ở màn hình hẹp ---------- */
+  (function(){
+    var menuBtn = document.getElementById('menuBtn');
+    var backdrop = document.getElementById('sideBackdrop');
+    function dong(){
+      document.body.classList.remove('nav-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+    menuBtn.addEventListener('click', function(){
+      var mo = document.body.classList.toggle('nav-open');
+      menuBtn.setAttribute('aria-expanded', String(mo));
+    });
+    backdrop.addEventListener('click', dong);
+    document.querySelectorAll('.side-link').forEach(function(a){ a.addEventListener('click', dong); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') dong(); });
+  })();
+
+  // Đánh dấu công cụ đang mở
+  function danhDauMuc(ten){
+    document.querySelectorAll('.side-link[data-muc]').forEach(function(a){
+      var on = a.dataset.muc === ten;
+      a.classList.toggle('active', on);
+      if (on && a.tagName === 'A') a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    var muc = document.querySelector('.side-link[data-muc="' + ten + '"]');
+    if (muc) {
+      // Bỏ nhãn đếm bên phải để tiêu đề chỉ còn tên khu
+      var ban = muc.cloneNode(true);
+      var nhan = ban.querySelector('.side-tag');
+      if (nhan) nhan.parentNode.removeChild(nhan);
+      document.getElementById('appTitle').textContent = ban.textContent.trim();
+    }
+  }
+
+  // ---------- Khởi động: chỉ admin mới vào được ----------
+  function gate(title, text){
+    el('gate').hidden = false;
+    el('app').hidden = true;
+    el('gateTitle').textContent = title;
+    el('gateText').textContent = text;
+  }
+
+  function moKhuQuanTri(me, laDemo){
+    el('gate').hidden = true;
+    el('app').hidden = false;
+    el('who').innerHTML = laDemo ? 'Chế độ xem thử' : 'Xin chào, <b>' + esc(me.name) + '</b>';
+    el('logout').hidden = laDemo;
+    if (laDemo) {
+      el('demoNote').hidden = false;
+      el('demoNote').textContent = 'Chế độ xem thử: trang đang mở không qua máy chủ nên dùng dữ liệu mẫu lưu trong trình duyệt này. '
+        + 'Thao tác khoá tài khoản, ghi nhận gói và thanh toán đều chạy thật nhưng chỉ lưu ở máy bạn, không chia sẻ cho người khác. '
+        + 'Chạy npm start rồi đăng nhập bằng tài khoản quản trị để làm việc trên dữ liệu thật.';
+    }
+    moKhu(location.hash.slice(1));
+    return refresh();
+  }
+
+  function batCheDoXemThu(){
+    demo = demoLoad();
+    return moKhuQuanTri(demoMe(), true);
+  }
+
+  // Không chạy qua http(s) (mở file:// từ ổ đĩa) thì chắc chắn không có máy chủ
+  if (!/^https?:$/.test(location.protocol)) {
+    batCheDoXemThu();
+  } else {
+    // Có http(s) nhưng vẫn có thể là bản tĩnh trên Vercel: thử gọi API, không có thì chuyển sang xem thử
+    fetch('/api/toi', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        if (!j || typeof j.user === 'undefined') return batCheDoXemThu();
+        var me = j.user;
+        if (!me) return gate('Khu vực dành cho quản trị viên', 'Bạn chưa đăng nhập. Hãy đăng nhập bằng tài khoản quản trị để tiếp tục.');
+        if (me.role !== 'admin') return gate('Không có quyền truy cập', 'Tài khoản ' + me.name + ' không phải quản trị viên nên không mở được khu vực này.');
+        return moKhuQuanTri(me, false);
+      });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>An Cư — Tìm nơi an cư, quản lý trọ trong một nền tảng</title>
+<meta name="description" content="An Cư kết nối người thuê trọ và chủ trọ tại Việt Nam: tìm phòng thông minh, đặt lịch xem, hợp đồng và hoá đơn tự động." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F7FBF7;
+    --surface:#FFFFFF;
+    --surface-2:#F1F8F1;
+    --border:rgba(34,139,34,.12);
+    --border-strong:rgba(34,139,34,.2);
+    --text:#102010;
+    --text-muted:#4B5C4B;
+    --text-dim:#667565;
+    --accent:#228B22;
+    --accent-hover:#1D7C1D;
+    --accent-fg:#FFFFFF;
+    --success:#228B22;
+    --warning:#F5B14C;
+    --danger:#FF6B6B;
+    --success-ink:#1B7A1B;
+    --danger-ink:#B4291F;
+    --warning-ink:#8A5A11;
+    --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
+    --radius-sm:8px;
+    --radius:12px;
+    --radius-lg:16px;
+    --radius-xl:24px;
+    --container:1180px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:light;scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:90px}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter','Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;font-weight:700;line-height:1.12;letter-spacing:-.02em;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  ::selection{background:rgba(34,139,34,.22)}
+
+  .container{width:100%;max-width:var(--container);margin:0 auto;padding:0 24px}
+  section{position:relative}
+  section[id]{scroll-margin-top:90px}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    height:46px;padding:0 22px;border-radius:var(--radius);
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;
+    border:1px solid transparent;cursor:pointer;white-space:nowrap;
+    transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,#228B22 0%,#2E9E37 100%);color:var(--accent-fg);box-shadow:0 10px 28px -10px rgba(34,139,34,.85)}
+  .btn-primary:hover{background:linear-gradient(135deg,#1F7F20 0%,#2A9234 100%);box-shadow:0 16px 38px -12px rgba(34,139,34,.9)}
+  .btn-ghost{background:rgba(255,255,255,.72);color:var(--text);border-color:var(--border-strong)}
+  .btn-ghost:hover{border-color:var(--accent);background:rgba(34,139,34,.04)}
+  .btn-lg{height:52px;padding:0 28px;font-size:16px}
+  .btn svg{width:18px;height:18px}
+
+  /* ---------- Eyebrow / chips ---------- */
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
+    padding:7px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px 2px rgba(34,139,34,.7)}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;color:var(--text-muted);
+    padding:5px 11px;border:1px solid var(--border);border-radius:999px;background:rgba(34,139,34,.02);
+  }
+
+  /* ---------- Header ---------- */
+  header{position:fixed;inset:0 0 auto 0;z-index:100;transition:background .3s var(--ease),border-color .3s var(--ease),backdrop-filter .3s var(--ease)}
+  header.scrolled{background:rgba(255,255,255,.82);backdrop-filter:blur(16px);border-bottom:1px solid rgba(34,139,34,.12)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;color:#0A0A0C;font-weight:800}
+  .nav-links{display:flex;align-items:center;gap:42px}
+  .nav-links a{font-size:15px;font-weight:800;letter-spacing:-.01em;color:rgba(16,32,16,.74);transition:color .18s var(--ease),transform .18s var(--ease)}
+  .nav-links a:hover{color:var(--text);transform:translateY(-1px)}
+  .nav-cta{display:flex;align-items:center;gap:12px}
+  .nav-cta .btn{height:40px;padding:0 18px;font-size:14px}
+  .nav-cta > [hidden],.mobile-menu > [hidden]{display:none!important}
+  .nav-user{display:flex;align-items:center;gap:12px}
+  .nav-hello{font-size:14px;color:var(--text-muted);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+  .nav-hello b{color:var(--text);font-weight:600}
+  .menu-toggle{display:none;width:42px;height:42px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center}
+  .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before{top:-5px}.menu-toggle span::after{top:5px}
+  body.menu-open .menu-toggle span{background:transparent}
+  body.menu-open .menu-toggle span::before{top:0;transform:rotate(45deg)}
+  body.menu-open .menu-toggle span::after{top:0;transform:rotate(-45deg)}
+
+  .mobile-menu{
+    position:fixed;inset:72px 0 0 0;z-index:99;
+    background:var(--bg);border-top:1px solid var(--border);
+    padding:28px 24px 40px;display:flex;flex-direction:column;gap:6px;
+    transform:translateY(-12px);opacity:0;pointer-events:none;transition:.24s var(--ease);
+  }
+  body.menu-open .mobile-menu{transform:none;opacity:1;pointer-events:auto}
+  .mobile-menu a{padding:14px 4px;font-size:17px;font-weight:800;border-bottom:1px solid var(--border);color:var(--text)}
+  .mobile-menu .btn{margin-top:18px}
+  .mobile-menu a.btn-primary{color:var(--accent-fg)}
+  .mobile-menu .nav-user{flex-direction:column;align-items:stretch;gap:0}
+  .mobile-menu .nav-hello{padding:18px 4px 0;font-size:15px;max-width:none}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:150px 0 90px;text-align:center;overflow:hidden}
+  .hero .glow{
+    position:absolute;left:50%;top:-60px;width:820px;height:520px;transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(34,139,34,.25),rgba(124,203,124,.12) 55%,transparent 75%);
+    filter:blur(30px);pointer-events:none;z-index:0;
+  }
+  .hero .grid-bg{
+    position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:56px 56px;
+    -webkit-mask-image:radial-gradient(ellipse 70% 55% at 50% 30%,#000 40%,transparent 80%);
+    mask-image:radial-gradient(ellipse 70% 55% at 50% 30%,#000 40%,transparent 80%);
+  }
+  .hero .container{position:relative;z-index:1}
+  .hero h1{
+    font-size:clamp(2.4rem,6vw,4.3rem);font-weight:800;margin:26px auto 22px;max-width:16ch;
+  }
+  .hero h1 .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:clamp(1rem,2.2vw,1.2rem);color:var(--text-muted);max-width:56ch;margin:0 auto 34px}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+  /* ---------- Hero mockup ---------- */
+  .mockup-wrap{position:relative;margin:68px auto 0;max-width:960px}
+  .mockup{
+    position:relative;z-index:2;border:1px solid var(--border-strong);border-radius:var(--radius-xl);
+    background:linear-gradient(180deg,#ffffff,#edf6ee);
+    box-shadow:0 30px 90px -30px rgba(34,139,34,.25),0 0 0 1px rgba(34,139,34,.08) inset;
+    overflow:hidden;
+  }
+  .mockup-bar{display:flex;align-items:center;gap:7px;padding:14px 18px;border-bottom:1px solid var(--border)}
+  .mockup-bar i{width:10px;height:10px;border-radius:50%;background:#dfe9df;display:block}
+  .mockup-bar .addr{margin-left:14px;font-size:12px;color:var(--text-dim);background:var(--surface-2);padding:5px 12px;border-radius:7px}
+  .mockup-body{display:grid;grid-template-columns:200px 1fr;min-height:340px}
+  .mk-side{border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:6px}
+  .mk-side .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:6px 8px 4px}
+  .mk-side a{font-size:13.5px;color:var(--text-muted);padding:9px 10px;border-radius:8px;display:flex;align-items:center;gap:9px}
+  .mk-side a.active{background:rgba(34,139,34,.12);color:var(--text)}
+  .mk-side a .ic{width:15px;height:15px;border-radius:5px;background:currentColor;opacity:.5}
+  .mk-main{padding:22px;text-align:left}
+  .mk-main h4{font-size:15px;margin-bottom:4px}
+  .mk-main .sub{font-size:12.5px;color:var(--text-dim);margin-bottom:18px}
+  .mk-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .mk-stat{border:1px solid var(--border);border-radius:12px;padding:14px}
+  .mk-stat b{font-family:'Be Vietnam Pro';font-size:20px;display:block}
+  .mk-stat span{font-size:11.5px;color:var(--text-dim)}
+  .mk-rows{display:flex;flex-direction:column;gap:8px}
+  .mk-row{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:10px;padding:11px 13px}
+  .mk-row .thumb{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#2a2540,#20303a);flex-shrink:0}
+  .mk-row .g{flex:1}
+  .mk-row .g b{font-size:13px;font-weight:600;display:block}
+  .mk-row .g span{font-size:11.5px;color:var(--text-dim)}
+  .mk-row .tag{font-size:11px;padding:4px 9px;border-radius:999px;font-weight:600}
+  .tag.ok{background:rgba(62,207,142,.14);color:var(--success)}
+  .tag.wait{background:rgba(245,177,76,.14);color:var(--warning)}
+  .float{
+    position:absolute;z-index:3;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);
+    border:1px solid var(--border-strong);border-radius:14px;padding:13px 16px;
+    box-shadow:0 20px 50px -20px rgba(34,139,34,.22);display:flex;align-items:center;gap:11px;
+  }
+  .float b{font-family:'Be Vietnam Pro';font-size:16px;display:block;line-height:1.2}
+  .float span{font-size:11.5px;color:var(--text-dim)}
+  .float .ico{width:34px;height:34px;border-radius:10px;background:var(--grad);flex-shrink:0}
+  .float.f1{left:-38px;top:96px}
+  .float.f2{right:-30px;bottom:64px}
+
+  /* ---------- Trust strip ---------- */
+  .trust{padding:46px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .trust p{text-align:center;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:20px}
+  .trust-row{display:flex;flex-wrap:wrap;gap:14px 40px;justify-content:center;align-items:center}
+  .trust-row span{font-family:'Be Vietnam Pro';font-weight:600;font-size:17px;color:var(--text-muted)}
+
+  /* ---------- Section shell ---------- */
+  .sec{padding:96px 0}
+  .sec-head{max-width:640px;margin-bottom:56px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .sec-head h2{font-size:clamp(1.9rem,4vw,2.9rem);margin:18px 0 16px;text-wrap:balance}
+  .sec-head p{text-wrap:pretty}
+  .sec-head p{font-size:1.05rem;color:var(--text-muted)}
+
+  /* ---------- Feature cards ---------- */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{
+    border:1px solid var(--border);border-radius:var(--radius-lg);background:linear-gradient(180deg,#FFFFFF 0%,#F6FBF6 100%);
+    padding:28px;transition:transform .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease);
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--border-strong);background:linear-gradient(180deg,#FFFFFF 0%,#EEF9EF 100%)}
+  .card .ci{
+    width:46px;height:46px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px;
+    background:rgba(34,139,34,.08);border:1px solid rgba(34,139,34,.2);
+  }
+  .card .ci svg{width:22px;height:22px;stroke:var(--accent)}
+  .card h3{font-size:1.15rem;margin-bottom:8px}
+  .card p{font-size:.95rem;color:var(--text-muted)}
+
+  /* ---------- Split (landlord) ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .split .list{list-style:none;margin-top:26px;display:flex;flex-direction:column;gap:16px}
+  .split .list li{display:flex;gap:14px;font-size:.98rem}
+  .split .list .tick{
+    width:24px;height:24px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;
+    background:rgba(62,207,142,.13);border:1px solid rgba(62,207,142,.3);
+  }
+  .split .list .tick svg{width:13px;height:13px;stroke:var(--success)}
+  .split .list li b{display:block;font-family:'Be Vietnam Pro';font-weight:600;font-size:.98rem;margin-bottom:2px}
+  .split .list li span{color:var(--text-muted)}
+  .panel{
+    border:1px solid var(--border-strong);border-radius:var(--radius-xl);overflow:hidden;
+    background:linear-gradient(180deg,#FFFFFF 0%,#F4FAF4 100%);box-shadow:0 30px 80px -40px rgba(34,139,34,.18);
+  }
+  .panel .ph{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .panel .ph b{font-family:'Be Vietnam Pro';font-size:14px}
+  .panel .ph .pill{font-size:11px;color:var(--success);background:rgba(62,207,142,.14);padding:4px 10px;border-radius:999px}
+  .panel .pb{padding:20px;display:flex;flex-direction:column;gap:10px}
+  .prow{display:flex;align-items:center;gap:13px;border:1px solid var(--border);border-radius:12px;padding:13px 15px}
+  .prow .n{width:38px;height:38px;border-radius:9px;background:var(--surface-2);display:grid;place-items:center;font-family:'Be Vietnam Pro';font-weight:700;font-size:14px;color:var(--text-muted)}
+  .prow .g{flex:1}
+  .prow .g b{font-size:13.5px;display:block}
+  .prow .g span{font-size:11.5px;color:var(--text-dim)}
+  .prow .amt{font-family:'Be Vietnam Pro';font-weight:700;font-size:14px}
+
+  /* ---------- Đa nền tảng ---------- */
+  .devices{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .device{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);padding:20px 22px 26px}
+  .device .dv{
+    height:190px;margin-bottom:20px;border-radius:var(--radius);background:var(--surface-2);
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px;overflow:hidden;
+  }
+  .device h3{font-size:1.15rem;margin-bottom:8px}
+  .device p{font-size:.95rem;color:var(--text-muted)}
+  .scr{
+    display:flex;flex-direction:column;gap:6px;padding:12px 10px;
+    border:3px solid var(--text);background:var(--surface);
+    transition:transform .25s var(--ease);
+  }
+  .device:hover .scr{transform:translateY(-4px)}
+  .scr.phone{width:84px;height:150px;border-radius:18px}
+  .scr.tablet{width:172px;height:128px;border-radius:14px;padding:12px}
+  .scr.laptop{width:212px;height:126px;border-radius:10px 10px 0 0;padding:12px}
+  .scr b{display:block;height:8px;width:55%;border-radius:4px;background:var(--text);opacity:.85}
+  .scr i{display:block;height:6px;border-radius:3px;background:var(--border-strong)}
+  .scr i.s{width:70%}
+  .scr em{display:block;margin-top:auto;height:18px;border-radius:6px;background:var(--accent)}
+  .tiles{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .tiles span{border-radius:4px;background:var(--surface-2);border:1px solid var(--border)}
+  .tiles span.on{background:color-mix(in srgb, var(--accent) 22%, var(--surface));border-color:color-mix(in srgb, var(--accent) 40%, transparent)}
+  .bars{flex:1;display:flex;align-items:flex-end;gap:6px}
+  .bars span{flex:1;height:var(--h);border-radius:3px 3px 0 0;background:color-mix(in srgb, var(--accent) 30%, var(--surface))}
+  .bars span.on{background:var(--accent)}
+  .lap{display:flex;flex-direction:column;align-items:center}
+  .lap .lap-base{display:block;width:252px;height:10px;border-radius:0 0 10px 10px;background:var(--text)}
+  .device-note{margin-top:22px;text-align:center;font-size:14px;color:var(--text-muted)}
+
+  /* ---------- Bảng giá ---------- */
+  .plans{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;align-items:stretch;max-width:880px;margin:0 auto}
+  .plan{
+    position:relative;display:flex;flex-direction:column;padding:30px 26px 26px;
+    border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);
+  }
+  .plan.featured{border-color:var(--accent);box-shadow:0 24px 60px -32px color-mix(in srgb, var(--accent) 55%, transparent)}
+  .plan-tag{
+    position:absolute;top:-13px;left:26px;padding:5px 12px;border-radius:999px;
+    background:var(--accent);color:var(--accent-fg);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:700;
+  }
+  .plan h3{font-size:1.35rem;margin-bottom:4px}
+  .plan-for{font-size:14.5px;line-height:1.6;color:var(--text-muted);min-height:3.2em}
+  .plan-price{margin:16px 0 4px;font-family:'Be Vietnam Pro',sans-serif;font-size:2.3rem;font-weight:800;letter-spacing:-.03em;line-height:1.1;color:var(--text)}
+  .plan-price small{font-size:1rem;font-weight:500;letter-spacing:0;color:var(--text-muted)}
+  .plan-trial{font-size:14px;font-weight:600;color:var(--success-ink)}
+  .plan ul{list-style:none;flex:1;display:flex;flex-direction:column;gap:11px;margin:22px 0 26px;padding-top:22px;border-top:1px solid var(--border)}
+  .plan li{display:flex;gap:10px;font-size:14.5px;line-height:1.5;color:var(--text)}
+  .plan li svg{width:16px;height:16px;margin-top:3px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .plan .btn{width:100%;height:48px}
+  .plans-note{margin-top:22px;text-align:center;font-size:13.5px;color:var(--text-muted)}
+
+  @media (max-width:960px){
+    .devices{grid-template-columns:repeat(2,1fr)}
+    .plans{grid-template-columns:1fr;max-width:520px;margin:0 auto;gap:28px}
+    .plan-for{min-height:0}
+  }
+  @media (max-width:640px){
+    .devices{grid-template-columns:1fr}
+    .plan{padding:28px 20px 22px}
+  }
+
+  /* ---------- Rooms ---------- */
+  .rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .room{
+    border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface);
+    transition:transform .25s var(--ease),border-color .25s var(--ease);
+  }
+  .room:hover{transform:translateY(-4px);border-color:var(--border-strong)}
+  .room .media{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#2a2540,#1f2f38)}
+  .room .media img{width:100%;height:100%;object-fit:cover}
+  .room .price{
+    position:absolute;left:12px;bottom:12px;font-family:'Be Vietnam Pro';font-weight:700;font-size:14px;
+    background:rgba(255,255,255,.82);backdrop-filter:blur(6px);border:1px solid rgba(34,139,34,.18);
+    color:#173018;padding:7px 12px;border-radius:999px;
+  }
+  .room .rb{padding:16px 17px 18px}
+  .room .rb h3{font-size:1.02rem;margin-bottom:5px}
+  .room .rb .addr{font-size:.85rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-bottom:13px}
+  .room .rb .addr svg{width:14px;height:14px;stroke:var(--text-dim);flex-shrink:0}
+  .room .meta{display:flex;gap:8px;flex-wrap:wrap}
+
+
+
+  /* ---------- Stats ---------- */
+  .stats{border:1px solid var(--border);border-radius:var(--radius-xl);background:linear-gradient(180deg,#FFFFFF 0%,#F4FAF4 100%);padding:48px 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px;text-align:center}
+  .stats .s b{font-family:'Be Vietnam Pro';font-weight:800;font-size:clamp(2rem,4vw,2.7rem);display:block;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stats .s span{font-size:.9rem;color:var(--text-muted)}
+
+  /* ---------- Final CTA ---------- */
+  .cta-final{text-align:center;padding:120px 0}
+  .cta-final .box{
+    position:relative;border:1px solid var(--border-strong);border-radius:var(--radius-xl);
+    background:linear-gradient(180deg,#ffffff,#eef7ef);padding:64px 32px;overflow:hidden;
+  }
+  .cta-final .box .g2{
+    position:absolute;left:50%;bottom:-140px;width:600px;height:300px;transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(34,139,34,.28),transparent 75%);filter:blur(20px);
+  }
+  .cta-final h2{position:relative;font-size:clamp(2rem,4.5vw,3rem);margin-bottom:16px}
+  .cta-final p{position:relative;color:var(--text-muted);max-width:48ch;margin:0 auto 30px}
+  .cta-final .hero-actions{position:relative}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--border);padding:64px 0 32px}
+  .fgrid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+  .fcol h4{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:16px;font-weight:600}
+  .fcol a{display:block;font-size:.92rem;color:var(--text-muted);padding:6px 0;transition:color .18s var(--ease)}
+  .fcol a:hover{color:var(--text)}
+  .fcol.about p{font-size:.92rem;color:var(--text-muted);margin-top:12px;max-width:34ch}
+  .fbot{display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--border);font-size:.85rem;color:var(--text-dim);flex-wrap:wrap;gap:12px}
+  .fbot .soc{display:flex;gap:10px}
+  .fbot .soc a{width:34px;height:34px;border:1px solid var(--border);border-radius:9px;display:grid;place-items:center}
+  .fbot .soc a:hover{border-color:var(--border-strong)}
+  .fbot .soc svg{width:15px;height:15px;stroke:var(--text-muted)}
+
+  /* ---------- Reveal animation ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:960px){
+    .nav-links,.nav-cta{display:none}
+    .menu-toggle{display:flex}
+    .mockup-body{grid-template-columns:1fr}
+    .mk-side{display:none}
+    .split{grid-template-columns:1fr;gap:40px}
+    .cards,.rooms{grid-template-columns:repeat(2,1fr)}
+    .stats{grid-template-columns:repeat(2,1fr);gap:32px 20px}
+    .fgrid{grid-template-columns:1fr 1fr;gap:32px}
+    .float.f1{left:-8px}
+    .float.f2{right:-6px}
+  }
+  @media (max-width:640px){
+    .container{padding:0 18px}
+    .hero{padding:120px 0 64px}
+    .sec{padding:76px 0}
+    .cta-final{padding:80px 0}
+    .cta-final .box{padding:44px 22px}
+    .cards,.rooms{grid-template-columns:1fr}
+    .sec-head{margin-bottom:40px}
+    .hero-actions .btn{width:100%}
+    .mockup-wrap{margin-top:48px}
+    .float{display:none}
+    .fgrid{grid-template-columns:1fr;gap:28px}
+    .fbot{flex-direction:column;align-items:flex-start}
+    .trust-row{gap:12px 24px}
+    .trust-row span{font-size:15px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+  }
+
+  /* ---------- Auth modal (đăng nhập / đăng ký) ---------- */
+  .auth-overlay{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    background:rgba(6,6,8,.74);backdrop-filter:blur(10px);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .24s var(--ease),visibility .24s var(--ease);
+  }
+  .auth-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+  body.auth-open{overflow:hidden}
+
+  .auth-modal{
+    position:relative;width:100%;max-width:448px;
+    max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);overflow-y:auto;
+    background:linear-gradient(180deg,#FFFFFF 0%,#F6FBF6 100%);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:30px 28px 26px;
+    box-shadow:0 40px 100px -30px rgba(34,139,34,.22);
+    transform:translateY(14px) scale(.985);opacity:0;
+    transition:transform .3s var(--ease),opacity .3s var(--ease);
+  }
+  .auth-overlay.open .auth-modal{transform:none;opacity:1}
+  .auth-modal::before{
+    content:"";position:absolute;inset:0 0 auto 0;height:1px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+    background:linear-gradient(90deg,transparent,rgba(34,139,34,.7),transparent);
+  }
+
+  .auth-close{
+    position:absolute;top:14px;right:14px;width:44px;height:44px;
+    display:grid;place-items:center;border:0;background:transparent;
+    border-radius:10px;cursor:pointer;color:var(--text-muted);
+    transition:color .18s var(--ease),background .18s var(--ease);
+  }
+  .auth-close:hover{color:var(--text);background:rgba(255,255,255,.05)}
+  .auth-close svg{width:18px;height:18px;stroke:currentColor;fill:none}
+
+  .auth-pane{display:none}
+  .auth-pane.active{display:block}
+
+  .auth-head{margin-bottom:22px;padding-right:40px}
+  .auth-head .brand{margin-bottom:16px}
+  .auth-head h2{font-size:1.5rem;margin-bottom:6px}
+  .auth-head p{font-size:14.5px;color:var(--text-muted);line-height:1.55}
+
+  .role-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .role-pick .role{position:relative;display:block;cursor:pointer}
+  .role-pick input{position:absolute;opacity:0;width:0;height:0}
+  .role-pick span{
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    min-height:48px;padding:8px 12px;
+    border:1px solid var(--border);border-radius:var(--radius-sm);
+    background:var(--surface-2);color:var(--text-muted);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600;line-height:1.3;
+    transition:border-color .18s var(--ease),color .18s var(--ease),background .18s var(--ease);
+  }
+  .role-pick .role:hover span{color:var(--text);border-color:var(--border-strong)}
+  .role-pick input:checked + span{
+    border-color:var(--accent);color:var(--text);
+    background:rgba(34,139,34,.08);box-shadow:0 0 0 1px var(--accent) inset;
+  }
+  .role-pick input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+
+  .field{margin-bottom:16px}
+  .field > label{
+    display:block;margin-bottom:8px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;color:var(--text-muted);
+  }
+  .field .ctrl{position:relative;display:flex;align-items:center}
+  .field .ctrl > svg{
+    position:absolute;left:14px;width:18px;height:18px;
+    stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+    pointer-events:none;transition:stroke .18s var(--ease);
+  }
+  .field input{
+    width:100%;height:48px;padding:0 14px 0 44px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    color:var(--text);font-family:'Inter',sans-serif;font-size:16px;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .field input::placeholder{color:var(--text-dim)}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .field input:focus + svg,.field .ctrl:focus-within > svg{stroke:var(--accent)}
+  .field.has-toggle input{padding-right:50px}
+  .field.invalid input{border-color:var(--danger)}
+  .field.invalid input:focus{box-shadow:0 0 0 3px rgba(255,107,107,.18)}
+  .field.invalid .ctrl > svg{stroke:var(--danger)}
+
+  .pw-toggle{
+    position:absolute;right:2px;width:44px;height:44px;
+    display:grid;place-items:center;border:0;background:transparent;border-radius:8px;
+    cursor:pointer;color:var(--text-dim);transition:color .18s var(--ease);
+  }
+  .pw-toggle:hover{color:var(--text)}
+  .pw-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .pw-toggle .off{display:none}
+  .pw-toggle.on .off{display:block}
+  .pw-toggle.on .on{display:none}
+
+  .err{display:none;margin-top:7px;font-size:13px;line-height:1.45;color:var(--danger-ink)}
+  .field.invalid .err{display:block}
+
+  .auth-row{display:flex;justify-content:flex-end;margin:-4px 0 18px}
+  .link-quiet{
+    background:none;border:0;padding:4px 0;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text-muted);
+    transition:color .18s var(--ease);
+  }
+  .link-quiet:hover{color:var(--text)}
+  .link-accent{
+    background:none;border:0;padding:4px 0;cursor:pointer;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600;color:var(--accent);
+    transition:color .18s var(--ease);
+  }
+  .link-accent:hover{color:var(--accent-hover)}
+
+  .auth-modal .btn-submit{width:100%;height:50px;font-size:15.5px}
+  .auth-modal .btn-submit[disabled]{opacity:.6;cursor:not-allowed}
+
+  .auth-alt{
+    margin-top:18px;padding-top:18px;border-top:1px solid var(--border);
+    text-align:center;font-size:14px;color:var(--text-muted);
+  }
+  .auth-alt button{margin-left:6px}
+
+  .auth-terms{margin-top:14px;font-size:12.5px;line-height:1.55;color:var(--text-dim);text-align:center}
+  .auth-terms a{color:var(--text-muted);text-decoration:underline;text-underline-offset:2px}
+  .auth-terms a:hover{color:var(--text)}
+
+  .auth-done{text-align:center;padding:8px 0 4px}
+  .auth-done .tick{
+    width:56px;height:56px;margin:0 auto 18px;border-radius:50%;
+    display:grid;place-items:center;
+    background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.35);
+  }
+  .auth-done .tick svg{width:26px;height:26px;stroke:var(--success);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .auth-done h3{font-size:1.2rem;margin-bottom:8px}
+  .auth-done p{font-size:14.5px;color:var(--text-muted);line-height:1.6;margin-bottom:20px}
+  .auth-done .mock{display:block;margin-top:10px;font-size:12.5px;color:var(--text-dim)}
+  .auth-form-err{
+    display:none;margin:0 0 14px;padding:11px 14px;border-radius:var(--radius-sm);
+    background:color-mix(in srgb, var(--danger-ink) 6%, transparent);
+    border:1px solid color-mix(in srgb, var(--danger-ink) 24%, transparent);
+    font-size:13.5px;line-height:1.5;color:var(--danger-ink);
+  }
+  .auth-form-err.show{display:block}
+
+  @media (max-width:480px){
+    .auth-overlay{padding:16px}
+    .auth-modal{padding:26px 20px 22px;border-radius:var(--radius)}
+    .auth-head h2{font-size:1.35rem}
+    .role-pick{grid-template-columns:1fr;gap:8px}
+  }
+
+  /* ---------- Bộ tìm phòng ---------- */
+  .finder{
+    background:linear-gradient(180deg,#FFFFFF 0%,#F5FAF5 100%);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:18px;margin-bottom:26px;
+  }
+  .finder-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:12px;align-items:end}
+  .fld > label{
+    display:block;margin-bottom:8px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);
+  }
+  .fld .ctrl{position:relative;display:flex;align-items:center}
+  .fld .ctrl > svg{
+    position:absolute;left:14px;width:17px;height:17px;
+    stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+    pointer-events:none;transition:stroke .18s var(--ease);
+  }
+  .fld .caret{
+    position:absolute;right:13px;width:14px;height:14px;
+    stroke:var(--text-dim);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
+  }
+  .fld select,.fld input{
+    width:100%;height:48px;padding:0 14px 0 42px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    color:var(--text);font-family:'Inter',sans-serif;font-size:16px;
+    appearance:none;-webkit-appearance:none;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .fld select{padding-right:34px;cursor:pointer}
+  .fld input::placeholder{color:var(--text-dim)}
+  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .fld .ctrl:focus-within > svg{stroke:var(--accent)}
+  .finder .btn-find{height:48px;padding:0 26px}
+
+  .fld-location .location-trigger{
+    position:relative;width:100%;height:48px;padding:0 42px 0 42px;border:1px solid var(--border);
+    background:var(--surface-2);border-radius:var(--radius-sm);color:var(--text);
+    display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease);
+  }
+  .fld-location .location-trigger:hover{border-color:var(--border-strong)}
+  .fld-location .location-trigger:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .fld-location .location-trigger > svg:first-of-type{
+    position:absolute;left:14px;width:17px;height:17px;stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  }
+  .fld-location .location-trigger .label-text{display:block;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px}
+  .fld-location .location-trigger .caret{position:absolute;right:13px;width:14px;height:14px;stroke:var(--text-dim);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+
+  .filter-overlay{
+    position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(16,32,16,.2);
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease;
+  }
+  .filter-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+  body.filter-open{overflow:hidden}
+
+  .filter-modal{
+    width:min(980px, calc(100vw - 24px));max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    background:linear-gradient(180deg,#FFFFFF 0%,#F5FAF5 100%);border:1px solid var(--border);border-radius:22px;
+    box-shadow:0 26px 80px rgba(16,32,16,.12);overflow:hidden;
+    transform:translateY(12px);opacity:0;transition:transform .22s ease,opacity .22s ease;
+  }
+  .filter-overlay.open .filter-modal{transform:none;opacity:1}
+  .filter-header{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px 16px;border-bottom:1px solid var(--border);
+  }
+  .filter-header h3{margin:0;font-size:1.8rem;line-height:1.1;color:var(--text);font-family:'Be Vietnam Pro',sans-serif;letter-spacing:-.04em}
+  .filter-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex:1}
+  .filter-search{
+    width:min(240px, 38vw);min-width:180px;height:42px;border:1px solid var(--border);border-radius:12px;background:#F3F8F3;color:var(--text);padding:0 14px;font-size:15px;outline:none;
+  }
+  .filter-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.12)}
+  .filter-close{
+    width:40px;height:40px;border-radius:50%;border:1px solid rgba(16,32,16,.12);background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--text);transition:background .2s ease,border-color .2s ease;
+  }
+  .filter-close:hover{background:var(--surface-2);border-color:var(--border-strong)}
+  .filter-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .filter-apply-top{
+    height:42px;padding:0 20px;border-radius:12px;border:1px solid rgba(239,89,52,.9);background:linear-gradient(180deg,#f46c45 0%,#ef5934 100%);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;
+  }
+
+  .filter-shell{display:grid;grid-template-columns:150px 1fr;min-height:420px;overflow:hidden}
+  .filter-sidebar{
+    background:linear-gradient(180deg,#F5FAF5 0%,#F2F7F2 100%);padding:14px 12px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:10px;
+  }
+  .filter-tab{
+    min-height:48px;padding:0 14px;border-radius:12px;border:1px solid transparent;background:transparent;
+    color:var(--text-muted);font-size:18px;font-weight:600;text-align:left;cursor:pointer;transition:all .18s ease;
+  }
+  .filter-tab.active{
+    background:var(--surface);border-color:var(--border);color:var(--text);box-shadow:inset 0 0 0 1px rgba(34,139,34,.08);
+  }
+
+  .filter-content{padding:20px 24px 0;overflow:auto}
+  .filter-panel{display:none;min-height:280px}
+  .filter-panel.active{display:block}
+  .filter-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+  .filter-chip{
+    min-height:52px;padding:10px 14px;border-radius:12px;border:1px solid rgba(16,32,16,.08);background:#EEF3EE;
+    color:var(--text);font-size:18px;font-weight:500;text-align:left;cursor:pointer;transition:all .2s ease;
+  }
+  .filter-chip:hover{border-color:var(--border-strong)}
+  .filter-chip.active{background:rgba(34,139,34,.08);border-color:var(--accent);color:var(--text);box-shadow:0 0 0 1px rgba(34,139,34,.12)}
+  .filter-more{margin-top:18px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:15px;padding:0;cursor:pointer}
+  .filter-empty{grid-column:1 / -1;padding:18px 12px;color:var(--text-dim);font-size:15px}
+
+  .filter-footer{display:none}
+  .filter-reset,.filter-apply{height:56px;border-radius:14px;font-size:1.15rem;font-weight:700}
+  .filter-reset{background:transparent;border:1.5px solid rgba(238,97,68,.9);color:var(--text);}
+  .filter-apply{background:linear-gradient(180deg,#f46c45 0%,#ef5934 100%);border:1px solid rgba(239,89,52,.9);color:#fff}
+  .filter-reset:hover,.filter-apply:hover{filter:brightness(.98)}
+
+  .quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+  .quick > span{font-size:13px;color:var(--text-dim);margin-right:2px}
+  .qc{
+    display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    color:var(--text-muted);font-family:'Inter',sans-serif;font-size:13.5px;cursor:pointer;
+    transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease);
+  }
+  .qc:hover{color:var(--text);border-color:var(--border-strong)}
+  .qc.on{background:rgba(34,139,34,.08);border-color:var(--accent);color:var(--text)}
+  .qc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .result-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .result-bar .cnt{font-size:14.5px;color:var(--text-muted)}
+  .result-bar .cnt b{color:var(--text);font-family:'Be Vietnam Pro',sans-serif}
+  .result-bar .sort{display:flex;align-items:center;gap:10px}
+  .result-bar .sort label{font-size:13.5px;color:var(--text-dim);white-space:nowrap}
+  .result-bar .sort .ctrl{position:relative;display:flex;align-items:center}
+  .result-bar .sort select{
+    height:44px;padding:0 32px 0 14px;background:var(--surface-2);
+    border:1px solid var(--border);border-radius:var(--radius-sm);
+    color:var(--text);font-family:'Inter',sans-serif;font-size:14.5px;
+    appearance:none;-webkit-appearance:none;cursor:pointer;
+  }
+  .result-bar .sort select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .result-bar .sort .caret{right:12px}
+
+  .empty{
+    display:none;text-align:center;padding:14px 0 0;
+    background:transparent;border:none;border-radius:0;
+  }
+  .empty.show{display:block}
+  .result-bar[hidden]{display:none}
+  .fld.invalid select,.fld.invalid .location-trigger{border-color:var(--danger-ink);box-shadow:0 0 0 3px color-mix(in srgb, var(--danger-ink) 12%, transparent)}
+  .finder-err{display:none;margin:14px 0 0;font-size:14px;line-height:1.5;color:var(--danger-ink)}
+  .finder-err.show{display:block}
+  .room-hint{display:block;margin-top:4px;font-size:13.5px;color:var(--warning-ink)}
+  .room-hint:empty{display:none}
+  #fPeopleCustom{padding-right:50px;-moz-appearance:textfield}
+  #fPeopleCustom::-webkit-outer-spin-button,#fPeopleCustom::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  #fPeopleCustom[hidden],.people-back[hidden],.fld .ctrl.is-custom select,.fld .ctrl.is-custom .caret{display:none}
+  .fld.invalid #fPeopleCustom{border-color:var(--danger-ink);box-shadow:0 0 0 3px color-mix(in srgb, var(--danger-ink) 12%, transparent)}
+  .people-back{
+    position:absolute;right:2px;width:44px;height:44px;display:grid;place-items:center;
+    background:none;border:0;border-radius:8px;cursor:pointer;color:var(--text-dim);transition:color .18s var(--ease);
+  }
+  .people-back:hover{color:var(--text)}
+  .people-back:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .people-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .qc-reset{
+    margin-left:auto;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 6px;
+    background:none;border:0;cursor:pointer;color:var(--text-muted);
+    font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;
+    transition:color .18s var(--ease);
+  }
+  .qc-reset:hover{color:var(--text)}
+  .qc-reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  .qc-reset svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .empty .btn{margin-top:16px}
+  .fld-location .location-trigger.is-empty .label-text{color:var(--text-dim)}
+  .filter-tab .tab-count{margin-left:6px;font-size:14px;font-weight:500;color:var(--text-dim)}
+  .city-bar{padding:14px 22px 12px;border-bottom:1px solid var(--border)}
+  .city-row{display:flex;flex-wrap:wrap;gap:8px}
+  .city-chip{
+    display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;
+    border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:600;cursor:pointer;
+    transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease);
+  }
+  .city-chip small{font-size:12px;font-weight:500;color:var(--text-dim)}
+  .city-chip:hover{color:var(--text);border-color:var(--border-strong)}
+  .city-chip.active{background:color-mix(in srgb, var(--accent) 10%, var(--surface));border-color:var(--accent);color:var(--text)}
+  .city-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .city-note{margin:10px 0 0;font-size:13.5px;line-height:1.5;color:var(--text-muted)}
+  .city-note:empty{display:none}
+  @media (max-width:640px){
+    .filter-overlay{align-items:flex-end}
+    .filter-modal{width:100%;max-height:92vh;max-height:92dvh;border-radius:18px 18px 0 0}
+    .filter-header{flex-wrap:wrap;padding:14px 16px 12px;gap:10px}
+    .filter-header h3{font-size:1.4rem}
+    .filter-header-actions{flex-basis:100%;gap:8px}
+    .filter-search{flex:1;width:auto;min-width:0;font-size:16px;height:44px}
+    .filter-apply-top{height:44px;padding:0 16px}
+    .filter-header{position:relative;padding-right:68px}
+    .filter-close{position:absolute;top:10px;right:12px;width:44px;height:44px}
+    .city-bar{padding:12px 16px 10px}
+    .city-row{gap:6px}
+    .city-chip{font-size:14px;padding:0 12px}
+    .filter-shell{display:flex;flex-direction:column;min-height:0;flex:1}
+    .filter-sidebar{flex-direction:row;border-right:0;border-bottom:1px solid var(--border);padding:8px 12px;gap:6px}
+    .filter-tab{font-size:15px;min-height:44px;padding:0 12px}
+    .filter-content{flex:1;min-height:0;overflow:auto;padding:14px 16px 16px}
+    .filter-panel{min-height:0}
+    .filter-list{gap:8px 10px}
+    .filter-chip{font-size:15px;min-height:46px;padding:8px 12px}
+  }
+  .empty svg{width:18px;height:18px;margin:0 auto 8px;stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .empty h3{font-size:14px;margin:0;color:var(--text-muted);font-weight:500}
+  .empty p{display:none}
+  .empty.empty-guide p{display:block;margin:6px auto 0;max-width:460px;font-size:14px;line-height:1.55;color:var(--text-dim)}
+
+  /* Card phòng bấm được */
+  .room[data-room]{cursor:pointer}
+  .room[data-room]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .room .media .badge{
+    position:absolute;right:12px;top:12px;
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.03em;
+    background:rgba(255,255,255,.86);backdrop-filter:blur(6px);border:1px solid rgba(34,139,34,.18);
+    padding:6px 11px;border-radius:999px;color:#173018;
+  }
+  .room .media .badge i{width:6px;height:6px;border-radius:50%;background:var(--success);display:block}
+  .room .rb .facts{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .room .rb .facts span{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-muted)}
+  .room .rb .facts svg{width:15px;height:15px;stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .room .rb .more{
+    display:flex;align-items:center;gap:6px;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;color:var(--accent);
+  }
+  .room .rb .more svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;transition:transform .2s var(--ease)}
+  .room[data-room]:hover .rb .more svg{transform:translateX(3px)}
+
+  /* ---------- Modal chi tiết phòng ---------- */
+  .rd-overlay{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    background:rgba(6,6,8,.74);backdrop-filter:blur(10px);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .24s var(--ease),visibility .24s var(--ease);
+  }
+  .rd-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+  body.rd-open{overflow:hidden}
+
+  .rd-modal{
+    position:relative;width:100%;max-width:1000px;
+    max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);
+    background:linear-gradient(180deg,#FFFFFF 0%,#F5FAF5 100%);border:1px solid var(--border);
+    border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 40px 100px -30px rgba(34,139,34,.18);
+    transform:translateY(14px) scale(.985);opacity:0;
+    transition:transform .3s var(--ease),opacity .3s var(--ease);
+  }
+  .rd-overlay.open .rd-modal{transform:none;opacity:1}
+  .rd-close{
+    position:absolute;top:14px;right:14px;z-index:3;width:44px;height:44px;
+    display:grid;place-items:center;border:1px solid rgba(34,139,34,.16);
+    background:rgba(255,255,255,.85);backdrop-filter:blur(8px);
+    border-radius:12px;cursor:pointer;color:#173018;
+    transition:background .18s var(--ease)
+  }
+  .rd-close:hover{background:rgba(255,255,255,.96)}
+  .rd-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+
+  .rd-body{display:grid;grid-template-columns:1.1fr 1fr;overflow:hidden;min-height:0}
+  .rd-gallery{padding:0;background:var(--surface-2);overflow-y:auto}
+  .rd-main{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#2a2540,#1f2f38)}
+  .rd-main img{width:100%;height:100%;object-fit:cover}
+  .rd-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px}
+  .rd-thumbs button{
+    position:relative;aspect-ratio:4/3;padding:0;border:1px solid var(--border);border-radius:10px;
+    overflow:hidden;background:none;cursor:pointer;opacity:.55;
+    transition:opacity .18s var(--ease),border-color .18s var(--ease);
+  }
+  .rd-thumbs button:hover{opacity:.85}
+  .rd-thumbs button.on{opacity:1;border-color:var(--accent)}
+  .rd-thumbs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rd-thumbs img{width:100%;height:100%;object-fit:cover}
+
+  .rd-info{padding:28px 28px 26px;overflow-y:auto;min-height:0}
+  .rd-info .rd-price{
+    font-family:'Be Vietnam Pro',sans-serif;font-size:1.75rem;font-weight:800;
+    color:var(--text);letter-spacing:-.02em;margin-bottom:4px;
+  }
+  .rd-info .rd-price span{font-size:1rem;font-weight:500;color:var(--text-muted)}
+  .rd-info h2{font-size:1.3rem;margin:12px 0 8px}
+  .rd-info .rd-addr{display:flex;align-items:flex-start;gap:8px;font-size:14.5px;color:var(--text-muted);line-height:1.5}
+  .rd-info .rd-addr svg{width:16px;height:16px;margin-top:3px;stroke:var(--text-dim);fill:none;stroke-width:1.6;flex-shrink:0}
+
+  .rd-specs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px 0}
+  .rd-specs div{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:12px 14px;
+  }
+  .rd-specs dt{font-size:12px;color:var(--text-dim);margin-bottom:4px}
+  .rd-specs dd{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:600;color:var(--text)}
+
+  .rd-block{margin-bottom:20px}
+  .rd-block h3{font-size:.95rem;margin-bottom:10px;color:var(--text)}
+  .rd-block p{font-size:14.5px;line-height:1.7;color:var(--text-muted)}
+  .rd-amen{display:flex;flex-wrap:wrap;gap:8px}
+  .rd-amen span{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    padding:8px 13px;font-size:13.5px;color:var(--text-muted);
+  }
+  .rd-amen svg{width:13px;height:13px;stroke:var(--success);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+  .rd-owner{
+    display:flex;align-items:center;gap:13px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+    padding:14px;margin-bottom:14px;
+  }
+  .rd-owner .av{
+    width:46px;height:46px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+    background:var(--grad);color:#0A0A0C;font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:17px;
+  }
+  .rd-owner b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15px;margin-bottom:3px}
+  .rd-owner small{display:block;font-size:12.5px;color:var(--text-dim)}
+
+  .rd-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rd-actions .btn{height:48px;font-size:14.5px;padding:0 14px}
+  .rd-contact{
+    display:none;margin-top:14px;padding:16px;
+    background:rgba(34,139,34,.06);border:1px solid rgba(34,139,34,.22);border-radius:var(--radius);
+  }
+  .rd-contact.show{display:block}
+  .rd-contact .phone{
+    display:flex;align-items:center;gap:10px;margin-bottom:12px;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:1.25rem;font-weight:700;letter-spacing:.01em;
+  }
+  .rd-contact .phone svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:1.8}
+  .rd-contact p{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:12px}
+  .rd-contact .btn{width:100%;height:46px;font-size:14.5px}
+
+  @media (max-width:960px){
+    .finder-grid{grid-template-columns:1fr 1fr}
+    .finder .btn-find{grid-column:1/-1;width:100%}
+    .rd-modal{max-width:560px}
+    .rd-body{grid-template-columns:1fr;overflow-y:auto}
+    .rd-gallery{overflow:visible}
+    .rd-info{overflow:visible;padding:22px 22px 24px}
+  }
+  @media (max-width:640px){
+    .finder{padding:14px;border-radius:var(--radius)}
+    .finder-grid{grid-template-columns:1fr;gap:14px}
+    .quick{gap:7px}
+    .qc{font-size:13px;padding:0 13px}
+    .result-bar{gap:10px}
+    .result-bar .sort{width:100%;justify-content:space-between}
+    .rd-overlay{padding:0}
+    .rd-modal{max-width:none;max-height:100vh;max-height:100dvh;height:100%;border-radius:0;border:0}
+    .rd-specs{grid-template-columns:1fr 1fr}
+    .rd-actions{grid-template-columns:1fr}
+    .rd-info .rd-price{font-size:1.5rem}
+  }
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="container nav">
+    <a href="#" class="brand"><span class="mark">A</span> An Cư</a>
+    <nav class="nav-links">
+      <a href="#tim-tro">Tìm phòng</a>
+      <a href="#chu-tro">Cho chủ trọ</a>
+      <a href="#bang-gia">Bảng giá</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost" data-auth="login">Đăng nhập</a>
+      <a href="#" class="btn btn-primary" data-auth="register" data-auth-role="landlord">Đăng ký</a>
+    </div>
+    <button class="menu-toggle" id="menuBtn" aria-label="Mở menu"><span></span></button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#tim-tro">Tìm phòng</a>
+  <a href="#chu-tro">Cho chủ trọ</a>
+  <a href="#bang-gia">Bảng giá</a>
+  <a href="#" class="btn btn-ghost btn-lg" data-auth="login">Đăng nhập</a>
+  <a href="#" class="btn btn-primary btn-lg" data-auth="register" data-auth-role="landlord">Đăng ký</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="glow"></div>
+  <div class="grid-bg"></div>
+  <div class="container">
+    <span class="eyebrow reveal"><span class="dot"></span> Nền tảng thuê trọ thế hệ mới</span>
+    <h1 class="reveal" style="--d:.05s">Tìm nơi <span class="hl">an cư</span>, quản lý trọ trong một nền tảng</h1>
+    <p class="lead reveal" style="--d:.1s">An Cư kết nối người thuê và chủ trọ tại Việt Nam — tìm phòng thông minh, đặt lịch xem trực tuyến, hợp đồng và hoá đơn điện nước tự động hoá.</p>
+    <div class="hero-actions reveal" style="--d:.15s">
+      <a href="#tim-tro" class="btn btn-primary btn-lg">Tìm phòng trọ</a>
+      <a href="#chu-tro" class="btn btn-ghost btn-lg">Tôi là chủ trọ
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="mockup-wrap reveal" style="--d:.2s">
+      <div class="float f1">
+        <span class="ico"></span>
+        <div><b>98%</b><span>lấp đầy phòng</span></div>
+      </div>
+      <div class="float f2">
+        <span class="ico"></span>
+        <div><b>2 phút</b><span>tạo hoá đơn tháng</span></div>
+      </div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <i></i><i></i><i></i>
+          <span class="addr">ancu.vn/quan-ly</span>
+        </div>
+        <div class="mockup-body">
+          <aside class="mk-side">
+            <span class="lbl">Quản lý</span>
+            <a class="active"><span class="ic"></span> Tổng quan</a>
+            <a><span class="ic"></span> Nhà trọ</a>
+            <a><span class="ic"></span> Phòng</a>
+            <a><span class="ic"></span> Hợp đồng</a>
+            <a><span class="ic"></span> Hoá đơn</a>
+            <span class="lbl">Liên hệ</span>
+            <a><span class="ic"></span> Tin nhắn</a>
+            <a><span class="ic"></span> Lịch xem</a>
+          </aside>
+          <div class="mk-main">
+            <h4>Tổng quan</h4>
+            <div class="sub">Nhà trọ Bình Minh · 24 phòng</div>
+            <div class="mk-stats">
+              <div class="mk-stat"><b>22</b><span>Đang thuê</span></div>
+              <div class="mk-stat"><b>2</b><span>Phòng trống</span></div>
+              <div class="mk-stat"><b>18,4tr</b><span>Doanh thu tháng</span></div>
+            </div>
+            <div class="mk-rows">
+              <div class="mk-row"><span class="thumb"></span><div class="g"><b>Phòng 201 · Tầng 2</b><span>Nguyễn V. An · đến hạn 05/09</span></div><span class="tag wait">Chờ TT</span></div>
+              <div class="mk-row"><span class="thumb"></span><div class="g"><b>Phòng 305 · Tầng 3</b><span>Trần T. Mai · đã thanh toán</span></div><span class="tag ok">Xong</span></div>
+              <div class="mk-row"><span class="thumb"></span><div class="g"><b>Phòng 102 · Tầng 1</b><span>Còn trống · 8 lượt quan tâm</span></div><span class="tag ok">Trống</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust">
+  <div class="container reveal">
+    <p>Chủ trọ đang dùng An Cư tại</p>
+    <div class="trust-row">
+      <span>Hà Nội</span><span>Hải Phòng</span><span>Đà Nẵng</span><span>TP. Hồ Chí Minh</span><span>Bình Dương</span><span>Cần Thơ</span>
+    </div>
+  </div>
+</section>
+
+<!-- CHỦ TRỌ -->
+<section class="sec" id="chu-tro" style="background:linear-gradient(180deg,transparent,rgba(255,255,255,.015),transparent)">
+  <div class="container">
+    <div class="split">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span> Dành cho chủ trọ</span>
+        <h2 style="font-size:clamp(1.9rem,4vw,2.9rem);margin:18px 0 14px">Điều hành mọi phòng trọ từ một màn hình</h2>
+        <p style="color:var(--text-muted)">Thay bảng tính và sổ tay bằng một hệ thống gọn gàng: biết ngay phòng nào trống, ai sắp đến hạn, tháng này thu được bao nhiêu.</p>
+        <ul class="list">
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Quản lý nhiều nhà trọ</b><span>Gộp tất cả cơ sở vào một tài khoản, phân theo tầng và dãy phòng.</span></div></li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Trạng thái phòng tức thời</b><span>Trống, đã thuê, đang sửa — cập nhật realtime, hiển thị ngay trên tin đăng.</span></div></li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Hợp đồng &amp; hoá đơn tự động</b><span>Tạo hợp đồng theo mẫu, chốt hoá đơn hàng tháng và gửi nhắc thanh toán.</span></div></li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Ghi điện nước nhanh</b><span>Nhập chỉ số cuối kỳ, hệ thống tự tính tiền theo đơn giá bạn cài đặt.</span></div></li>
+        </ul>
+      </div>
+      <div class="panel reveal" style="--d:.1s">
+        <div class="ph"><b>Hoá đơn tháng 9 · Nhà trọ Bình Minh</b><span class="pill">Đã gửi 22/24</span></div>
+        <div class="pb">
+          <div class="prow"><span class="n">201</span><div class="g"><b>Nguyễn Văn An</b><span>Tiền phòng + điện 92 số + nước 4 m³</span></div><span class="amt">3.480.000₫</span></div>
+          <div class="prow"><span class="n">305</span><div class="g"><b>Trần Thị Mai</b><span>Tiền phòng + điện 61 số + nước 3 m³</span></div><span class="amt">3.120.000₫</span></div>
+          <div class="prow"><span class="n">208</span><div class="g"><b>Lê Hoàng Nam</b><span>Tiền phòng + điện 74 số + nước 5 m³</span></div><span class="amt">3.350.000₫</span></div>
+          <div class="prow"><span class="n">110</span><div class="g"><b>Phạm Thu Hà</b><span>Tiền phòng + điện 58 số + nước 3 m³</span></div><span class="amt">2.980.000₫</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ĐA NỀN TẢNG -->
+<section class="sec" id="da-nen-tang">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Quản lý đa nền tảng</span>
+      <h2>Quản lý nhanh trên mọi thiết bị</h2>
+      <p>Không cần cài phần mềm. Mở website An Cư trên điện thoại, máy tính bảng hay laptop, dữ liệu nhà trọ luôn đồng bộ ở mọi nơi.</p>
+    </div>
+    <div class="devices" data-stagger>
+      <article class="device reveal">
+        <div class="dv" aria-hidden="true">
+          <div class="scr phone"><b></b><i></i><i></i><i class="s"></i><em></em></div>
+        </div>
+        <h3>Điện thoại</h3>
+        <p>Ghi chỉ số điện nước ngay tại phòng, xác nhận lịch xem và trả lời người thuê cả khi đang ở ngoài.</p>
+      </article>
+      <article class="device reveal">
+        <div class="dv" aria-hidden="true">
+          <div class="scr tablet"><b></b><div class="tiles"><span class="on"></span><span></span><span class="on"></span><span></span><span></span><span class="on"></span></div></div>
+        </div>
+        <h3>Máy tính bảng</h3>
+        <p>Xem sơ đồ phòng theo tầng, cùng người thuê đọc và ký hợp đồng điện tử ngay tại chỗ.</p>
+      </article>
+      <article class="device reveal">
+        <div class="dv" aria-hidden="true">
+          <div class="lap">
+            <div class="scr laptop"><b></b><div class="bars"><span style="--h:38%"></span><span style="--h:56%"></span><span style="--h:47%"></span><span style="--h:72%"></span><span style="--h:64%"></span><span class="on" style="--h:90%"></span></div></div>
+            <span class="lap-base"></span>
+          </div>
+        </div>
+        <h3>Laptop</h3>
+        <p>Chốt hoá đơn hàng loạt cuối tháng, xem báo cáo doanh thu và công nợ trên màn hình lớn.</p>
+      </article>
+    </div>
+    <p class="device-note reveal">Chạy trên trình duyệt Chrome, Safari, Edge, Cốc Cốc. Một tài khoản, đăng nhập trên nhiều thiết bị cùng lúc.</p>
+  </div>
+</section>
+
+<!-- VÌ SAO CHỌN AN CƯ -->
+<section class="sec" id="vi-sao">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Vì sao chọn An Cư</span>
+      <h2>Nền tảng quản lý phòng trọ làm cho chủ trọ Việt</h2>
+      <p>Từ dãy trọ vài phòng đến toà căn hộ dịch vụ, An Cư gom mọi việc cho thuê vào một chỗ, gọn và dễ dùng.</p>
+    </div>
+    <div class="cards" data-stagger>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></div>
+        <h3>Trả theo tháng</h3>
+        <p>Đóng theo từng tháng, không ràng buộc hợp đồng dài. Đổi gói hoặc dừng lúc nào cũng được.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+        <h3>Không cần cài đặt</h3>
+        <p>Dùng ngay trên trình duyệt của mọi thiết bị. Tính năng mới tự cập nhật, không phải tải bản mới.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg></div>
+        <h3>Tự tính tiền điện nước</h3>
+        <p>Nhập chỉ số cuối kỳ, hệ thống tự tính theo đơn giá của bạn và lập hoá đơn cho từng phòng.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+        <h3>Người thuê tự tìm đến</h3>
+        <p>Tin đăng hiện ngay trong mục Tìm phòng của An Cư ở Hà Nội, Hải Phòng, Đà Nẵng, TP. Hồ Chí Minh, Bình Dương, Cần Thơ.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></div>
+        <h3>Lịch xem không bao giờ trùng</h3>
+        <p>Mỗi khung giờ xem phòng chỉ một người đặt được. Bạn chỉ việc xác nhận, không phải gọi qua gọi lại.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+        <h3>Dữ liệu của riêng bạn</h3>
+        <p>Mỗi chủ trọ chỉ thấy dữ liệu nhà trọ của mình. Mật khẩu được mã hoá, phiên đăng nhập được bảo vệ.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BẢNG GIÁ -->
+<section class="sec" id="bang-gia">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Bảng giá</span>
+      <h2>Bảng giá minh bạch, không phí ẩn</h2>
+      <p>Hai gói, tính theo số phòng bạn đang quản lý. Chọn gói rồi bắt đầu quản lý ngay, đổi hoặc huỷ gói bất cứ lúc nào.</p>
+    </div>
+    <div class="plans" data-stagger>
+      <article class="plan featured reveal" id="plan-plus">
+        <span class="plan-tag">Phổ biến nhất</span>
+        <h3>Plus</h3>
+        <p class="plan-for">Cho nhà trọ, dãy trọ đang cho thuê</p>
+        <p class="plan-price">199.000₫ <small>/ tháng</small></p>
+        <p class="plan-trial">Dùng được ngay sau khi thanh toán</p>
+        <ul>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><b>Tối đa 15 phòng</b>, 1 tài khoản quản lý</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Đăng tin phòng trọ không giới hạn lượt</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Nhận lịch xem và tin nhắn từ người thuê</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Ghi điện nước, tự tính hoá đơn</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hợp đồng điện tử, nhắc thanh toán tự động</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Báo cáo doanh thu hằng tháng</span></li>
+        </ul>
+        <a href="#" class="btn btn-primary" data-auth="register" data-auth-role="landlord">Mua gói Plus</a>
+      </article>
+      <article class="plan reveal" id="plan-pro">
+        <h3>Pro</h3>
+        <p class="plan-for">Cho chung cư mini, căn hộ dịch vụ, toà nhà cao cấp</p>
+        <p class="plan-price">499.000₫ <small>/ tháng</small></p>
+        <p class="plan-trial">Dùng được ngay sau khi thanh toán</p>
+        <ul>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Mọi tính năng của gói Plus</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><b>Tối đa 60 phòng</b>, nhiều nhà trọ trong một tài khoản</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><b>Tối đa 5 tài khoản</b>, phân quyền cho quản lý, nhân viên</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Báo cáo công nợ, xuất Excel</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Tin đăng nổi bật trong mục Tìm phòng</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hỗ trợ ưu tiên 1–1</span></li>
+        </ul>
+        <a href="#" class="btn btn-ghost" data-auth="register" data-auth-role="landlord">Chọn gói Pro</a>
+      </article>
+    </div>
+    <p class="plans-note reveal">Giá chưa gồm VAT, tính theo tháng. <b>Không có gói miễn phí và không có dùng thử</b> — chủ trọ cần mua gói Plus hoặc Pro mới đăng tin và quản lý phòng được. Kỳ đầu đến hạn ngay khi đăng ký; chưa thanh toán thì tài khoản chưa kích hoạt. Quá 60 phòng, liên hệ để báo giá riêng.</p>
+  </div>
+</section>
+
+<!-- TÌM PHÒNG -->
+<section class="sec" id="tim-tro">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Tìm phòng</span>
+      <h2>Bạn muốn ở khu nào, ngân sách bao nhiêu?</h2>
+      <p>Xem ngay các phòng mới đăng, hoặc chọn vị trí ở Hà Nội, Hải Phòng, Đà Nẵng, TP. Hồ Chí Minh, Bình Dương, Cần Thơ cùng khoảng giá, số người ở rồi bấm <b>Tìm phòng</b>.</p>
+    </div>
+
+    <form class="finder reveal" id="finder" novalidate>
+      <div class="finder-grid">
+        <div class="fld fld-location">
+          <label for="fArea">Vị trí</label>
+          <button type="button" class="location-trigger is-empty" id="locationTrigger" aria-haspopup="dialog" aria-controls="filterOverlay">
+            <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span class="label-text" id="locationValue">Chọn tỉnh/thành, phường/xã</span>
+            <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <select id="fArea" hidden aria-hidden="true">
+            <option value="">Hà Nội</option>
+          </select>
+        </div>
+
+        <div class="fld">
+          <label for="fPrice">Khoảng giá</label>
+          <div class="ctrl">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 6.5C17 4.6 14.8 3 12 3S7 4.6 7 6.5 9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/></svg>
+            <select id="fPrice">
+              <option value="">Chọn khoảng giá</option>
+              <option value="0-2000000">Dưới 2 triệu</option>
+              <option value="2000000-3000000">2 – 3 triệu</option>
+              <option value="3000000-4000000">3 – 4 triệu</option>
+              <option value="4000000-5000000">4 – 5 triệu</option>
+              <option value="5000000-99000000">Trên 5 triệu</option>
+            </select>
+            <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="fld">
+          <label for="fPeople">Số người ở</label>
+          <div class="ctrl">
+            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>
+            <select id="fPeople">
+              <option value="">Chọn số người</option>
+              <option value="1">1 người</option>
+              <option value="2">2 người</option>
+              <option value="3">3 người trở lên</option>
+              <option value="custom">Tuỳ chọn…</option>
+            </select>
+            <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            <input id="fPeopleCustom" type="number" min="1" max="10" step="1" inputmode="numeric"
+                   placeholder="Nhập số người (1–10)" aria-label="Số người ở, nhập từ 1 đến 10" hidden />
+            <button type="button" class="people-back" id="fPeopleBack" aria-label="Quay lại danh sách số người" hidden>
+              <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-find">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          Tìm phòng
+        </button>
+      </div>
+
+      <p class="finder-err" id="finderErr" role="alert"></p>
+
+      <div class="quick">
+        <span>Lọc nhanh:</span>
+        <button type="button" class="qc" data-amen="Giờ giấc tự do">Giờ giấc tự do</button>
+        <button type="button" class="qc" data-amen="Có gác lửng">Có gác lửng</button>
+        <button type="button" class="qc" data-amen="Nuôi thú cưng">Nuôi thú cưng</button>
+        <button type="button" class="qc" data-amen="Có bếp riêng">Có bếp riêng</button>
+        <button type="button" class="qc" data-amen="Chỗ để xe">Chỗ để xe</button>
+        <button type="button" class="qc" data-amen="Máy lạnh">Máy lạnh</button>
+        <button type="button" class="qc-reset" data-room-reset>
+          <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          Xoá bộ lọc
+        </button>
+      </div>
+    </form>
+
+    <div class="result-bar reveal" id="resultBar">
+      <p class="cnt"><span id="roomCount" role="status" aria-live="polite"></span><span class="room-hint" id="roomHint"></span></p>
+      <div class="sort">
+        <label for="fSort">Sắp xếp</label>
+        <div class="ctrl">
+          <select id="fSort">
+            <option value="new">Mới đăng</option>
+            <option value="asc">Giá thấp đến cao</option>
+            <option value="desc">Giá cao đến thấp</option>
+            <option value="area">Diện tích lớn nhất</option>
+          </select>
+          <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="rooms" id="roomGrid" data-stagger></div>
+
+    <div class="empty empty-guide" id="roomEmpty">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8.5 11h5"/></svg>
+      <h3>Hiện chưa có phòng trọ bạn muốn</h3>
+      <p>Thử khoảng giá khác, hoặc chọn phường, xã lân cận.</p>
+      <button type="button" class="btn btn-ghost" data-room-reset>Xoá bộ lọc, xem phòng mới đăng</button>
+    </div>
+
+    <div style="text-align:center;margin-top:44px;display:none" class="reveal" id="viewAllWrap">
+      <a href="#" class="btn btn-ghost btn-lg" id="viewAllRooms">Xem thêm phòng
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- NGƯỜI THUÊ -->
+<section class="sec" id="nguoi-thue">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Tiện ích cho người thuê</span>
+      <h2>Từ lúc tìm phòng đến khi dọn vào ở</h2>
+      <p>An Cư đi cùng bạn trước và sau khi thuê: xem phòng, hẹn lịch, hỏi chủ trọ, rồi quản lý hợp đồng, tiền nhà và việc sửa chữa ở cùng một chỗ.</p>
+    </div>
+    <div class="cards" data-stagger>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg></div>
+        <h3>Xem và lưu phòng</h3>
+        <p>Xem ảnh thật, giá, diện tích và tiện nghi của từng phòng. Lưu những phòng ưng ý vào danh sách riêng để so sánh lại sau.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></div>
+        <h3>Đặt lịch xem nhanh</h3>
+        <p>Chọn khung giờ còn trống và đặt lịch chỉ trong vài chạm. Mỗi khung giờ chỉ một người đặt được, không lo trùng lịch.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/></svg></div>
+        <h3>Nhắn tin với chủ trọ</h3>
+        <p>Hỏi thêm về phòng, giá điện nước hay giờ giấc ngay trên An Cư. Lịch sử trao đổi được lưu lại, không trôi mất như tin nhắn điện thoại.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
+        <h3>Hợp đồng lưu trữ online</h3>
+        <p>Hợp đồng thuê được lưu ngay trên An Cư. Mở lại bất cứ lúc nào để xem thời hạn, tiền cọc và điều khoản, không lo thất lạc bản giấy.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2l-3 2-3-2-3 2-3-2-3 2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+        <h3>Các khoản thanh toán rõ ràng</h3>
+        <p>Mỗi tháng thấy rõ từng khoản: tiền phòng, điện, nước, dịch vụ, hạn đóng và những khoản đã trả. Không còn cảnh tính nhầm, tính thiếu.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9Z"/></svg></div>
+        <h3>Báo hỏng, sửa chữa nhanh</h3>
+        <p>Hỏng điện, rò nước hay kẹt khoá? Chụp ảnh, gửi báo hỏng cho chủ trọ ngay trên An Cư và theo dõi đến khi sửa xong.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="sec" id="so-lieu">
+  <div class="container">
+    <div class="stats reveal" data-stagger>
+      <div class="s"><b>12.000+</b><span>phòng đang cho thuê</span></div>
+      <div class="s"><b>3.500+</b><span>chủ trọ tin dùng</span></div>
+      <div class="s"><b>28</b><span>tỉnh thành phủ sóng</span></div>
+      <div class="s"><b>4.9/5</b><span>đánh giá từ người thuê</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-final">
+  <div class="container reveal">
+    <div class="box">
+      <div class="g2"></div>
+      <h2>Sẵn sàng an cư?</h2>
+      <p>Tạo tài khoản miễn phí. Người thuê tìm được phòng đúng ý, chủ trọ quản lý gọn nhẹ ngay từ hôm nay.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary btn-lg" data-auth="register" data-auth-role="renter">Tìm phòng ngay</a>
+        <a href="#" class="btn btn-ghost btn-lg" data-auth="register" data-auth-role="landlord">Đăng tin cho thuê</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="fgrid">
+      <div class="fcol about">
+        <a href="#" class="brand"><span class="mark">A</span> An Cư</a>
+        <p>Nền tảng thuê và quản lý phòng trọ dành cho người Việt.</p>
+      </div>
+      <div class="fcol">
+        <h4>Người thuê</h4>
+        <a href="#tim-tro">Tìm phòng trọ</a><a href="#">Bản đồ khu vực</a><a href="#">Phòng đã lưu</a><a href="#">Lịch xem phòng</a>
+      </div>
+      <div class="fcol">
+        <h4>Chủ trọ</h4>
+        <a href="#">Đăng tin cho thuê</a><a href="#">Quản lý nhà trọ</a><a href="#">Hợp đồng &amp; hoá đơn</a><a href="#bang-gia">Bảng giá</a>
+      </div>
+      <div class="fcol">
+        <h4>Công ty</h4>
+        <a href="#">Về An Cư</a><a href="#">Blog</a><a href="#">Liên hệ</a><a href="#">Điều khoản &amp; bảo mật</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>© 2026 An Cư. Bảo lưu mọi quyền.</span>
+      <div class="soc">
+        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 8.5a3 3 0 0 0-2.1-2.1C18 6 12 6 12 6s-6 0-7.9.4A3 3 0 0 0 2 8.5 31 31 0 0 0 2 12a31 31 0 0 0 .1 3.5 3 3 0 0 0 2.1 2.1C6 18 12 18 12 18s6 0 7.9-.4a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.1-3.5Z"/><path d="m10 15 5-3-5-3Z"/></svg></a>
+        <a href="#" aria-label="Zalo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 8h5M8 8v6l-1.5 2M13 8c2 0 3 1.3 3 3s-1 3-3 3H9"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="filter-overlay" id="filterOverlay" aria-hidden="true">
+  <div class="filter-modal" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+    <div class="filter-header">
+      <h3 id="filterTitle">Bộ Lọc</h3>
+      <div class="filter-header-actions">
+        <input type="search" class="filter-search" id="filterSearch" placeholder="Tìm phường, xã (gõ không dấu cũng được)" aria-label="Tìm phường hoặc xã" />
+        <button type="button" class="filter-apply-top" id="filterApply">Áp dụng</button>
+        <button type="button" class="filter-close" id="filterClose" aria-label="Đóng bộ lọc">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="city-bar">
+      <div class="city-row" id="cityRow" role="group" aria-label="Chọn tỉnh, thành phố"></div>
+      <p class="city-note" id="cityNote"></p>
+    </div>
+
+    <div class="filter-shell">
+      <aside class="filter-sidebar" aria-label="Chọn loại lọc">
+        <button type="button" class="filter-tab active" data-filter-tab="phuong">Phường<span class="tab-count" id="countPhuong">51</span></button>
+        <button type="button" class="filter-tab" data-filter-tab="xa">Xã<span class="tab-count" id="countXa">75</span></button>
+        <button type="button" class="filter-tab" data-filter-tab="dackhu" hidden>Đặc khu<span class="tab-count" id="countDackhu">0</span></button>
+      </aside>
+
+      <div class="filter-content">
+        <div class="filter-panel active" data-filter-panel="phuong">
+          <div class="filter-list" id="phuongList"></div>
+          <button type="button" class="filter-more" id="showMorePhuong">Xem tất cả</button>
+        </div>
+
+        <div class="filter-panel" data-filter-panel="xa">
+          <div class="filter-list" id="xaList"></div>
+          <button type="button" class="filter-more" id="showMoreXa">Xem tất cả</button>
+        </div>
+
+        <div class="filter-panel" data-filter-panel="dackhu">
+          <div class="filter-list" id="dackhuList"></div>
+          <button type="button" class="filter-more" id="showMoreDackhu">Xem tất cả</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleLogin">
+  <div class="auth-modal">
+    <button type="button" class="auth-close" id="authClose" aria-label="Đóng">
+      <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <!-- ĐĂNG NHẬP -->
+    <section class="auth-pane active" data-pane="login">
+      <div class="auth-head">
+        <span class="brand"><span class="mark">A</span> An Cư</span>
+        <h2 id="authTitleLogin">Đăng nhập</h2>
+        <p>Nhập số điện thoại và mật khẩu để tiếp tục.</p>
+      </div>
+
+      <form novalidate data-auth-form="login">
+        <div class="field">
+          <label for="loginPhone">Số điện thoại</label>
+          <div class="ctrl">
+            <input id="loginPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912 345 678" data-rule="phone" aria-describedby="loginPhoneErr" />
+            <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+          </div>
+          <p class="err" id="loginPhoneErr" role="alert"></p>
+        </div>
+
+        <div class="field has-toggle">
+          <label for="loginPassword">Mật khẩu</label>
+          <div class="ctrl">
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" data-rule="password" aria-describedby="loginPasswordErr" />
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <button type="button" class="pw-toggle" data-pw-toggle aria-label="Hiện mật khẩu">
+              <svg class="on" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="off" viewBox="0 0 24 24"><path d="M10.7 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-3.2 4.2M6.6 6.6A18.4 18.4 0 0 0 2 12s3.6 7 10 7a10.3 10.3 0 0 0 4.4-1M2 2l20 20M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <p class="err" id="loginPasswordErr" role="alert"></p>
+        </div>
+
+        <div class="auth-row">
+          <button type="button" class="link-quiet" data-auth-go="forgot">Quên mật khẩu?</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-submit">Đăng nhập</button>
+      </form>
+
+      <p class="auth-alt">Chưa có tài khoản?<button type="button" class="link-accent" data-auth-go="register">Tạo tài khoản mới</button></p>
+
+      <div class="auth-done" hidden>
+        <div class="tick"><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg></div>
+        <h3>Đăng nhập thành công</h3>
+        <p>Chào mừng bạn quay lại An Cư.<span class="mock">Bản mock giao diện — chưa kết nối Supabase Auth.</span></p>
+        <button type="button" class="btn btn-ghost btn-submit" data-auth-close>Đóng</button>
+      </div>
+    </section>
+
+    <!-- ĐĂNG KÝ -->
+    <section class="auth-pane" data-pane="register">
+      <div class="auth-head">
+        <span class="brand"><span class="mark">A</span> An Cư</span>
+        <h2 id="authTitleRegister">Tạo tài khoản miễn phí</h2>
+        <p>Chọn vai trò để An Cư hiển thị đúng những gì bạn cần.</p>
+      </div>
+
+      <form novalidate data-auth-form="register">
+        <div class="role-pick" role="radiogroup" aria-label="Bạn là ai?">
+          <label class="role">
+            <input type="radio" name="role" value="renter" checked />
+            <span>Tôi cần thuê trọ</span>
+          </label>
+          <label class="role">
+            <input type="radio" name="role" value="landlord" />
+            <span>Tôi là chủ trọ</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="regPhone">Số điện thoại</label>
+          <div class="ctrl">
+            <input id="regPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912 345 678" data-rule="phone" aria-describedby="regPhoneErr" />
+            <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+          </div>
+          <p class="err" id="regPhoneErr" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <div class="ctrl">
+            <input id="regEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="ban@email.com" data-rule="email" aria-describedby="regEmailErr" />
+            <svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg>
+          </div>
+          <p class="err" id="regEmailErr" role="alert"></p>
+        </div>
+
+        <div class="field has-toggle">
+          <label for="regPassword">Mật khẩu</label>
+          <div class="ctrl">
+            <input id="regPassword" name="password" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" data-rule="password-new" aria-describedby="regPasswordErr" />
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <button type="button" class="pw-toggle" data-pw-toggle aria-label="Hiện mật khẩu">
+              <svg class="on" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="off" viewBox="0 0 24 24"><path d="M10.7 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-3.2 4.2M6.6 6.6A18.4 18.4 0 0 0 2 12s3.6 7 10 7a10.3 10.3 0 0 0 4.4-1M2 2l20 20M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <p class="err" id="regPasswordErr" role="alert"></p>
+        </div>
+
+        <div class="field has-toggle">
+          <label for="regConfirm">Nhập lại mật khẩu</label>
+          <div class="ctrl">
+            <input id="regConfirm" name="confirm" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" data-rule="confirm" data-match="regPassword" aria-describedby="regConfirmErr" />
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M10.5 16h3"/></svg>
+            <button type="button" class="pw-toggle" data-pw-toggle aria-label="Hiện mật khẩu">
+              <svg class="on" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="off" viewBox="0 0 24 24"><path d="M10.7 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-3.2 4.2M6.6 6.6A18.4 18.4 0 0 0 2 12s3.6 7 10 7a10.3 10.3 0 0 0 4.4-1M2 2l20 20M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <p class="err" id="regConfirmErr" role="alert"></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-submit">Tạo tài khoản</button>
+        <p class="auth-terms">Khi tạo tài khoản, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của An Cư.</p>
+      </form>
+
+      <p class="auth-alt">Đã có tài khoản?<button type="button" class="link-accent" data-auth-go="login">Đăng nhập</button></p>
+
+      <div class="auth-done" hidden>
+        <div class="tick"><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg></div>
+        <h3>Tạo tài khoản thành công</h3>
+        <p>Tài khoản của bạn đã sẵn sàng.<span class="mock">Bản mock giao diện — chưa kết nối Supabase Auth.</span></p>
+        <button type="button" class="btn btn-ghost btn-submit" data-auth-close>Đóng</button>
+      </div>
+    </section>
+
+    <!-- QUÊN MẬT KHẨU -->
+    <section class="auth-pane" data-pane="forgot">
+      <div class="auth-head">
+        <span class="brand"><span class="mark">A</span> An Cư</span>
+        <h2 id="authTitleForgot">Quên mật khẩu</h2>
+        <p>Nhập số điện thoại đã đăng ký, chúng tôi sẽ gửi mã đặt lại mật khẩu.</p>
+      </div>
+
+      <form novalidate data-auth-form="forgot">
+        <div class="field">
+          <label for="forgotPhone">Số điện thoại</label>
+          <div class="ctrl">
+            <input id="forgotPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912 345 678" data-rule="phone" aria-describedby="forgotPhoneErr" />
+            <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+          </div>
+          <p class="err" id="forgotPhoneErr" role="alert"></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-submit">Gửi mã đặt lại</button>
+      </form>
+
+      <p class="auth-alt">Nhớ mật khẩu rồi?<button type="button" class="link-accent" data-auth-go="login">Quay lại đăng nhập</button></p>
+
+      <div class="auth-done" hidden>
+        <div class="tick"><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg></div>
+        <h3>Đã gửi mã đặt lại</h3>
+        <p>Vui lòng kiểm tra tin nhắn trên điện thoại của bạn.<span class="mock">Bản mock giao diện — chưa gửi SMS thật.</span></p>
+        <button type="button" class="btn btn-ghost btn-submit" data-auth-go="login">Quay lại đăng nhập</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- MODAL CHI TIẾT PHÒNG -->
+<div class="rd-overlay" id="rdOverlay" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+  <div class="rd-modal">
+    <button type="button" class="rd-close" id="rdClose" aria-label="Đóng">
+      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="rd-body">
+      <div class="rd-gallery">
+        <div class="rd-main"><img id="rdMainImg" alt="" src="" /></div>
+        <div class="rd-thumbs" id="rdThumbs"></div>
+      </div>
+
+      <div class="rd-info">
+        <p class="rd-price" id="rdPrice"></p>
+        <h2 id="rdTitle"></h2>
+        <p class="rd-addr">
+          <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="rdAddr"></span>
+        </p>
+
+        <div class="rd-block">
+          <h3>Địa chỉ chi tiết</h3>
+          <p id="rdAddrDetail"></p>
+        </div>
+
+        <dl class="rd-specs" id="rdSpecs"></dl>
+
+        <div class="rd-block">
+          <h3>Mô tả</h3>
+          <p id="rdDesc"></p>
+        </div>
+
+        <div class="rd-block">
+          <h3>Tiện nghi</h3>
+          <div class="rd-amen" id="rdAmen"></div>
+        </div>
+
+        <div class="rd-block">
+          <h3>Chi phí khác</h3>
+          <div class="rd-amen" id="rdCosts"></div>
+        </div>
+
+        <div class="rd-owner">
+          <span class="av" id="rdOwnerAv"></span>
+          <div>
+            <b id="rdOwnerName"></b>
+            <small id="rdOwnerMeta"></small>
+          </div>
+        </div>
+
+        <div class="rd-actions">
+          <button type="button" class="btn btn-primary" id="rdContactBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+            Liên hệ chủ phòng
+          </button>
+          <button type="button" class="btn btn-ghost" data-auth="login">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Đặt lịch xem
+          </button>
+        </div>
+
+        <div class="rd-contact" id="rdContact">
+          <p class="phone">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+            <span id="rdPhone"></span>
+          </p>
+          <p>Nhắn tin qua An Cư để lưu lại lịch sử trao đổi và đặt lịch xem phòng — bạn cần đăng nhập.</p>
+          <button type="button" class="btn btn-primary" data-auth="login">Đăng nhập để nhắn tin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Header scroll state
+  var hdr = document.getElementById('hdr');
+  var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 12); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  // Mobile menu
+  var mb = document.getElementById('menuBtn');
+  mb.addEventListener('click', function(){ document.body.classList.toggle('menu-open'); });
+  document.querySelectorAll('#mobileMenu a').forEach(function(a){
+    a.addEventListener('click', function(){ document.body.classList.remove('menu-open'); });
+  });
+
+  // Scroll reveal with stagger
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce){
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  } else {
+    document.querySelectorAll('[data-stagger]').forEach(function(group){
+      group.querySelectorAll('.reveal').forEach(function(el,i){ el.style.setProperty('--d',(i*0.08)+'s'); });
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  // ---------- Auth modal: đăng nhập thật khi chạy qua máy chủ, mô phỏng khi mở file:// ----------
+  (function(){
+    var overlay = document.getElementById('authOverlay');
+    if(!overlay) return;
+
+    var modal = overlay.querySelector('.auth-modal');
+    var panes = Array.prototype.slice.call(overlay.querySelectorAll('.auth-pane'));
+    var TITLES = { login:'authTitleLogin', register:'authTitleRegister', forgot:'authTitleForgot' };
+    var RE_PHONE = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+    var RE_EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    var lastFocus = null;
+
+    function activePane(){ return overlay.querySelector('.auth-pane.active'); }
+
+    function labelOf(input){
+      var l = input.closest('.field').querySelector('label');
+      return l ? l.textContent.toLowerCase() : 'thông tin này';
+    }
+    function clearField(input){
+      var field = input.closest('.field');
+      field.classList.remove('invalid');
+      input.removeAttribute('aria-invalid');
+      field.querySelector('.err').textContent = '';
+    }
+    function failField(input, msg){
+      var field = input.closest('.field');
+      field.classList.add('invalid');
+      input.setAttribute('aria-invalid','true');
+      field.querySelector('.err').textContent = msg;
+    }
+
+    function checkField(input){
+      var rule = input.getAttribute('data-rule');
+      var val = input.value.trim();
+      if(!val){
+        failField(input, 'Vui lòng nhập ' + labelOf(input));
+        return false;
+      }
+      if(rule === 'phone' && !RE_PHONE.test(val.replace(/[\s.-]/g,''))){
+        failField(input, 'Số điện thoại không hợp lệ (ví dụ: 0912345678).'); return false;
+      }
+      if(rule === 'email' && !RE_EMAIL.test(val)){
+        failField(input, 'Email không hợp lệ.'); return false;
+      }
+      if(rule === 'password-new' && input.value.length < 8){
+        failField(input, 'Mật khẩu cần tối thiểu 8 ký tự.'); return false;
+      }
+      if(rule === 'confirm'){
+        var src = document.getElementById(input.getAttribute('data-match'));
+        if(input.value !== src.value){ failField(input, 'Mật khẩu nhập lại không khớp.'); return false; }
+      }
+      clearField(input);
+      return true;
+    }
+
+    function resetPane(pane){
+      var form = pane.querySelector('form');
+      var done = pane.querySelector('.auth-done');
+      pane.querySelector('.auth-head').hidden = false;
+      var alt = pane.querySelector('.auth-alt');
+      form.reset();
+      var formErr = form.querySelector('.auth-form-err');
+      if(formErr){ formErr.textContent = ''; formErr.classList.remove('show'); }
+      form.hidden = false;
+      if(alt) alt.hidden = false;
+      done.hidden = true;
+      Array.prototype.forEach.call(form.querySelectorAll('[data-rule]'), clearField);
+      Array.prototype.forEach.call(form.querySelectorAll('.pw-toggle'), function(t){
+        t.classList.remove('on');
+        t.setAttribute('aria-label','Hiện mật khẩu');
+        t.parentNode.querySelector('input').type = 'password';
+      });
+      var btn = form.querySelector('.btn-submit');
+      btn.disabled = false;
+      btn.textContent = btn.getAttribute('data-label') || btn.textContent;
+    }
+
+    var AUTH_ROLE_KEY = 'an-cu-auth-role';
+
+    function resolveAuthRole(role){
+      var next = role || localStorage.getItem(AUTH_ROLE_KEY) || 'renter';
+      if(next !== 'renter' && next !== 'landlord') next = 'renter';
+      localStorage.setItem(AUTH_ROLE_KEY, next);
+      return next;
+    }
+
+    function setPane(name, role){
+      panes.forEach(function(p){
+        var on = p.getAttribute('data-pane') === name;
+        p.classList.toggle('active', on);
+        if(on) resetPane(p);
+      });
+      overlay.setAttribute('aria-labelledby', TITLES[name]);
+      if(role){
+        var r = overlay.querySelector('.role-pick input[value="' + role + '"]');
+        if(r) r.checked = true;
+      }
+      modal.scrollTop = 0;
+    }
+
+    function openAuth(name, role){
+      // Đã đăng nhập thì không mở lại form, đưa thẳng vào khu vực của mình
+      if(AUTH_API.me){ window.location.href = areaOf(AUTH_API.me); return; }
+      lastFocus = document.activeElement;
+      role = resolveAuthRole(role);
+      setPane(name || 'login', role);
+      document.body.classList.remove('menu-open');
+      document.body.classList.add('auth-open');
+      overlay.classList.add('open');
+      setTimeout(function(){
+        var first = activePane().querySelector('input:not([type=radio]), input[type=radio]:checked');
+        if(first) first.focus();
+      }, 80);
+    }
+
+    function closeAuth(){
+      overlay.classList.remove('open');
+      document.body.classList.remove('auth-open');
+      if(lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        closeAuth();
+      }
+    });
+
+    // Mở modal từ mọi nút có data-auth
+    document.querySelectorAll('[data-auth]').forEach(function(el){
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        openAuth(el.getAttribute('data-auth'), el.getAttribute('data-auth-role'));
+      });
+    });
+
+    // Chuyển pane / đóng từ bên trong modal
+    overlay.querySelectorAll('[data-auth-go]').forEach(function(el){
+      el.addEventListener('click', function(){ setPane(el.getAttribute('data-auth-go'));
+        setTimeout(function(){ var f = activePane().querySelector('input:not([type=radio])'); if(f) f.focus(); }, 40);
+      });
+    });
+    overlay.querySelectorAll('[data-auth-close]').forEach(function(el){
+      el.addEventListener('click', closeAuth);
+    });
+    var authClose = document.getElementById('authClose');
+    if (authClose) {
+      authClose.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeAuth();
+      });
+    }
+    overlay.addEventListener('mousedown', function(e){ if(e.target === overlay) closeAuth(); });
+
+    // Hiện / ẩn mật khẩu
+    overlay.querySelectorAll('[data-pw-toggle]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var input = btn.parentNode.querySelector('input');
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.classList.toggle('on', show);
+        btn.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        input.focus();
+      });
+    });
+
+    // Validate khi rời ô + xoá lỗi khi gõ lại
+    overlay.querySelectorAll('[data-rule]').forEach(function(input){
+      input.addEventListener('blur', function(){ if(input.value.trim()) checkField(input); });
+      input.addEventListener('input', function(){
+        if(input.closest('.field').classList.contains('invalid')) clearField(input);
+      });
+    });
+
+    // ---------- Máy chủ xác thực ----------
+    // Mở qua máy chủ (npm start): đăng ký / đăng nhập thật, tài khoản lưu trong SQLite (server/auth.mjs).
+    // Mở thẳng file (file://): không có máy chủ, form chạy mô phỏng để xem giao diện.
+    var AUTH_API = { on:false, me:null };
+    var AUTH_READY = (!/^https?:$/.test(location.protocol) || !window.fetch)
+      ? Promise.resolve(AUTH_API)
+      : fetch('/api/suc-khoe', { cache:'no-store', credentials:'same-origin' })
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(j){ if(j && j.ok){ AUTH_API.on = true; AUTH_API.me = j.me || null; } return AUTH_API; })
+          .catch(function(){ return AUTH_API; });
+
+    function areaOf(user){
+      if (user && user.role === 'admin') return 'quan-tri/trang-chu.html';
+      return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html';
+    }
+    function shortName(user){
+      if(!user) return '';
+      if(user.name === user.phone) return user.phone;
+      var w = String(user.name).trim().split(/\s+/);
+      return w[w.length - 1];
+    }
+    function authPost(url, body){
+      return fetch(url, { method:'POST', cache:'no-store', credentials:'same-origin',
+        headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body || {}) })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; }); });
+    }
+    function formError(form, msg){
+      var box = form.querySelector('.auth-form-err');
+      if(!box){
+        box = document.createElement('p');
+        box.className = 'auth-form-err';
+        box.setAttribute('role', 'alert');
+        var submit = form.querySelector('.btn-submit');
+        submit.parentNode.insertBefore(box, submit);
+      }
+      box.textContent = msg || '';
+      box.classList.toggle('show', !!msg);
+    }
+    function showDone(form, note){
+      var pane = form.closest('.auth-pane');
+      var alt = pane.querySelector('.auth-alt');
+      var done = pane.querySelector('.auth-done');
+      var mock = done.querySelector('.mock');
+      if(mock && note) mock.textContent = note;
+      pane.querySelector('.auth-head').hidden = true;
+      form.hidden = true;
+      if(alt) alt.hidden = true;
+      done.hidden = false;
+      modal.scrollTop = 0;
+      done.querySelector('.btn').focus();
+    }
+
+    // Không có máy chủ: giữ hành vi mô phỏng cũ. Quên mật khẩu luôn mô phỏng vì chưa có SMS thật.
+    function mockSubmit(form, kind){
+      setTimeout(function(){
+        var checkedRole = form.querySelector('input[name="role"]:checked');
+        var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
+        resolveAuthRole(targetRole);
+        showDone(form, kind === 'forgot' ? '' : 'Chế độ xem giao diện: chưa lưu tài khoản. Chạy npm start rồi mở localhost:5500 để đăng ký, đăng nhập thật.');
+        if(kind !== 'forgot' && targetRole === 'renter'){
+          setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
+        }
+      }, 600);
+    }
+
+    overlay.querySelectorAll('[data-auth-form]').forEach(function(form){
+      var kind = form.getAttribute('data-auth-form');
+      var btn = form.querySelector('.btn-submit');
+      btn.setAttribute('data-label', btn.textContent);
+      function busy(on){ btn.disabled = on; btn.textContent = on ? 'Đang xử lý…' : btn.getAttribute('data-label'); }
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        formError(form, '');
+        var inputs = Array.prototype.slice.call(form.querySelectorAll('[data-rule]'));
+        var firstBad = null;
+        inputs.forEach(function(input){ if(!checkField(input) && !firstBad) firstBad = input; });
+        if(firstBad){ firstBad.focus(); return; }
+        busy(true);
+
+        AUTH_READY.then(function(){
+          if(!AUTH_API.on || kind === 'forgot') return mockSubmit(form, kind);
+
+          var f = form.elements;
+          var role = form.querySelector('input[name="role"]:checked');
+          var body = kind === 'register'
+            ? { role: role ? role.value : '', phone: f.phone.value, email: f.email.value, password: f.password.value }
+            : { phone: f.phone.value, password: f.password.value };
+          return authPost(kind === 'register' ? '/api/dang-ky' : '/api/dang-nhap', body).then(function(j){
+            if(!j.user){
+              busy(false);
+              var input = j.field ? form.querySelector('[name="' + j.field + '"][data-rule]') : null;
+              if(input){ failField(input, j.message); input.focus(); }
+              else formError(form, j.message || 'Máy chủ không phản hồi, vui lòng thử lại.');
+              return;
+            }
+            AUTH_API.me = j.user;
+            resolveAuthRole(j.user.role);
+            renderHeader();
+            showDone(form, 'Đang chuyển tới ' + (j.user.role === 'landlord' ? 'trang quản lý của chủ trọ' : 'trang tìm phòng của bạn') + '…');
+            setTimeout(function(){ window.location.href = areaOf(j.user); }, 900);
+          });
+        }).catch(function(){
+          busy(false);
+          formError(form, 'Không kết nối được máy chủ. Kiểm tra cửa sổ chạy npm start còn mở không.');
+        });
+      });
+    });
+
+    // Header: đã đăng nhập thì thay "Đăng nhập / Đăng ký" bằng lời chào, lối vào khu vực riêng và Đăng xuất
+    function renderHeader(){
+      var me = AUTH_API.me;
+      [document.querySelector('.nav-cta'), document.getElementById('mobileMenu')].forEach(function(box){
+        if(!box) return;
+        var inMenu = box.id === 'mobileMenu';
+        Array.prototype.forEach.call(box.querySelectorAll(':scope > [data-auth]'), function(b){ b.hidden = !!me; });
+        var old = box.querySelector(':scope > .nav-user');
+        if(old) old.remove();
+        if(!me) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'nav-user';
+        wrap.innerHTML = '<span class="nav-hello">Chào, <b></b></span>' +
+          '<a class="btn btn-primary' + (inMenu ? ' btn-lg' : '') + '"></a>' +
+          '<button type="button" class="btn btn-ghost' + (inMenu ? ' btn-lg' : '') + '" data-logout>Đăng xuất</button>';
+        wrap.querySelector('b').textContent = shortName(me);
+        var link = wrap.querySelector('a');
+        link.href = areaOf(me);
+        link.textContent = me.role === 'landlord' ? 'Trang quản lý' : 'Trang của tôi';
+        wrap.querySelector('[data-logout]').addEventListener('click', logout);
+        box.appendChild(wrap);
+      });
+    }
+    function logout(){
+      authPost('/api/dang-xuat')
+        .catch(function(){})
+        .then(function(){ AUTH_API.me = null; document.body.classList.remove('menu-open'); renderHeader(); });
+    }
+    AUTH_READY.then(renderHeader);
+
+    // Bẫy focus + Esc
+    overlay.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){ e.preventDefault(); closeAuth(); return; }
+      if(e.key !== 'Tab') return;
+      var nodes = Array.prototype.filter.call(
+        modal.querySelectorAll('button, [href], input, select, textarea'),
+        function(n){ return !n.disabled && n.offsetParent !== null && n.tabIndex !== -1; }
+      );
+      if(!nodes.length) return;
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    });
+  })();
+
+  // ---------- Tìm phòng + chi tiết phòng (mock, chưa nối backend) ----------
+  (function(){
+    var grid = document.getElementById('roomGrid');
+    if(!grid) return;
+
+    // 9 phòng p01-p09, cùng một bộ với tai-khoan/tim-phong.html (bộ chuẩn) và PHONG trong
+    // server/phong.mjs. Phường ghi theo danh sách 126 đơn vị của Hà Nội sau sáp nhập để bộ lọc
+    // vị trí tìm được; số điện thoại là số đã đăng ký của chủ trọ sở hữu phòng.
+    var ROOMS = [
+      { id:'p01', city:'ha-noi', title:'Phòng gác lửng, thoáng sáng', price:2800000, area:22, people:2, floor:2,
+        ward:'Phường Nghĩa Đô', address:'12 Nguyễn Khánh Toàn, Phường Nghĩa Đô, Hà Nội',
+        posted:4, postedAt:'16/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng',
+        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Nghĩa Tân 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+        images:['assets/rooms/phong-lac-trung-vinh-tuy.jpg','assets/rooms/phong-lac-trung-vinh-tuy-2.webp','assets/rooms/phong-lac-trung-vinh-tuy-3.webp'] },
+
+      { id:'p02', city:'ha-noi', title:'Căn hộ mini full nội thất', price:4200000, area:30, people:2, floor:4,
+        ward:'Phường Kim Liên', address:'27 Đào Duy Anh, Phường Kim Liên, Hà Nội',
+        posted:1, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng',
+        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Gần công viên Thống Nhất, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
+        images:['assets/rooms/phongtrobachkinhxaygiare1.webp','assets/rooms/phongtrobachkinhxaygiare2.webp','assets/rooms/phongtrobachkinhxaygiare3.webp','assets/rooms/phongtrobachkinhxaygiare4.webp'] },
+
+      { id:'p03', city:'ha-noi', title:'Phòng ban công riêng, đón nắng', price:3100000, area:25, people:2, floor:3,
+        ward:'Phường Bạch Mai', address:'88 Bạch Mai, Phường Bạch Mai, Hà Nội',
+        posted:6, postedAt:'15/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng trọ có ban công riêng nhiều ánh sáng',
+        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần chợ Mơ và bến xe Nước Ngầm. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
+        images:['assets/rooms/210hqv1.webp','assets/rooms/210hqv2.webp','assets/rooms/210hqv3.webp','assets/rooms/210hqv4.webp'] },
+
+      { id:'p04', city:'ha-noi', title:'Studio hiện đại gần trung tâm', price:3900000, area:28, people:2, floor:5,
+        ward:'Phường Khương Đình', address:'12 Khương Đình, Phường Khương Đình, Hà Nội',
+        posted:2, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng studio hiện đại gần trung tâm thành phố',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách công viên Hạ Đình 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+        images:['assets/rooms/moixay1.webp','assets/rooms/moixay2.webp','assets/rooms/moixay3.webp','assets/rooms/moixay4.webp'] },
+
+      { id:'p05', city:'ha-noi', title:'Phòng khép kín, an ninh tốt', price:2500000, area:20, people:2, floor:1,
+        ward:'Phường Ngọc Hà', address:'56 Ngọc Hà, Phường Ngọc Hà, Hà Nội',
+        posted:8, postedAt:'14/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt',
+        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Lăng Bác 1,2km, gần chợ và trạm xe buýt.',
+        images:['assets/rooms/ttt1.webp','assets/rooms/ttt2.webp','assets/rooms/ttt3.webp'] },
+
+      { id:'p06', city:'ha-noi', title:'Phòng rộng, phù hợp gia đình', price:4600000, area:35, people:3, floor:2,
+        ward:'Phường Vĩnh Hưng', address:'203 Vĩnh Hưng, Phường Vĩnh Hưng, Hà Nội',
+        posted:5, postedAt:'16/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình',
+        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Vĩnh Hưng và Times City 2km.',
+        images:['assets/rooms/hoalac1.webp','assets/rooms/hoalac2.webp','assets/rooms/hoalac3.webp'] },
+
+      { id:'p07', city:'ha-noi', title:'Phòng trọ giá mềm cho sinh viên', price:1800000, area:16, people:1, floor:3,
+        ward:'Phường Từ Liêm', address:'9 Lê Đức Thọ, Phường Từ Liêm, Hà Nội',
+        posted:9, postedAt:'13/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên',
+        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê gần Đại học Thương Mại, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
+        images:['assets/rooms/ga1.webp','assets/rooms/ga2.webp','assets/rooms/ga3.webp'] },
+
+      { id:'p08', city:'ha-noi', title:'Phòng có gác, cửa sổ hướng vườn', price:3400000, area:26, people:2, floor:2,
+        ward:'Phường Tây Hồ', address:'74 Âu Cơ, Phường Tây Hồ, Hà Nội',
+        posted:7, postedAt:'15/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn',
+        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn đào của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Nhật Tân 1,5km.',
+        images:['assets/rooms/dd1.webp','assets/rooms/dd2.webp'] },
+
+      { id:'p09', city:'ha-noi', title:'Căn hộ dịch vụ 2 phòng ngủ', price:6500000, area:48, people:3, floor:6,
+        ward:'Phường Việt Hưng', address:'15 Việt Hưng, Phường Việt Hưng, Hà Nội',
+        posted:3, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Đuống. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+        images:['assets/rooms/hmai1.webp','assets/rooms/hmai2.webp','assets/rooms/hmai3.webp','assets/rooms/hmai4.webp','assets/rooms/hmai5.webp'] },
+     ];
+
+    var nf = new Intl.NumberFormat('vi-VN');
+    function vnd(n){ return nf.format(n) + '₫'; }
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Cấu trúc địa chỉ sau sắp xếp 01/07/2025: Số nhà, đường → Phường/Xã → Thành phố (không còn cấp quận).
+    // r.ward đã sẵn có; địa chỉ chi tiết (số nhà/ngõ/đường) và thành phố
+    // được tách ra từ chuỗi r.address hiện có, không tạo thêm dữ liệu mới.
+    function addressCore(s){ return String(s).replace(/^(Phường|Xã|Quận|Huyện|P\.|X\.)\s*/i,'').trim().toLowerCase(); }
+    function splitAddress(r){
+      var parts = r.address.split(',').map(function(s){ return s.trim(); });
+      var city = parts[parts.length - 1] || '';
+      var wardCore = addressCore(r.ward);
+      var districtCore = addressCore(r.district || '');
+      var idx = -1;
+      for (var i = 0; i < parts.length - 1; i++){
+        if (addressCore(parts[i]) === wardCore) { idx = i; break; }
+      }
+      if (idx === -1){
+        for (var j = 0; j < parts.length - 1; j++){
+          if (addressCore(parts[j]) === districtCore) { idx = j; break; }
+        }
+      }
+      var detail = idx > 0 ? parts.slice(0, idx).join(', ') : parts[0];
+      return { detail: detail, city: city };
+    }
+    function mainAddressLine(r){ return r.ward + ', ' + splitAddress(r).city; }
+
+    var SVG_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+    var SVG_AREA = '<svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>';
+    var SVG_PEOPLE = '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>';
+    var SVG_FLOOR = '<svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5"/></svg>';
+    var SVG_ARROW = '<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+    var SVG_CHECK = '<svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg>';
+
+    // ----- Danh sách + bộ lọc -----
+    var fArea = document.getElementById('fArea');
+    var fPrice = document.getElementById('fPrice');
+    var fPeople = document.getElementById('fPeople');
+    var fPeopleCustom = document.getElementById('fPeopleCustom');
+    var fPeopleBack = document.getElementById('fPeopleBack');
+    var PEOPLE_MAX = 10;
+    // Số người đã chọn; 0 = chưa chọn / nhập chưa hợp lệ
+    function peopleCount(){
+      if (fPeople.value !== 'custom') return Number(fPeople.value) || 0;
+      var n = Number(fPeopleCustom.value);
+      return (Number.isInteger(n) && n >= 1 && n <= PEOPLE_MAX) ? n : 0;
+    }
+    function setPeopleCustom(on){
+      fPeople.parentNode.classList.toggle('is-custom', on);
+      fPeopleCustom.hidden = !on;
+      fPeopleBack.hidden = !on;
+      if (!on) fPeopleCustom.value = '';
+    }
+    var fSort = document.getElementById('fSort');
+    var locationTrigger = document.getElementById('locationTrigger');
+    var locationValue = document.getElementById('locationValue');
+    var filterOverlay = document.getElementById('filterOverlay');
+    var filterClose = document.getElementById('filterClose');
+    var filterApply = document.getElementById('filterApply');
+    var filterReset = document.getElementById('filterReset');
+    var countEl = document.getElementById('roomCount');
+    var emptyEl = document.getElementById('roomEmpty');
+    var viewAllWrap = document.getElementById('viewAllWrap');
+    var viewAllRooms = document.getElementById('viewAllRooms');
+    var quickBtns = Array.prototype.slice.call(document.querySelectorAll('.qc'));
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var firstRender = true;
+    var roomsLimit = 6;
+    var roomsExpanded = false;
+    var lastFilteredRooms = [];
+
+    // Đơn vị hành chính cấp xã sau sắp xếp 2025 (cấp tỉnh: Nghị quyết 202/2025/QH15; cấp xã: các nghị quyết
+    // của UBTVQH cho từng tỉnh, hiệu lực 01/07/2025). Bình Dương đã nhập vào TP. Hồ Chí Minh nên "admin" là
+    // TP. Hồ Chí Minh; vẫn giữ làm một lựa chọn riêng gồm 36 phường, xã thuộc địa bàn tỉnh cũ.
+    var CITIES = {
+      'ha-noi': { name:'Hà Nội', admin:'ha-noi',
+        phuong:["Ba Đình","Bạch Mai","Bồ Đề","Cầu Giấy","Chương Mỹ","Cửa Nam","Dương Nội","Đại Mỗ","Định Công","Đống Đa","Đông Ngạc","Giảng Võ","Hà Đông","Hai Bà Trưng","Hoàn Kiếm","Hoàng Liệt","Hoàng Mai","Hồng Hà","Khương Đình","Kiến Hưng","Kim Liên","Láng","Lĩnh Nam","Long Biên","Nghĩa Đô","Ngọc Hà","Ô Chợ Dừa","Phú Diễn","Phú Lương","Phú Thượng","Phúc Lợi","Phương Liệt","Sơn Tây","Tây Hồ","Tây Mỗ","Tây Tựu","Thanh Liệt","Thanh Xuân","Thượng Cát","Tùng Thiện","Từ Liêm","Tương Mai","Văn Miếu – Quốc Tử Giám","Việt Hưng","Vĩnh Hưng","Vĩnh Tuy","Xuân Đỉnh","Xuân Phương","Yên Hòa","Yên Nghĩa","Yên Sở"],
+        xa:["An Khánh","Ba Vì","Bát Tràng","Bất Bạt","Bình Minh","Chuyên Mỹ","Chương Dương","Cổ Đô","Dân Hòa","Dương Hòa","Đa Phúc","Đại Thanh","Đại Xuyên","Đan Phượng","Đoài Phương","Đông Anh","Gia Lâm","Hạ Bằng","Hát Môn","Hòa Lạc","Hòa Phú","Hòa Xá","Hoài Đức","Hồng Sơn","Hồng Vân","Hưng Đạo","Hương Sơn","Kiều Phú","Kim Anh","Liên Minh","Mê Linh","Minh Châu","Mỹ Đức","Nam Phù","Ngọc Hồi","Nội Bài","Ô Diên","Phú Cát","Phù Đổng","Phú Nghĩa","Phú Xuyên","Phúc Lộc","Phúc Sơn","Phúc Thịnh","Phúc Thọ","Phượng Dực","Quảng Bị","Quang Minh","Quảng Oai","Quốc Oai","Sóc Sơn","Sơn Đồng","Suối Hai","Tam Hưng","Tây Phương","Thạch Thất","Thanh Oai","Thanh Trì","Thiên Lộc","Thuận An","Thư Lâm","Thượng Phúc","Thường Tín","Tiến Thắng","Trần Phú","Trung Giã","Ứng Hòa","Ứng Thiên","Vân Đình","Vật Lại","Vĩnh Thanh","Xuân Mai","Yên Bài","Yên Lãng","Yên Xuân"],
+        dackhu:[] },
+      'hai-phong': { name:'Hải Phòng', admin:'hai-phong',
+        phuong:["Ái Quốc","An Biên","An Dương","An Hải","An Phong","Bạch Đằng","Bắc An Phụ","Chí Linh","Chu Văn An","Dương Kinh","Đồ Sơn","Đông Hải","Gia Viên","Hải An","Hải Dương","Hòa Bình","Hồng An","Hồng Bàng","Hưng Đạo","Kiến An","Kinh Môn","Lê Chân","Lê Đại Hành","Lê Ích Mộc","Lê Thanh Nghị","Lưu Kiếm","Nam Đồ Sơn","Nam Đồng","Nam Triệu","Ngô Quyền","Nguyễn Đại Năng","Nguyễn Trãi","Nhị Chiểu","Phạm Sư Mạnh","Phù Liễn","Tân Hưng","Thạch Khôi","Thành Đông","Thiên Hương","Thủy Nguyên","Trần Hưng Đạo","Trần Liễu","Trần Nhân Tông","Tứ Minh","Việt Hòa"],
+        xa:["An Hưng","An Khánh","An Lão","An Phú","An Quang","An Thành","An Trường","Bắc Thanh Miện","Bình Giang","Cẩm Giang","Cẩm Giàng","Chấn Hưng","Chí Minh","Đại Sơn","Đường An","Gia Lộc","Gia Phúc","Hà Bắc","Hà Đông","Hà Nam","Hà Tây","Hải Hưng","Hồng Châu","Hợp Tiến","Hùng Thắng","Kẻ Sặt","Khúc Thừa Dụ","Kiến Hải","Kiến Hưng","Kiến Minh","Kiến Thụy","Kim Thành","Lạc Phượng","Lai Khê","Mao Điền","Nam An Phụ","Nam Sách","Nam Thanh Miện","Nghi Dương","Nguyễn Bỉnh Khiêm","Nguyên Giáp","Nguyễn Lương Bằng","Ninh Giang","Phú Thái","Quyết Thắng","Tân An","Tân Kỳ","Tân Minh","Thái Tân","Thanh Hà","Thanh Miện","Thượng Hồng","Tiên Lãng","Tiên Minh","Trần Phú","Trường Tân","Tuệ Tĩnh","Tứ Kỳ","Việt Khê","Vĩnh Am","Vĩnh Bảo","Vĩnh Hải","Vĩnh Hòa","Vĩnh Lại","Vĩnh Thịnh","Vĩnh Thuận","Yết Kiêu"],
+        dackhu:["Bạch Long Vĩ","Cát Hải"] },
+      'da-nang': { name:'Đà Nẵng', admin:'da-nang',
+        phuong:["An Hải","An Khê","An Thắng","Bàn Thạch","Cẩm Lệ","Điện Bàn","Điện Bàn Bắc","Điện Bàn Đông","Hải Châu","Hải Vân","Hòa Cường","Hòa Khánh","Hòa Xuân","Hội An","Hội An Đông","Hội An Tây","Hương Trà","Liên Chiểu","Ngũ Hành Sơn","Quảng Phú","Sơn Trà","Tam Kỳ","Thanh Khê"],
+        xa:["Avương","Bà Nà","Bến Giằng","Bến Hiên","Chiên Đàn","Duy Nghĩa","Duy Xuyên","Đại Lộc","Đắc Pring","Điện Bàn Tây","Đồng Dương","Đông Giang","Đức Phú","Gò Nổi","Hà Nha","Hiệp Đức","Hòa Tiến","Hòa Vang","Hùng Sơn","Khâm Đức","La Dêê","La Êê","Lãnh Ngọc","Nam Giang","Nam Phước","Nam Trà My","Nông Sơn","Núi Thành","Phú Ninh","Phú Thuận","Phước Chánh","Phước Hiệp","Phước Năng","Phước Thành","Phước Trà","Quế Phước","Quế Sơn","Quế Sơn Trung","Sông Kôn","Sông Vàng","Sơn Cẩm Hà","Tam Anh","Tam Hải","Tam Mỹ","Tam Xuân","Tân Hiệp","Tây Giang","Tây Hồ","Thạnh Bình","Thạnh Mỹ","Thăng An","Thăng Bình","Thăng Điền","Thăng Phú","Thăng Trường","Thu Bồn","Thượng Đức","Tiên Phước","Trà Đốc","Trà Giáp","Trà Leng","Trà Liên","Trà Linh","Trà My","Trà Tân","Trà Tập","Trà Vân","Việt An","Vu Gia","Xuân Phú"],
+        dackhu:["Hoàng Sa"] },
+      'ho-chi-minh': { name:'TP. Hồ Chí Minh', admin:'ho-chi-minh',
+        phuong:["An Đông","An Hội Đông","An Hội Tây","An Khánh","An Lạc","An Nhơn","An Phú","An Phú Đông","Bà Rịa","Bàn Cờ","Bảy Hiền","Bến Cát","Bến Thành","Bình Cơ","Bình Dương","Bình Đông","Bình Hòa","Bình Hưng Hòa","Bình Lợi Trung","Bình Phú","Bình Quới","Bình Tân","Bình Tây","Bình Thạnh","Bình Thới","Bình Tiên","Bình Trị Đông","Bình Trưng","Cát Lái","Cầu Kiệu","Cầu Ông Lãnh","Chánh Hiệp","Chánh Hưng","Chánh Phú Hòa","Chợ Lớn","Chợ Quán","Dĩ An","Diên Hồng","Đông Hòa","Đông Hưng Thuận","Đức Nhuận","Gia Định","Gò Vấp","Hạnh Thông","Hiệp Bình","Hòa Bình","Hòa Hưng","Hòa Lợi","Khánh Hội","Lái Thiêu","Linh Xuân","Long Bình","Long Hương","Long Nguyên","Long Phước","Long Trường","Minh Phụng","Nhiêu Lộc","Phú An","Phú Định","Phú Lâm","Phú Lợi","Phú Mỹ","Phú Nhuận","Phú Thạnh","Phú Thọ","Phú Thọ Hòa","Phú Thuận","Phước Long","Phước Thắng","Rạch Dừa","Sài Gòn","Tam Bình","Tam Long","Tam Thắng","Tăng Nhơn Phú","Tân Bình","Tân Định","Tân Đông Hiệp","Tân Hải","Tân Hiệp","Tân Hòa","Tân Hưng","Tân Khánh","Tân Mỹ","Tân Phú","Tân Phước","Tân Sơn","Tân Sơn Hòa","Tân Sơn Nhất","Tân Sơn Nhì","Tân Tạo","Tân Thành","Tân Thới Hiệp","Tân Thuận","Tân Uyên","Tây Nam","Tây Thạnh","Thạnh Mỹ Tây","Thông Tây Hội","Thới An","Thới Hòa","Thủ Dầu Một","Thủ Đức","Thuận An","Thuận Giao","Trung Mỹ Tây","Vĩnh Hội","Vĩnh Tân","Vũng Tàu","Vườn Lài","Xóm Chiếu","Xuân Hòa"],
+        xa:["An Long","An Nhơn Tây","An Thới Đông","Bà Điểm","Bàu Bàng","Bàu Lâm","Bắc Tân Uyên","Bình Chánh","Bình Châu","Bình Giã","Bình Hưng","Bình Khánh","Bình Lợi","Bình Mỹ","Cần Giờ","Châu Đức","Châu Pha","Củ Chi","Dầu Tiếng","Đất Đỏ","Đông Thạnh","Hiệp Phước","Hòa Hiệp","Hòa Hội","Hóc Môn","Hồ Tràm","Hưng Long","Kim Long","Long Điền","Long Hải","Long Hòa","Long Sơn","Minh Thạnh","Ngãi Giao","Nghĩa Thành","Nhà Bè","Nhuận Đức","Phú Giáo","Phú Hòa Đông","Phước Hải","Phước Hòa","Phước Thành","Tân An Hội","Tân Nhựt","Tân Vĩnh Lộc","Thái Mỹ","Thanh An","Thạnh An","Thường Tân","Trừ Văn Thố","Vĩnh Lộc","Xuân Sơn","Xuân Thới Sơn","Xuyên Mộc"],
+        dackhu:["Côn Đảo"] },
+      'binh-duong': { name:'Bình Dương', admin:'ho-chi-minh', former:true,
+        note:'Tỉnh Bình Dương đã nhập vào TP. Hồ Chí Minh từ 01/07/2025 (Nghị quyết 202/2025/QH15). Dưới đây là 36 phường, xã thuộc địa bàn Bình Dương cũ.',
+        phuong:["An Phú","Bến Cát","Bình Cơ","Bình Dương","Bình Hòa","Chánh Hiệp","Chánh Phú Hòa","Dĩ An","Đông Hòa","Hòa Lợi","Lái Thiêu","Long Nguyên","Phú An","Phú Lợi","Tân Đông Hiệp","Tân Hiệp","Tân Khánh","Tân Uyên","Tây Nam","Thới Hòa","Thủ Dầu Một","Thuận An","Thuận Giao","Vĩnh Tân"],
+        xa:["An Long","Bàu Bàng","Bắc Tân Uyên","Dầu Tiếng","Long Hòa","Minh Thạnh","Phú Giáo","Phước Hòa","Phước Thành","Thanh An","Thường Tân","Trừ Văn Thố"],
+        dackhu:[] },
+      'can-tho': { name:'Cần Thơ', admin:'can-tho',
+        phuong:["An Bình","Bình Thủy","Cái Khế","Cái Răng","Đại Thành","Hưng Phú","Khánh Hòa","Long Bình","Long Mỹ","Long Phú 1","Long Tuyền","Mỹ Quới","Mỹ Xuyên","Ngã Bảy","Ngã Năm","Ninh Kiều","Ô Môn","Phú Lợi","Phước Thới","Sóc Trăng","Tân An","Tân Lộc","Thốt Nốt","Thới An Đông","Thới Long","Thuận Hưng","Trung Nhứt","Vị Tân","Vị Thanh","Vĩnh Châu","Vĩnh Phước"],
+        xa:["An Lạc Thôn","An Ninh","An Thạnh","Châu Thành","Cờ Đỏ","Cù Lao Dung","Đại Hải","Đại Ngãi","Đông Hiệp","Đông Phước","Đông Thuận","Gia Hòa","Hiệp Hưng","Hòa An","Hỏa Lựu","Hòa Tú","Hồ Đắc Kiện","Kế Sách","Lai Hòa","Lâm Tân","Lịch Hội Thượng","Liêu Tú","Long Hưng","Long Phú","Lương Tâm","Mỹ Hương","Mỹ Phước","Mỹ Tú","Ngọc Tố","Nhơn Ái","Nhơn Mỹ","Nhu Gia","Phong Điền","Phong Nẫm","Phú Hữu","Phú Lộc","Phú Tâm","Phụng Hiệp","Phương Bình","Tài Văn","Tân Bình","Tân Hòa","Tân Long","Tân Phước Hưng","Tân Thạnh","Thạnh An","Thạnh Hòa","Thạnh Phú","Thạnh Quới","Thạnh Thới An","Thạnh Xuân","Thới An Hội","Thới Hưng","Thới Lai","Thuận Hòa","Trần Đề","Trung Hưng","Trường Khánh","Trường Long","Trường Long Tây","Trường Thành","Trường Xuân","Vị Thanh 1","Vị Thủy","Vĩnh Hải","Vĩnh Lợi","Vĩnh Thạnh","Vĩnh Thuận Đông","Vĩnh Trinh","Vĩnh Tường","Vĩnh Viễn","Xà Phiên"],
+        dackhu:[] }
+    };
+    var CITY_ORDER = ['ha-noi', 'hai-phong', 'da-nang', 'ho-chi-minh', 'binh-duong', 'can-tho'];
+    var LOC_TYPE = { phuong:'Phường', xa:'Xã', dackhu:'Đặc khu' };
+    var LOC_TYPES = ['phuong', 'xa', 'dackhu'];
+    var LOC_SUFFIX = { phuong:'Phuong', xa:'Xa', dackhu:'Dackhu' };
+    var LOC_COLLAPSED = 12;
+
+    // Bỏ dấu để gõ "nghia do" vẫn ra "Nghĩa Đô"
+    function fold(str){ return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim(); }
+    // "Phường Nghĩa Đô", "P. Nghĩa Đô", "Nghĩa Đô" -> cùng một khoá
+    function unitKey(str){ return fold(String(str).replace(/^(Phường|Xã|Đặc khu|P\.|X\.)\s*/i, '')); }
+
+    // Vị trí đã chọn: { city } = cả tỉnh/thành, hoặc { city, type, name } = một phường/xã/đặc khu
+    var selectedLoc = null;
+    var viewCity = 'ha-noi';          // tỉnh/thành đang xem trong hộp chọn
+    var locExpanded = {};
+    var activeFilterTab = 'phuong';
+    var filterSearch = document.getElementById('filterSearch');
+
+    function adminName(slug){ return CITIES[CITIES[slug].admin].name; }
+    function locLabel(loc){
+      loc = loc === undefined ? selectedLoc : loc;
+      if (!loc) return '';
+      var c = CITIES[loc.city];
+      if (!loc.name) return c.former ? c.name + ' cũ (' + adminName(loc.city) + ')' : c.name;
+      return LOC_TYPE[loc.type] + ' ' + loc.name + ', ' + adminName(loc.city);
+    }
+    function searchText(){ return filterSearch ? filterSearch.value.trim() : ''; }
+    function matchesOf(type){
+      var q = fold(searchText());
+      var src = CITIES[viewCity][type] || [];
+      return q ? src.filter(function(n){ return fold(n).indexOf(q) !== -1; }) : src;
+    }
+
+    function renderCities(){
+      var row = document.getElementById('cityRow');
+      if (!row) return;
+      row.innerHTML = CITY_ORDER.map(function(slug){
+        var c = CITIES[slug], on = slug === viewCity;
+        return '<button type="button" class="city-chip' + (on ? ' active' : '') + '" aria-pressed="' + on + '" data-city="' + slug + '">' +
+          esc(c.name) + (c.former ? ' <small>nay thuộc TP.HCM</small>' : '') + '</button>';
+      }).join('');
+      var note = document.getElementById('cityNote');
+      if (note) note.textContent = CITIES[viewCity].note || '';
+      if (filterSearch) {
+        filterSearch.placeholder = 'Tìm phường, xã…';
+        filterSearch.setAttribute('aria-label', 'Tìm phường, xã ở ' + CITIES[viewCity].name + ', gõ không dấu cũng được');
+      }
+    }
+
+    function renderLocList(type){
+      var list = document.getElementById(type + 'List');
+      if (!list) return;
+      var more = document.getElementById('showMore' + LOC_SUFFIX[type]);
+      var count = document.getElementById('count' + LOC_SUFFIX[type]);
+      var tab = document.querySelector('.filter-tab[data-filter-tab="' + type + '"]');
+      var q = searchText();
+      var items = matchesOf(type);
+      if (count) count.textContent = items.length;
+      if (tab) tab.hidden = !(CITIES[viewCity][type] || []).length;   // tab Đặc khu chỉ hiện ở nơi có đặc khu
+      var visible = (locExpanded[type] || q) ? items : items.slice(0, LOC_COLLAPSED);
+      list.innerHTML = visible.length ? visible.map(function(n){
+        var on = !!selectedLoc && selectedLoc.city === viewCity && selectedLoc.type === type && selectedLoc.name === n;
+        return '<button type="button" class="filter-chip' + (on ? ' active' : '') + '" aria-pressed="' + on + '" data-filter-type="' + type + '" data-location-value="' + esc(n) + '">' + esc(n) + '</button>';
+      }).join('') : '<div class="filter-empty">Không có ' + LOC_TYPE[type].toLowerCase() + ' nào khớp “' + esc(q) + '”</div>';
+      if (more) {
+        more.textContent = locExpanded[type] ? 'Thu gọn' : 'Xem tất cả ' + items.length + ' ' + LOC_TYPE[type].toLowerCase();
+        more.style.display = (!q && items.length > LOC_COLLAPSED) ? 'inline-block' : 'none';
+      }
+    }
+    function renderLocLists(){
+      renderCities();
+      LOC_TYPES.forEach(renderLocList);
+      if (!(CITIES[viewCity][activeFilterTab] || []).length) switchTab('phuong');
+    }
+
+    function switchTab(type){
+      activeFilterTab = type;
+      document.querySelectorAll('.filter-tab').forEach(function(item){ item.classList.toggle('active', item.dataset.filterTab === type); });
+      document.querySelectorAll('.filter-panel').forEach(function(panel){ panel.classList.toggle('active', panel.dataset.filterPanel === type); });
+    }
+
+    function updateSelectedLocation(){
+      locationValue.textContent = locLabel() || 'Chọn tỉnh/thành, phường/xã';
+      locationTrigger.classList.toggle('is-empty', !selectedLoc);
+      renderLocLists();
+    }
+
+    function openFilterModal() {
+      if (selectedLoc) viewCity = selectedLoc.city;
+      renderLocLists();
+      switchTab(selectedLoc && selectedLoc.type ? selectedLoc.type : 'phuong');
+      filterOverlay.classList.add('open');
+      filterOverlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('filter-open');
+      setTimeout(function(){ if (filterSearch) filterSearch.focus(); }, 60);
+    }
+    function closeFilterModal() {
+      filterOverlay.classList.remove('open');
+      filterOverlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('filter-open');
+      if (locationTrigger) locationTrigger.focus();
+    }
+
+    if (locationTrigger) locationTrigger.addEventListener('click', openFilterModal);
+    if (filterClose) filterClose.addEventListener('click', closeFilterModal);
+    if (filterOverlay) {
+      filterOverlay.addEventListener('click', function(e){ if (e.target === filterOverlay) closeFilterModal(); });
+    }
+    // Esc đóng hộp chọn kể cả khi focus đã rời khỏi hộp (vd. nút vừa bấm được vẽ lại)
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && filterOverlay.classList.contains('open')) { e.preventDefault(); closeFilterModal(); }
+    });
+    document.querySelectorAll('.filter-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){ switchTab(tab.dataset.filterTab); });
+    });
+    if (filterSearch) {
+      filterSearch.addEventListener('input', function(){
+        LOC_TYPES.forEach(renderLocList);
+        // Tab đang mở không có kết quả mà tab khác có: tự chuyển sang tab đó
+        if (!matchesOf(activeFilterTab).length) {
+          var other = LOC_TYPES.filter(function(t){ return matchesOf(t).length; })[0];
+          if (other) switchTab(other);
+        }
+      });
+    }
+
+    // Danh sách được vẽ lại sau mỗi lần chọn: đưa focus về đúng nút vừa bấm cho người dùng bàn phím
+    function refocus(sel){ var el = filterOverlay.querySelector(sel); if (el) el.focus(); }
+
+    // Chỉ ghi nhận lựa chọn, KHÔNG lọc phòng (phòng chỉ lọc khi bấm "Tìm phòng").
+    if (filterOverlay) {
+      filterOverlay.addEventListener('click', function(event){
+        var cityBtn = event.target.closest('.city-chip');
+        if (cityBtn) {
+          // Chọn tỉnh/thành = tìm cả tỉnh/thành đó; có thể chọn tiếp một phường/xã
+          viewCity = cityBtn.dataset.city;
+          selectedLoc = { city: viewCity };
+          locExpanded = {};
+          if (filterSearch) filterSearch.value = '';
+          updateSelectedLocation();
+          switchTab('phuong');
+          onCriteriaChange();
+          refocus('.city-chip[data-city="' + viewCity + '"]');
+          return;
+        }
+        var chip = event.target.closest('.filter-chip');
+        if (!chip) return;
+        var type = chip.dataset.filterType, name = chip.dataset.locationValue;
+        var same = selectedLoc && selectedLoc.city === viewCity && selectedLoc.type === type && selectedLoc.name === name;
+        selectedLoc = same ? { city: viewCity } : { city: viewCity, type: type, name: name };   // bấm lại: về cả tỉnh/thành
+        updateSelectedLocation();
+        onCriteriaChange();
+        refocus('.filter-chip[data-filter-type="' + type + '"][data-location-value="' + name.replace(/"/g, '\\"') + '"]');
+      });
+    }
+
+    LOC_TYPES.forEach(function(type){
+      var btn = document.getElementById('showMore' + LOC_SUFFIX[type]);
+      if (!btn) return;
+      btn.addEventListener('click', function(){
+        locExpanded[type] = !locExpanded[type];
+        renderLocList(type);
+      });
+    });
+
+    if (filterReset) {
+      filterReset.addEventListener('click', function(){
+        locExpanded = {};
+        selectedLoc = null;
+        if (filterSearch) filterSearch.value = '';
+        updateSelectedLocation();
+        onCriteriaChange();
+      });
+    }
+
+    // "Áp dụng" chỉ xác nhận vị trí và đóng hộp chọn; phòng chỉ lọc khi bấm "Tìm phòng"
+    if (filterApply) {
+      filterApply.addEventListener('click', function(){
+        updateSelectedLocation();
+        closeFilterModal();
+      });
+    }
+
+    // Phòng thuộc tỉnh/thành nào (phòng cũ chưa ghi city là Hà Nội)
+    function roomCity(r){ return r.city || 'ha-noi'; }
+    function roomMatchesLoc(r, loc){
+      var c = CITIES[loc.city];
+      if (roomCity(r) !== c.admin) return false;
+      var key = unitKey(r.ward);
+      if (loc.name) return key === unitKey(loc.name);
+      // "Bình Dương": chỉ các phòng nằm trong 36 phường, xã của tỉnh cũ
+      if (c.former) return c.phuong.concat(c.xa, c.dackhu).some(function(n){ return unitKey(n) === key; });
+      return true;
+    }
+
+    renderLocLists();
+
+    var cardIO = reduce ? null : new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); cardIO.unobserve(e.target); }
+      });
+    }, { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
+
+    function cardHtml(r){
+      return '<article class="room reveal" role="button" tabindex="0" data-room="' + r.id + '" aria-label="Xem chi tiết ' + esc(r.title) + '">' +
+        '<div class="media">' +
+          '<img loading="lazy" alt="' + esc(r.alt) + '" src="' + r.images[0] + '" />' +
+          '<span class="price">' + vnd(r.price) + '/tháng</span>' +
+          '<span class="badge"><i></i> Còn trống</span>' +
+        '</div>' +
+        '<div class="rb">' +
+          '<h3>' + esc(r.title) + '</h3>' +
+          '<p class="addr">' + SVG_PIN + esc(mainAddressLine(r)) + '</p>' +
+          '<div class="facts">' +
+            '<span>' + SVG_AREA + r.area + ' m²</span>' +
+            '<span>' + SVG_PEOPLE + r.people + ' người</span>' +
+            (r.floor ? '<span>' + SVG_FLOOR + 'Tầng ' + r.floor + '</span>' : '') +
+          '</div>' +
+          '<div class="meta">' + r.amenities.slice(0,2).map(function(a){ return '<span class="chip">' + esc(a) + '</span>'; }).join('') + '</div>' +
+          '<div class="more">Xem chi tiết ' + SVG_ARROW + '</div>' +
+        '</div>' +
+      '</article>';
+    }
+
+    function activeAmenities(){
+      return quickBtns.filter(function(b){ return b.classList.contains('on'); })
+                      .map(function(b){ return b.getAttribute('data-amen'); });
+    }
+
+    function renderRooms(list){
+      var visibleList = roomsExpanded ? list : list.slice(0, roomsLimit);
+      grid.innerHTML = visibleList.map(cardHtml).join('');
+
+      if (viewAllWrap) {
+        viewAllWrap.style.display = (list.length > roomsLimit && !roomsExpanded) ? 'block' : 'none';
+      }
+
+      var cards = Array.prototype.slice.call(grid.querySelectorAll('.room'));
+      cards.forEach(function(el,i){
+        if(reduce){ el.classList.add('in'); return; }
+        el.style.setProperty('--d', ((i % 3) * 0.06) + 's');
+        if(firstRender) cardIO.observe(el);
+        else setTimeout(function(){ el.classList.add('in'); }, 20);
+      });
+      firstRender = false;
+    }
+
+    var resultBar = document.getElementById('resultBar');
+    var finderErr = document.getElementById('finderErr');
+    var hintEl = document.getElementById('roomHint');
+    var hasSearched = false;
+    var lastCriteria = '';
+    var lastSearchLabel = '';
+
+    function criteriaKey(){ return JSON.stringify([locLabel(), fPrice.value, peopleCount(), activeAmenities()]); }
+    function joinVi(a){ return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' và ' + a[a.length - 1]; }
+    function markField(el, bad){ var f = el && el.closest('.fld'); if (f) f.classList.toggle('invalid', bad); }
+
+    // Kiểm tra đủ 3 thông tin. focus = true khi bấm Tìm phòng (đưa con trỏ tới ô còn thiếu đầu tiên).
+    function validate(focus){
+      var missing = [];
+      if (!selectedLoc) missing.push('vị trí');
+      if (!fPrice.value) missing.push('khoảng giá');
+      var customBad = fPeople.value === 'custom' && !peopleCount();
+      if (!fPeople.value) missing.push('số người ở');
+      else if (customBad) missing.push('số người ở (nhập từ 1 đến ' + PEOPLE_MAX + ')');
+      markField(locationTrigger, !selectedLoc);
+      markField(fPrice, !fPrice.value);
+      markField(fPeople, !peopleCount());
+      finderErr.textContent = missing.length ? 'Vui lòng chọn ' + joinVi(missing) + ' rồi bấm Tìm phòng.' : '';
+      finderErr.classList.toggle('show', missing.length > 0);
+      if (missing.length && focus) (!selectedLoc ? locationTrigger : !fPrice.value ? fPrice : customBad ? fPeopleCustom : fPeople).focus();
+      return missing.length === 0;
+    }
+
+    // Đổi điều kiện sau khi đã tìm: không lọc lại, chỉ nhắc bấm Tìm phòng
+    function onCriteriaChange(){
+      if (finderErr.classList.contains('show')) validate(false);
+      if (hintEl) hintEl.textContent = (hasSearched && criteriaKey() !== lastCriteria) ? 'Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.' : '';
+    }
+
+    function sortRooms(list){
+      var sort = fSort.value;
+      return list.slice().sort(function(a, b){
+        if (sort === 'asc') return a.price - b.price;
+        if (sort === 'desc') return b.price - a.price;
+        if (sort === 'area') return b.area - a.area;
+        return a.posted - b.posted;
+      });
+    }
+
+    function showResults(){
+      var list = sortRooms(lastFilteredRooms);
+      if (!hasSearched) {
+        countEl.innerHTML = 'Có <b>' + list.length + '</b> phòng mới đăng';
+      } else {
+        countEl.innerHTML = list.length
+          ? 'Tìm thấy <b>' + list.length + '</b> phòng phù hợp tại ' + esc(lastSearchLabel)
+          : 'Không có phòng phù hợp tại ' + esc(lastSearchLabel);
+      }
+      emptyEl.classList.toggle('show', list.length === 0);
+      if (!list.length) {
+        grid.innerHTML = '';
+        if (viewAllWrap) viewAllWrap.style.display = 'none';
+        return;
+      }
+      renderRooms(list);
+    }
+
+    function search(){
+      var range = fPrice.value.split('-').map(Number);
+      var people = peopleCount();
+      var amens = activeAmenities();
+      lastFilteredRooms = ROOMS.filter(function(r){
+        if (!roomMatchesLoc(r, selectedLoc)) return false;
+        if (r.price < range[0] || r.price >= range[1]) return false;
+        if (r.people < people) return false;   // phòng phải ở được ít nhất số người đã chọn
+        for (var i = 0; i < amens.length; i++) { if (r.amenities.indexOf(amens[i]) === -1) return false; }
+        return true;
+      });
+      hasSearched = true;
+      lastCriteria = criteriaKey();
+      lastSearchLabel = locLabel();
+      roomsExpanded = false;
+      onCriteriaChange();
+      showResults();
+    }
+
+    // Chưa tìm: toàn bộ phòng mẫu, 6 phòng đầu + "Xem thêm phòng"
+    function showSamples(){
+      hasSearched = false;
+      lastCriteria = '';
+      lastSearchLabel = '';
+      lastFilteredRooms = ROOMS.slice();
+      roomsExpanded = false;
+      showResults();
+    }
+
+    function resetFilters(){
+      selectedLoc = null;
+      viewCity = 'ha-noi';
+      locExpanded = {};
+      if (filterSearch) filterSearch.value = '';
+      updateSelectedLocation();
+      fPrice.value = '';
+      fPeople.value = '';
+      setPeopleCustom(false);
+      fSort.value = 'new';
+      quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); });
+      [locationTrigger, fPrice, fPeople].forEach(function(el){ markField(el, false); });
+      finderErr.textContent = '';
+      finderErr.classList.remove('show');
+      if (hintEl) hintEl.textContent = '';
+      showSamples();
+    }
+    document.querySelectorAll('[data-room-reset]').forEach(function(btn){
+      btn.addEventListener('click', resetFilters);
+    });
+
+    document.getElementById('finder').addEventListener('submit', function(e){
+      e.preventDefault();
+      if (validate(true)) search();
+    });
+    [fPrice, fPeople].forEach(function(el){ el.addEventListener('change', onCriteriaChange); });
+    // "Tuỳ chọn…": đổi ô chọn thành ô nhập số người; nút × quay lại danh sách
+    fPeople.addEventListener('change', function(){
+      if (fPeople.value !== 'custom') return;
+      setPeopleCustom(true);
+      fPeopleCustom.focus();
+    });
+    fPeopleCustom.addEventListener('input', onCriteriaChange);
+    fPeopleBack.addEventListener('click', function(){
+      fPeople.value = '';
+      setPeopleCustom(false);
+      onCriteriaChange();
+      fPeople.focus();
+    });
+    // Sắp xếp chỉ đổi thứ tự kết quả đang có, không phải một bộ lọc
+    fSort.addEventListener('change', function(){ if (hasSearched) showResults(); });
+    if (viewAllRooms) {
+      viewAllRooms.addEventListener('click', function(e){
+        e.preventDefault();
+        roomsExpanded = true;
+        showResults();
+      });
+    }
+    quickBtns.forEach(function(b){
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', function(){
+        var on = !b.classList.contains('on');
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+        onCriteriaChange();
+      });
+    });
+
+    showSamples();
+
+    // ----- Modal chi tiết -----
+    var rd = document.getElementById('rdOverlay');
+    var rdModal = rd.querySelector('.rd-modal');
+    var rdMain = document.getElementById('rdMainImg');
+    var rdThumbs = document.getElementById('rdThumbs');
+    var rdContact = document.getElementById('rdContact');
+    var rdLast = null;
+
+    function fillDetail(r){
+      document.getElementById('rdPrice').innerHTML = vnd(r.price) + ' <span>/ tháng</span>';
+      document.getElementById('rdTitle').textContent = r.title;
+      document.getElementById('rdAddr').textContent = mainAddressLine(r);
+      document.getElementById('rdAddrDetail').textContent = splitAddress(r).detail;
+      rdMain.src = r.images[0];
+      rdMain.alt = r.alt;
+
+      rdThumbs.innerHTML = r.images.map(function(src,i){
+        return '<button type="button" class="' + (i ? '' : 'on') + '" data-i="' + i + '" aria-label="Ảnh ' + (i+1) + '">' +
+               '<img loading="lazy" alt="" src="' + src + '" /></button>';
+      }).join('');
+
+      var specs = [['Diện tích', r.area + ' m²'], ['Số người ở tối đa', r.people + ' người']];
+      if (r.floor) specs.push(['Tầng', 'Tầng ' + r.floor]);
+      if (r.deposit) specs.push(['Tiền cọc', vnd(r.deposit)]);
+      specs.push(['Ngày đăng', r.postedAt]);
+      document.getElementById('rdSpecs').innerHTML = specs.map(function(x){
+        return '<div><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd></div>';
+      }).join('');
+
+      document.getElementById('rdDesc').textContent = r.desc;
+      document.getElementById('rdAmen').innerHTML = r.amenities.map(function(a){
+        return '<span>' + SVG_CHECK + esc(a) + '</span>';
+      }).join('');
+      // Chi phí chỉ hiện với tin có ghi rõ; tin không ghi thì ẩn hẳn mục này
+      var costs = document.getElementById('rdCosts');
+      costs.innerHTML = (r.fees || []).map(function(fee){ return '<span>' + SVG_CHECK + esc(fee) + '</span>'; }).join('');
+      costs.closest('.rd-block').hidden = !(r.fees && r.fees.length);
+
+      // Tên chủ trọ lấy theo tài khoản sở hữu phòng (xem NHA_TRO trong server/phong.mjs)
+      var chu = r.owner || 'Chủ trọ';
+      document.getElementById('rdOwnerAv').textContent = chu.split(' ').slice(-2)
+        .map(function(w){ return w.charAt(0); }).join('').toUpperCase();
+      document.getElementById('rdOwnerName').textContent = chu;
+      document.getElementById('rdOwnerMeta').textContent = 'Tin đăng ngày ' + r.postedAt;
+      document.getElementById('rdPhone').textContent = r.phone;
+
+      rdContact.classList.remove('show');
+    }
+
+    function openDetail(id){
+      var r = null;
+      for(var i=0;i<ROOMS.length;i++){ if(ROOMS[i].id === id) r = ROOMS[i]; }
+      if(!r) return;
+      rdLast = document.activeElement;
+      fillDetail(r);
+      document.body.classList.add('rd-open');
+      rd.classList.add('open');
+      rdModal.scrollTop = 0;
+      document.querySelector('.rd-info').scrollTop = 0;
+      setTimeout(function(){ document.getElementById('rdClose').focus(); }, 80);
+    }
+
+    function closeDetail(){
+      rd.classList.remove('open');
+      document.body.classList.remove('rd-open');
+      if(rdLast && rdLast.focus) rdLast.focus();
+    }
+
+    grid.addEventListener('click', function(e){
+      var card = e.target.closest('[data-room]');
+      if(card) openDetail(card.getAttribute('data-room'));
+    });
+
+    grid.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter' && e.key !== ' ') return;
+      var card = e.target.closest('[data-room]');
+      if(!card) return;
+      e.preventDefault();
+      openDetail(card.getAttribute('data-room'));
+    });
+
+    rdThumbs.addEventListener('click', function(e){
+      var b = e.target.closest('button[data-i]');
+      if(!b) return;
+      rdMain.src = b.querySelector('img').src;
+      rdThumbs.querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+    });
+
+    document.getElementById('rdContactBtn').addEventListener('click', function(){
+      rdContact.classList.add('show');
+      rdContact.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'nearest' });
+    });
+
+    document.getElementById('rdClose').addEventListener('click', closeDetail);
+    rd.addEventListener('mousedown', function(e){ if(e.target === rd) closeDetail(); });
+    // Nút cần đăng nhập bên trong chi tiết: đóng modal phòng, mở modal đăng nhập
+    rd.querySelectorAll('[data-auth]').forEach(function(b){ b.addEventListener('click', closeDetail); });
+
+    rd.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){ e.preventDefault(); closeDetail(); return; }
+      if(e.key !== 'Tab') return;
+      var nodes = Array.prototype.filter.call(
+        rdModal.querySelectorAll('button, [href], input, select, textarea'),
+        function(n){ return !n.disabled && n.offsetParent !== null && n.tabIndex !== -1; }
+      );
+      if(!nodes.length) return;
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    });
+  })();
+</script>
+</body>
+</html>

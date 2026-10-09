@@ -9,6 +9,8 @@ Mọi lịch xem đang chờ xác nhận và mọi khoản tiền cần chủ tr
 
 Breadcrumb `Lịch xem phòng / Thanh toán` dẫn về trang lịch của từng bên.
 
+Mục Thanh toán ở thanh bên của cả hai khu đều trỏ về hai trang này. Hoá đơn tiền nhà hằng tháng là trang riêng, mở bằng ô thứ ba trên thanh tab: `quan-ly/hoa-don.html` (chủ trọ) và `tai-khoan/thanh-toan-tien-nha.html` (người thuê).
+
 ## Luồng
 
 ```

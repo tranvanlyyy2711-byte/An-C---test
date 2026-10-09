@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thanh toán tiền nhà — An Cư</title>
+<meta name="description" content="Xem hoá đơn tiền nhà hàng tháng, chi tiết điện nước, chuyển khoản cho chủ trọ và theo dõi lịch sử thanh toán trong khu vực người thuê của An Cư." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
+  --border:rgba(34,139,34,.12);--border-strong:rgba(34,139,34,.2);
+  --text:#102010;--text-muted:#4B5C4B;--text-dim:#667565;
+  --accent:#228B22;--accent-hover:#1D7C1D;--accent-fg:#FFFFFF;
+  --success:#228B22;--success-ink:#1B7A1B;--warning:#F5B14C;
+  --warning-ink:#8A5A11;--danger:#FF6B6B;--danger-ink:#B4291F;
+  --info:#2F6FED;--info-ink:#1D4FBE;
+  --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--ease:cubic-bezier(.16,1,.3,1);
+  --sidebar-w:264px;--header-h:72px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:clip}
+h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;line-height:1.15;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
+button{cursor:pointer}img{display:block;max-width:100%}[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .45s var(--ease),transform .45s var(--ease);transition-delay:var(--d,0s)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+/* ===== Sidebar + Header ===== */
+.dash-shell{display:flex;min-height:100vh}
+.side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(16,32,16,.4);backdrop-filter:blur(4px)}
+.side-nav{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;display:flex;flex-direction:column;padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800}
+.side-logo{padding:6px 10px 20px}
+.side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
+.side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+.side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
+.side-menu{display:flex;flex-direction:column;gap:4px}
+.side-link{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);transition:.18s var(--ease)}
+.side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}
+.side-link.active{color:var(--text);background:rgba(34,139,34,.1);font-weight:600}
+.side-link.active svg{stroke:var(--accent)}
+.side-count{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);background:rgba(34,139,34,.1);border:1px solid var(--border-strong);padding:2px 8px;border-radius:999px}
+.side-count.warn{color:var(--warning-ink);background:rgba(245,177,76,.16);border-color:rgba(245,177,76,.35)}
+
+.dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w)}
+.app-header{position:sticky;top:0;z-index:110;height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 32px;background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.menu-toggle{display:none;width:44px;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);align-items:center;justify-content:center}
+.menu-toggle svg{width:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.acc-btn{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 12px 0 6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font-weight:700;font-size:13px}
+.nm{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
+
+/* ===== Chung ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:var(--radius);font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14px;border:1px solid transparent;white-space:nowrap;transition:.18s var(--ease)}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 10px 28px -10px rgba(34,139,34,.85)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-strong)}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(34,139,34,.04)}
+.btn-sm{min-height:44px;padding:0 14px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,.side-link:focus-visible,.chip:focus-visible,.modal-close:focus-visible,.acc-btn:focus-visible,.copy:focus-visible,.inv-toggle:focus-visible,.menu-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dash-body{padding:28px 32px 56px}
+.container-fluid{width:100%;max-width:1280px;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:clamp(1.6rem,2.6vw,2.05rem);margin-bottom:6px}
+.page-head p{color:var(--text-muted);font-size:.95rem;max-width:60ch}
+
+/* ===== Thẻ thống kê ===== */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat{border:1px solid var(--border);border-radius:var(--radius-lg);background:linear-gradient(180deg,#fff,#F6FBF6);padding:20px;transition:.25s var(--ease)}
+.stat:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 14px 32px -18px rgba(16,48,16,.25)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.stat-label{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted)}
+.stat-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(34,139,34,.08);border:1px solid var(--border-strong);flex-shrink:0}
+.stat-icon svg{width:18px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.stat.warn .stat-icon{background:rgba(245,177,76,.14);border-color:rgba(245,177,76,.34)}.stat.warn .stat-icon svg{stroke:var(--warning-ink)}
+.stat.danger .stat-icon{background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.22)}.stat.danger .stat-icon svg{stroke:var(--danger-ink)}
+.stat.info .stat-icon{background:rgba(47,111,237,.1);border-color:rgba(47,111,237,.28)}.stat.info .stat-icon svg{stroke:var(--info-ink)}
+.stat-value{font-family:'Be Vietnam Pro',sans-serif;font-size:clamp(1.35rem,2.1vw,1.65rem);font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.stat-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.stat.danger .stat-sub{color:var(--danger-ink);font-weight:600}
+
+/* ===== Bố cục 2 cột ===== */
+.pay-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+.col{display:flex;flex-direction:column;gap:24px;min-width:0}
+
+.card{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-head h2{font-size:16.5px}
+.card-head p{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.card-body{padding:18px 20px 20px}
+
+/* ===== Badge trạng thái hoá đơn ===== */
+.status{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid}
+.status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.status.is-paid{color:var(--success-ink);background:rgba(34,139,34,.09);border-color:rgba(34,139,34,.22)}
+.status.is-pending{color:var(--warning-ink);background:rgba(245,177,76,.15);border-color:rgba(245,177,76,.35)}
+.status.is-overdue{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.22)}
+.status.is-submitted{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(47,111,237,.22)}
+
+/* ===== Hoá đơn tháng này ===== */
+.due-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:20px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);margin-bottom:18px}
+.due-hero .lbl{font-size:13px;color:var(--text-muted);font-weight:500}
+.due-hero .amt{font-family:'Be Vietnam Pro',sans-serif;font-size:clamp(1.9rem,4vw,2.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:4px}
+.due-hero .due{font-size:13.5px;color:var(--text-muted);margin-top:6px}
+.due-hero .due b{color:var(--text)}
+.due-hero .due.late b{color:var(--danger-ink)}
+.due-cta{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.due-cta .btn{min-width:200px}
+
+.lines{list-style:none;display:flex;flex-direction:column}
+.lines li{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14.5px}
+.lines li:last-child{border-bottom:0}
+.lines .name{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.lines .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(34,139,34,.07);flex-shrink:0}
+.lines .ic svg{width:17px;height:17px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.lines .name b{display:block;font-weight:600}
+.lines .name small{display:block;font-size:12.5px;color:var(--text-dim);line-height:1.45;margin-top:1px}
+.lines .val{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.lines li.total{border-top:1px solid var(--border-strong);border-bottom:0;margin-top:2px;padding-top:14px;font-weight:600}
+.lines li.total .val{font-family:'Be Vietnam Pro',sans-serif;font-size:18px;color:var(--success-ink)}
+
+.notice{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;background:rgba(34,139,34,.06);border:1px solid var(--border);border-radius:var(--radius);font-size:13.5px;color:var(--text-muted);line-height:1.5}
+.notice svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.notice b{color:var(--text)}
+.notice.info{background:rgba(47,111,237,.06);border-color:rgba(47,111,237,.18)}
+.notice.info svg{stroke:var(--info-ink)}
+
+/* ===== Lịch sử ===== */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;transition:.16s var(--ease)}
+.chip:hover{border-color:var(--accent);color:var(--text)}
+.chip[aria-pressed="true"]{background:rgba(34,139,34,.1);border-color:var(--accent);color:var(--accent-hover)}
+.inv-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.inv{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);transition:border-color .16s var(--ease)}
+.inv:hover{border-color:var(--border-strong)}
+.inv-toggle{width:100%;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;padding:14px 16px;background:none;border:0;border-radius:var(--radius);text-align:left;color:inherit;min-height:64px}
+.inv-period{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:15px}
+.inv-meta{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.inv-amt{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:15px;text-align:right;white-space:nowrap}
+.inv-amt .status{margin-top:4px}
+.chev{width:18px;height:18px;stroke:var(--text-dim);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s var(--ease)}
+.inv-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.inv-detail{padding:0 16px 16px}
+.inv-detail .lines{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 14px}
+.inv-detail .lines .ic{display:none}
+.inv-detail .paid-note{font-size:12.5px;color:var(--text-dim);margin-top:10px}
+
+.empty-state{padding:44px 20px;text-align:center;color:var(--text-muted)}
+.empty-state svg{width:40px;height:40px;stroke:var(--text-dim);fill:none;stroke-width:1.4;margin:0 auto 12px}
+.empty-state h3{font-size:15px;margin-bottom:6px;color:var(--text)}
+.empty-state p{font-size:13.5px;margin:0 auto 16px;max-width:44ch}
+.empty-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ===== Cột phải ===== */
+.room-mini{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.room-mini img{width:96px;aspect-ratio:4/3;object-fit:cover;border-radius:10px;flex-shrink:0;background:var(--surface-2)}
+.room-mini h3{font-size:15px;line-height:1.35}
+.room-mini p{font-size:12.5px;color:var(--text-dim);line-height:1.45;margin-top:3px}
+.kv{display:flex;flex-direction:column}
+.kv > div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.kv > div:last-child{border-bottom:0}
+.kv dt{color:var(--text-muted)}
+.kv dd{font-weight:600;text-align:right;display:flex;align-items:center;gap:4px;justify-content:flex-end;overflow-wrap:anywhere}
+.progress{height:6px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden;margin:6px 0 4px}
+.progress span{display:block;height:100%;background:var(--grad);border-radius:inherit}
+.progress-lbl{font-size:12px;color:var(--text-dim)}
+.side-card-actions{display:flex;gap:8px;margin-top:14px}
+.side-card-actions .btn{flex:1;padding:0 12px}
+
+/* ===== Modal chuyển khoản ===== */
+body.modal-open{overflow:hidden}
+.modal-overlay{position:fixed;inset:0;z-index:180;background:rgba(16,32,16,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:.2s var(--ease)}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{width:100%;max-width:520px;background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 40px 90px -30px rgba(16,48,16,.4);transform:translateY(14px) scale(.98);transition:.22s var(--ease);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:none}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal-head h2{font-size:17px}
+.modal-head p{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.modal-close{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;color:var(--text-muted);flex-shrink:0}
+.modal-close:hover{border-color:var(--accent);color:var(--accent)}
+.modal-close svg{width:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.modal-body{padding:18px 20px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 20px;border-top:1px solid var(--border)}
+
+.pay-box{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+.qr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.qr .code{width:140px;height:140px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:10px}
+.qr .code svg{width:100%;height:100%;display:block}
+.qr small{font-size:12px;color:var(--text-dim);text-align:center;line-height:1.4}
+.bank{display:flex;flex-direction:column;gap:10px;min-width:0}
+.bank > div{display:flex;flex-direction:column;gap:1px}
+.bank dt{font-size:12.5px;color:var(--text-dim)}
+.bank dd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.bank dd.amount{color:var(--success-ink);font-family:'Be Vietnam Pro',sans-serif;font-size:18px}
+.copy{display:inline-grid;place-items:center;width:44px;height:44px;margin:-10px -6px;border:0;background:none;border-radius:var(--radius-sm);color:var(--text-muted)}
+.copy:hover{background:rgba(34,139,34,.08);color:var(--accent)}
+.copy svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Phòng đã xem xong, chờ quyết định thuê ===== */
+.viewed{margin-bottom:24px}
+.viewed-grid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,300px));gap:16px}
+.viewed-item{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);overflow:hidden;transition:border-color .18s var(--ease),transform .18s var(--ease)}
+.viewed-item:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+.viewed-item img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--border)}
+.viewed-info{display:flex;flex-direction:column;gap:4px;padding:14px 14px 0;flex:1}
+.viewed-info h3{font-size:15px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.viewed-info .when{font-size:12.5px;color:var(--text-dim)}
+.viewed-info .price{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;color:var(--success-ink)}
+.viewed-info .price span{font-size:12.5px;font-weight:500;color:var(--text-dim)}
+.viewed-info .status{align-self:flex-start;margin-top:2px}
+.viewed-item .btn{margin:12px 14px 14px}
+
+/* ===== Bước 3: Xác nhận thuê phòng ===== */
+.rent-overlay{position:fixed;inset:0;z-index:190;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(16,32,16,.45);backdrop-filter:blur(3px);animation:rentFade .2s var(--ease)}
+.rent-overlay[hidden]{display:none}
+.rent{width:100%;max-width:420px;max-height:calc(100dvh - 32px);overflow-y:auto;padding:20px 20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 40px 90px -30px rgba(16,48,16,.45);text-align:center;animation:rentIn .32s var(--ease)}
+.rent-brand{display:flex;align-items:center;gap:6px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:15px;color:var(--accent-hover)}
+.rent-brand svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rent-illus{width:96px;height:96px;margin:6px auto 16px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(34,139,34,.14),rgba(34,139,34,.04) 70%)}
+.rent-illus span{width:64px;height:64px;border-radius:50%;background:var(--accent);display:grid;place-items:center;box-shadow:0 0 0 8px rgba(34,139,34,.12),0 16px 40px -10px rgba(34,139,34,.6)}
+.rent-illus svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rent h2{font-size:1.25rem;margin-bottom:6px;outline:none}
+.rent-desc{font-size:14px;line-height:1.5;color:var(--text-muted);max-width:34ch;margin:0 auto 16px}
+.rent-room{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);text-align:left}
+.rent-room img{width:104px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;background:var(--border)}
+.rent-room h3{font-size:14.5px;line-height:1.35;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rent-room .price{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;color:var(--success-ink)}
+.rent-room .price span{font-size:12.5px;font-weight:500;color:var(--text-dim)}
+.rent-want{display:flex;flex-direction:column;gap:6px;margin-top:14px;text-align:left;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600}
+.rent-want input{height:46px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font:inherit;font-size:16px;font-weight:400}
+.rent-want input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.viewed-reason{font-size:12.5px;line-height:1.45;color:var(--text-muted)}
+.rent-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.rent-actions .btn{width:100%;padding:0 12px}
+@keyframes rentFade{from{opacity:0}to{opacity:1}}
+@keyframes rentIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:640px){.viewed-grid{grid-template-columns:1fr}}
+
+/* ===== Skeleton / toast ===== */
+.skeleton{border-radius:var(--radius-lg);background:linear-gradient(100deg,var(--surface-2) 30%,#E4EFE4 50%,var(--surface-2) 70%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+body.is-loading .content-real{display:none}
+body:not(.is-loading) .content-skel{display:none}
+.skel-stat{height:112px}
+.skel-block{height:320px}
+@media(prefers-reduced-motion:reduce){.skeleton{animation:none;background:var(--surface-2)}}
+
+.toast{position:fixed;right:24px;bottom:24px;z-index:200;max-width:360px;padding:14px 16px;border-radius:var(--radius);background:#102010;color:#fff;box-shadow:0 20px 50px rgba(16,32,16,.25);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s var(--ease);font-size:14px}
+.toast.show{transform:none;opacity:1}
+.toast b{display:block;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:2px}
+.toast span{color:rgba(255,255,255,.78);font-size:12.5px}
+
+@media(max-width:1180px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .pay-layout{grid-template-columns:1fr}
+}
+@media(max-width:960px){
+  .menu-toggle{display:flex}
+  .side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);transition:transform .26s var(--ease)}
+  body.nav-open .side-nav{transform:none}
+  body.nav-open .side-backdrop{display:block;top:var(--header-h)}
+  .dash-main{margin-left:0}
+  .app-header{padding:0 20px}
+  .dash-body{padding:24px 20px 48px}
+}
+@media(max-width:640px){
+  .app-header{padding:0 16px;gap:8px}
+  .dash-body{padding:20px 16px 40px}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .stat{padding:16px}
+  .stat-icon{width:34px;height:34px}
+  .card-head,.card-body{padding-left:16px;padding-right:16px}
+  .due-hero{padding:16px}
+  .due-cta{width:100%;align-items:stretch}
+  .due-cta .btn{width:100%;min-width:0}
+  .chip-row{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  .chip{flex-shrink:0}
+  .inv-toggle{grid-template-columns:1fr auto;gap:10px;padding:12px 14px}
+  .inv-toggle .chev{display:none}
+  .pay-box{grid-template-columns:1fr}
+  .qr{flex-direction:row;justify-content:flex-start;gap:14px}
+  .qr .code{width:120px;height:120px}
+  .qr small{text-align:left}
+  .toast{left:16px;right:16px;bottom:16px;max-width:none}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{max-height:100dvh;border-radius:var(--radius-lg) var(--radius-lg) 0 0;max-width:100%}
+  .modal-foot{flex-direction:column-reverse}
+  .modal-foot .btn{width:100%}
+}
+@media(max-width:400px){
+  .nm{display:none}
+  .stat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body class="is-loading">
+<div class="dash-shell">
+  <div class="side-backdrop" id="sideBackdrop"></div>
+  <aside class="side-nav" id="sideNav">
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <div class="side-role"><span>Khu vực</span><b>Người thuê</b></div>
+    <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
+      <a href="tim-phong.html" class="side-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Tìm phòng</a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>Khám phá bản đồ</a>
+      <a href="da-luu.html" class="side-link"><svg viewBox="0 0 24 24"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Phòng đã lưu</a>
+      <a href="dat-lich.html" class="side-link"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>Lịch xem phòng</a>
+      <a href="thanh-toan.html" class="side-link active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Thanh toán<span class="side-count warn" id="navDue" hidden>1</span></a>
+      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>Hỗ trợ &amp; báo cáo</a>
+    </nav>
+  </aside>
+
+  <div class="dash-main">
+    <header class="app-header">
+      <button class="menu-toggle" id="menuBtn" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="sideNav"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="header-actions">
+        <button class="acc-btn" type="button"><span class="av" id="accAv">PT</span><span class="nm" id="accName">Phạm Thu Trang</span></button>
+      </div>
+    </header>
+
+    <main class="dash-body">
+      <div class="container-fluid">
+        <div class="page-head reveal">
+          <div>
+            <h1>Thanh toán tiền nhà</h1>
+            <p>Đặt cọc phòng bạn đã xem xong, xem hoá đơn tiền phòng, điện nước hằng tháng và theo dõi lịch sử thanh toán.</p>
+          </div>
+        </div>
+
+        <!-- Đang tải -->
+        <div class="content-skel" aria-hidden="true">
+          <div class="stat-grid"><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div><div class="skeleton skel-stat"></div></div>
+          <div class="skeleton skel-block"></div>
+        </div>
+
+        <!-- Nội dung -->
+        <div class="content-real" id="content" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal chuyển khoản -->
+<div class="modal-overlay" id="payModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+    <div class="modal-head">
+      <div><h2 id="payTitle">Chuyển khoản tiền nhà</h2><p id="paySub"></p></div>
+      <button class="modal-close" type="button" data-close aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="payBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" type="button" data-close>Để sau</button>
+      <button class="btn btn-primary" type="button" id="paidBtn"><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg>Tôi đã chuyển khoản</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bước 3: Xác nhận thuê phòng (sau khi xem) -->
+<div class="rent-overlay" id="rentOverlay" hidden>
+  <div class="rent" role="dialog" aria-modal="true" aria-labelledby="rentTitle" aria-describedby="rentDesc">
+    <p class="rent-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22v-7h6v7"/></svg>An Cư</p>
+    <div class="rent-illus" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg></span></div>
+    <h2 id="rentTitle" tabindex="-1">Gửi yêu cầu thuê phòng này?</h2>
+    <p class="rent-desc" id="rentDesc">Chủ trọ sẽ xem xét yêu cầu. Khi được duyệt, bạn sẽ được chuyển sang bước đặt cọc.</p>
+    <div class="rent-room">
+      <img id="rentImg" src="" alt="" width="104" height="78" />
+      <div><h3 id="rentRoom"></h3><p class="price" id="rentPrice"></p></div>
+    </div>
+    <label class="rent-want">Ngày muốn dọn vào<input type="date" id="rentWant" required /></label>
+    <div class="rent-actions">
+      <button type="button" class="btn btn-ghost" id="rentNo">Không thuê</button>
+      <button type="button" class="btn btn-primary" id="rentYes">Gửi yêu cầu thuê</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
+
+<script>
+(function(){
+  // Trang thanh toán tiền nhà của người thuê (prototype, chưa có cổng thanh toán — thanh toán trực tuyến
+  // ngoài phạm vi v1). Người thuê tự chuyển khoản theo thông tin chủ trọ rồi bấm "Tôi đã chuyển khoản";
+  // hoá đơn chuyển sang "Chờ chủ trọ xác nhận" cho tới khi chủ trọ đối soát ở quan-ly/hoa-don.html.
+  // Số liệu hoá đơn tháng 09 khớp dòng HD-0904 (P.301) bên trang chủ trọ.
+  // Xem trạng thái rỗng: thêm ?demo=trong vào URL.
+  var STORE_KEY = 'an-cu-thanh-toan-tien-nha';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var nf = new Intl.NumberFormat('vi-VN');
+  function vnd(n){ return nf.format(n) + '₫'; }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function readJson(key){ try{ return JSON.parse(localStorage.getItem(key) || 'null'); }catch(e){ return null; } }
+  function writeJson(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+  var ICON = {
+    receipt:'<path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2Z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+    clock:'<circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/>',
+    check:'<path d="m20 6-11 11-5-5"/>',
+    shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
+    home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+    bolt:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>',
+    drop:'<path d="M12 2.7s-6 6.3-6 11.3a6 6 0 0 0 12 0c0-5-6-11.3-6-11.3Z"/>',
+    wifi:'<path d="M5 12.6a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 20 0M12 20h.01"/>',
+    info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+    card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    chev:'<path d="m6 9 6 6 6-6"/>',
+    msg:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>',
+    phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/>'
+  };
+  function svg(p, cls){ return '<svg viewBox="0 0 24 24"' + (cls ? ' class="' + cls + '"' : '') + ' aria-hidden="true">' + p + '</svg>'; }
+
+  // ---------- Dữ liệu mẫu ----------
+  var CONTRACT = {
+    code:'HĐ-P301-2026', room:'P.301', title:'Phòng 301 — Nhà trọ An Cư Lạc Trung',
+    address:'Ngõ 12 Lạc Trung, Vĩnh Tuy, Hai Bà Trưng, Hà Nội',
+    image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg',
+    landlord:'Trần Hoà', landlordPhone:'0988 000 999',
+    start:'2026-03-01', end:'2027-02-28', rent:3200000, deposit:3200000
+  };
+  var BANK = { name:'Vietcombank', number:'1224 5478 0089', holder:'TRAN HOA' };
+  var PRICE = { electric:3500, water:20000 };
+  var SERVICES = [['Internet', 100000], ['Vệ sinh, rác', 50000], ['Gửi xe máy', 180000]];
+
+  // Chỉ số công tơ theo tháng; tiền tính từ chỉ số × đơn giá, không nhập tay tổng
+  var RAW = [
+    { id:'HD-0904', period:'2026-09', due:'2026-09-05', e:[1245,1365], w:[210,215], status:'unpaid' },
+    { id:'HD-0804', period:'2026-08', due:'2026-08-05', e:[1145,1245], w:[205,210], status:'paid', paidAt:'2026-08-03T09:12:00Z', method:'Chuyển khoản Vietcombank' },
+    { id:'HD-0704', period:'2026-07', due:'2026-07-05', e:[1057,1145], w:[201,205], status:'paid', paidAt:'2026-07-04T13:40:00Z', method:'Chuyển khoản Vietcombank' },
+    { id:'HD-0604', period:'2026-06', due:'2026-06-05', e:[962,1057],  w:[196,201], status:'paid', paidAt:'2026-06-05T02:05:00Z', method:'Ví điện tử' },
+    { id:'HD-0504', period:'2026-05', due:'2026-05-05', e:[880,962],   w:[192,196], status:'paid', paidAt:'2026-05-02T11:20:00Z', method:'Chuyển khoản Vietcombank' },
+    { id:'HD-0404', period:'2026-04', due:'2026-04-05', e:[801,880],   w:[188,192], status:'paid', paidAt:'2026-04-05T08:30:00Z', method:'Chuyển khoản Vietcombank' }
+  ];
+  var serviceTotal = SERVICES.reduce(function(s, x){ return s + x[1]; }, 0);
+  var saved = readJson(STORE_KEY) || {};
+  var noContract = new URLSearchParams(location.search).get('demo') === 'trong';
+
+  var todayYmd = ymd(new Date());
+  var invoices = RAW.map(function(r){
+    var kwh = r.e[1] - r.e[0], m3 = r.w[1] - r.w[0];
+    var inv = {
+      id:r.id, period:r.period, due:r.due, kwh:kwh, m3:m3, e:r.e, w:r.w,
+      rent:CONTRACT.rent, electric:kwh * PRICE.electric, water:m3 * PRICE.water, service:serviceTotal,
+      paidAt:r.paidAt, method:r.method, status:r.status
+    };
+    inv.total = inv.rent + inv.electric + inv.water + inv.service;
+    var s = saved[r.id];
+    if(inv.status !== 'paid' && s && s.submittedAt){ inv.status = 'submitted'; inv.submittedAt = s.submittedAt; }
+    if(inv.status === 'unpaid') inv.status = inv.due < todayYmd ? 'overdue' : 'pending';
+    return inv;
+  });
+  var STATUS = { paid:'Đã thanh toán', pending:'Chờ thanh toán', overdue:'Quá hạn', submitted:'Chờ chủ trọ xác nhận' };
+
+  // ---------- Ngày giờ (Asia/Ho_Chi_Minh) ----------
+  function ymd(d){
+    var p = new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Ho_Chi_Minh', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(d);
+    var o = {}; p.forEach(function(x){ o[x.type] = x.value; });
+    return o.year + '-' + o.month + '-' + o.day;
+  }
+  function fmtDate(s){ var p = s.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function fmtPeriod(s){ var p = s.split('-'); return 'Tháng ' + p[1] + '/' + p[0]; }
+  function fmtTime(iso){
+    return new Intl.DateTimeFormat('vi-VN', { timeZone:'Asia/Ho_Chi_Minh', hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric' }).format(new Date(iso));
+  }
+  function daysBetween(a, b){ return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 864e5); }
+
+  // ---------- Thành phần ----------
+  function badge(st){ return '<span class="status is-' + st + '">' + STATUS[st] + '</span>'; }
+  function copyBtn(text, label){ return '<button type="button" class="copy" data-copy="' + esc(text) + '" aria-label="Sao chép ' + label + '">' + svg(ICON.copy) + '</button>'; }
+  function transferNote(inv){ return 'TIENNHA ' + inv.id + ' ' + CONTRACT.room.replace('.', ''); }
+
+  function lines(inv, withIcons){
+    function li(ic, name, sub, val){
+      return '<li><span class="name">' + (withIcons ? '<span class="ic">' + svg(ic) + '</span>' : '') +
+        '<span><b>' + name + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span></span><span class="val">' + vnd(val) + '</span></li>';
+    }
+    return '<ul class="lines">' +
+      li(ICON.home, 'Tiền phòng', fmtPeriod(inv.period), inv.rent) +
+      li(ICON.bolt, 'Tiền điện', nf.format(inv.e[0]) + ' → ' + nf.format(inv.e[1]) + ' · ' + inv.kwh + ' kWh × ' + vnd(PRICE.electric), inv.electric) +
+      li(ICON.drop, 'Tiền nước', inv.w[0] + ' → ' + inv.w[1] + ' · ' + inv.m3 + ' m³ × ' + vnd(PRICE.water), inv.water) +
+      li(ICON.wifi, 'Dịch vụ', SERVICES.map(function(s){ return s[0] + ' ' + nf.format(s[1]); }).join(' · '), inv.service) +
+      '<li class="total"><span>Tổng cộng</span><span class="val">' + vnd(inv.total) + '</span></li>' +
+    '</ul>';
+  }
+
+  function stats(){
+    var open = invoices.filter(function(i){ return i.status === 'pending' || i.status === 'overdue'; });
+    var due = open.reduce(function(s, i){ return s + i.total; }, 0);
+    var next = open[0];
+    var late = next && next.status === 'overdue';
+    var year = todayYmd.slice(0, 4);
+    var paidYear = invoices.filter(function(i){ return i.status === 'paid' && i.period.slice(0, 4) === year; });
+    var submitted = invoices.filter(function(i){ return i.status === 'submitted'; });
+    var data = [
+      ['Cần thanh toán', vnd(due), open.length ? open.length + ' hoá đơn chưa trả' : submitted.length ? submitted.length + ' hoá đơn chờ xác nhận' : 'Không còn khoản nào', ICON.receipt, due ? 'warn' : ''],
+      ['Hạn thanh toán', next ? fmtDate(next.due) : '—',
+        !next ? (submitted.length ? 'Đang chờ chủ trọ xác nhận' : 'Đã thanh toán đủ') :
+        late ? 'Quá hạn ' + daysBetween(next.due, todayYmd) + ' ngày' : 'Còn ' + daysBetween(todayYmd, next.due) + ' ngày',
+        ICON.clock, late ? 'danger' : next ? 'warn' : ''],
+      ['Đã trả năm ' + year, vnd(paidYear.reduce(function(s, i){ return s + i.total; }, 0)), paidYear.length + ' hoá đơn đã đối soát', ICON.check, ''],
+      ['Tiền cọc đang giữ', vnd(CONTRACT.deposit), 'Hoàn khi kết thúc hợp đồng', ICON.shield, 'info']
+    ];
+    return '<section class="stat-grid" aria-label="Tổng quan thanh toán">' + data.map(function(s, i){
+      return '<article class="stat reveal ' + s[4] + '" style="--d:' + (i * 0.06) + 's"><div class="stat-top"><span class="stat-label">' + s[0] + '</span>' +
+        '<span class="stat-icon">' + svg(s[3]) + '</span></div><p class="stat-value">' + s[1] + '</p><p class="stat-sub">' + s[2] + '</p></article>';
+    }).join('') + '</section>';
+  }
+
+  function currentCard(){
+    var inv = invoices[0];
+    var late = inv.status === 'overdue';
+    var dueLine = inv.status === 'paid' ? 'Đã thanh toán lúc <b>' + fmtTime(inv.paidAt) + '</b>' :
+      inv.status === 'submitted' ? 'Đã báo chuyển khoản lúc <b>' + fmtTime(inv.submittedAt) + '</b>' :
+      late ? 'Hạn <b>' + fmtDate(inv.due) + '</b> · quá hạn ' + daysBetween(inv.due, todayYmd) + ' ngày' :
+      'Hạn thanh toán <b>' + fmtDate(inv.due) + '</b>';
+    var cta = inv.status === 'pending' || inv.status === 'overdue'
+      ? '<button class="btn btn-primary" type="button" data-pay="' + inv.id + '">' + svg(ICON.card) + 'Thanh toán ngay</button>'
+      : inv.status === 'submitted'
+        ? '<button class="btn btn-ghost" type="button" data-pay="' + inv.id + '">Xem lại thông tin chuyển khoản</button>'
+        : '';
+    var note = inv.status === 'submitted'
+      ? '<p class="notice info">' + svg(ICON.info) + '<span>Chủ trọ sẽ đối chiếu giao dịch và xác nhận trong vòng 24 giờ. Hoá đơn tự chuyển sang <b>Đã thanh toán</b> khi được xác nhận.</span></p>'
+      : inv.status === 'paid' ? ''
+      : '<p class="notice">' + svg(ICON.info) + '<span>Ghi đúng <b>nội dung chuyển khoản</b> để chủ trọ đối soát nhanh. An Cư không thu phí khi bạn chuyển khoản trực tiếp cho chủ trọ.</span></p>';
+    return '<section class="card reveal" aria-labelledby="curTitle">' +
+      '<div class="card-head"><div><h2 id="curTitle">Hoá đơn ' + fmtPeriod(inv.period).toLowerCase() + '</h2><p>Mã hoá đơn ' + inv.id + ' · ' + CONTRACT.room + '</p></div>' + badge(inv.status) + '</div>' +
+      '<div class="card-body">' +
+        '<div class="due-hero"><div><p class="lbl">' + (inv.status === 'paid' ? 'Đã thanh toán' : inv.status === 'submitted' ? 'Số tiền đã chuyển' : 'Số tiền cần thanh toán') + '</p>' +
+          '<p class="amt">' + vnd(inv.total) + '</p><p class="due' + (late ? ' late' : '') + '">' + dueLine + '</p></div>' +
+          (cta ? '<div class="due-cta">' + cta + '</div>' : '') + '</div>' +
+        lines(inv, true) + note +
+      '</div></section>';
+  }
+
+  var filter = 'all';
+  function historyCard(){
+    return '<section class="card reveal" aria-labelledby="histTitle">' +
+      '<div class="card-head"><div><h2 id="histTitle">Lịch sử hoá đơn</h2><p>Bấm vào một tháng để xem chi tiết</p></div>' +
+        '<div class="chip-row" role="group" aria-label="Lọc hoá đơn">' +
+          [['all','Tất cả'],['open','Chưa trả'],['paid','Đã trả']].map(function(c){
+            return '<button type="button" class="chip" data-filter="' + c[0] + '" aria-pressed="' + (filter === c[0]) + '">' + c[1] + '</button>';
+          }).join('') +
+        '</div></div>' +
+      '<div class="card-body" id="histBody">' + historyList() + '</div></section>';
+  }
+  function historyList(){
+    var list = invoices.filter(function(i){
+      return filter === 'all' || (filter === 'paid' ? i.status === 'paid' : i.status !== 'paid');
+    });
+    if(!list.length){
+      return '<div class="empty-state">' + svg(ICON.receipt) + '<h3>' + (filter === 'paid' ? 'Chưa có hoá đơn nào đã thanh toán' : 'Bạn không còn hoá đơn nào cần trả') + '</h3>' +
+        '<p>' + (filter === 'paid' ? 'Hoá đơn sẽ hiện ở đây sau khi chủ trọ xác nhận đã nhận tiền.' : 'Tuyệt vời! Hoá đơn tháng sau sẽ được gửi vào đầu tháng.') + '</p>' +
+        '<button type="button" class="btn btn-ghost btn-sm" data-filter="all">Xem tất cả hoá đơn</button></div>';
+    }
+    return '<ul class="inv-list">' + list.map(function(inv){
+      var did = 'inv-' + inv.id;
+      var paidNote = inv.status === 'paid' ? 'Thanh toán lúc ' + fmtTime(inv.paidAt) + ' · ' + esc(inv.method) :
+        inv.status === 'submitted' ? 'Đã báo chuyển khoản lúc ' + fmtTime(inv.submittedAt) + ', chờ chủ trọ xác nhận' :
+        'Hạn thanh toán ' + fmtDate(inv.due);
+      return '<li class="inv">' +
+        '<button type="button" class="inv-toggle" aria-expanded="false" aria-controls="' + did + '">' +
+          '<span><span class="inv-period">' + fmtPeriod(inv.period) + '</span><span class="inv-meta" style="display:block">' + inv.id + ' · hạn ' + fmtDate(inv.due) + '</span></span>' +
+          '<span class="inv-amt">' + vnd(inv.total) + '<span style="display:block">' + badge(inv.status) + '</span></span>' +
+          svg(ICON.chev, 'chev') +
+        '</button>' +
+        '<div class="inv-detail" id="' + did + '" hidden>' + lines(inv, false) +
+          '<p class="paid-note">' + paidNote + '</p>' +
+          (inv.status === 'pending' || inv.status === 'overdue' ? '<div style="margin-top:12px"><button class="btn btn-primary btn-sm" type="button" data-pay="' + inv.id + '">' + svg(ICON.card) + 'Thanh toán hoá đơn này</button></div>' : '') +
+        '</div></li>';
+    }).join('') + '</ul>';
+  }
+
+  function contractCard(){
+    var total = daysBetween(CONTRACT.start, CONTRACT.end);
+    var done = Math.min(total, Math.max(0, daysBetween(CONTRACT.start, todayYmd)));
+    var pct = Math.round(done / total * 100);
+    var monthsLeft = Math.max(0, Math.round(daysBetween(todayYmd, CONTRACT.end) / 30.4));
+    return '<section class="card reveal" aria-labelledby="ctTitle">' +
+      '<div class="card-head"><div><h2 id="ctTitle">Hợp đồng đang thuê</h2><p>' + CONTRACT.code + '</p></div><span class="status is-paid">Đang hiệu lực</span></div>' +
+      '<div class="card-body">' +
+        '<div class="room-mini"><img src="' + CONTRACT.image + '" alt="Ảnh ' + esc(CONTRACT.title) + '" width="96" height="72" loading="lazy" /><div><h3>' + esc(CONTRACT.title) + '</h3><p>' + esc(CONTRACT.address) + '</p></div></div>' +
+        '<dl class="kv">' +
+          '<div><dt>Tiền phòng</dt><dd>' + vnd(CONTRACT.rent) + '/tháng</dd></div>' +
+          '<div><dt>Ngày chốt hoá đơn</dt><dd>Ngày 1 hằng tháng</dd></div>' +
+          '<div><dt>Hạn thanh toán</dt><dd>Ngày 5 hằng tháng</dd></div>' +
+          '<div><dt>Điện / nước</dt><dd>' + vnd(PRICE.electric) + '/kWh · ' + vnd(PRICE.water) + '/m³</dd></div>' +
+        '</dl>' +
+        '<div style="margin-top:12px"><div class="progress" role="progressbar" aria-label="Thời hạn hợp đồng" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
+          '<p class="progress-lbl">' + fmtDate(CONTRACT.start) + ' → ' + fmtDate(CONTRACT.end) + ' · còn khoảng ' + monthsLeft + ' tháng</p></div>' +
+      '</div></section>';
+  }
+  function accountCard(){
+    return '<section class="card reveal" aria-labelledby="accTitle">' +
+      '<div class="card-head"><div><h2 id="accTitle">Tài khoản nhận tiền</h2><p>Chủ trọ ' + esc(CONTRACT.landlord) + '</p></div></div>' +
+      '<div class="card-body"><dl class="kv">' +
+        '<div><dt>Ngân hàng</dt><dd>' + BANK.name + '</dd></div>' +
+        '<div><dt>Số tài khoản</dt><dd>' + BANK.number + copyBtn(BANK.number.replace(/\s/g, ''), 'số tài khoản') + '</dd></div>' +
+        '<div><dt>Chủ tài khoản</dt><dd>' + BANK.holder + '</dd></div>' +
+      '</dl>' +
+      '<div class="side-card-actions">' +
+        '<a class="btn btn-ghost btn-sm" href="tel:' + CONTRACT.landlordPhone.replace(/\s/g, '') + '">' + svg(ICON.phone) + 'Gọi chủ trọ</a>' +
+        '<a class="btn btn-ghost btn-sm" href="#" aria-disabled="true" title="Nhắn tin sẽ mở cùng khu tin nhắn">' + svg(ICON.msg) + 'Nhắn tin</a>' +
+      '</div></div></section>';
+  }
+
+  function emptyView(){
+    return '<section class="card reveal"><div class="empty-state">' + svg(ICON.receipt) +
+      '<h3>Bạn chưa có hợp đồng thuê nào</h3>' +
+      '<p>Khi chủ trọ tạo hợp đồng cho bạn trên An Cư, hoá đơn tiền nhà hằng tháng sẽ hiện ở đây để bạn theo dõi và thanh toán.</p>' +
+      '<div class="empty-actions"><a class="btn btn-primary" href="tim-phong.html">Tìm phòng</a></div></div></section>';
+  }
+
+  // ---------- Phòng đã xem xong (lấy từ Lịch xem phòng) ----------
+  // Mọi lịch xem "Đã hoàn thành" hiện ở đây để người thuê quyết định thuê. Luồng:
+  // 3. Xác nhận thuê (hộp thoại trên trang này) → dat-coc.html: 4. Thông tin đặt cọc →
+  // 5. Phương thức thanh toán → 6. Đã gửi → 7. Chờ xác nhận → 8. Thanh toán thành công.
+  var LICH_KEY = 'an-cu-lich-xem-v1', ROOM_KEY = 'an-cu-dat-coc-phong', ORDER_KEY = 'an-cu-dat-coc-don';
+  var declined = saved.declined || {};
+  var viewed = [];
+  function loadViewed(){
+    function fromStore(){ var s = readJson(LICH_KEY); return s && Array.isArray(s.items) ? s.items : []; }
+    var get = (/^https?:$/.test(location.protocol) && window.fetch)
+      ? fetch('/api/suc-khoe', { cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+          if(!j || !j.ok) return fromStore();
+          var who = null; try{ who = localStorage.getItem('an-cu-nguoi-thue'); }catch(e){}
+          API_ON = true; WHO = who || 'u-trang';
+          return fetch('/api/lich-xem?nguoi=' + encodeURIComponent(who || 'u-trang'), { cache:'no-store' })
+            .then(function(r){ return r.json(); }).then(function(k){ return (k && k.items) || []; });
+        }).catch(fromStore)
+      : Promise.resolve(fromStore());
+    return get.then(function(items){
+      var seen = {};
+      viewed = items.filter(function(a){ return a.status === 'completed' && !declined[a.id]; })
+        .sort(function(a, b){ return (b.date + b.time).localeCompare(a.date + a.time); })
+        .filter(function(a){ if(seen[a.roomId]) return false; seen[a.roomId] = true; return true; });
+    }).then(loadReqs);
+  }
+  // Yêu cầu thuê: người thuê gửi sau buổi xem, chủ trọ duyệt mới được đặt cọc
+  var REQ_KEY = 'an-cu-yeu-cau-thue-v1', API_ON = false, WHO = 'u-trang', reqs = [];
+  function loadReqs(){
+    if(!API_ON){ var o = readJson(REQ_KEY); reqs = o && Array.isArray(o.items) ? o.items : []; return Promise.resolve(); }
+    return fetch('/api/yeu-cau-thue?nguoi=' + encodeURIComponent(WHO), { cache:'no-store' })
+      .then(function(r){ return r.json(); }).then(function(j){ reqs = (j && j.items) || []; }).catch(function(){});
+  }
+  function reqFor(a){ return reqs.filter(function(r){ return String(r.appointmentId) === String(a.id); })[0] || null; }
+  function sendRequest(a, wantDate){
+    if(API_ON){
+      return fetch('/api/yeu-cau-thue', { method:'POST', headers:{ 'Content-Type':'application/json' }, cache:'no-store',
+        body: JSON.stringify({ nguoi:WHO, appointmentId:a.id, wantDate:wantDate, note:'' }) })
+        .then(function(r){ return r.json().then(function(j){ return r.status === 201 ? { ok:true, item:j.item } : { ok:false, error:j.message || 'Máy chủ từ chối yêu cầu.' }; }); });
+    }
+    var o = readJson(REQ_KEY) || { v:1, items:[] };
+    if(o.items.some(function(r){ return String(r.appointmentId) === String(a.id); })) return Promise.resolve({ ok:false, error:'Bạn đã gửi yêu cầu thuê cho buổi xem này rồi.' });
+    var item = { id:o.items.reduce(function(m, r){ return Math.max(m, r.id); }, 0) + 1, appointmentId:a.id, roomId:a.roomId, room:a.room,
+      roomCode:String(a.roomId).toUpperCase(), price:a.price, renterId:WHO, tenant:a.tenant || '', phone:a.phone || '', wantDate:wantDate, note:'',
+      status:'pending', reason:'', createdAt:new Date().toISOString(), decidedAt:null, seenAt:null };
+    o.items.push(item); writeJson(REQ_KEY, o);
+    return Promise.resolve({ ok:true, item:item });
+  }
+  function orderFor(a){
+    var o = readJson(ORDER_KEY);
+    return o && o.roomId === a.roomId ? o : null;
+  }
+  function viewedSection(){
+    if(!viewed.length) return '';
+    return '<section class="card viewed reveal" aria-labelledby="viewedTitle">' +
+      '<div class="card-head"><div><h2 id="viewedTitle">Phòng đã xem xong</h2><p>Chọn phòng bạn muốn thuê để xác nhận và đặt cọc</p></div>' +
+        '<span class="side-count">' + viewed.length + ' phòng</span></div>' +
+      '<div class="card-body"><ul class="viewed-grid">' + viewed.map(function(a){
+        var o = orderFor(a), st = null, rq = reqFor(a), reason = '';
+        if(o) st = o.reached === 'thanh-cong' ? ['paid', 'Đã đặt cọc'] :
+                   (o.reached === 'da-gui' || o.reached === 'cho-xac-nhan') ? ['submitted', 'Chờ xác nhận cọc'] : ['pending', 'Đang đặt cọc'];
+        else if(rq && rq.status === 'approved') st = ['paid', 'Chủ trọ đã duyệt'];
+        else if(rq && rq.status === 'rejected'){ st = ['overdue', 'Không được duyệt']; reason = rq.reason ? 'Lý do: ' + rq.reason : 'Chủ trọ không nêu lý do.'; }
+        else if(rq) st = ['submitted', 'Chờ chủ trọ duyệt'];
+        return '<li class="viewed-item">' +
+          '<img src="' + esc(a.image) + '" alt="Ảnh ' + esc(a.room) + '" width="320" height="240" loading="lazy" />' +
+          '<div class="viewed-info"><h3>' + esc(a.room) + '</h3>' +
+            '<p class="when">Đã xem ngày ' + fmtDate(a.date) + ' lúc ' + esc(a.time) + '</p>' +
+            '<p class="price">' + vnd(a.price || 0) + '<span>/tháng</span></p>' +
+            (st ? '<span class="status is-' + st[0] + '">' + st[1] + '</span>' : '') +
+            (reason ? '<p class="viewed-reason">' + esc(reason) + '</p>' : '') + '</div>' +
+          (o ? '<button type="button" class="btn btn-ghost" data-deposit="' + esc(a.id) + '">' + (st[0] === 'pending' ? 'Tiếp tục đặt cọc' : 'Xem đơn cọc') + '</button>'
+             : !rq ? '<button type="button" class="btn btn-primary" data-rent="' + esc(a.id) + '">Gửi yêu cầu thuê</button>'
+             : rq.status === 'approved' ? '<button type="button" class="btn btn-primary" data-deposit="' + esc(a.id) + '">Đặt cọc ngay</button>' : '') +
+        '</li>';
+      }).join('') + '</ul></div></section>';
+  }
+  function findViewed(id){ return viewed.filter(function(a){ return String(a.id) === String(id); })[0]; }
+
+  // Bước 3 → sang trang đặt cọc (bước 4–8), mang theo đúng dữ liệu trang đó cần
+  function goDeposit(a){
+    writeJson(ROOM_KEY, { id:a.roomId, title:a.room, price:a.price, deposit:a.price, image:a.image, alt:'Ảnh ' + a.room, address:a.address, phone:a.landlordPhone || '' });
+    var o = orderFor(a);
+    var hash = o && o.reached && o.reached !== 'thong-tin' ? '#' + o.reached : '';
+    location.href = 'dat-coc.html?phong=' + encodeURIComponent(a.roomId) + '&tu=thanh-toan' + hash;
+  }
+
+  var rentOv = document.getElementById('rentOverlay');
+  var renting = null, rentReturn = null;
+  function openRent(a, trigger){
+    renting = a;
+    rentReturn = trigger || document.activeElement;
+    var img = document.getElementById('rentImg');
+    img.src = a.image || ''; img.alt = 'Ảnh ' + a.room; img.hidden = !a.image;
+    document.getElementById('rentRoom').textContent = a.room;
+    document.getElementById('rentPrice').innerHTML = vnd(a.price || 0) + '<span>/tháng</span>';
+    var want = document.getElementById('rentWant');
+    want.min = todayYmd; want.value = ymd(new Date(Date.now() + 7 * 864e5));
+    rentOv.hidden = false;
+    document.body.classList.add('modal-open');
+    want.focus();
+  }
+  function closeRent(){
+    rentOv.hidden = true; renting = null;
+    if(!modal.classList.contains('open')) document.body.classList.remove('modal-open');
+    if(rentReturn && document.body.contains(rentReturn)) rentReturn.focus();
+    rentReturn = null;
+  }
+  document.getElementById('rentYes').addEventListener('click', function(){
+    var a = renting, btn = this; if(!a) return;
+    var want = document.getElementById('rentWant').value;
+    if(!want || want < todayYmd){ showToast('Ngày dọn vào chưa hợp lệ', 'Chọn một ngày từ hôm nay trở đi.'); document.getElementById('rentWant').focus(); return; }
+    btn.disabled = true;
+    sendRequest(a, want).then(function(res){
+      btn.disabled = false;
+      if(!res.ok){ showToast('Chưa gửi được yêu cầu', res.error); return; }
+      reqs.push(res.item);
+      rentReturn = null; closeRent(); render();
+      showToast('Đã gửi yêu cầu thuê', 'Chủ trọ sẽ xem xét. Khi được duyệt, bạn sẽ được chuyển sang bước đặt cọc.');
+    }, function(){ btn.disabled = false; showToast('Mất kết nối', 'Không gửi được yêu cầu. Hãy thử lại.'); });
+  });
+  document.getElementById('rentNo').addEventListener('click', function(){
+    var a = renting; if(!a) return;
+    declined[a.id] = true; saved.declined = declined; writeJson(STORE_KEY, saved);
+    viewed = viewed.filter(function(x){ return x !== a; });
+    rentReturn = null; closeRent(); render();
+    showToast('Đã bỏ qua phòng', a.room + ' sẽ không hiện trong danh sách chờ thuê nữa.');
+  });
+  rentOv.addEventListener('mousedown', function(e){ if(e.target === rentOv) closeRent(); });
+  document.addEventListener('keydown', function(e){
+    if(rentOv.hidden) return;
+    if(e.key === 'Escape'){ e.preventDefault(); closeRent(); return; }
+    if(e.key === 'Tab'){
+      var f = [document.getElementById('rentWant'), document.getElementById('rentNo'), document.getElementById('rentYes')];
+      e.preventDefault(); f[(f.indexOf(document.activeElement) + (e.shiftKey ? 2 : 1)) % 3].focus();
+    }
+  });
+
+  // ---------- Hiển thị ----------
+  var content = document.getElementById('content');
+  function render(){
+    if(noContract){ content.innerHTML = viewedSection() + emptyView(); reveal(); return; }
+    content.innerHTML = viewedSection() + stats() +
+      '<div class="pay-layout"><div class="col">' + currentCard() + historyCard() + '</div>' +
+      '<div class="col">' + contractCard() + accountCard() + '</div></div>';
+    var open = invoices.filter(function(i){ return i.status === 'pending' || i.status === 'overdue'; }).length;
+    var nav = document.getElementById('navDue');
+    nav.textContent = open; nav.hidden = !open;
+    reveal();
+  }
+
+  content.addEventListener('click', function(e){
+    var t;
+    if((t = e.target.closest('[data-rent]'))){ var r = findViewed(t.getAttribute('data-rent')); if(r) openRent(r, t); return; }
+    if((t = e.target.closest('[data-deposit]'))){ var d = findViewed(t.getAttribute('data-deposit')); if(d) goDeposit(d); return; }
+    if((t = e.target.closest('[data-pay]'))){ openPay(t.getAttribute('data-pay'), t); return; }
+    if((t = e.target.closest('[data-copy]'))){ copy(t.getAttribute('data-copy')); return; }
+    if((t = e.target.closest('[data-filter]'))){
+      filter = t.getAttribute('data-filter');
+      document.querySelectorAll('.chip[data-filter]').forEach(function(c){ c.setAttribute('aria-pressed', String(c.getAttribute('data-filter') === filter)); });
+      document.getElementById('histBody').innerHTML = historyList();
+      return;
+    }
+    if((t = e.target.closest('.inv-toggle'))){
+      var open = t.getAttribute('aria-expanded') === 'true';
+      t.setAttribute('aria-expanded', String(!open));
+      document.getElementById(t.getAttribute('aria-controls')).hidden = open;
+      return;
+    }
+    if((t = e.target.closest('a[aria-disabled="true"]'))){ e.preventDefault(); showToast('Sắp có', 'Nhắn tin với chủ trọ sẽ mở trong khu Tin nhắn.'); }
+  });
+
+  // ---------- Modal chuyển khoản ----------
+  var modal = document.getElementById('payModal');
+  var paying = null, lastFocus = null;
+  function openPay(id, trigger){
+    paying = invoices.filter(function(i){ return i.id === id; })[0];
+    if(!paying) return;
+    lastFocus = trigger || document.activeElement;
+    var note = transferNote(paying);
+    document.getElementById('paySub').textContent = fmtPeriod(paying.period) + ' · ' + paying.id;
+    document.getElementById('payBody').innerHTML =
+      '<div class="pay-box">' +
+        '<div class="qr"><div class="code">' + qrSvg(paying.id) + '</div><small>Quét mã bằng ứng dụng<br />ngân hàng hoặc ví điện tử</small></div>' +
+        '<dl class="bank">' +
+          '<div><dt>Ngân hàng</dt><dd>' + BANK.name + '</dd></div>' +
+          '<div><dt>Số tài khoản</dt><dd>' + BANK.number + copyBtn(BANK.number.replace(/\s/g, ''), 'số tài khoản') + '</dd></div>' +
+          '<div><dt>Chủ tài khoản</dt><dd>' + BANK.holder + '</dd></div>' +
+          '<div><dt>Số tiền</dt><dd class="amount">' + vnd(paying.total) + copyBtn(String(paying.total), 'số tiền') + '</dd></div>' +
+          '<div><dt>Nội dung chuyển khoản (bắt buộc)</dt><dd>' + esc(note) + copyBtn(note, 'nội dung chuyển khoản') + '</dd></div>' +
+        '</dl>' +
+      '</div>' +
+      '<p class="notice">' + svg(ICON.info) + '<span>Sau khi chuyển tiền, bấm <b>“Tôi đã chuyển khoản”</b> để báo chủ trọ đối soát. Mã QR là minh hoạ, hãy dùng thông tin tài khoản bên trên.</span></p>';
+    var paidBtn = document.getElementById('paidBtn');
+    paidBtn.hidden = paying.status === 'submitted';
+    modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    modal.querySelector('.modal-close').focus();
+  }
+  function closePay(){
+    modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    paying = null;
+    if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus();
+  }
+  modal.addEventListener('click', function(e){
+    if(e.target === modal || e.target.closest('[data-close]')){ closePay(); return; }
+    var c = e.target.closest('[data-copy]'); if(c) copy(c.getAttribute('data-copy'));
+  });
+  document.getElementById('paidBtn').addEventListener('click', function(){
+    var inv = paying;
+    inv.status = 'submitted'; inv.submittedAt = new Date().toISOString();
+    saved[inv.id] = { submittedAt:inv.submittedAt };
+    writeJson(STORE_KEY, saved);
+    lastFocus = null;
+    closePay(); render();
+    var h = document.getElementById('curTitle'); if(h){ h.setAttribute('tabindex', '-1'); h.focus({ preventScroll:true }); }
+    showToast('Đã báo chuyển khoản', 'Chủ trọ sẽ xác nhận hoá đơn ' + inv.id + ' trong vòng 24 giờ.');
+  });
+  document.addEventListener('keydown', function(e){
+    if(!modal.classList.contains('open')) return;
+    if(e.key === 'Escape'){ closePay(); return; }
+    if(e.key === 'Tab'){
+      var f = Array.prototype.filter.call(modal.querySelectorAll('button,a[href]'), function(el){ return !el.hidden && el.offsetParent !== null; });
+      var first = f[0], last = f[f.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+
+  // Mã QR trang trí (sinh giả từ mã hoá đơn, không mã hoá dữ liệu thật) — giống trang đặt cọc
+  function qrSvg(seed){
+    var n = 25, h = 0, cells = '';
+    for(var i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    function rnd(){ h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; }
+    function finder(x, y){ return x < 7 && y < 7 || x >= n - 7 && y < 7 || x < 7 && y >= n - 7; }
+    for(var y = 0; y < n; y++) for(var x = 0; x < n; x++){
+      if(finder(x, y)) continue;
+      if(rnd() < .48) cells += 'M' + x + ' ' + y + 'h1v1h-1z';
+    }
+    function eye(x, y){ return '<path d="M' + x + ' ' + y + 'h7v7h-7zM' + (x + 1) + ' ' + (y + 1) + 'v5h5v-5z" fill-rule="evenodd"/><path d="M' + (x + 2) + ' ' + (y + 2) + 'h3v3h-3z"/>'; }
+    return '<svg viewBox="0 0 ' + n + ' ' + n + '" role="img" aria-label="Mã QR chuyển khoản minh hoạ" shape-rendering="crispEdges" fill="#102010">' +
+      '<path d="' + cells + '"/>' + eye(0, 0) + eye(n - 7, 0) + eye(0, n - 7) + '</svg>';
+  }
+
+  function copy(text){
+    var done = function(){ showToast('Đã sao chép', text); };
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(e){ showToast('Không sao chép được', 'Hãy chép thủ công.'); }
+      ta.remove();
+    }
+  }
+  function showToast(title, text){
+    var t = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastText').textContent = text;
+    t.classList.add('show');
+    clearTimeout(showToast.timer); showToast.timer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  // ---------- Menu di động ----------
+  var menuBtn = document.getElementById('menuBtn');
+  function closeNav(){ document.body.classList.remove('nav-open'); menuBtn.setAttribute('aria-expanded', 'false'); }
+  menuBtn.addEventListener('click', function(){
+    var open = document.body.classList.toggle('nav-open');
+    menuBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.getElementById('sideBackdrop').addEventListener('click', closeNav);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && document.body.classList.contains('nav-open')) closeNav(); });
+
+  // ---------- Reveal khi cuộn (tắt hẳn khi giảm chuyển động) ----------
+  var io = !reduce && 'IntersectionObserver' in window ? new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin:'0px 0px -10% 0px' }) : null;
+  function reveal(){
+    document.querySelectorAll('.reveal:not(.in)').forEach(function(el){
+      if(io) io.observe(el); else el.classList.add('in');
+    });
+  }
+
+  // Người thuê đăng nhập thật (npm start) thì hiện đúng tên
+  if(/^https?:$/.test(location.protocol) && window.fetch){
+    fetch('/api/toi', { cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if(!j || !j.user || j.user.role !== 'renter') return;
+      document.getElementById('accName').textContent = j.user.name;
+      document.getElementById('accAv').textContent = j.user.name.split(/\s+/).slice(-2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
+    }).catch(function(){});
+  }
+
+  // Tải xong danh sách phòng đã xem mới hiện nội dung; ?xem=<mã lịch> mở ngay bước xác nhận thuê
+  loadViewed().catch(function(){}).then(function(){
+    render();
+    document.body.classList.remove('is-loading');
+    var xem = new URLSearchParams(location.search).get('xem');
+    if(!xem) return;
+    var a = findViewed(xem);
+    if(!a){ showToast('Không tìm thấy phòng', 'Lịch xem này chưa hoàn thành hoặc bạn đã chọn không thuê.'); return; }
+    var rq = reqFor(a);
+    if(orderFor(a) || (rq && rq.status === 'approved')) goDeposit(a);
+    else if(!rq) openRent(a);
+    else if(rq.status === 'rejected') showToast('Yêu cầu thuê không được duyệt', rq.reason ? 'Lý do: ' + rq.reason : 'Chủ trọ không nêu lý do.');
+    else showToast('Đang chờ chủ trọ duyệt', 'Khi được duyệt, bạn sẽ được chuyển sang bước đặt cọc.');
+  });
+})();
+</script>
+</body>
+</html>

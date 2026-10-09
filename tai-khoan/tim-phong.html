@@ -57,7 +57,7 @@
   button{font:inherit}
   ::selection{background:rgba(34,139,34,.25)}
 
-  /* ---------- Buttons (tái dùng từ index.html) ---------- */
+  /* ---------- Buttons (tái dùng từ trang-chu.html) ---------- */
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     height:46px;padding:0 22px;border-radius:var(--radius);
@@ -116,8 +116,9 @@
   .side-nav{
     position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;
     display:flex;flex-direction:column;gap:4px;
-    padding:22px 16px;border-right:1px solid var(--border);background:var(--surface);
+    padding:22px 16px;border-right:1px solid var(--border);background:rgba(255,255,255,.96);
     overflow-y:auto;
+    box-shadow:inset -1px 0 0 rgba(34,139,34,.05);
   }
   .side-logo{padding:8px 10px 22px}
   .side-menu{display:flex;flex-direction:column;gap:4px}
@@ -147,7 +148,7 @@
   .dash-head h1{font-size:clamp(1.7rem,3vw,2.3rem);margin-bottom:8px}
   .dash-head p{color:var(--text-muted);font-size:.98rem}
 
-  /* ---------- Bộ tìm phòng (tái dùng .finder/.fld từ index.html) ---------- */
+  /* ---------- Bộ tìm phòng (tái dùng .finder/.fld từ trang-chu.html) ---------- */
   .finder{
     background:var(--surface);border:1px solid var(--border);
     border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;
@@ -180,6 +181,78 @@
   .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.2)}
   .fld .ctrl:focus-within > svg{stroke:var(--accent)}
   .finder .btn-find{height:48px;padding:0 26px}
+
+  /* ---------- Vị trí: Khu vực / Phường-Xã (modal) — cùng cấu trúc với trang chủ ---------- */
+  .fld-location .location-trigger{
+    width:100%;height:48px;padding:0 42px 0 42px;border:1px solid var(--border);
+    background:var(--surface-2);border-radius:var(--radius-sm);color:var(--text);
+    display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease);
+  }
+  .fld-location .location-trigger:hover{border-color:var(--border-strong)}
+  .fld-location .location-trigger:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .fld-location .location-trigger > svg:first-of-type{
+    position:absolute;left:14px;width:17px;height:17px;stroke:var(--text-dim);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  }
+  .fld-location .location-trigger .label-text{display:block;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px}
+  .fld-location .location-trigger .caret{position:absolute;right:13px;width:14px;height:14px;stroke:var(--text-dim);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+
+  .filter-overlay{
+    position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(16,32,16,.2);
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease;
+  }
+  .filter-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+  body.filter-open{overflow:hidden}
+
+  .filter-modal{
+    width:min(980px, calc(100vw - 24px));max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    background:linear-gradient(180deg,#FFFFFF 0%,#F5FAF5 100%);border:1px solid var(--border);border-radius:22px;
+    box-shadow:0 26px 80px rgba(16,32,16,.12);overflow:hidden;
+    transform:translateY(12px);opacity:0;transition:transform .22s ease,opacity .22s ease;
+  }
+  .filter-overlay.open .filter-modal{transform:none;opacity:1}
+  .filter-header{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px 16px;border-bottom:1px solid var(--border);
+  }
+  .filter-header h3{margin:0;font-size:1.8rem;line-height:1.1;color:var(--text);font-family:'Be Vietnam Pro',sans-serif;letter-spacing:-.04em}
+  .filter-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex:1}
+  .filter-search{
+    width:min(240px, 38vw);min-width:180px;height:42px;border:1px solid var(--border);border-radius:12px;background:#F3F8F3;color:var(--text);padding:0 14px;font-size:15px;outline:none;
+  }
+  .filter-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.12)}
+  .filter-close{
+    width:40px;height:40px;border-radius:50%;border:1px solid rgba(16,32,16,.12);background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--text);transition:background .2s ease,border-color .2s ease;
+  }
+  .filter-close:hover{background:var(--surface-2);border-color:var(--border-strong)}
+  .filter-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .filter-apply-top{
+    height:42px;padding:0 20px;border-radius:12px;border:1px solid rgba(239,89,52,.9);background:linear-gradient(180deg,#f46c45 0%,#ef5934 100%);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;
+  }
+
+  .filter-shell{display:grid;grid-template-columns:150px 1fr;min-height:420px;overflow:hidden}
+  .filter-sidebar{
+    background:linear-gradient(180deg,#F5FAF5 0%,#F2F7F2 100%);padding:14px 12px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:10px;
+  }
+  .filter-tab{
+    min-height:48px;padding:0 14px;border-radius:12px;border:1px solid transparent;background:transparent;
+    color:var(--text-muted);font-size:18px;font-weight:600;text-align:left;cursor:pointer;transition:all .18s ease;
+  }
+  .filter-tab.active{
+    background:var(--surface);border-color:var(--border);color:var(--text);box-shadow:inset 0 0 0 1px rgba(34,139,34,.08);
+  }
+
+  .filter-content{padding:20px 24px 0;overflow:auto}
+  .loc-panel{display:none;min-height:280px}
+  .loc-panel.active{display:block}
+  .filter-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+  .filter-chip{
+    min-height:52px;padding:10px 14px;border-radius:12px;border:1px solid rgba(16,32,16,.08);background:#EEF3EE;
+    color:var(--text);font-size:18px;font-weight:500;text-align:left;cursor:pointer;transition:all .2s ease;
+  }
+  .filter-chip:hover{border-color:var(--border-strong)}
+  .filter-chip.active{background:rgba(34,139,34,.08);border-color:var(--accent);color:var(--text);box-shadow:0 0 0 1px rgba(34,139,34,.12)}
+  .filter-more{margin-top:18px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:15px;padding:0;cursor:pointer}
+  .filter-empty{grid-column:1 / -1;padding:18px 12px;color:var(--text-dim);font-size:15px}
 
   .filter-toggle-row{display:flex;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
   .filter-toggle svg{transition:transform .2s var(--ease)}
@@ -246,6 +319,17 @@
   .room-row .rb .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
   .room-row .rb .distance{margin-top:auto;padding-top:6px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:4px}
   .room-row .rb .distance svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+  .save-room-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    border:1px solid var(--border-strong);background:rgba(34,139,34,.06);color:var(--text);
+    border-radius:999px;padding:8px 12px;min-height:38px;cursor:pointer;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;white-space:nowrap;
+    transition:all .18s var(--ease);
+  }
+  .save-room-btn:hover{border-color:var(--accent);background:rgba(34,139,34,.12)}
+  .save-room-btn.saved{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(34,139,34,.24)}
+  .save-room-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .save-room-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
   .empty{
     display:none;text-align:center;padding:48px 20px;
@@ -260,27 +344,31 @@
   .map-col{position:sticky;top:24px;height:calc(100vh - 130px);min-height:420px}
   .map-box{
     position:relative;width:100%;height:100%;border-radius:var(--radius-lg);overflow:hidden;
-    border:1px solid var(--border);
+    border:1px solid rgba(15,23,42,.08);
     background:
-      linear-gradient(180deg, rgba(125, 146, 171, 0.18), rgba(16,16,20,0.2)),
-      linear-gradient(135deg, #eaf0f6 0%, #dfe8f2 20%, #dfe5ef 45%, #d1d9e1 100%);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.16);
+      linear-gradient(180deg, rgba(240,245,240,.75), rgba(255,255,255,.7)),
+      linear-gradient(135deg, #edf4ee 0%, #eef5ef 20%, #e6efe6 45%, #dfeae0 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
+  }
+  .map-box iframe{
+    position:absolute;inset:0;width:100%;height:100%;border:0;display:block;z-index:0;
+    background:#e9efe8;
   }
   .map-box::before{
-    content:"";position:absolute;inset:0;pointer-events:none;
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
     background:
-      linear-gradient(rgba(255,255,255,.28) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px),
-      linear-gradient(90deg, transparent 0%, rgba(22,26,34,.04) 40%, rgba(22,26,34,.08) 100%);
+      linear-gradient(rgba(255,255,255,.32) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.28) 1px, transparent 1px),
+      linear-gradient(90deg, transparent 0%, rgba(22,26,34,.025) 40%, rgba(22,26,34,.06) 100%);
     background-size:36px 36px, 36px 36px, 100% 100%;
-    opacity:.7;
+    opacity:.9;
   }
   .map-box::after{
     content:"";position:absolute;inset:0;pointer-events:none;
     background:
-      radial-gradient(circle at 18% 26%, rgba(74, 85, 99, .08) 0, transparent 16%),
-      radial-gradient(circle at 64% 36%, rgba(78, 92, 107, .08) 0, transparent 18%),
-      radial-gradient(circle at 72% 62%, rgba(74, 85, 99, .08) 0, transparent 16%);
+      radial-gradient(circle at 18% 26%, rgba(34,139,34,.08) 0, transparent 16%),
+      radial-gradient(circle at 64% 36%, rgba(34,139,34,.06) 0, transparent 18%),
+      radial-gradient(circle at 72% 62%, rgba(34,139,34,.05) 0, transparent 16%);
   }
   .map-box-inner{
     position:absolute;left:50%;top:26px;transform:translateX(-50%);z-index:1;
@@ -298,18 +386,23 @@
     position:absolute;left:16px;top:16px;z-index:3;display:flex;align-items:center;gap:8px;
   }
   .map-chip{
-    display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.76);
-    border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 18px rgba(15,23,42,.12);color:#1f2430;font-size:12px;font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.88);
+    border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 18px rgba(15,23,42,.08);color:#1f2430;font-size:12px;font-weight:600;
     backdrop-filter:blur(10px);
   }
   .map-chip.active{background:var(--accent);color:#fff;border-color:rgba(34,139,34,.4);box-shadow:0 8px 18px rgba(17,24,39,.15)}
   .map-zoom{
     position:absolute;right:14px;top:16px;z-index:3;display:flex;flex-direction:column;border-radius:16px;border:1px solid rgba(15,23,42,.08);
-    overflow:hidden;box-shadow:0 8px 18px rgba(15,23,42,.14);background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+    overflow:hidden;box-shadow:0 8px 18px rgba(15,23,42,.14);background:rgba(255,255,255,.72);backdrop-filter:blur(8px);
   }
   .map-zoom button{
     width:40px;height:40px;border:0;background:transparent;color:#1f2430;font-size:24px;cursor:pointer;display:grid;place-items:center;
     border-bottom:1px solid rgba(15,23,42,.06);
+  }
+  .map-open-link{
+    position:absolute;right:14px;bottom:14px;z-index:3;padding:10px 12px;border-radius:999px;
+    background:rgba(255,255,255,.82);border:1px solid rgba(15,23,42,.08);color:#1f2430;text-decoration:none;
+    font-size:12px;font-weight:700;box-shadow:0 8px 18px rgba(15,23,42,.12);
   }
   .map-zoom button:last-child{border-bottom:0}
   .map-zoom button:hover{background:rgba(17,24,39,.04)}
@@ -330,7 +423,7 @@
   }
   .map-pin .dot{
     width:18px;height:18px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
-    background:rgba(255,255,255,.96);border:3px solid var(--accent-hover);box-shadow:0 10px 18px rgba(15,23,42,.2);
+    background:rgba(255,255,255,.97);border:3px solid #228B22;box-shadow:0 10px 18px rgba(34,139,34,.22);
     transition:transform .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease),border-color .18s var(--ease);
   }
   .map-pin .tag{
@@ -445,7 +538,22 @@
   .toast b{display:block;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:2px}
   .toast span{color:rgba(255,255,255,.78);font-size:12.5px}
   @media(max-width:640px){.toast{left:16px;right:16px;bottom:16px}}
-  .rd-actions .btn{width:100%;height:48px;font-size:14.5px}
+  .rd-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rd-actions .btn{width:100%;height:48px;font-size:14.5px;padding:0 12px}
+  .rd-rent{margin-bottom:12px}
+  .rd-rent > .btn{width:100%;height:48px;font-size:14.5px}
+  .rd-rent-confirm{
+    margin-top:10px;padding:16px;border-radius:var(--radius);
+    background:var(--surface-2);border:1px solid var(--border-strong);
+    animation:rdRentIn .22s var(--ease);
+  }
+  .rd-rent-confirm p{font-size:14px;color:var(--text-muted);line-height:1.55;margin-bottom:12px}
+  .rd-rent-confirm p b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:var(--text);margin-bottom:2px}
+  .rd-rent-confirm p span{color:var(--text);font-weight:600}
+  .rd-rent-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rd-rent-row .btn{width:100%;height:46px;padding:0 12px}
+  @keyframes rdRentIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.rd-rent-confirm{animation:none}}
 
   /* ---------- Responsive: 960 / 640 (bao trọn 768 và 390) ---------- */
   @media (max-width:960px){
@@ -489,13 +597,37 @@
     .rd-specs{grid-template-columns:1fr 1fr}
     .rd-info .rd-price{font-size:1.4rem}
   }
+  /* ---------- Thông báo sau khi đặt lịch xem ---------- */
+  .booked-overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(16,32,16,.45);backdrop-filter:blur(3px);animation:bookedFade .2s var(--ease)}
+  .booked{position:relative;width:100%;max-width:400px;max-height:calc(100dvh - 32px);overflow-y:auto;padding:20px 20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 40px 90px -30px rgba(16,48,16,.45);text-align:center;animation:bookedIn .32s var(--ease)}
+  .booked-brand{display:flex;align-items:center;gap:6px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:15px;color:var(--accent-hover);text-align:left}
+  .booked-brand svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .booked-illus{width:96px;height:96px;margin:4px auto 14px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(34,139,34,.16),rgba(34,139,34,.05) 70%);box-shadow:0 0 0 10px rgba(34,139,34,.05)}
+  .booked-illus svg{width:48px;height:48px;stroke:var(--accent-hover);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .booked h2{font-size:1.2rem;margin-bottom:6px;outline:none}
+  .booked-desc{font-size:14px;line-height:1.5;color:var(--text-muted);max-width:32ch;margin:0 auto 16px}
+  .booked-room{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);text-align:left}
+  .booked-room img{width:104px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;background:var(--border)}
+  .booked-room h3{font-size:14.5px;line-height:1.35;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .booked-room p{font-size:13px;line-height:1.45;color:var(--text-muted)}
+  .booked-room p b{color:var(--text);font-weight:600}
+  .booked-room .addr{display:flex;gap:5px;margin-top:4px;color:var(--text-dim);overflow-wrap:anywhere}
+  .booked-room .addr svg{width:14px;height:14px;flex-shrink:0;margin-top:2px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .booked-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-top:16px;border:0;border-radius:var(--radius);background:var(--accent);color:var(--accent-fg);font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 10px 28px -12px rgba(34,139,34,.8);transition:background .18s var(--ease)}
+  .booked-btn:hover{background:var(--accent-hover)}
+  .booked-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .booked-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .booked-overlay[hidden],.booked-room img[hidden]{display:none}
+  @keyframes bookedFade{from{opacity:0}to{opacity:1}}
+  @keyframes bookedIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.booked-overlay,.booked{animation:none}.booked-btn{transition:none}}
 </style>
 </head>
 <body>
 
 <!-- Thanh trên cùng: chỉ hiện khi sidebar thu gọn (≤960px) -->
 <div class="topbar" id="topbar">
-  <a href="../index.html" class="brand"><span class="mark">A</span> An Cư</a>
+  <a href="../trang-chu.html" class="brand"><span class="mark">A</span> An Cư</a>
   <button class="menu-toggle" id="menuBtn" aria-label="Mở menu điều hướng" aria-expanded="false" aria-controls="sideNav">
     <span></span>
   </button>
@@ -505,7 +637,7 @@
   <div class="side-backdrop" id="sideBackdrop"></div>
 
   <aside class="side-nav" id="sideNav">
-    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
     <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
       <a href="tim-phong.html" class="side-link active" aria-current="page" data-route="/tai-khoan/tim-phong">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -515,7 +647,7 @@
         <svg viewBox="0 0 24 24"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>
         Khám phá bản đồ
       </a>
-      <a href="#" class="side-link" data-route="/tai-khoan/da-luu">
+      <a href="da-luu.html" class="side-link" data-route="/tai-khoan/da-luu">
         <svg viewBox="0 0 24 24"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>
         Phòng đã lưu
       </a>
@@ -543,13 +675,14 @@
 
       <form class="finder reveal" id="finder" novalidate>
         <div class="finder-grid">
-          <div class="fld">
-            <label for="fQuery">Nhập quận, đường</label>
-            <div class="ctrl">
+          <div class="fld fld-location">
+            <label for="fLocation">Vị trí</label>
+            <button type="button" class="location-trigger" id="locationTrigger" aria-haspopup="dialog" aria-controls="locFilterOverlay">
               <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              <input id="fQuery" type="text" placeholder="Vd: Cầu Giấy, Thái Hà..." autocomplete="off" list="fQueryList" />
-              <datalist id="fQueryList"></datalist>
-            </div>
+              <span class="label-text" id="locationValue">Hà Nội</span>
+              <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <select id="fLocation" hidden aria-hidden="true"></select>
           </div>
 
           <div class="fld">
@@ -664,6 +797,7 @@
 
         <div class="map-col" id="mapCol">
           <div class="map-box" data-map-placeholder id="mapBox">
+            <iframe id="googleMapFrame" title="Bản đồ phòng trọ" src="https://www.google.com/maps?q=H%C3%A0%20N%E1%BB%99i%2C%20Vi%E1%BB%87t%20Nam&z=12&output=embed" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
             <div class="map-toolbar">
               <div class="map-chip active">Khám phá bản đồ</div>
               <div class="map-chip">Gần tôi</div>
@@ -673,19 +807,48 @@
               <button type="button" aria-label="Thu nhỏ">−</button>
             </div>
             <div class="map-legend"><span class="dot"></span>Phòng đang hiển thị</div>
-            <div class="map-box-inner">
-              <span class="ico">
-                <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              </span>
-              <h3>Bản đồ phòng trọ</h3>
-              <p>Các ghim dưới đây đại diện cho toàn bộ phòng trọ đã xuất hiện trên website, nằm theo vị trí địa lý ước lượng trên khu vực Hà Nội.</p>
-            </div>
+            <a class="map-open-link" href="https://www.google.com/maps" target="_blank" rel="noreferrer">Mở trên Google Maps</a>
             <div class="map-pins" id="mapPins"></div>
           </div>
         </div>
       </div>
     </div>
   </main>
+</div>
+
+<!-- MODAL VỊ TRÍ: Khu vực / Phường-Xã — cùng cấu trúc và dữ liệu với trang chủ -->
+<div class="filter-overlay" id="locFilterOverlay" aria-hidden="true">
+  <div class="filter-modal" role="dialog" aria-modal="true" aria-labelledby="locFilterTitle">
+    <div class="filter-header">
+      <h3 id="locFilterTitle">Bộ Lọc</h3>
+      <div class="filter-header-actions">
+        <input type="search" class="filter-search" id="locFilterSearch" placeholder="Tìm phường / khu vực" aria-label="Tìm phường hoặc khu vực" />
+        <button type="button" class="filter-apply-top" id="locFilterApply">Áp dụng</button>
+        <button type="button" class="filter-close" id="locFilterClose" aria-label="Đóng bộ lọc">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-shell">
+      <aside class="filter-sidebar" aria-label="Chọn loại lọc">
+        <button type="button" class="filter-tab active" data-filter-tab="area">Khu vực</button>
+        <button type="button" class="filter-tab" data-filter-tab="ward">Phường/Xã</button>
+      </aside>
+
+      <div class="filter-content">
+        <div class="loc-panel active" data-filter-panel="area">
+          <div class="filter-list" id="areaList"></div>
+          <button type="button" class="filter-more" id="showMoreArea">Xem tất cả</button>
+        </div>
+
+        <div class="loc-panel" data-filter-panel="ward">
+          <div class="filter-list" id="wardList"></div>
+          <button type="button" class="filter-more" id="showMoreWard">Xem tất cả</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL CHI TIẾT PHÒNG -->
@@ -708,6 +871,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           <span id="rdAddr"></span>
         </p>
+
+        <div class="rd-block">
+          <h3>Địa chỉ chi tiết</h3>
+          <p id="rdAddrDetail"></p>
+        </div>
 
         <dl class="rd-specs" id="rdSpecs"></dl>
 
@@ -756,8 +924,20 @@
           <a class="rd-booking-link" href="dat-lich.html">Xem lịch xem phòng của tôi</a>
         </div>
 
+        <div class="rd-rent">
+          <button type="button" class="btn btn-primary" id="rdRentBtn" aria-expanded="false" aria-controls="rdRentConfirm">Thuê phòng này</button>
+          <div class="rd-rent-confirm" id="rdRentConfirm" hidden>
+            <p><b>Xác nhận thuê phòng này?</b>Bạn sẽ chuyển sang bước đặt cọc <span id="rdRentDeposit"></span> (tương đương 1 tháng tiền phòng) để giữ phòng.</p>
+            <div class="rd-rent-row">
+              <button type="button" class="btn btn-ghost" id="rdRentCancel">Không thuê</button>
+              <button type="button" class="btn btn-primary" id="rdRentGo">Xác nhận đặt cọc</button>
+            </div>
+          </div>
+        </div>
+
         <div class="rd-actions">
-          <a class="btn btn-primary" id="rdCallBtn" href="tel:">Gọi cho chủ trọ</a>
+          <button type="button" class="btn btn-ghost" id="rdSaveBtn">Lưu phòng</button>
+          <a class="btn btn-ghost" id="rdCallBtn" href="tel:">Gọi cho chủ trọ</a>
         </div>
       </div>
     </div>
@@ -765,6 +945,46 @@
 </div>
 
 <script>
+  var SAVED_KEY = 'an_cu_saved_rooms';
+  function getSavedRooms(){
+    try {
+      return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveRooms(ids){
+    localStorage.setItem(SAVED_KEY, JSON.stringify(ids));
+  }
+  function isRoomSaved(id){
+    return getSavedRooms().indexOf(id) !== -1;
+  }
+  function toggleRoomSave(id){
+    var saved = getSavedRooms();
+    var idx = saved.indexOf(id);
+    if (idx === -1) {
+      saved.unshift(id);
+    } else {
+      saved.splice(idx, 1);
+    }
+    saveRooms(saved);
+    updateSaveButtons();
+    var rdSaveBtn = document.getElementById('rdSaveBtn');
+    if (rdSaveBtn) {
+      rdSaveBtn.textContent = isRoomSaved(id) ? 'Đã lưu phòng' : 'Lưu phòng';
+      rdSaveBtn.classList.toggle('saved', isRoomSaved(id));
+    }
+  }
+  function updateSaveButtons(){
+    var all = document.querySelectorAll('[data-save-room]');
+    all.forEach(function(btn){
+      var id = btn.getAttribute('data-save-room');
+      var on = isRoomSaved(id);
+      btn.classList.toggle('saved', on);
+      btn.innerHTML = on ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 11 2 2 4-4"/></svg>Đã lưu' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Lưu phòng';
+    });
+  }
+
   // ---------- Toast dùng chung ----------
   var toastTimer = null;
   function showToast(title, text){
@@ -775,6 +995,48 @@
     t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+  }
+
+  // ---------- Thông báo sau khi đặt lịch xem (giống dat-lich.html) ----------
+  var bookedReturn = null, bookedOverflow = '';
+  function closeBookedDialog(){
+    var ov = document.getElementById('bookedOverlay');
+    if(!ov || ov.hidden) return;
+    ov.hidden = true;
+    document.body.style.overflow = bookedOverflow;
+    if(bookedReturn && document.body.contains(bookedReturn) && bookedReturn.focus) bookedReturn.focus();
+    bookedReturn = null;
+  }
+  function showBookedDialog(b){
+    var ov = document.getElementById('bookedOverlay');
+    if(!ov) return;
+    if(!ov.dataset.bound){
+      ov.dataset.bound = '1';
+      document.getElementById('bookedOk').addEventListener('click', closeBookedDialog);
+      ov.addEventListener('mousedown', function(e){ if(e.target === ov) closeBookedDialog(); });
+      document.addEventListener('keydown', function(e){
+        if(ov.hidden) return;
+        if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); closeBookedDialog(); }
+        else if(e.key === 'Tab'){ e.preventDefault(); document.getElementById('bookedOk').focus(); }
+      }, true);
+    }
+    var d = b.date.split('-');
+    var hm = b.time.split(':').map(Number);
+    var end = hm[0] * 60 + hm[1] + (b.dur || 30);
+    function two(n){ return (n < 10 ? '0' : '') + n; }
+    var img = document.getElementById('bookedImg');
+    img.hidden = !b.image;
+    img.src = b.image || '';
+    img.alt = 'Ảnh ' + b.room;
+    document.getElementById('bookedRoom').textContent = b.room;
+    document.getElementById('bookedDate').textContent = d[2] + '/' + d[1] + '/' + d[0];
+    document.getElementById('bookedTime').textContent = b.time + ' - ' + two(Math.floor(end / 60) % 24) + ':' + two(end % 60);
+    document.getElementById('bookedAddr').textContent = b.address || 'Chủ trọ sẽ gửi địa chỉ khi xác nhận';
+    bookedReturn = document.activeElement;
+    bookedOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    ov.hidden = false;
+    document.getElementById('bookedOk').focus();
   }
 
   // ---------- Kho lịch xem phòng (dùng chung với dat-lich.html) ----------
@@ -791,7 +1053,14 @@
     if(!/^https?:$/.test(location.protocol) || !window.fetch) return Promise.resolve(false);
     return fetch('/api/suc-khoe', { cache:'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ if(j && j.ok){ API.on = true; API.now = j.now; } return API.on; })
+      .then(function(j){
+        if(j && j.ok){
+          API.on = true; API.now = j.now;
+          // Đã đăng nhập bằng tài khoản người thuê: dùng tài khoản thật, bỏ người thuê mô phỏng ?nguoi=
+          if(j.me && j.me.role === 'renter') NGUOI_THUE = { id:j.me.id, name:j.me.name, phone:j.me.phone };
+        }
+        return API.on;
+      })
       .catch(function(){ return false; });
   })();
   function apiCall(method, url, body){
@@ -822,7 +1091,7 @@
 
   // Cùng mốc thời gian mô phỏng với dat-lich.html và quan-ly/yeucauvalichhen.html,
   // để một ngày hợp lệ bên này cũng hợp lệ bên kia.
-  var SIM_NOW = new Date(2026,8,18,8,15,0);
+  var SIM_NOW = new Date(); // giờ thật; có máy chủ thì lấy giờ máy chủ bên dưới
   function lichPad2(n){ return (n<10?'0':'')+n; }
   function lichYmd(d){ return d.getFullYear()+'-'+lichPad2(d.getMonth()+1)+'-'+lichPad2(d.getDate()); }
   function lichToday(){ return lichYmd(SIM_NOW); }
@@ -853,10 +1122,10 @@
   // "máy chủ báo khung giờ nào đã bị chiếm"; chỉ đọc, không lộ danh tính ai đặt.
   // Khi có backend, danh sách này thay bằng lời gọi lấy các khung giờ đã bị chiếm.
   var OTHER_BOOKINGS = [
-    { roomId:'r09', date:'2026-09-20', time:'10:00', status:'confirmed', createdAt:'2026-09-17T09:00:00' },
-    { roomId:'r09', date:'2026-09-19', time:'09:00', status:'pending',   createdAt:'2026-09-18T07:00:00' },
+    { roomId:'p01', date:'2026-09-20', time:'10:00', status:'confirmed', createdAt:'2026-09-17T09:00:00' },
+    { roomId:'p01', date:'2026-09-19', time:'09:00', status:'pending',   createdAt:'2026-09-18T07:00:00' },
     // Giữ chỗ từ 16/09, chủ trọ không xác nhận: đã quá hạn nên khung này KHÔNG còn bị chiếm
-    { roomId:'r09', date:'2026-09-19', time:'15:00', status:'pending',   createdAt:'2026-09-16T10:00:00' }
+    { roomId:'p01', date:'2026-09-19', time:'15:00', status:'pending',   createdAt:'2026-09-16T10:00:00' }
   ];
 
   function holdEnd(it){
@@ -996,156 +1265,132 @@
     // Dữ liệu mẫu riêng cho khu người thuê (khác bộ ROOMS ở trang công khai),
     // có thêm mapX/mapY (%) để định vị ghim trên bản đồ placeholder và
     // distance (khoảng cách ước lượng tới vị trí tìm kiếm) phục vụ dashboard cá nhân.
+    // BỘ CHUẨN: 9 phòng p01-p09 ở đây là nguồn sự thật, trang-chu.html và PHONG trong
+    // server/phong.mjs lấy theo. Số điện thoại là số đã đăng ký của chủ trọ sở hữu phòng. Ảnh dùng file nội bộ
+    // trong assets/rooms/ thay vì Unsplash từ xa, để khu người thuê không trống ảnh khi mất mạng.
     var ROOMS = [
-      { id:'r09', title:'Phòng khép kín, gần các trường Bách Kinh Xây', type:'Phòng trọ', price:3300000, area:35, people:2,
-        ward:'P. Vĩnh Tuy', district:'Hai Bà Trưng', address:'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội',
-        alt:'Phòng khép kín có gác, tủ quần áo và ban công tại phố Lạc Trung', distance:1.4, mapX:30, mapY:58,
-        amenities:['Máy lạnh','Nóng lạnh','Sân vườn'],
-        phone:'0327882879', postedAt:'05/08/2026',
-        desc:'Diện tích: 15 - 40m² (6 phòng) vệ sinh khép kín. Ngõ rộng, 50m ra mặt đường Lạc Trung, Kim Ngưu, gần các trường ĐH Bách Kinh Xây, gần khu vực Times City, 200m ra bệnh viện Thanh Nhàn, gần chợ, khu cư dân nhiều cây xanh yên tĩnh thoáng mát. Tầng 1 để xe thoải mái miễn phí. Phòng to có điều hòa, bình nóng lạnh, tủ quần áo 4 cánh, giường 1m8, ban công rộng thoáng, vệ sinh khép kín, rộng 30-40m². Phòng nhỏ có điều hòa, bình nóng lạnh, tủ quần áo 4 cánh, giường 1m8, vệ sinh khép kín hoặc vệ sinh riêng mỗi phòng. Giá thuê: 3,3 - 5,2 triệu. Điện: 4k/số, Nước: 80k/người. Không phí dịch vụ, không chi phí quản lý, trợ giá sinh viên.',
+      { id:'p01', title:'Phòng gác lửng, thoáng sáng', type:'Phòng trọ', price:2800000, area:22, people:2, floor:2,
+        ward:'P. Nghĩa Đô', district:'Cầu Giấy', address:'12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội',
+        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng', distance:1.5, mapX:32, mapY:36,
+        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+        phone:'0988000999', postedAt:'16/09/2026',
+        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Nghĩa Tân 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
         image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg',
         images:['../assets/rooms/phong-lac-trung-vinh-tuy.jpg','../assets/rooms/phong-lac-trung-vinh-tuy-2.webp','../assets/rooms/phong-lac-trung-vinh-tuy-3.webp'] },
-      { id:'r10', title:'Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng', type:'Phòng trọ', price:4500000, area:20, people:2,
-        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'26 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội',
-        alt:'Phòng trọ mới xây, đầy đủ nội thất gần Đại Cồ Việt', distance:1.0, mapX:34, mapY:50,
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Camera an ninh'],
-        phone:'0967960926', postedAt:'05/08/2026',
-        desc:'Xung quanh là các trường Đại học Bách Khoa, Kinh tế Quốc dân, Đại học Xây dựng. Phòng mới 100%, full nội thất, điều hòa nóng lạnh, giường tủ, kệ bếp, camera an ninh đầy đủ. Mặt tiền thông thoáng, các phòng đều có ban công, lối thoát hiểm độc lập. Không chung chủ. Không qua trung gian, không nhận cọc trước qua mọi hình thức, đến xem trực tiếp phù hợp mới ở.',
+      { id:'p02', title:'Căn hộ mini full nội thất', type:'Căn hộ mini', price:4200000, area:30, people:2, floor:4,
+        ward:'P. Kim Liên', district:'Đống Đa', address:'27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội',
+        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng', distance:2.3, mapX:48, mapY:42,
+        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+        phone:'0977111222', postedAt:'17/09/2026',
+        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Gần công viên Thống Nhất, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
         image:'../assets/rooms/phongtrobachkinhxaygiare1.webp',
         images:['../assets/rooms/phongtrobachkinhxaygiare1.webp','../assets/rooms/phongtrobachkinhxaygiare2.webp','../assets/rooms/phongtrobachkinhxaygiare3.webp','../assets/rooms/phongtrobachkinhxaygiare4.webp'] },
-      { id:'r11', title:'Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt', type:'Phòng trọ', price:3300000, area:25, people:2,
-        ward:'P. Nghĩa Đô', district:'Cầu Giấy', address:'Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội',
-        alt:'Phòng khép kín trong ngõ 210 Hoàng Quốc Việt', distance:2.6, mapX:30, mapY:26,
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng','Chỗ để xe'],
-        phone:'0916667679', postedAt:'05/08/2026',
-        desc:'Phòng khép kín 25m² gồm nhà vệ sinh, bếp, giường, tủ, điều hòa, bình nóng lạnh. Có công tơ riêng, chỗ để xe máy chung tầng 1. Có máy giặt và sân phơi chung ở tầng 5. Gần các trường HV Quân sự, ĐH Điện lực, CĐ Du lịch, ĐH Quốc gia, ĐH KHCN, ĐH Sư phạm, CĐ Sư phạm, ĐH Thương mại. Gần chợ Nghĩa Tân, chợ Trần Cung, nhiều trạm xe buýt. Khu dân trí cao, an ninh, yên tĩnh, sạch sẽ, văn minh. Giá thuê từ 3,3tr/tháng tùy loại phòng.',
+      { id:'p03', title:'Phòng ban công riêng, đón nắng', type:'Phòng trọ', price:3100000, area:25, people:2, floor:3,
+        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội',
+        alt:'Phòng trọ có ban công riêng nhiều ánh sáng', distance:2.8, mapX:54, mapY:50,
+        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        phone:'0977111222', postedAt:'15/09/2026',
+        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần chợ Mơ và bến xe Nước Ngầm. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
         image:'../assets/rooms/210hqv1.webp',
         images:['../assets/rooms/210hqv1.webp','../assets/rooms/210hqv2.webp','../assets/rooms/210hqv3.webp','../assets/rooms/210hqv4.webp'] },
-      { id:'r12', title:'Phòng mới xây, đầy đủ tiện nghi', type:'Phòng trọ', price:3500000, area:30, people:2,
-        ward:'P. Hàng Bột', district:'Đống Đa', address:'Số nhà 20, ngách 79, ngõ Cẩm Văn, Phường Hàng Bột, Quận Đống Đa, Hà Nội',
-        alt:'Phòng mới xây đầy đủ tiện nghi tại ngõ Cẩm Văn', distance:2.0, mapX:50, mapY:30,
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng'],
-        phone:'0838528543', postedAt:'05/08/2026',
-        desc:'Nhà mới xây, đầy đủ tiện nghi, có nóng lạnh, điều hòa, tủ quần áo, tủ phấn, đệm, giá bếp. Gần chợ, bệnh viện, trường học các cấp 1, 2, 3. Gần Đại học Nhạc viện, Mỹ thuật, Cao đẳng Y tế, Đại học Công đoàn, Thủy lợi, Bách Khoa, Đại học Y tế.',
+      { id:'p04', title:'Studio hiện đại gần trung tâm', type:'Căn hộ mini', price:3900000, area:28, people:2, floor:5,
+        ward:'P. Khương Đình', district:'Thanh Xuân', address:'12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội',
+        alt:'Phòng studio hiện đại gần trung tâm thành phố', distance:3.6, mapX:44, mapY:62,
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+        phone:'0977111222', postedAt:'17/09/2026',
+        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách công viên Hạ Đình 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
         image:'../assets/rooms/moixay1.webp',
         images:['../assets/rooms/moixay1.webp','../assets/rooms/moixay2.webp','../assets/rooms/moixay3.webp','../assets/rooms/moixay4.webp'] },
-      { id:'r13', title:'Phòng trọ khép kín Trần Thái Tông', type:'Phòng trọ', price:3500000, area:28, people:2,
-        ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội',
-        alt:'Phòng khép kín gần ngã tư Trần Thái Tông - Xuân Thủy', distance:1.3, mapX:40, mapY:32,
-        amenities:['Máy lạnh','Nóng lạnh','Chỗ để xe','Có bếp riêng'],
-        phone:'0904525414', postedAt:'05/08/2026',
-        desc:'Gần ngã tư Trần Thái Tông - Xuân Thủy, cách HV Báo Chí 200m, gần ĐH Quốc Gia, Sư Phạm, Ngoại Ngữ, Thương Mại. Tiện ích: giường, tủ, đệm, điều hòa, nóng lạnh, bàn bếp, máy giặt chung, khóa vân tay. Thang bộ, để xe free. Phí dịch vụ: Điện 4.000đ/số, Nước 100k/người, DV chung 150k/người (wifi, máy giặt...).',
+      { id:'p05', title:'Phòng khép kín, an ninh tốt', type:'Phòng trọ', price:2500000, area:20, people:2, floor:1,
+        ward:'P. Ngọc Hà', district:'Ba Đình', address:'56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội',
+        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt', distance:1.9, mapX:38, mapY:24,
+        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        phone:'0988000999', postedAt:'14/09/2026',
+        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Lăng Bác 1,2km, gần chợ và trạm xe buýt.',
         image:'../assets/rooms/ttt1.webp',
         images:['../assets/rooms/ttt1.webp','../assets/rooms/ttt2.webp','../assets/rooms/ttt3.webp'] },
-      { id:'r14', title:'Phòng trọ sinh viên tại Hòa Lạc, gần ĐH FPT, ĐHQGHN', type:'Phòng trọ', price:1800000, area:20, people:2,
-        ward:'X. Hòa Lạc', district:'Thạch Thất', address:'Đường Đại lộ Thăng Long, Xã Hòa Lạc, Huyện Thạch Thất, Hà Nội',
-        alt:'Phòng trọ sinh viên gần cổng sau Đại học FPT Hòa Lạc', distance:24, mapX:6, mapY:82,
-        amenities:['Máy lạnh','Nóng lạnh','Wifi miễn phí','Có bếp riêng'],
-        phone:'0342150995', postedAt:'05/08/2026',
-        desc:'Ngay cổng sau trường ĐH FPT, gần ĐHQGHN Hòa Lạc, gần HVTC. Thiết bị đầy đủ: điều hòa, nóng lạnh, tủ lạnh, wifi, giường tủ, bàn học, bàn bếp, máy giặt (có khu sạc xe điện). Điện 3.400đ/số, nước sạch, dịch vụ 150.000đ/người/tháng (máy giặt, internet, vệ sinh, rác). Gần điểm xe Bus 117, siêu thị, quán ăn, nhà hàng, phòng Gym, chợ. An ninh đảm bảo, nội quy đầy đủ, thoáng mát, an toàn.',
+      { id:'p06', title:'Phòng rộng, phù hợp gia đình', type:'Phòng trọ', price:4600000, area:35, people:3, floor:2,
+        ward:'P. Vĩnh Hưng', district:'Hoàng Mai', address:'203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội',
+        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình', distance:4.4, mapX:58, mapY:70,
+        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+        phone:'0977111222', postedAt:'16/09/2026',
+        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Vĩnh Hưng và Times City 2km.',
         image:'../assets/rooms/hoalac1.webp',
         images:['../assets/rooms/hoalac1.webp','../assets/rooms/hoalac2.webp','../assets/rooms/hoalac3.webp'] },
-      { id:'r15', title:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', type:'Phòng trọ', price:4250000, area:25, people:2,
-        ward:'P. Phúc Diễn', district:'Nam Từ Liêm', address:'Ngõ 90 Đường Phúc Diễn, Quận Nam Từ Liêm, Hà Nội',
-        alt:'Phòng trọ giá rẻ gần chân ga Cầu Diễn', distance:9.5, mapX:14, mapY:44,
-        amenities:['Thang máy','Wifi miễn phí'],
-        phone:'0974942507', postedAt:'05/08/2026',
-        desc:'Ngõ 90 Phúc Diễn - 281 Hồ Tùng Mậu (gần chân ga Cầu Diễn). Trống phòng 501. Điện 3,8k/số, Nước 35k/khối, Dịch vụ chung 150k/người, mạng 100k/phòng, thang máy 50k/người. Không nhận thú cưng, không nhận khách nước ngoài. Hợp đồng 13 tháng.',
+      { id:'p07', title:'Phòng trọ giá mềm cho sinh viên', type:'Phòng trọ', price:1800000, area:16, people:1, floor:3,
+        ward:'P. Mỹ Đình', district:'Từ Liêm', address:'9 Lê Đức Thọ, P. Mỹ Đình, Từ Liêm, Hà Nội',
+        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên', distance:5.2, mapX:14, mapY:40,
+        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+        phone:'0988000999', postedAt:'13/09/2026',
+        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê gần Đại học Thương Mại, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
         image:'../assets/rooms/ga1.webp',
         images:['../assets/rooms/ga1.webp','../assets/rooms/ga2.webp','../assets/rooms/ga3.webp'] },
-      { id:'r16', title:'Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện', type:'Phòng trọ', price:3000000, area:30, people:2,
-        ward:'P. Kim Liên', district:'Đống Đa', address:'2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội',
-        alt:'Phòng khép kín có ban công trên phố Tôn Thất Tùng', distance:3.4, mapX:54, mapY:34,
-        amenities:['Máy lạnh','Nóng lạnh'],
-        phone:'0982165646', postedAt:'05/08/2026',
-        desc:'Có phòng cho nữ thuê, diện tích 30m² (có ban công). Tiện nghi đầy đủ: tắm nóng lạnh, điều hòa, máy giặt, quạt, giường tủ. Khép kín, đi khóa về mở, dân trí cao, an ninh tốt.',
+      { id:'p08', title:'Phòng có gác, cửa sổ hướng vườn', type:'Phòng trọ', price:3400000, area:26, people:2, floor:2,
+        ward:'P. Nhật Tân', district:'Tây Hồ', address:'74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội',
+        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn', distance:3.0, mapX:34, mapY:10,
+        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+        phone:'0977111222', postedAt:'15/09/2026',
+        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn đào của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Nhật Tân 1,5km.',
         image:'../assets/rooms/dd1.webp',
         images:['../assets/rooms/dd1.webp','../assets/rooms/dd2.webp'] },
-      { id:'r17', title:'Trọ có 1 phòng ngủ 1 phòng khách', type:'Phòng trọ', price:4000000, area:25, people:2,
-        ward:'P. Xuân Phương', district:'Nam Từ Liêm', address:'Đường Tu Hoàng, Phường Xuân Phương, Quận Nam Từ Liêm, Hà Nội',
-        alt:'Phòng 1 ngủ 1 khách khép kín tại phố Nhổn', distance:11.8, mapX:8, mapY:60,
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng'],
-        phone:'0912415901', postedAt:'05/08/2026',
-        desc:'Địa chỉ 37 phố Nhổn, giá chỉ từ 3xxx (đóng 1 cọc 1), loại 1N1K: 4m5. Phòng khép kín, nội thất: điều hòa, tủ lạnh, ban công thoáng mát, nóng lạnh, tủ quần áo, bếp, sân phơi, máy giặt tầng thượng. Phí dịch vụ: Điện 3,8k/số, Nước 30k/khối, Internet 100k/phòng, Dịch vụ chung 180k/người. Cách mặt đường Nhổn 30m, cách ĐH Công Nghiệp 150m, gần tàu điện trên cao, gần bến xe buýt. Nhà mới xây, không chung chủ, giờ giấc thoải mái, khóa vân tay, không nhận xe điện.',
-        image:'../assets/rooms/1n1k1.webp',
-        images:['../assets/rooms/1n1k1.webp','../assets/rooms/1n1k2.webp','../assets/rooms/1n1k3.webp'] },
-      { id:'r18', title:'Phòng đầy đủ tiện nghi', type:'Phòng trọ', price:2700000, area:25, people:2,
-        ward:'P. Định Công', district:'Hoàng Mai', address:'Số nhà 26A, ngõ 220 Định Công Thượng, Phường Định Công, Quận Hoàng Mai, Hà Nội',
-        alt:'Phòng đầy đủ tiện nghi tại ngõ 220 Định Công Thượng', distance:6.5, mapX:20, mapY:78,
-        amenities:['Máy lạnh','Nóng lạnh','Có bếp riêng'],
-        phone:'0972137955', postedAt:'05/08/2026',
-        desc:'Giá 2.700.000đ/tháng nếu ở 1 người, ở 2 người giá 3tr - phòng tầng 2. Tầng 1 có chỗ để xe rộng rãi, khu vực bếp ăn, full đồ (bếp nấu, tủ lạnh, bàn ăn, đồ dùng nhà bếp). Máy giặt, sân phơi ở tầng 4 rộng, thoáng, sạch sẽ, nhiều cây xanh. Phòng tầng 2 còn 1 phòng trống, cửa sổ rộng thoáng, full điều hòa, nóng lạnh, giường, tủ, bàn học. Mỗi tầng 2 phòng, vệ sinh chung sạch sẽ. Phí dịch vụ: internet, nước, điện tính theo hóa đơn nhà cung cấp.',
+      { id:'p09', title:'Căn hộ dịch vụ 2 phòng ngủ', type:'Căn hộ mini', price:6500000, area:48, people:3, floor:6,
+        ward:'P. Việt Hưng', district:'Long Biên', address:'15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội',
+        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi', distance:4.8, mapX:76, mapY:28,
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+        phone:'0977111222', postedAt:'17/09/2026',
+        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Đuống. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
         image:'../assets/rooms/hmai1.webp',
-        images:['../assets/rooms/hmai1.webp','../assets/rooms/hmai2.webp','../assets/rooms/hmai3.webp','../assets/rooms/hmai4.webp','../assets/rooms/hmai5.webp'] },
-      { id:'r01', title:'Phòng trọ gần Đại học Quốc Gia', type:'Phòng trọ', price:2800000, area:18, people:1, floor:1,
-        ward:'P. Dịch Vọng Hậu', district:'Cầu Giấy', address:'34 Trần Thái Tông, P. Dịch Vọng Hậu, Cầu Giấy, Hà Nội',
-        alt:'Phòng trọ nhỏ gọn gần Đại học Quốc Gia Hà Nội', distance:1.2, mapX:38, mapY:34,
-        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
-        image:'../assets/rooms/210hqv2.webp',
-        images:['../assets/rooms/210hqv2.webp','../assets/rooms/210hqv3.webp','../assets/rooms/210hqv4.webp'] },
-      { id:'r02', title:'Căn hộ mini có ban công', type:'Căn hộ mini', price:6200000, area:32, people:2, floor:5,
-        ward:'P. Trung Liệt', district:'Đống Đa', address:'58 Thái Hà, P. Trung Liệt, Đống Đa, Hà Nội',
-        alt:'Căn hộ mini hiện đại có ban công riêng', distance:2.4, mapX:58, mapY:22,
-        amenities:['Máy lạnh','Có bếp riêng','Chỗ để xe'],
-        image:'../assets/rooms/moixay2.webp',
-        images:['../assets/rooms/moixay2.webp','../assets/rooms/moixay3.webp','../assets/rooms/moixay4.webp'] },
-      { id:'r03', title:'Ở ghép nữ, an ninh tốt', type:'Ở ghép', price:2100000, area:16, people:3, floor:2,
-        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'12/8 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội',
-        alt:'Phòng ở ghép dành cho nữ, an ninh tốt', distance:0.8, mapX:24, mapY:52,
-        amenities:['Giờ giấc tự do','Wifi miễn phí'],
-        image:'../assets/rooms/phongtrobachkinhxaygiare2.webp',
-        images:['../assets/rooms/phongtrobachkinhxaygiare2.webp','../assets/rooms/phongtrobachkinhxaygiare3.webp','../assets/rooms/phongtrobachkinhxaygiare4.webp'] },
-      { id:'r04', title:'Phòng có gác, cửa sổ lớn', type:'Phòng trọ', price:3400000, area:24, people:2, floor:2,
-        ward:'P. Khương Trung', district:'Thanh Xuân', address:'21 Vũ Trọng Phụng, P. Khương Trung, Thanh Xuân, Hà Nội',
-        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng', distance:1.6, mapX:44, mapY:64,
-        amenities:['Có gác lửng','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
-        image:'../assets/rooms/hmai2.webp',
-        images:['../assets/rooms/hmai2.webp','../assets/rooms/hmai3.webp','../assets/rooms/hmai4.webp'] },
-      { id:'r05', title:'Studio khép kín gần Hồ Tây', type:'Căn hộ mini', price:5300000, area:26, people:2, floor:3,
-        ward:'P. Cống Vị', district:'Ba Đình', address:'9 Đội Cấn, P. Cống Vị, Ba Đình, Hà Nội',
-        alt:'Phòng studio khép kín gần Hồ Tây', distance:3.1, mapX:68, mapY:46,
-        amenities:['Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh'],
-        image:'../assets/rooms/1n1k2.webp',
-        images:['../assets/rooms/1n1k2.webp','../assets/rooms/1n1k3.webp'] },
-      { id:'r06', title:'Phòng khép kín, nuôi thú cưng', type:'Phòng trọ', price:3100000, area:20, people:2, floor:1,
-        ward:'P. Tân Mai', district:'Hoàng Mai', address:'70 Tân Mai, P. Tân Mai, Hoàng Mai, Hà Nội',
-        alt:'Phòng khép kín cho phép nuôi thú cưng', distance:2.9, mapX:16, mapY:20,
-        amenities:['Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
-        image:'../assets/rooms/dd2.webp',
-        images:['../assets/rooms/dd2.webp','../assets/rooms/dd1.webp'] },
-      { id:'r07', title:'Ở ghép nam, gần sân vận động Mỹ Đình', type:'Ở ghép', price:1900000, area:20, people:3, floor:2,
-        ward:'P. Mỹ Đình 2', district:'Nam Từ Liêm', address:'5 Lê Đức Thọ, P. Mỹ Đình 2, Nam Từ Liêm, Hà Nội',
-        alt:'Phòng ở ghép cho nam gần sân vận động Mỹ Đình', distance:5.4, mapX:78, mapY:72,
-        amenities:['Giờ giấc tự do','Chỗ để xe'],
-        image:'../assets/rooms/ga2.webp',
-        images:['../assets/rooms/ga2.webp','../assets/rooms/ga3.webp'] },
-      { id:'r08', title:'Phòng rộng, có bếp riêng', type:'Phòng trọ', price:3900000, area:28, people:2, floor:3,
-        ward:'P. Khương Thượng', district:'Đống Đa', address:'112 Tôn Thất Tùng, P. Khương Thượng, Đống Đa, Hà Nội',
-        alt:'Phòng trọ rộng rãi có bếp riêng', distance:4.2, mapX:86, mapY:38,
-        amenities:['Có bếp riêng','Máy lạnh','Chỗ để xe'],
-        image:'../assets/rooms/ttt2.webp',
-        images:['../assets/rooms/ttt2.webp','../assets/rooms/ttt3.webp'] }
+        images:['../assets/rooms/hmai1.webp','../assets/rooms/hmai2.webp','../assets/rooms/hmai3.webp','../assets/rooms/hmai4.webp','../assets/rooms/hmai5.webp'] }
     ];
 
     var nf = new Intl.NumberFormat('vi-VN');
     function vnd(n){ return nf.format(n) + '₫'; }
     function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+    // Cấu trúc địa chỉ thống nhất với trang chủ: Khu vực → Phường/Xã → Quận/Huyện → Thành phố.
+    // r.ward/r.district đã sẵn có; địa chỉ chi tiết (số nhà/ngõ/đường) và thành phố
+    // được tách ra từ chuỗi r.address hiện có, không tạo thêm dữ liệu mới.
+    function addressCore(s){ return String(s).replace(/^(Phường|Xã|Quận|Huyện|P\.|X\.)\s*/i,'').trim().toLowerCase(); }
+    function splitAddress(r){
+      var parts = r.address.split(',').map(function(s){ return s.trim(); });
+      var city = parts[parts.length - 1] || '';
+      var wardCore = addressCore(r.ward);
+      var districtCore = addressCore(r.district);
+      var idx = -1;
+      for (var i = 0; i < parts.length - 1; i++){
+        if (addressCore(parts[i]) === wardCore) { idx = i; break; }
+      }
+      if (idx === -1){
+        for (var j = 0; j < parts.length - 1; j++){
+          if (addressCore(parts[j]) === districtCore) { idx = j; break; }
+        }
+      }
+      var detail = idx > 0 ? parts.slice(0, idx).join(', ') : parts[0];
+      return { detail: detail, city: city };
+    }
+    function mainAddressLine(r){ return r.ward + ', ' + r.district + ', ' + splitAddress(r).city; }
+
     var SVG_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
     var SVG_AREA = '<svg viewBox="0 0 24 24"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>';
     var SVG_PEOPLE = '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>';
     var SVG_WALK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
-    // Gợi ý autocomplete cho ô "Nhập quận, đường" — lấy từ chính dữ liệu mẫu.
-    var qList = document.getElementById('fQueryList');
-    var seen = {};
-    ROOMS.forEach(function(r){
-      [r.district, r.ward.replace('P. ',''), r.address.split(',')[0]].forEach(function(v){
-        if(!seen[v]){ seen[v] = true; qList.innerHTML += '<option value="' + esc(v) + '">'; }
-      });
-    });
+    // Bộ lọc vị trí Khu vực / Phường-Xã — cùng cấu trúc và dữ liệu với trang chủ (trang-chu.html),
+    // không tạo danh mục địa chỉ riêng cho trang người thuê.
+    var wardOptions = [
+      'Ba Đình','Bạch Mai','Cầu Giấy','Cửa Nam','Định Công','Đông Ngạc','Đống Đa','Giảng Võ','Hai Bà Trưng','Hoà̀n Kiếm','Hoàng Liệt','Hoàng Mai','Hồng Hà','Khương Đình','Kim Liên','Láng','Lĩnh Nam','Long Biên','Ngọc Hà','Nghĩa Đô','Ô Chợ Dừa','Phú Diễn','Phú Thượng','Phương Liệt','Sơn Tây','Tây Hồ','Tây Mỗ','Tây Tựu','Thanh Xuân','Thượng Cát','Từ Liêm','Tùng Thiện','Tương Mai','Văn Miếu - Quốc Tử Giám','Việt Hưng','Vĩnh Hưng','Vĩnh Tuy','Xuân Đỉnh','Xuân Phương','Yên Hòa','Yên Nghĩa','Yên Sở'
+    ].sort(function(a, b){ return a.localeCompare(b, 'vi'); });
 
-    var fQuery = document.getElementById('fQuery');
+    var areaOptions = [
+      'Bạch Đằng','Bạch Mai','Bát Tràng','Bồ Đề','Cát Linh','Chương Dương','Cống Vị','Cổ Nhuế','Cổ Nhuế 2','Cửa Đông','Cửa Nam','Diện Biên','Dịch Vọng','Dịch Vọng Hậu','Đại Kim','Đại Mỗ','Đồng Mai','Đồng Tâm','Đồng Xuân','Đức Giang','Đông Ngạc','Giang Biên','Giảng Võ','Hà Cầu','Hà Đông','Hàng Bạc','Hàng Bài','Hàng Bồ','Hàng Buồm','Hàng Đào','Hàng Gai','Hàng Mã','Hàng Trống','Hữu Hòa','Khâm Thiên','Khương Đình','Khương Mai','Khương Thượng','Kim Liên','Kim Mã','Kiến Hưng','La Khê','La Phù','Láng Hạ','Làng Bột','Lê Đại Hành','Liễu Giai','Lý Thái Tổ','Mai Dịch','Mai Động','Mộ Lao','Mễ Trì','Mỹ Đình','Nam Đồng','Nghĩa Đô','Ngọc Hà','Ngọc Khánh','Ngọc Lẫm','Ngọc Thụy','Nhật Tân','Nhân Chính','Ô Chợ Dừa','Phổ Huế','Phủ Thượng','Phúc Đồng','Phúc Diễn','Phúc La','Phúc Lợi','Phúc Tân','Phúc Xả','Phương Canh','Phương Liên','Phương Mai','Phương Liệt','Phường Mai','Quán Thánh','Quảng An','Quang Trung','Quỳnh Mai','Sơn Tây','Tân Mai','Tân Triều','Tây Mỗ','Tây Tựu','Thạch Bản','Thành Công','Thanh Lương','Thanh Nhàn','Thanh Trì','Thịnh Liệt','Thịnh Quang','Thổ Quan','Thụy Khuê','Tràng Tiền','Trần Hưng Đạo','Trần Phú','Trúc Bạch','Tứ Hiệp','Tử Liên','Văn Chương','Văn Điền','Văn Miếu','Vạn Phúc','Vân Canh','Vĩnh Hưng','Vĩnh Phúc','Vĩnh Tuy','Việt Hưng','Xuân Đỉnh','Xuân La','Xuân Phương','Xuân Tảo','Xuân Tào','Yên Hòa','Yên Phụ','Yên Sở','Yên Thủy'
+    ].sort(function(a, b){ return a.localeCompare(b, 'vi'); });
+
+    var selectedWard = '';
+    var selectedArea = '';
+    var wardExpanded = false;
+    var areaExpanded = false;
+    var activeFilterTab = 'area';
+
     var fPrice = document.getElementById('fPrice');
     var fArea = document.getElementById('fArea');
     var fType = document.getElementById('fType');
@@ -1163,13 +1408,19 @@
     }, { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
 
     function rowHtml(r){
+      var saved = isRoomSaved(r.id);
       return '<article class="room-row reveal" role="button" tabindex="0" data-room="' + r.id + '" aria-label="Xem chi tiết ' + esc(r.title) + '">' +
         '<div class="media">' +
           '<img loading="lazy" alt="' + esc(r.alt) + '" src="' + r.image + '" />' +
           '<span class="price">' + vnd(r.price) + '/th</span>' +
         '</div>' +
         '<div class="rb">' +
-          '<h3>' + esc(r.title) + '</h3>' +
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">' +
+            '<h3>' + esc(r.title) + '</h3>' +
+            '<button class="save-room-btn' + (saved ? ' saved' : '') + '" type="button" data-save-room="' + r.id + '" aria-label="' + (saved ? 'Bỏ lưu' : 'Lưu') + ' phòng ' + esc(r.title) + '">' +
+              (saved ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 11 2 2 4-4"/></svg>Đã lưu' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Lưu phòng') +
+            '</button>' +
+          '</div>' +
           '<p class="addr">' + SVG_PIN + esc(r.ward + ', ' + r.district) + '</p>' +
           '<div class="facts">' +
             '<span>' + SVG_AREA + r.area + ' m²</span>' +
@@ -1192,8 +1443,15 @@
                       .map(function(b){ return b.getAttribute('data-amen'); });
     }
 
+    function updateMapSource(address){
+      if(!address) address = 'Hà Nội, Việt Nam';
+      var iframe = document.getElementById('googleMapFrame');
+      if(iframe){
+        iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&z=12&output=embed';
+      }
+    }
+
     function apply(){
-      var q = fQuery.value.trim().toLowerCase();
       var priceRange = fPrice.value ? fPrice.value.split('-').map(Number) : null;
       var areaRange = fArea.value ? fArea.value.split('-').map(Number) : null;
       var type = fType.value;
@@ -1201,7 +1459,11 @@
       var amens = activeAmenities();
 
       var filtered = ROOMS.filter(function(r){
-        if(q && (r.address + ' ' + r.ward + ' ' + r.district).toLowerCase().indexOf(q) === -1) return false;
+        if(selectedWard || selectedArea){
+          var hay = (r.ward + ' ' + r.district + ' ' + r.address).toLowerCase();
+          if(selectedWard && hay.indexOf(selectedWard.toLowerCase()) === -1) return false;
+          if(selectedArea && hay.indexOf(selectedArea.toLowerCase()) === -1) return false;
+        }
         if(priceRange && (r.price < priceRange[0] || r.price >= priceRange[1])) return false;
         if(areaRange && (r.area < areaRange[0] || r.area >= areaRange[1])) return false;
         if(type && r.type !== type) return false;
@@ -1219,6 +1481,11 @@
 
       var visibleIds = filtered.reduce(function(obj, r){ obj[r.id] = true; return obj; }, {});
       pins.innerHTML = ROOMS.map(function(r){ return pinHtml(r, !!visibleIds[r.id]); }).join('');
+      if(filtered.length){
+        updateMapSource(filtered[0].address);
+      } else {
+        updateMapSource('Hà Nội, Việt Nam');
+      }
 
       var rows = Array.prototype.slice.call(list.querySelectorAll('.room-row'));
       rows.forEach(function(el,i){
@@ -1232,8 +1499,125 @@
 
     document.getElementById('finder').addEventListener('submit', function(e){ e.preventDefault(); apply(); });
     [fPrice, fArea, fType].forEach(function(el){ el.addEventListener('change', apply); });
-    fQuery.addEventListener('input', apply);
-    fQuery.addEventListener('search', apply);
+
+    // ----- Bộ lọc vị trí Khu vực / Phường-Xã (modal), cùng hành vi với trang chủ -----
+    var locationTrigger = document.getElementById('locationTrigger');
+    var locationValue = document.getElementById('locationValue');
+    var locFilterOverlay = document.getElementById('locFilterOverlay');
+    var locFilterClose = document.getElementById('locFilterClose');
+    var locFilterSearch = document.getElementById('locFilterSearch');
+    var locFilterApply = document.getElementById('locFilterApply');
+
+    function getFilteredOptions(type) {
+      var source = type === 'ward' ? wardOptions : areaOptions;
+      var q = (locFilterSearch || {}).value || '';
+      q = q.trim().toLowerCase();
+      if (!q) return source;
+      return source.filter(function(item){ return item.toLowerCase().indexOf(q) !== -1; });
+    }
+
+    function renderWardList() {
+      var listEl = document.getElementById('wardList');
+      if (!listEl) return;
+      var filtered = getFilteredOptions('ward');
+      var visible = wardExpanded ? filtered : filtered.slice(0, 5);
+      if (!visible.length) {
+        listEl.innerHTML = '<div class="filter-empty">Không tìm thấy kết quả</div>';
+      } else {
+        listEl.innerHTML = visible.map(function(item){
+          var isActive = selectedWard === item;
+          return '<button type="button" class="filter-chip ' + (isActive ? 'active' : '') + '" data-filter-type="ward" data-location-value="' + item + '">' + item + '</button>';
+        }).join('');
+      }
+      var moreBtn = document.getElementById('showMoreWard');
+      if (moreBtn) {
+        moreBtn.textContent = wardExpanded ? 'Thu gọn' : 'Xem tất cả';
+        moreBtn.style.display = filtered.length > 5 ? 'inline-block' : 'none';
+      }
+    }
+
+    function renderAreaList() {
+      var listEl = document.getElementById('areaList');
+      if (!listEl) return;
+      var filtered = getFilteredOptions('area');
+      var visible = areaExpanded ? filtered : filtered.slice(0, 5);
+      if (!visible.length) {
+        listEl.innerHTML = '<div class="filter-empty">Không tìm thấy kết quả</div>';
+      } else {
+        listEl.innerHTML = visible.map(function(item){
+          var isActive = selectedArea === item;
+          return '<button type="button" class="filter-chip ' + (isActive ? 'active' : '') + '" data-filter-type="area" data-location-value="' + item + '">' + item + '</button>';
+        }).join('');
+      }
+      var moreBtn = document.getElementById('showMoreArea');
+      if (moreBtn) {
+        moreBtn.textContent = areaExpanded ? 'Thu gọn' : 'Xem tất cả';
+        moreBtn.style.display = filtered.length > 5 ? 'inline-block' : 'none';
+      }
+    }
+
+    function openLocFilterModal() {
+      locFilterOverlay.classList.add('open');
+      locFilterOverlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('filter-open');
+    }
+    function closeLocFilterModal() {
+      locFilterOverlay.classList.remove('open');
+      locFilterOverlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('filter-open');
+    }
+    function updateSelectedLocation() {
+      var value = [selectedArea, selectedWard].filter(Boolean).join(' • ');
+      locationValue.textContent = value || 'Hà Nội';
+      renderWardList();
+      renderAreaList();
+    }
+
+    if (locationTrigger) locationTrigger.addEventListener('click', openLocFilterModal);
+    if (locFilterClose) locFilterClose.addEventListener('click', closeLocFilterModal);
+    if (locFilterOverlay) {
+      locFilterOverlay.addEventListener('click', function(e){ if (e.target === locFilterOverlay) closeLocFilterModal(); });
+    }
+
+    document.querySelectorAll('#locFilterOverlay .filter-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        activeFilterTab = tab.dataset.filterTab;
+        document.querySelectorAll('#locFilterOverlay .filter-tab').forEach(function(item){ item.classList.toggle('active', item === tab); });
+        document.querySelectorAll('#locFilterOverlay .loc-panel').forEach(function(panel){
+          panel.classList.toggle('active', panel.dataset.filterPanel === activeFilterTab);
+        });
+      });
+    });
+
+    if (locFilterSearch) {
+      locFilterSearch.addEventListener('input', function(){ renderWardList(); renderAreaList(); });
+    }
+
+    document.getElementById('locFilterOverlay').addEventListener('click', function(event){
+      var chip = event.target.closest('.filter-chip');
+      if (!chip) return;
+      var type = chip.dataset.filterType;
+      var value = chip.dataset.locationValue;
+      if (type === 'ward') { selectedWard = selectedWard === value ? '' : value; }
+      else { selectedArea = selectedArea === value ? '' : value; }
+      updateSelectedLocation();
+    });
+
+    var showMoreWard = document.getElementById('showMoreWard');
+    if (showMoreWard) showMoreWard.addEventListener('click', function(){ wardExpanded = !wardExpanded; renderWardList(); });
+    var showMoreArea = document.getElementById('showMoreArea');
+    if (showMoreArea) showMoreArea.addEventListener('click', function(){ areaExpanded = !areaExpanded; renderAreaList(); });
+
+    if (locFilterApply) {
+      locFilterApply.addEventListener('click', function(){
+        closeLocFilterModal();
+        updateSelectedLocation();
+        apply();
+      });
+    }
+
+    renderWardList();
+    renderAreaList();
 
     // ----- Panel "Bộ lọc" mở rộng -----
     var filterToggle = document.getElementById('filterToggle');
@@ -1259,7 +1643,8 @@
       apply();
     });
     document.getElementById('roomReset').addEventListener('click', function(){
-      fQuery.value = ''; fPrice.value = ''; fArea.value = ''; fType.value = ''; fPeople.value = '';
+      fPrice.value = ''; fArea.value = ''; fType.value = ''; fPeople.value = '';
+      selectedWard = ''; selectedArea = ''; locationValue.textContent = 'Hà Nội';
       quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
       apply();
     });
@@ -1395,7 +1780,8 @@
       rdRoom = r;
       document.getElementById('rdPrice').innerHTML = vnd(r.price) + ' <span>/ tháng</span>';
       document.getElementById('rdTitle').textContent = r.title;
-      document.getElementById('rdAddr').textContent = r.address;
+      document.getElementById('rdAddr').textContent = mainAddressLine(r);
+      document.getElementById('rdAddrDetail').textContent = splitAddress(r).detail;
       rdMain.src = (r.images && r.images[0]) || r.image;
       rdMain.alt = r.alt;
 
@@ -1427,6 +1813,18 @@
       var callBtn = document.getElementById('rdCallBtn');
       if(phone){ callBtn.href = 'tel:' + phone.replace(/\s+/g,''); callBtn.hidden = false; }
       else { callBtn.hidden = true; }
+
+      var rdSaveBtn = document.getElementById('rdSaveBtn');
+      if (rdSaveBtn) {
+        var saved = isRoomSaved(r.id);
+        rdSaveBtn.classList.toggle('saved', saved);
+        rdSaveBtn.textContent = saved ? 'Đã lưu phòng' : 'Lưu phòng';
+        rdSaveBtn.onclick = function(){ toggleRoomSave(r.id); };
+      }
+
+      document.getElementById('rdRentConfirm').hidden = true;
+      document.getElementById('rdRentBtn').setAttribute('aria-expanded','false');
+      document.getElementById('rdRentDeposit').textContent = vnd(r.deposit || r.price);
 
       var dateInput = document.getElementById('rdDate');
       dateInput.min = lichToday();
@@ -1461,6 +1859,13 @@
     }
 
     list.addEventListener('click', function(e){
+      var saveBtn = e.target.closest('[data-save-room]');
+      if (saveBtn) {
+        e.stopPropagation();
+        var id = saveBtn.getAttribute('data-save-room');
+        toggleRoomSave(id);
+        return;
+      }
       var row = e.target.closest('[data-room]');
       if(row) openDetail(row.getAttribute('data-room'));
     });
@@ -1471,6 +1876,12 @@
       e.preventDefault();
       openDetail(row.getAttribute('data-room'));
     });
+    // Liên kết sâu từ trang lịch xem: tim-phong.html?phong=p03 mở thẳng chi tiết phòng
+    (function(){
+      var deep = null;
+      try{ deep = new URLSearchParams(location.search).get('phong'); }catch(e){}
+      if(deep) openDetail(deep);
+    })();
 
     document.getElementById('rdThumbs').addEventListener('click', function(e){
       var btn = e.target.closest('button[data-src]');
@@ -1536,13 +1947,40 @@
         }
         btn.textContent = 'Đã gửi yêu cầu lịch xem';
         btn.style.opacity = '0.8';
-        var d = date.split('-');
-        showToast('Đã gửi yêu cầu', 'Lịch xem ' + room.title + ' ngày ' + d[2] + '/' + d[1] + ' lúc ' + time + ' đã gửi tới chủ trọ, chờ xác nhận.');
+        showBookedDialog({ room:room.title, image:room.image, address:room.address, date:date, time:time, dur:30 });
       }).catch(function(){
         btn.disabled = false;
         btn.textContent = 'Đặt lịch xem';
         showToast('Mất kết nối','Không gửi được tới máy chủ. Hãy thử lại.');
       });
+    });
+
+    // ----- Thuê phòng: xác nhận ngay trong modal rồi sang trang đặt cọc -----
+    var rentConfirm = document.getElementById('rdRentConfirm');
+    var rentBtn = document.getElementById('rdRentBtn');
+    function toggleRentConfirm(open){
+      rentConfirm.hidden = !open;
+      rentBtn.setAttribute('aria-expanded', String(open));
+      if(open){
+        rentConfirm.scrollIntoView({ block:'nearest', behavior: reduce ? 'auto' : 'smooth' });
+        document.getElementById('rdRentGo').focus();
+      } else {
+        rentBtn.focus();
+      }
+    }
+    rentBtn.addEventListener('click', function(){ toggleRentConfirm(rentConfirm.hidden); });
+    document.getElementById('rdRentCancel').addEventListener('click', function(){ toggleRentConfirm(false); });
+    document.getElementById('rdRentGo').addEventListener('click', function(){
+      if(!rdRoom) return;
+      var r = rdRoom;
+      // Trang đặt cọc không có bộ ROOMS, nên mang theo đúng những gì nó cần hiển thị
+      var pick = {
+        id: r.id, title: r.title, price: r.price, deposit: r.deposit || r.price,
+        image: (r.images && r.images[0]) || r.image, alt: r.alt, area: r.area,
+        address: mainAddressLine(r), phone: r.phone || ''
+      };
+      try{ localStorage.setItem('an-cu-dat-coc-phong', JSON.stringify(pick)); }catch(e){}
+      location.href = 'dat-coc.html?phong=' + encodeURIComponent(r.id);
     });
 
     document.getElementById('rdClose').addEventListener('click', closeDetail);
@@ -1564,5 +2002,25 @@
   })();
 </script>
 <div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
+
+<!-- Thông báo sau khi đặt lịch xem -->
+<div class="booked-overlay" id="bookedOverlay" hidden>
+  <div class="booked" role="dialog" aria-modal="true" aria-labelledby="bookedTitle" aria-describedby="bookedDesc">
+    <p class="booked-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22v-7h6v7"/></svg>An Cư</p>
+    <div class="booked-illus" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M8 22v-6h3v6M13.5 12.5h3v3h-3z"/></svg></div>
+    <h2 id="bookedTitle" tabindex="-1">Bạn đang đặt lịch xem phòng</h2>
+    <p class="booked-desc" id="bookedDesc">Hãy đến đúng địa chỉ và thời gian đã hẹn để xem phòng cùng chủ trọ.</p>
+    <div class="booked-room">
+      <img id="bookedImg" src="" alt="" width="104" height="78" />
+      <div>
+        <h3 id="bookedRoom"></h3>
+        <p>Ngày xem: <b id="bookedDate"></b></p>
+        <p>Thời gian: <b id="bookedTime"></b></p>
+        <p class="addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span id="bookedAddr"></span></p>
+      </div>
+    </div>
+    <button type="button" class="booked-btn" id="bookedOk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22v-7h6v7"/></svg>Đã xác nhận đến xem</button>
+  </div>
+</div>
 </body>
 </html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trang chủ quản trị — An Cư</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F7FBF7; --surface:#FFFFFF; --surface-2:#F1F8F1;
+    --border:rgba(34,139,34,.12); --border-strong:rgba(34,139,34,.2);
+    --text:#102010; --text-muted:#4B5C4B; --text-dim:#667565;
+    --accent:#228B22; --accent-hover:#1D7C1D; --accent-fg:#FFFFFF;
+    --success-ink:#1B7A1B; --warning-ink:#8A5A11; --danger-ink:#B4291F; --info-ink:#1D4FBE;
+    --radius-sm:8px; --radius:12px; --radius-lg:16px;
+    --sidebar-w:264px; --header-h:68px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:light}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Be Vietnam Pro','Inter',sans-serif;font-weight:700;line-height:1.15;letter-spacing:-.02em}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  header{position:sticky;top:0;z-index:20;background:rgba(247,251,247,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+  .bar{display:flex;align-items:center;gap:16px;height:68px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px;color:var(--text)}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(120deg,#228B22,#36A44A);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+  .brand small{display:block;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--text-dim);letter-spacing:0}
+  .bar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .who{font-size:14px;color:var(--text-muted);white-space:nowrap}
+  .who b{color:var(--text)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--radius-sm);
+    font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;border:1px solid transparent;cursor:pointer;background:none;color:var(--text);
+    transition:background .18s var(--ease),border-color .18s var(--ease),color .18s var(--ease)}
+  .btn-primary{background:var(--accent);color:var(--accent-fg)}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-ghost{border-color:var(--border-strong);background:var(--surface)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-sm{min-height:38px;padding:0 12px;font-size:13.5px}
+  .btn[hidden]{display:none}
+
+
+  /* ---------- Khung: công cụ bên trái + nội dung (giống khu chủ trọ) ---------- */
+  .dash-shell{display:flex;min-height:100vh}
+  .side-nav{
+    position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;
+    display:flex;flex-direction:column;
+    padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto;
+  }
+  .side-logo{padding:6px 10px 20px}
+  .side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
+  .side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+  .side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
+  .side-menu{display:flex;flex-direction:column;gap:4px}
+  .side-link{
+    display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);
+    transition:background .18s var(--ease),color .18s var(--ease);
+  }
+  .side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}
+  .side-link.active{color:var(--text);background:rgba(34,139,34,.1)}
+  .side-link.active svg{stroke:var(--accent)}
+  .side-link:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  /* Mục chưa làm: hiện cho biết sẽ có, nhưng không bấm được và nói rõ lý do */
+  .side-link.is-off{color:var(--text-dim);cursor:default}
+  .side-link.is-off:hover{background:none;color:var(--text-dim)}
+  .side-tag{margin-left:auto;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;
+    color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .side-sep{height:1px;background:var(--border);margin:12px 12px}
+  .side-note{margin:14px 10px 0;font-size:12px;line-height:1.5;color:var(--text-dim)}
+  .side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(16,32,16,.4);backdrop-filter:blur(4px)}
+
+  .dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w);display:flex;flex-direction:column}
+  .app-header{
+    position:sticky;top:0;z-index:110;height:var(--header-h);flex-shrink:0;
+    display:flex;align-items:center;gap:16px;padding:0 32px;
+    background:rgba(255,255,255,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+  }
+  .app-title{font-family:'Be Vietnam Pro',sans-serif;font-size:16px;font-weight:600}
+  .header-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .menu-toggle{display:none;width:44px;height:44px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+  .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
+  .menu-toggle span::before{top:-5px}.menu-toggle span::after{top:5px}
+  body.nav-open .menu-toggle span{background:transparent}
+  body.nav-open .menu-toggle span::before{top:0;transform:rotate(45deg)}
+  body.nav-open .menu-toggle span::after{top:0;transform:rotate(-45deg)}
+  .dash-body{padding:28px 32px 64px;max-width:1280px;width:100%}
+
+  @media (max-width:960px){
+    .menu-toggle{display:flex}
+    /* Công cụ bên trái thành ngăn kéo, nằm dưới thanh trên cùng để nút vẫn bấm được khi đang mở */
+    .side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);
+      transition:transform .26s var(--ease);box-shadow:0 30px 60px -20px rgba(16,48,16,.28)}
+    body.nav-open .side-nav{transform:none}
+    body.nav-open .side-backdrop{display:block;top:var(--header-h)}
+    .dash-main{margin-left:0}
+    .app-header{padding:0 20px;gap:12px}
+    .dash-body{padding:24px 20px 48px}
+  }
+  @media (max-width:640px){
+    .app-header{padding:0 16px;gap:10px}
+    .dash-body{padding:20px 16px 40px}
+    .who{display:none}
+  }
+
+  main{padding:0}
+  .page-head{margin-bottom:22px}
+  .page-head h1{font-size:clamp(1.6rem,3vw,2.1rem)}
+  .page-head p{color:var(--text-muted);font-size:15px;margin-top:6px;max-width:70ch}
+
+  .msg{margin-bottom:18px;padding:12px 14px;border-radius:var(--radius-sm);font-size:14px;display:none}
+  .msg.show{display:block}
+  .msg[hidden]{display:none}
+  .msg.info{background:rgba(29,79,190,.06);border:1px solid rgba(29,79,190,.22);color:var(--info-ink)}
+  .msg.err{background:rgba(180,41,31,.06);border:1px solid rgba(180,41,31,.24);color:var(--danger-ink)}
+
+  section{margin-top:34px}
+  .sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:14px}
+  .sec-head h2{font-size:1.15rem}
+  .sec-head p{font-size:13.5px;color:var(--text-dim)}
+  .sec-head .more{margin-left:auto;font-size:13.5px;font-weight:600;font-family:'Be Vietnam Pro',sans-serif}
+
+  /* 4 chỉ số sinh tử */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:4px}
+  .kpi dt{font-size:13px;color:var(--text-dim)}
+  .kpi dd{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:-.02em;line-height:1.15}
+  .kpi small{font-size:12.5px;color:var(--text-muted);font-weight:500}
+  .kpi.warn{border-color:rgba(138,90,17,.3);background:linear-gradient(180deg,rgba(138,90,17,.05),var(--surface))}
+  .kpi.todo dd{color:var(--text-dim);font-size:1.15rem;font-weight:700}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg)}
+
+  /* Việc cần xử lý */
+  .tasks{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .task{padding:16px 18px}
+  .task h3{font-size:14.5px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;display:flex;align-items:center;gap:8px}
+  .task ul{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:9px}
+  .task li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px;padding-top:9px;border-top:1px dashed var(--border)}
+  .task li:first-child{border-top:0;padding-top:0}
+  .task li .nm{flex:1 1 150px;min-width:0}
+  .task li .nm b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600;display:block}
+  .task li .nm small{color:var(--text-dim);font-size:12px}
+  .task .none{display:block;margin-top:12px;font-size:13px;color:var(--text-dim)}
+
+  .tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',sans-serif;white-space:nowrap}
+  .tag.ok{background:rgba(34,139,34,.1);color:var(--success-ink)}
+  .tag.wait{background:rgba(138,90,17,.1);color:var(--warning-ink)}
+  .tag.bad{background:rgba(180,41,31,.08);color:var(--danger-ink)}
+  .tag.info{background:rgba(29,79,190,.08);color:var(--info-ink)}
+  .tag.mute{background:var(--surface-2);color:var(--text-muted)}
+
+  /* Bản đồ chức năng */
+  .map{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .mod{padding:18px 20px;display:flex;flex-direction:column}
+  .mod .no{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:700;color:var(--accent)}
+  .mod h3{font-size:1rem;margin:2px 0 4px}
+  .mod > p{font-size:13px;color:var(--text-dim)}
+  .mod ul{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .mod li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.45;padding-top:8px;border-top:1px dashed var(--border)}
+  .mod li:first-child{border-top:0;padding-top:0}
+  .mod li .txt{flex:1}
+  .mod li .txt small{display:block;font-size:12px;color:var(--text-dim)}
+  .mod a.go{font-weight:600;font-family:'Be Vietnam Pro',sans-serif}
+
+  .note{margin-top:28px;padding:16px 18px;font-size:13.5px;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius)}
+  .note b{color:var(--text)}
+
+  .gate{max-width:520px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center}
+  .gate h2{font-size:1.3rem;margin-bottom:10px}
+  .gate p{color:var(--text-muted);font-size:14.5px;margin-bottom:20px}
+
+  /* Hiện dần khi cuộn tới, tắt hẳn khi người dùng chọn giảm chuyển động */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .42s var(--ease),transform .42s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    *{animation:none!important;transition:none!important}
+  }
+
+  @media (max-width:1000px){
+    .map{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:860px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .tasks{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .bar{height:auto;padding:12px 0;flex-wrap:wrap}
+    .bar .right{width:100%;justify-content:space-between}
+    .kpis{grid-template-columns:1fr}
+    .map{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="dash-shell">
+  <div class="side-backdrop" id="sideBackdrop"></div>
+
+  <!-- CÔNG CỤ QUẢN TRỊ (bên trái) — giữ đồng bộ giữa quan-tri/trang-chu.html và
+       quan-tri/tong-quan.html; mỗi trang tự đánh dấu .active cho mục đang mở.
+       Mục ghi "Chưa làm" là phần chưa có trong bản này: để đó cho biết sẽ có, không bấm được. -->
+  <aside class="side-nav" id="sideNav">
+    <a href="../trang-chu.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <div class="side-role"><span>Khu vực</span><b>Quản trị</b></div>
+    <nav class="side-menu" aria-label="Công cụ khu quản trị">
+      <a href="trang-chu.html" class="side-link" data-muc="tong-quan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Tổng quan</a>
+      <a href="tong-quan.html#tai-khoan" class="side-link" data-muc="tai-khoan"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> Tài khoản</a>
+      <a href="tong-quan.html#nha-tro" class="side-link" data-muc="nha-tro"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg> Nhà trọ &amp; người thuê</a>
+      <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Gói &amp; thanh toán</a>
+      <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Tin đăng<span class="side-tag">Chờ duyệt</span></a>
+      <a href="tong-quan.html#ho-tro" class="side-link" data-muc="ho-tro"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ<span class="side-tag">Chờ xử lý</span></a>
+      <div class="side-sep" role="presentation"></div>
+      <span class="side-link is-off" data-muc="bao-cao" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg> Báo cáo tài chính<span class="side-tag">Chưa làm</span></span>
+      <span class="side-link is-off" data-muc="cau-hinh" aria-disabled="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15"/></svg> Cấu hình hệ thống<span class="side-tag">Chưa làm</span></span>
+    </nav>
+    <p class="side-note">Mục chưa làm sẽ mở dần. Số liệu của phần đã chạy xem ở Tổng quan.</p>
+  </aside>
+
+  <div class="dash-main">
+    <header class="app-header">
+      <button type="button" class="menu-toggle" id="menuBtn" aria-label="Mở công cụ quản trị" aria-expanded="false"><span></span></button>
+      <b class="app-title" id="appTitle">Tổng quan</b>
+      <div class="header-actions">
+        <span class="who" id="who"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout" hidden>Đăng xuất</button>
+      </div>
+    </header>
+
+    <main class="dash-body">
+  <div id="gate" class="gate" hidden>
+    <h2 id="gateTitle">Khu vực dành cho quản trị viên</h2>
+    <p id="gateText">Vui lòng đăng nhập bằng tài khoản quản trị để tiếp tục.</p>
+    <a class="btn btn-primary" href="../trang-chu.html">Về trang chủ để đăng nhập</a>
+  </div>
+
+  <div id="app" hidden>
+    <div class="page-head">
+      <h1>Trang chủ quản trị</h1>
+      <p id="headNote">Bốn chỉ số cần nhìn mỗi ngày, việc đang chờ xử lý, và lối vào từng khu quản lý. Yêu cầu hỗ trợ nằm ở mục Cần xử lý vì bản này chưa có hệ thống ticket.</p>
+    </div>
+
+    <p class="msg info show" id="demoNote" hidden></p>
+    <p class="msg" id="msg" role="alert"></p>
+
+    <!-- 4 CHỈ SỐ -->
+    <dl class="kpis reveal" id="kpis"></dl>
+
+    <!-- VIỆC CẦN XỬ LÝ -->
+    <section class="reveal">
+      <div class="sec-head">
+        <h2>Cần xử lý</h2>
+        <p>Việc đang chờ, lấy từ dữ liệu thật của hệ thống.</p>
+        <a class="more" href="tong-quan.html#thanh-toan">Mở khu thanh toán gói →</a>
+      </div>
+      <div class="tasks">
+        <article class="card task">
+          <h3>Gói quá hạn và sắp đến hạn</h3>
+          <div id="taskPlans"></div>
+        </article>
+        <article class="card task">
+          <h3>Tài khoản đang bị khoá</h3>
+          <div id="taskLocked"></div>
+        </article>
+        <article class="card task">
+          <h3>Tin đăng chờ duyệt</h3>
+          <span class="none" id="taskListings"></span>
+        </article>
+        <article class="card task">
+          <h3>Yêu cầu hỗ trợ chưa xử lý</h3>
+          <span class="none" id="taskTickets"></span>
+        </article>
+      </div>
+    </section>
+
+    <!-- NHỮNG PHẦN CHƯA LÀM: để quản trị viên biết công cụ bên trái nào còn trống -->
+    <section class="reveal">
+      <div class="sec-head">
+        <h2>Chưa làm trong bản này</h2>
+        <p>Các mục ghi “Chưa làm” ở cột công cụ bên trái gồm những phần sau.</p>
+      </div>
+      <div class="card task"><ul id="chuaLam"></ul></div>
+    </section>
+
+    <p class="note reveal" id="footNote"></p>
+  </div>
+    </main>
+  </div>
+</div>
+
+<script src="du-lieu-xem-thu.js"></script>
+<script>
+(function(){
+  'use strict';
+  var nf = new Intl.NumberFormat('vi-VN');
+  var vnd = function(n){ return nf.format(Number(n) || 0) + '₫'; };
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  var el = function(id){ return document.getElementById(id); };
+  function ngay(s){
+    if(!s) return '—';
+    var d = String(s).slice(0, 10).split('-');
+    return d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : s;
+  }
+  function msg(text, kind){
+    el('msg').textContent = text || '';
+    el('msg').className = 'msg' + (text ? ' show ' + (kind || 'ok') : '');
+  }
+
+  // Có máy chủ (npm start) thì gọi API thật; mở bằng file:// hoặc bản tĩnh trên Vercel thì
+  // chạy trên dữ liệu mẫu dùng chung với tong-quan.html (du-lieu-xem-thu.js).
+  var demo = false;
+  function api(method, path, body){
+    if (demo) {
+      try { return Promise.resolve(XemThu.api(method, path, body)); }
+      catch (err) { return Promise.reject(err); }
+    }
+    return fetch(path, {
+      method: method, cache: 'no-store', credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        if (!r.ok) throw new Error(j.message || 'Máy chủ gặp lỗi, vui lòng thử lại.');
+        return j;
+      });
+    });
+  }
+
+  /* ================= 4 chỉ số sinh tử ================= */
+  function renderKpis(s){
+    var r = s.revenue || { month: 0, prevMonth: 0 };
+    var lech = r.month - r.prevMonth;
+    var soSanh = r.prevMonth
+      ? (lech >= 0 ? '+' : '−') + vnd(Math.abs(lech)) + ' so với tháng trước'
+      : 'Tháng trước chưa thu được kỳ nào';
+    var p = s.plans || {};
+    el('kpis').innerHTML = [
+      ['Doanh thu tháng này', vnd(r.month), soSanh, ''],
+      ['Gói đang hoạt động', p.active || 0, (p.plus || 0) + ' Plus · ' + (p.pro || 0) + ' Pro', ''],
+      ['Sắp đến hạn trong 7 ngày', (p.expiring || 0) + (p.overdue ? ' · ' + p.overdue + ' quá hạn' : ''),
+        p.expiring || p.overdue ? 'Cần nhắc chủ trọ thanh toán' : 'Không có kỳ nào tới hạn', (p.expiring || p.overdue) ? 'warn' : ''],
+      ['Tin đăng chờ duyệt', (s.listings && s.listings.pending !== null) ? s.listings.pending : 'Chưa làm',
+        (s.listings && s.listings.pending !== null)
+          ? (s.listings.pending ? 'Cần duyệt trước khi tin lên trang' : 'Đã duyệt hết tin gửi lên')
+          : 'Bản này chưa có chức năng duyệt tin',
+        (s.listings && s.listings.pending) ? 'warn' : ((s.listings && s.listings.pending === 0) ? '' : 'todo')]
+    ].map(function(x){
+      return '<div class="kpi ' + x[3] + '"><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>';
+    }).join('');
+  }
+
+  /* ================= Việc cần xử lý ================= */
+  var INV = { pending:['Chờ thu','wait'], paid:['Đã thu','ok'], overdue:['Quá hạn','bad'] };
+
+  // hom = ngày theo MÁY CHỦ (summary.today) để ô chỉ số và danh sách dưới đây luôn khớp nhau,
+  // kể cả khi giờ máy người dùng lệch với máy chủ.
+  function renderPlans(plans, hom){
+    var han = new Date(new Date(hom + 'T00:00:00Z').getTime() + 7 * 86400000).toISOString().slice(0, 10);
+    var can = [];
+    plans.filter(function(s){ return s.status !== 'cancelled'; }).forEach(function(s){
+      s.invoices.forEach(function(i){
+        if (i.status === 'overdue' || (i.status === 'pending' && i.dueDate <= han && i.dueDate >= hom)) {
+          can.push({ sub: s, inv: i });
+        }
+      });
+    });
+    can.sort(function(a, b){ return a.inv.dueDate < b.inv.dueDate ? -1 : 1; });
+    if (!can.length) {
+      el('taskPlans').innerHTML = '<span class="none">Không có kỳ nào quá hạn hay tới hạn trong 7 ngày.</span>';
+      return;
+    }
+    el('taskPlans').innerHTML = '<ul>' + can.slice(0, 6).map(function(x){
+      var st = INV[x.inv.status] || INV.pending;
+      return '<li><span class="nm"><b>' + esc(x.sub.landlord) + '</b>' +
+        '<small>Gói ' + esc(x.sub.planName) + ' · ' + vnd(x.inv.amount) + ' · hạn ' + ngay(x.inv.dueDate) + '</small></span>' +
+        '<span class="tag ' + st[1] + '">' + st[0] + '</span>' +
+        '<a class="btn btn-ghost btn-sm" href="tong-quan.html#thanh-toan">Ghi nhận thu</a></li>';
+    }).join('') + '</ul>' +
+      (can.length > 6 ? '<span class="none">Còn ' + (can.length - 6) + ' kỳ nữa trong khu thanh toán gói.</span>' : '');
+  }
+
+  function renderLocked(users){
+    if (!users.length) {
+      el('taskLocked').innerHTML = '<span class="none">Không có tài khoản nào đang bị khoá.</span>';
+      return;
+    }
+    el('taskLocked').innerHTML = '<ul>' + users.slice(0, 6).map(function(u){
+      return '<li><span class="nm"><b>' + esc(u.name) + '</b><small>' + esc(u.phone) +
+        ' · ' + (u.role === 'landlord' ? 'Chủ trọ' : u.role === 'renter' ? 'Người thuê' : 'Quản trị') + '</small></span>' +
+        '<span class="tag bad">Đã khoá</span>' +
+        '<a class="btn btn-ghost btn-sm" href="tong-quan.html#tai-khoan">Xem tài khoản</a></li>';
+    }).join('') + '</ul>';
+  }
+
+  /* ================= Những phần chưa làm ================= */
+  // Ghi đúng hiện trạng, không vẽ nút chết. Mỗi dòng ứng với một mục "Chưa làm" ở cột bên trái.
+  var CHUA_LAM = [
+    ['Tin đăng — phần còn thiếu', 'Tin nổi bật / đẩy tin VIP, bài viết blog, banner, trang điều khoản — việc duyệt tin đã chạy'],
+    ['Hỗ trợ — phần còn thiếu', 'Gửi email thật (SMTP / Zalo ZNS) — ticket, thông báo trong ứng dụng và nhắc hết hạn đã chạy'],
+    ['Báo cáo tài chính', 'Tỷ lệ gia hạn / huỷ gói, lịch sử giao dịch cổng thanh toán, thống kê truy cập — doanh thu cơ bản đã có ở Tổng quan'],
+    ['Cấu hình hệ thống', 'Thông tin công ty, tài khoản ngân hàng, nhật ký hệ thống, khoá API'],
+    ['Tài khoản — phần còn thiếu', 'Nhân viên nội bộ và phân quyền — căn cước, địa chỉ chủ trọ đã quản lý được'],
+    ['Gói dịch vụ — phần còn thiếu', 'Sửa giá và hạn mức từ giao diện, gói Enterprise, giảm giá khi mua 6 / 12 tháng']
+  ];
+  function renderChuaLam(){
+    document.getElementById('chuaLam').innerHTML = CHUA_LAM.map(function(x){
+      return '<li><span class="nm"><b>' + x[0] + '</b><small>' + x[1] + '</small></span>' +
+        '<span class="tag mute">Chưa làm</span></li>';
+    }).join('');
+  }
+
+  /* ================= Nạp dữ liệu ================= */
+  function nap(){
+    return Promise.all([
+      api('GET', '/api/quan-tri/tong-quan'),
+      api('GET', '/api/quan-tri/goi'),
+      api('GET', '/api/quan-tri/tai-khoan?trangThai=locked')
+    ]).then(function(kq){
+      var s = kq[0].summary;
+      renderKpis(s);
+      renderPlans(kq[1].items, s.today || new Date().toISOString().slice(0, 10));
+      renderLocked(kq[2].items);
+      var choDuyet = s.listings ? s.listings.pending : null;
+      el('taskListings').innerHTML = choDuyet === null
+        ? 'Bản này chưa có chức năng duyệt tin đăng, nên không có tin nào chờ.'
+        : (choDuyet
+            ? '<b>' + choDuyet + ' tin</b> đang chờ duyệt. Duyệt sớm để tin thật lên trang, tin lừa đảo bị chặn lại. ' +
+              '<a href="tong-quan.html#tin-dang">Mở khu duyệt tin →</a>'
+            : 'Không có tin nào chờ duyệt. <a href="tong-quan.html#tin-dang">Xem lịch sử duyệt tin →</a>');
+      var nhan = document.querySelector('.side-link[data-muc="tin-dang"] .side-tag');
+      if (nhan) nhan.textContent = choDuyet ? choDuyet + ' chờ duyệt' : 'Không có tin chờ';
+      var tk = s.support ? s.support.openTickets : null;
+      el('taskTickets').innerHTML = tk === null
+        ? 'Bản này chưa có hệ thống ticket.'
+        : (tk
+            ? '<b>' + tk + ' yêu cầu</b> đang chờ xử lý. <a href="tong-quan.html#ho-tro">Mở khu hỗ trợ →</a>'
+            : 'Không có yêu cầu nào đang chờ. <a href="tong-quan.html#ho-tro">Xem lịch sử hỗ trợ →</a>');
+      var nhanTk = document.querySelector('.side-link[data-muc="ho-tro"] .side-tag');
+      if (nhanTk) nhanTk.textContent = tk ? tk + ' chờ xử lý' : 'Không có yêu cầu';
+      el('footNote').innerHTML = '<b>Phạm vi bản này:</b> khu quản trị đang chạy thật phần tài khoản, nhà trọ – người thuê, ' +
+        'gói dịch vụ và lịch thanh toán (' + s.users.total + ' tài khoản, ' + s.properties.total + ' nhà trọ, ' +
+        s.properties.rooms + ' phòng). Thanh toán trực tuyến và khớp chuyển khoản tự động (VietQR autobank) ' +
+        'nằm ngoài phạm vi v1 — hiện quản trị viên ghi nhận thanh toán bằng tay sau khi đối chiếu sao kê.';
+      renderChuaLam();
+    });
+  }
+
+
+  /* ---------- Công cụ bên trái: ngăn kéo ở màn hình hẹp ---------- */
+  (function(){
+    var menuBtn = document.getElementById('menuBtn');
+    var backdrop = document.getElementById('sideBackdrop');
+    function dong(){
+      document.body.classList.remove('nav-open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+    menuBtn.addEventListener('click', function(){
+      var mo = document.body.classList.toggle('nav-open');
+      menuBtn.setAttribute('aria-expanded', String(mo));
+    });
+    backdrop.addEventListener('click', dong);
+    document.querySelectorAll('.side-link').forEach(function(a){ a.addEventListener('click', dong); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') dong(); });
+  })();
+
+  // Đánh dấu công cụ đang mở
+  function danhDauMuc(ten){
+    document.querySelectorAll('.side-link[data-muc]').forEach(function(a){
+      var on = a.dataset.muc === ten;
+      a.classList.toggle('active', on);
+      if (on && a.tagName === 'A') a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    var muc = document.querySelector('.side-link[data-muc="' + ten + '"]');
+    if (muc) {
+      // Bỏ nhãn đếm bên phải để tiêu đề chỉ còn tên khu
+      var ban = muc.cloneNode(true);
+      var nhan = ban.querySelector('.side-tag');
+      if (nhan) nhan.parentNode.removeChild(nhan);
+      document.getElementById('appTitle').textContent = ban.textContent.trim();
+    }
+  }
+
+  /* ================= Hiện dần khi cuộn ================= */
+  function revealOn(){
+    var items = [].slice.call(document.querySelectorAll('.reveal'));
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      items.forEach(function(e){ e.classList.add('in'); });
+      return;
+    }
+    if (!('IntersectionObserver' in window)) { items.forEach(function(e){ e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.08, rootMargin: '0px 0px -10% 0px' });
+    items.forEach(function(e){ io.observe(e); });
+  }
+
+  /* ================= Khởi động: chỉ admin mới vào được ================= */
+  function gate(title, text){
+    el('gate').hidden = false;
+    el('app').hidden = true;
+    el('gateTitle').textContent = title;
+    el('gateText').textContent = text;
+  }
+
+  function mo(me, laDemo){
+    el('gate').hidden = true;
+    el('app').hidden = false;
+    el('who').innerHTML = laDemo ? 'Chế độ xem thử' : 'Xin chào, <b>' + esc(me.name) + '</b>';
+    el('logout').hidden = laDemo;
+    if (laDemo) {
+      el('demoNote').hidden = false;
+      el('demoNote').textContent = 'Chế độ xem thử: trang đang mở không qua máy chủ nên dùng dữ liệu mẫu lưu trong trình duyệt này, '
+        + 'chung một bộ với trang Quản trị An Cư. Chạy npm start rồi đăng nhập bằng tài khoản quản trị để làm việc trên dữ liệu thật.';
+    }
+    danhDauMuc('tong-quan');
+    return nap().then(revealOn).catch(function(e){ msg(e.message, 'err'); revealOn(); });
+  }
+
+  el('logout').addEventListener('click', function(){
+    api('POST', '/api/dang-xuat').catch(function(){}).then(function(){ location.href = '../trang-chu.html'; });
+  });
+
+  if (!/^https?:$/.test(location.protocol)) {
+    demo = true;
+    mo(XemThu.toi(), true);
+  } else {
+    fetch('/api/toi', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        if (!j || typeof j.user === 'undefined') { demo = true; return mo(XemThu.toi(), true); }
+        var me = j.user;
+        if (!me) return gate('Khu vực dành cho quản trị viên', 'Bạn chưa đăng nhập. Hãy đăng nhập bằng tài khoản quản trị để tiếp tục.');
+        if (me.role !== 'admin') return gate('Không có quyền truy cập', 'Tài khoản ' + me.name + ' không phải quản trị viên nên không mở được khu vực này.');
+        return mo(me, false);
+      });
+  }
+})();
+</script>
+</body>
+</html>
