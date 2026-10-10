@@ -73,7 +73,7 @@
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em}
-  .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;color:#FFFFFF;font-weight:800;flex-shrink:0}
+  .brand .brand-logo{width:38px;height:38px;object-fit:contain;flex-shrink:0}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
   /* ---------- Reveal khi cuộn ---------- */
@@ -435,7 +435,7 @@
 
   <!-- ---------- SIDEBAR CHỦ TRỌ ---------- -->
   <aside class="side-nav" id="sideNav">
-    <a href="../index.html" class="brand side-logo"><span class="mark">A</span> An Cư</a>
+    <a href="../trang-chu.html" class="brand side-logo"><img class="brand-logo" src="../assets/logo-ancu.png" alt=""> An Cư</a>
 
     <div class="side-role">
       <span>Khu vực</span>
@@ -577,7 +577,7 @@
             <p class="pop-title">Tài khoản chủ trọ</p>
             <button type="button" class="pop-item" role="menuitem">
               <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <span class="gr"><b>Trần Hoà</b><span>0912 345 678</span></span>
+              <span class="gr"><b>Trần Hoà</b><span>0988 000 999</span></span>
             </button>
             <div class="pop-sep" role="presentation"></div>
             <button type="button" class="pop-item" role="menuitem">
@@ -807,11 +807,11 @@
   // ---------- Danh sách người thuê (mock) ----------
   // Ngày lưu dạng ISO, hiển thị theo vi-VN; số điện thoại che bớt, bấm mắt để hiện.
   var TENANTS = [
-    { name:'Nguyễn An',     phone:'0912345128', cccd:true,  room:'P.101', building:'Nhà trọ An Bình',      start:'2026-01-01', end:'2026-12-31', debt:0,       status:'renting'  },
-    { name:'Trần Hà',       phone:'0987654624', cccd:true,  room:'P.201', building:'Nhà trọ An Bình',      start:'2026-03-01', end:'2026-09-30', debt:4850000, status:'expiring' },
+    { name:'Nguyễn Văn An',  phone:'0912000111', cccd:true,  room:'P.101', building:'Nhà trọ An Bình',      start:'2026-01-01', end:'2026-12-31', debt:0,       status:'renting'  },
+    { name:'Trần Mỹ Linh',   phone:'0987000222', cccd:true,  room:'P.201', building:'Nhà trọ An Bình',      start:'2026-03-01', end:'2026-09-30', debt:4850000, status:'expiring' },
     { name:'Lê Minh Tú',    phone:'0905117342', cccd:true,  room:'P.202', building:'Nhà trọ An Bình',      start:'2026-02-15', end:'2027-02-14', debt:0,       status:'renting'  },
-    { name:'Phạm Thu',      phone:'0933820517', cccd:false, room:'P.301', building:'Nhà trọ An Bình',      start:'2025-10-01', end:'2026-09-30', debt:3850000, status:'overdue'  },
-    { name:'Đỗ Quang Huy',  phone:'0977452890', cccd:true,  room:'P.302', building:'Nhà trọ An Bình',      start:'2026-04-01', end:'2027-03-31', debt:0,       status:'renting'  },
+    { name:'Phạm Thu Trang', phone:'0901234567', cccd:false, room:'P.301', building:'Nhà trọ An Bình',      start:'2025-10-01', end:'2026-09-30', debt:3850000, status:'overdue'  },
+    { name:'Lê Quang Huy',   phone:'0933000333', cccd:true,  room:'P.302', building:'Nhà trọ An Bình',      start:'2026-04-01', end:'2027-03-31', debt:0,       status:'renting'  },
     { name:'Vũ Thị Ngọc',   phone:'0918273645', cccd:true,  room:'P.405', building:'Nhà trọ An Bình',      start:'2025-11-01', end:'2026-10-15', debt:1200000, status:'expiring' },
     { name:'Hoàng Nam',     phone:'0944556677', cccd:true,  room:'P.102', building:'Nhà trọ Thanh Xuân 2', start:'2026-05-01', end:'2027-04-30', debt:0,       status:'renting'  },
     { name:'Bùi Khánh Linh',phone:'0966338822', cccd:false, room:'P.203', building:'Nhà trọ Thanh Xuân 2', start:'2026-06-01', end:'2027-05-31', debt:2400000, status:'overdue'  },

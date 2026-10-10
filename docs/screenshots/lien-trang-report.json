@@ -6,9 +6,27 @@
     "ok": true
   },
   {
-    "name": "hiện toast xác nhận",
-    "got": "Đã gửi yêu cầu",
-    "want": "Đã gửi yêu cầu",
+    "name": "hiện thông báo đã đặt lịch",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "thông báo đúng phòng",
+    "got": "Phòng gác lửng, thoáng sáng",
+    "want": "Phòng gác lửng, thoáng sáng",
+    "ok": true
+  },
+  {
+    "name": "thông báo đúng ngày giờ",
+    "got": "24/09/2026 15:00 - 15:30",
+    "want": "24/09/2026 15:00 - 15:30",
+    "ok": true
+  },
+  {
+    "name": "Esc chỉ đóng thông báo, chi tiết phòng vẫn mở",
+    "got": "false,true",
+    "want": "false,true",
     "ok": true
   },
   {
@@ -31,8 +49,8 @@
   },
   {
     "name": "bản ghi giữ đúng tên phòng",
-    "got": "Phòng khép kín, gần các trường Bách Kinh Xây",
-    "want": "Phòng khép kín, gần các trường Bách Kinh Xây",
+    "got": "Phòng gác lửng, thoáng sáng",
+    "want": "Phòng gác lửng, thoáng sáng",
     "ok": true
   },
   {
@@ -48,15 +66,15 @@
     "ok": true
   },
   {
-    "name": "lịch vừa đặt xuất hiện bên trang lịch xem",
+    "name": "lịch vừa đặt xuất hiện trên lịch tháng (màu cam)",
     "got": true,
     "want": true,
     "ok": true
   },
   {
-    "name": "tab Sắp tới có 4 lịch",
-    "got": 4,
-    "want": 4,
+    "name": "tháng 9 có 6 lịch",
+    "got": 6,
+    "want": 6,
     "ok": true
   },
   {
@@ -85,8 +103,8 @@
   },
   {
     "name": "quay lại trang tìm phòng được",
-    "got": 18,
-    "want": 18,
+    "got": 9,
+    "want": 9,
     "ok": true
   },
   {

@@ -1,0 +1,488 @@
+[
+  {
+    "viewport": "desktop",
+    "checks": [
+      {
+        "name": "bảng giá chưa hiện khi chưa cuộn tới",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "cuộn tới bảng giá: các gói hiện ra",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "thứ tự section",
+        "got": [
+          "hero",
+          "trust",
+          "chu-tro",
+          "da-nen-tang",
+          "vi-sao",
+          "bang-gia",
+          "tim-tro"
+        ],
+        "want": [
+          "hero",
+          "trust",
+          "chu-tro",
+          "da-nen-tang",
+          "vi-sao",
+          "bang-gia",
+          "tim-tro"
+        ],
+        "ok": true
+      },
+      {
+        "name": "đa nền tảng: 3 thiết bị",
+        "got": [
+          "Điện thoại",
+          "Máy tính bảng",
+          "Laptop"
+        ],
+        "want": [
+          "Điện thoại",
+          "Máy tính bảng",
+          "Laptop"
+        ],
+        "ok": true
+      },
+      {
+        "name": "đa nền tảng: nói rõ dùng qua website",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "vì sao chọn: 6 lý do",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "bảng giá: 2 gói, không còn gói miễn phí",
+        "got": [
+          "Plus",
+          "Pro"
+        ],
+        "want": [
+          "Plus",
+          "Pro"
+        ],
+        "ok": true
+      },
+      {
+        "name": "bảng giá: giá",
+        "got": [
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
+        ],
+        "want": [
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Plus: 15 phòng, 1 tài khoản",
+        "got": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "want": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "ok": true
+      },
+      {
+        "name": "Pro: 60 phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Pro: 5 tài khoản",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Plus: dùng thử 15 ngày",
+        "got": "Dùng thử miễn phí 15 ngày",
+        "want": "Dùng thử miễn phí 15 ngày",
+        "ok": true
+      },
+      {
+        "name": "Plus được đánh dấu nổi bật",
+        "got": "Phổ biến nhất",
+        "want": "Phổ biến nhất",
+        "ok": true
+      },
+      {
+        "name": "Pro: cho chung cư, căn hộ cao cấp",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "menu có mục Bảng giá",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "nút gói cao ≥ 44px",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm \"Dùng thử 15 ngày\": mở form đăng ký",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "form đăng ký chọn sẵn vai trò chủ trọ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "tablet",
+    "checks": [
+      {
+        "name": "bảng giá chưa hiện khi chưa cuộn tới",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "cuộn tới bảng giá: các gói hiện ra",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "thứ tự section",
+        "got": [
+          "hero",
+          "trust",
+          "chu-tro",
+          "da-nen-tang",
+          "vi-sao",
+          "bang-gia",
+          "tim-tro"
+        ],
+        "want": [
+          "hero",
+          "trust",
+          "chu-tro",
+          "da-nen-tang",
+          "vi-sao",
+          "bang-gia",
+          "tim-tro"
+        ],
+        "ok": true
+      },
+      {
+        "name": "đa nền tảng: 3 thiết bị",
+        "got": [
+          "Điện thoại",
+          "Máy tính bảng",
+          "Laptop"
+        ],
+        "want": [
+          "Điện thoại",
+          "Máy tính bảng",
+          "Laptop"
+        ],
+        "ok": true
+      },
+      {
+        "name": "đa nền tảng: nói rõ dùng qua website",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "vì sao chọn: 6 lý do",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "bảng giá: 2 gói, không còn gói miễn phí",
+        "got": [
+          "Plus",
+          "Pro"
+        ],
+        "want": [
+          "Plus",
+          "Pro"
+        ],
+        "ok": true
+      },
+      {
+        "name": "bảng giá: giá",
+        "got": [
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
+        ],
+        "want": [
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Plus: 15 phòng, 1 tài khoản",
+        "got": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "want": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "ok": true
+      },
+      {
+        "name": "Pro: 60 phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Pro: 5 tài khoản",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Plus: dùng thử 15 ngày",
+        "got": "Dùng thử miễn phí 15 ngày",
+        "want": "Dùng thử miễn phí 15 ngày",
+        "ok": true
+      },
+      {
+        "name": "Plus được đánh dấu nổi bật",
+        "got": "Phổ biến nhất",
+        "want": "Phổ biến nhất",
+        "ok": true
+      },
+      {
+        "name": "Pro: cho chung cư, căn hộ cao cấp",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "menu có mục Bảng giá",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "nút gói cao ≥ 44px",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm \"Dùng thử 15 ngày\": mở form đăng ký",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "form đăng ký chọn sẵn vai trò chủ trọ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "mobile",
+    "checks": [
+      {
+        "name": "bảng giá chưa hiện khi chưa cuộn tới",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "cuộn tới bảng giá: các gói hiện ra",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "thứ tự section",
+        "got": [
+          "hero",
+          "trust",
+          "chu-tro",
+          "da-nen-tang",
+          "vi-sao",
+          "bang-gia",
+          "tim-tro"
+        ],
+        "want": [
+          "hero",
+          "trust",
+          "chu-tro",
+          "da-nen-tang",
+          "vi-sao",
+          "bang-gia",
+          "tim-tro"
+        ],
+        "ok": true
+      },
+      {
+        "name": "đa nền tảng: 3 thiết bị",
+        "got": [
+          "Điện thoại",
+          "Máy tính bảng",
+          "Laptop"
+        ],
+        "want": [
+          "Điện thoại",
+          "Máy tính bảng",
+          "Laptop"
+        ],
+        "ok": true
+      },
+      {
+        "name": "đa nền tảng: nói rõ dùng qua website",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "vì sao chọn: 6 lý do",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "bảng giá: 2 gói, không còn gói miễn phí",
+        "got": [
+          "Plus",
+          "Pro"
+        ],
+        "want": [
+          "Plus",
+          "Pro"
+        ],
+        "ok": true
+      },
+      {
+        "name": "bảng giá: giá",
+        "got": [
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
+        ],
+        "want": [
+          "199.000₫ / tháng",
+          "499.000₫ / tháng"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Plus: 15 phòng, 1 tài khoản",
+        "got": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "want": "Tối đa 15 phòng, 1 tài khoản quản lý",
+        "ok": true
+      },
+      {
+        "name": "Pro: 60 phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Pro: 5 tài khoản",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Plus: dùng thử 15 ngày",
+        "got": "Dùng thử miễn phí 15 ngày",
+        "want": "Dùng thử miễn phí 15 ngày",
+        "ok": true
+      },
+      {
+        "name": "Plus được đánh dấu nổi bật",
+        "got": "Phổ biến nhất",
+        "want": "Phổ biến nhất",
+        "ok": true
+      },
+      {
+        "name": "Pro: cho chung cư, căn hộ cao cấp",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "menu có mục Bảng giá",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "nút gói cao ≥ 44px",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm \"Dùng thử 15 ngày\": mở form đăng ký",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "form đăng ký chọn sẵn vai trò chủ trọ",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "không có lỗi JS",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+]

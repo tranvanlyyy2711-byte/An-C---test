@@ -164,9 +164,13 @@ Trước khi coi một thay đổi là xong: `npm run lint` và `npm run typeche
 **Prototype HTML hiện tại** (chưa phải Next.js) có máy chủ riêng cho lịch xem phòng, dùng SQLite tích hợp của Node, không thêm dependency:
 
 ```bash
-npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở data/ (không commit)
+npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở 'Trang admin/' (không commit)
 npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
+npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
+npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịch vụ, lịch thanh toán
+npm run test:tinh      # bản tĩnh (như trên Vercel): mọi trang mở được, không lỗi JS
+npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và bản tĩnh
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```
 
@@ -174,7 +178,70 @@ node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API —
 
 Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`.
 
-Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999`. Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
+Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999` (Trần Hoà — Nhà trọ An Bình), `0977111222` (Lê Thu Mai). Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
+
+**Một bộ phòng dùng chung.** 9 tin `p01`–`p09` chỉ khai một chỗ: `ROOMS` trong
+`tai-khoan/tim-phong.html` là **bộ chuẩn**; `trang-chu.html` và `PHONG` trong `server/phong.mjs` phải
+khớp theo (tên, giá, diện tích, số người, tầng, ảnh, mô tả). Trang chủ ghi phường theo danh sách 126 đơn
+vị của Hà Nội sau sáp nhập để bộ lọc vị trí tìm được — Mỹ Đình và Nhật Tân không còn là phường riêng nên
+`p07` ghi Phường Từ Liêm, `p08` ghi Phường Tây Hồ.
+
+**Một bộ danh tính dùng chung.** Tên và số điện thoại của tài khoản demo phải giống nhau ở cả ba khu:
+trang người thuê (`tai-khoan/*`), trang chủ trọ (`quan-ly/*`) và khu quản trị. Nguồn sự thật là
+`DEMO_USERS` trong `server/auth.mjs`; `seedDemoUsers` đồng bộ lại tên cho CSDL cũ. Bốn người thuê đang ở
+nhà trọ An Bình: An `P.101`, Linh `P.201`, Trang `P.301`, Huy `P.302` — khớp `quan-ly/nguoi-thue.html`,
+`hop-dong-dien-tu.html`, `phong-dien-nuoc.html`, `thanh-toan.html` và dữ liệu seed trong `server/db.mjs`.
+Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` là khách chưa có tài khoản An Cư.
+
+**Khu quản trị** (`quan-tri/trang-chu.html` + `quan-tri/tong-quan.html`, API `/api/quan-tri/*` trong
+`server/quan-tri.mjs`): chỉ tài khoản `role = 'admin'` mới vào được. Tài khoản quản trị mẫu:
+`0900000001` / `matkhau123`. Form đăng ký công khai chỉ nhận `renter` và `landlord`, không tạo được admin.
+Đăng nhập admin vào thẳng `quan-tri/trang-chu.html`.
+
+- **Khung giống khu chủ trọ:** cột công cụ cố định bên trái (`.side-nav`, 264px), dưới 960px thành ngăn
+  kéo mở bằng nút hamburger. Markup sidebar lặp ở cả hai trang — sửa một bên thì sửa cả bên kia. Mục chưa
+  làm để trong cột nhưng là `<span class="side-link is-off">` kèm nhãn **"Chưa làm"**, không bấm được.
+- **Trang chủ quản trị** (`trang-chu.html`): 4 chỉ số cần nhìn mỗi ngày (doanh thu tháng này, gói đang
+  hoạt động theo Plus/Pro, gói sắp đến hạn trong 7 ngày, yêu cầu hỗ trợ chưa xử lý), danh sách việc cần
+  xử lý, và danh sách phần chưa làm. **Không vẽ nút chết hay số liệu bịa**: số liệu chưa có trả về `null`
+  từ `summary()` và giao diện hiện chữ "Chưa làm", không hiện `0`. Mốc thời gian lấy từ `summary.today`
+  (ngày của máy chủ) để ô chỉ số và danh sách bên dưới không lệch nhau.
+- **`tong-quan.html`** không còn thanh tab: ba khu Tài khoản / Nhà trọ & người thuê / Gói & thanh toán đổi
+  bằng `#tai-khoan|nha-tro|thanh-toan`, cột công cụ bên trái là chỗ điều hướng duy nhất.
+- Dữ liệu mẫu của chế độ xem thử nằm ở `quan-tri/du-lieu-xem-thu.js` (`window.XemThu`), **hai trang dùng
+  chung** nên số liệu luôn khớp. Thêm trường mới vào `summary()` thì phải thêm cả ở đây.
+
+- **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. Khoá là xoá mọi phiên
+  của người đó và chặn đăng nhập (`users.status = 'locked'`). Không khoá được tài khoản admin hay chính mình.
+- **Nhà trọ & người thuê:** chủ trọ nào đang quản lý nhà trọ / phòng nào và ai đang thuê ở đó, khoá được cả
+  chủ trọ lẫn người thuê ngay tại chỗ khi có báo cáo. Prototype chưa có bảng `properties`, nên quyền sở hữu
+  khai trong `NHA_TRO` ở `server/phong.mjs` (đúng mô hình v1: `properties.landlord_id` → `rooms.property_id`).
+  Người đang thuê suy ra từ `rental_requests` có `status = 'approved'`; ngoài ra liệt kê người đang chờ duyệt
+  thuê và người đang hẹn xem. Khách do chủ trọ tự thêm (không có tài khoản) vẫn hiện nhưng không khoá được.
+- **Tin đăng (duyệt tin):** bảng `listings` trong `server/db.mjs`. Chủ trọ gửi tin, quản trị **Duyệt** /
+  **Từ chối** (bắt buộc ghi lý do) / **Đưa về chờ duyệt**; mỗi tin ghi rõ ai đăng, số trong tin và số của
+  tài khoản. Hệ thống tự chấm **dấu hiệu đáng ngờ** (giục chuyển khoản/cọc trước, không cho xem phòng,
+  đẩy sang Zalo, giá thấp bất thường, số lạ, tài khoản bị khoá, địa chỉ không rõ) — chỉ là **gợi ý cho
+  người duyệt**, không tự động từ chối tin nào. Tin gắn với phòng trong danh mục (`listings.room_id`) mà
+  không ở trạng thái `approved` thì máy chủ **từ chối đặt lịch xem** phòng đó.
+- **Gói dịch vụ:** hai gói, **không có gói miễn phí** — Plus `199.000₫/tháng` (tối đa 15 phòng, 1 tài khoản),
+  Pro `499.000₫/tháng` (tối đa 60 phòng, 5 tài khoản); cả hai dùng thử 15 ngày. Giá và hạn mức khai một chỗ
+  ở `PLANS` trong `server/quan-tri.mjs`, phải khớp bảng giá `#bang-gia` của `trang-chu.html`. Hạn mức hiện
+  mới để hiển thị, prototype chưa chặn khi vượt. Chủ trọ chưa có gói hiện là **"Chưa kích hoạt gói"**.
+  `plan_subscriptions` (mỗi chủ trọ tối đa MỘT gói còn hiệu lực, bảo đảm bằng chỉ mục duy nhất
+  có điều kiện) và `plan_invoices` (lịch thanh toán từng kỳ `YYYY-MM`, có hạn đóng). Kỳ `pending` quá hạn tự
+  chuyển `overdue` ở đầu mỗi thao tác đọc/ghi, cùng cách làm với lịch xem phòng. Prototype chỉ **ghi nhận**
+  thanh toán, không xử lý thanh toán trực tuyến (vẫn ngoài phạm vi v1).
+
+**Chế độ xem thử (không có máy chủ).** Mở trang bằng `file://` hoặc deploy tĩnh (Vercel) thì không có
+`/api/*`. Khi đó trang quản trị tự chuyển sang dữ liệu mẫu lưu trong `localStorage` (khoá
+`an-cu-quan-tri-demo`) và hiện dải báo "Chế độ xem thử"; mọi thao tác vẫn chạy nhưng chỉ lưu trên máy
+người xem, không chia sẻ. Các trang người thuê và chủ trọ đã có sẵn cách dự phòng tương tự.
+
+**Deploy tĩnh lên Vercel:** `vercel.json` đặt `outputDirectory: "."`, không build; `.vercelignore` loại
+`server/`, `scripts/`, `node_modules/`, CSDL và `.env*`. Bản trên Vercel là **bản xem thử**: không có máy
+chủ nên không có đăng nhập thật, dữ liệu không dùng chung giữa người xem. Muốn chạy thật thì cần đưa
+dữ liệu lên Supabase theo mục Tech stack, vì Vercel không giữ được file SQLite.
 
 ---
 

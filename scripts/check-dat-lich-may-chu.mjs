@@ -58,11 +58,15 @@ async function openPage(ctx, path) {
   await p.goto(B + path, { waitUntil: 'domcontentloaded' });
   return p;
 }
+// Đặt thành công thì trang hiện thông báo "Bạn đang đặt lịch xem phòng" (đóng lại để thao tác tiếp),
+// thất bại thì hiện toast lỗi
 const toast = async (p, title) => {
   try {
-    await p.waitForFunction((t) => document.getElementById('toastTitle').textContent.trim() === t, title, { timeout: 5000 });
-    return title;
-  } catch { return (await p.locator('#toastTitle').textContent()).trim(); }
+    await p.waitForFunction((t) => document.getElementById('toastTitle').textContent.trim() === t
+      || !(document.getElementById('bookedOverlay') || { hidden: true }).hidden, title, { timeout: 5000 });
+  } catch {}
+  if (await p.locator('#bookedOverlay').isVisible()) { await p.click('#bookedOk'); return 'Đã gửi yêu cầu'; }
+  return (await p.locator('#toastTitle').textContent()).trim();
 };
 const optionText = (p, sel, idx) => p.evaluate(([s, i]) => { const o = document.querySelectorAll(s + ' option')[i]; return (o.disabled ? 'khoá: ' : 'trống: ') + o.textContent; }, [sel, idx]);
 const waitOption = (p, sel, idx, text) => p.waitForFunction(([s, i, t]) => document.querySelectorAll(s + ' option')[i].textContent === t, [sel, idx, text], { timeout: 5000 }).catch(() => {});
@@ -76,14 +80,28 @@ async function openRoom(p, roomId, date) {
 
 try {
   rmSync(DB, { force: true });
-  await startServer();
+  await startServer('2026-09-18T08:15:00'); // dữ liệu mẫu neo quanh mốc này
 
   console.log('\n=== 1. Ba mươi người bấm đặt cùng một khung giờ, cùng lúc ===');
   const users = ['u-trang', 'u-an', 'u-linh', 'u-huy'];
   const rs = await Promise.all(Array.from({ length: 30 }, (_, i) =>
-    api('POST', '/api/lich-xem', { nguoi: users[i % 4], roomId: 'r12', date: '2026-09-23', time: '10:00' })));
+    api('POST', '/api/lich-xem', { nguoi: users[i % 4], roomId: 'p06', date: '2026-09-23', time: '10:00' })));
   expect('đúng 1 yêu cầu thành công', rs.filter((r) => r.status === 201).length, 1);
   expect('29 yêu cầu còn lại bị từ chối 409', rs.filter((r) => r.status === 409).length, 29);
+
+  console.log('\n=== 1b. Giờ tự do đến từng phút, mỗi buổi 30 phút ===');
+  const dat = (nguoi, time, date = '2026-09-23') => api('POST', '/api/lich-xem', { nguoi, roomId: 'p04', date, time });
+  expect('Linh đặt p04 lúc 09:06', (await dat('u-linh', '09:06')).status, 201);
+  const chong = await dat('u-huy', '09:20');
+  expect('Huy đặt 09:20 chồng lên buổi 09:06-09:36 bị chặn', `${chong.status}/${chong.body.error}`, '409/slot_taken');
+  expect('Huy đặt 09:36 sát ngay sau thì được', (await dat('u-huy', '09:36')).status, 201);
+  expect('giờ đã bị chiếm trả về đúng phút', (await api('GET', '/api/khung-gio?phong=p04&ngay=2026-09-23&nguoi=u-an')).body.taken.map((t) => t.time).sort(), ['09:06', '09:36']);
+  expect('06:30 ngoài giờ nhận lịch bị từ chối', (await dat('u-an', '06:30')).body.error, 'invalid_time');
+  expect('21:01 ngoài giờ nhận lịch bị từ chối', (await dat('u-an', '21:01')).body.error, 'invalid_time');
+  expect('giờ sai định dạng bị từ chối', (await dat('u-an', '9:6')).body.error, 'invalid_time');
+  expect('giờ đã qua trong hôm nay bị từ chối', (await dat('u-an', '08:00', '2026-09-18')).body.error, 'past_time');
+  const lech = await Promise.all(Array.from({ length: 20 }, (_, i) => dat(users[i % 4], `14:${String(i).padStart(2, '0')}`)));
+  expect('20 yêu cầu lệch phút (14:00-14:19) gửi cùng lúc: đúng 1 thành công', lech.filter((r) => r.status === 201).length, 1);
 
   console.log('\n=== 2. Ghi thẳng vào cơ sở dữ liệu, bỏ qua mọi code ứng dụng ===');
   const raw = new DatabaseSync(DB);
@@ -91,11 +109,11 @@ try {
   let rawError = '';
   try {
     raw.prepare(`INSERT INTO viewing_appointments (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, created_at)
-                 VALUES ('r12', 'u-huy', 'Kẻ gian', '0900000000', '2026-09-23', '10:00', 30, 'pending', '2026-09-18T00:00:00Z')`).run();
+                 VALUES ('p06', 'u-huy', 'Kẻ gian', '0900000000', '2026-09-23', '10:00', 30, 'pending', '2026-09-18T00:00:00Z')`).run();
   } catch (e) { rawError = String(e.message); }
   expect('chỉ mục duy nhất chặn cả lệnh ghi thẳng', /UNIQUE constraint failed/.test(rawError), true);
   raw.prepare(`INSERT INTO viewing_appointments (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, created_at)
-               VALUES ('r12', 'u-huy', 'Lịch cũ', '0900000000', '2026-09-23', '10:00', 30, 'cancelled', '2026-09-18T00:00:00Z')`).run();
+               VALUES ('p06', 'u-huy', 'Lịch cũ', '0900000000', '2026-09-23', '10:00', 30, 'cancelled', '2026-09-18T00:00:00Z')`).run();
   expect('lịch đã huỷ vẫn ghi được, không chiếm chỗ', true, true);
   raw.close();
 
@@ -105,12 +123,12 @@ try {
   const a = await openPage(ctxA, '/tai-khoan/tim-phong.html?nguoi=u-trang');
   const b = await openPage(ctxB, '/tai-khoan/tim-phong.html?nguoi=u-an');
 
-  await openRoom(a, 'r14', '2026-09-24');
+  await openRoom(a, 'p09', '2026-09-24');
   await a.selectOption('#rdTime', '13:30');
   await a.click('#rdBookingBtn');
-  expect('Trang đặt r14 24/09 13:30', await toast(a, 'Đã gửi yêu cầu'), 'Đã gửi yêu cầu');
+  expect('Trang đặt p09 24/09 13:30', await toast(a, 'Đã gửi yêu cầu'), 'Đã gửi yêu cầu');
 
-  await openRoom(b, 'r14', '2026-09-24');
+  await openRoom(b, 'p09', '2026-09-24');
   await waitOption(b, '#rdTime', 3, '13:30 · Đã có người đặt');
   expect('An thấy 13:30 đã bị khoá', await optionText(b, '#rdTime', 3), 'khoá: 13:30 · Đã có người đặt');
   await b.screenshot({ path: resolve(outDir, 'may-chu-khung-gio-bi-khoa-desktop.png') });
@@ -120,8 +138,8 @@ try {
 
   console.log('\n=== 4. Cả hai cùng nhìn thấy khung giờ trống, cùng bấm ===');
   await a.click('#rdClose'); await b.click('#rdClose');
-  await openRoom(a, 'r15', '2026-09-25');
-  await openRoom(b, 'r15', '2026-09-25');
+  await openRoom(a, 'p07', '2026-09-25');
+  await openRoom(b, 'p07', '2026-09-25');
   await a.selectOption('#rdTime', '17:30');
   await b.selectOption('#rdTime', '17:30');
   expect('trước khi bấm, An vẫn thấy 17:30 trống', await optionText(b, '#rdTime', 5), 'trống: 17:30');
@@ -131,22 +149,40 @@ try {
   ]);
   const thang = [ra, rb].filter((t) => t === 'Đã gửi yêu cầu').length;
   expect('chỉ đúng một người thắng', thang, 1);
-  const r15 = (await api('GET', '/api/chu-tro/lich-xem')).body.items
-    .filter((i) => i.roomId === 'r15' && i.date === '2026-09-25' && i.time === '17:30' && ['pending', 'confirmed'].includes(i.status));
-  expect('cơ sở dữ liệu chỉ có một lịch cho r15 25/09 17:30', r15.length, 1);
+  const p07 = (await api('GET', '/api/chu-tro/lich-xem')).body.items
+    .filter((i) => i.roomId === 'p07' && i.date === '2026-09-25' && i.time === '17:30' && ['pending', 'confirmed'].includes(i.status));
+  expect('cơ sở dữ liệu chỉ có một lịch cho p07 25/09 17:30', p07.length, 1);
 
   console.log('\n=== 5. Trang lịch xem của từng người ===');
   const da = await openPage(ctxA, '/tai-khoan/dat-lich.html');
   const db = await openPage(ctxB, '/tai-khoan/dat-lich.html');
-  await da.waitForSelector('.content-real .apt-item');
-  await db.waitForSelector('.content-real .apt-item');
-  await da.waitForTimeout(700); await db.waitForTimeout(700);
+  const lichSan = (p) => p.waitForSelector('body:not(.is-loading) #calView .wk, body:not(.is-loading) #calView .mo');
+  await lichSan(da); await lichSan(db);
+  await da.waitForTimeout(500); await db.waitForTimeout(500);
   expect('trình duyệt nhớ người dùng: An', (await db.locator('.acc-btn .nm').textContent()).trim(), 'Nguyễn Văn An');
-  const lichAn = await db.locator('#apptList .apt-item').allTextContents();
-  expect('An không thấy lịch của Trang', lichAn.some((t) => t.includes('Hòa Lạc')), false);
-  const theR14 = da.locator('#apptList .apt-item', { hasText: 'Hòa Lạc' });
-  expect('Trang thấy lịch r14 đang chờ xác nhận', (await theR14.locator('.apt-status').textContent()).trim(), 'Chờ xác nhận');
-  await da.screenshot({ path: resolve(outDir, 'may-chu-lich-cua-toi-desktop.png'), fullPage: true });
+  // Lịch p09 ngày 24/09 nằm ở tuần sau: xem cả tháng 9
+  for (const p of [da, db]) { await p.click('#viewSeg [data-view="month"]'); await p.waitForTimeout(200); }
+  expect('An không thấy lịch của Trang', await db.locator('#calView .cal-ev[data-room="p09"]').count(), 0);
+  const theP09 = da.locator('#calView .cal-ev[data-room="p09"]');
+  expect('Trang thấy lịch p09 màu cam (chờ xác nhận)', await theP09.getAttribute('data-status'), 'pending');
+  await theP09.click();
+  await da.waitForTimeout(250);
+  expect('popover của Trang đúng giờ và trạng thái',
+    [(await da.locator('#popTime').textContent()).trim(), (await da.locator('#popStatus').textContent()).trim()], ['01:30 PM - 24/09/2026', 'Chờ xác nhận']);
+  await da.screenshot({ path: resolve(outDir, 'may-chu-lich-cua-toi-desktop.png') });
+  await da.keyboard.press('Escape');
+
+  // Trang mở modal đặt p09 ngày 24/09: ô giờ báo đỏ ngay khi gõ giờ chồng lên lịch đã có
+  await da.click('#openCreateBtn');
+  await da.waitForTimeout(250);
+  await da.selectOption('#mRoom', 'p09');
+  await da.fill('#mDate', '2026-09-24');
+  await da.waitForFunction(() => document.getElementById('mSlotHint').textContent.includes('01:30 PM - 02:00 PM'), null, { timeout: 5000 }).catch(() => {});
+  await da.fill('#mTimeText', '1:45 pm');
+  await da.waitForTimeout(150);
+  expect('modal báo trùng với lịch của chính mình và khoá nút gửi',
+    [await da.locator('#rowTime').evaluate((el) => el.classList.contains('is-invalid')), await da.locator('#apptSaveBtn').isDisabled()], [true, true]);
+  await da.click('#apptCancelBtn');
 
   console.log('\n=== 6. Chủ trọ ===');
   const ctxC = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -154,15 +190,14 @@ try {
   await cp.waitForTimeout(900);
   await cp.click('#viewToggle [data-view="list"]');
   await cp.waitForTimeout(250);
-  const rowR14 = cp.locator('#listRows .list-row', { hasText: 'R14' }).filter({ hasText: 'Phạm Thu Trang' });
-  expect('chủ trọ thấy lịch Trang vừa đặt', await rowR14.count(), 1);
-  await rowR14.locator('[data-confirm]').click();
+  const rowP09 = cp.locator('#listRows .list-row', { hasText: 'P09' }).filter({ hasText: 'Phạm Thu Trang' });
+  expect('chủ trọ thấy lịch Trang vừa đặt', await rowP09.count(), 1);
+  await rowP09.locator('[data-confirm]').click();
   expect('chủ trọ xác nhận được', await toast(cp, 'Đã xác nhận lịch'), 'Đã xác nhận lịch');
   await da.reload({ waitUntil: 'domcontentloaded' });
-  await da.waitForSelector('.content-real .apt-item');
-  await da.waitForTimeout(700);
-  expect('Trang thấy lịch đã được xác nhận',
-    (await da.locator('#apptList .apt-item', { hasText: 'Hòa Lạc' }).locator('.apt-status').textContent()).trim(), 'Đã xác nhận');
+  await lichSan(da);
+  await da.waitForTimeout(500);
+  expect('Trang thấy lịch đã được xác nhận (màu xanh)', await da.locator('#calView .cal-ev[data-room="p09"]').getAttribute('data-status'), 'confirmed');
 
   await cp.click('#openCreateBtn');
   await cp.waitForTimeout(250);
@@ -176,19 +211,96 @@ try {
   expect('modal vẫn mở để chọn lại', await cp.locator('#apptModalOverlay').evaluate((el) => el.classList.contains('open')), true);
 
   console.log('\n=== 7. Hết hạn giữ chỗ khi đồng hồ qua 24 giờ ===');
-  const giu = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r13', date: '2026-09-25', time: '09:00' });
-  const giu2 = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r16', date: '2026-09-26', time: '10:00' });
-  expect('Trang giữ chỗ r13 và r16', [giu.status, giu2.status], [201, 201]);
-  expect('An chưa đặt được r13 lúc này', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'r13', date: '2026-09-25', time: '09:00' })).status, 409);
+  const giu = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'p05', date: '2026-09-25', time: '09:00' });
+  const giu2 = await api('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'p08', date: '2026-09-26', time: '10:00' });
+  expect('Trang giữ chỗ p05 và p08', [giu.status, giu2.status], [201, 201]);
+  expect('An chưa đặt được p05 lúc này', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'p05', date: '2026-09-25', time: '09:00' })).status, 409);
   await stopServer();
   await startServer('2026-09-19T09:00:00'); // 24 giờ 45 phút sau
   const sau = (await api('GET', '/api/lich-xem?nguoi=u-trang')).body.items;
-  const r13 = sau.find((i) => i.id === giu.body.item.id);
-  expect('lịch chưa được xác nhận tự huỷ vì quá hạn', `${r13.status}/${r13.cancelReason}`, 'cancelled/expired');
-  expect('lịch đã được xác nhận thì không hết hạn', sau.find((i) => i.roomId === 'r14').status, 'confirmed');
-  expect('khung giờ được nhả, An đặt được', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'r13', date: '2026-09-25', time: '09:00' })).status, 201);
+  const p05 = sau.find((i) => i.id === giu.body.item.id);
+  expect('lịch chưa được xác nhận tự huỷ vì quá hạn', `${p05.status}/${p05.cancelReason}`, 'cancelled/expired');
+  expect('lịch đã được xác nhận thì không hết hạn', sau.find((i) => i.roomId === 'p09').status, 'confirmed');
+  expect('khung giờ được nhả, An đặt được', (await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'p05', date: '2026-09-25', time: '09:00' })).status, 201);
   const muon = await api('PATCH', `/api/chu-tro/lich-xem/${giu2.body.item.id}`, { action: 'confirm' });
   expect('chủ trọ không xác nhận được lịch đã quá hạn', muon.status, 409);
+
+  console.log('\n=== 8. Lịch đã qua giờ hẹn thành lịch sử, chỉ ghi chú được ===');
+  const daXem = sau.find((i) => i.roomId === 'p03' && i.date === '2026-09-18');
+  expect('đã xác nhận và đã hết buổi 18/09 15:00 -> đã xem xong', daXem.status, 'completed');
+  const hen10 = await api('POST', '/api/lich-xem', { nguoi: 'u-an', roomId: 'p02', date: '2026-09-19', time: '10:00' });
+  expect('An đặt p02 10:00 hôm nay, giữ chỗ tới mai', hen10.status, 201);
+  await stopServer();
+  await startServer('2026-09-19T10:05:00'); // đã tới giờ hẹn, hạn giữ chỗ 24 giờ vẫn còn
+  const quaGio = (await api('GET', '/api/lich-xem?nguoi=u-an')).body.items.find((i) => i.id === hen10.body.item.id);
+  expect('chờ xác nhận mà đã tới giờ hẹn -> tự huỷ dù còn hạn giữ chỗ', `${quaGio.status}/${quaGio.cancelReason}`, 'cancelled/expired');
+  expect('lịch đã qua không đổi giờ được', (await api('PATCH', `/api/lich-xem/${daXem.id}`, { nguoi: 'u-trang', action: 'reschedule', date: '2026-09-28', time: '10:00' })).body.error, 'not_active');
+  expect('lịch đã qua không huỷ được', (await api('PATCH', `/api/lich-xem/${daXem.id}`, { nguoi: 'u-trang', action: 'cancel' })).body.error, 'not_active');
+  const ghi = await api('PATCH', `/api/lich-xem/${daXem.id}`, { nguoi: 'u-trang', action: 'memo', memo: 'Giá ổn, hơi xa trường' });
+  expect('người thuê ghi chú riêng vào lịch đã qua', [ghi.status, ghi.body.item.memo, ghi.body.item.status], [200, 'Giá ổn, hơi xa trường', 'completed']);
+  expect('người khác không ghi chú được', (await api('PATCH', `/api/lich-xem/${daXem.id}`, { nguoi: 'u-an', action: 'memo', memo: 'x' })).status, 403);
+  expect('ghi chú còn sau khi tải lại', (await api('GET', '/api/lich-xem?nguoi=u-trang')).body.items.find((i) => i.id === daXem.id).memo, 'Giá ổn, hơi xa trường');
+  console.log('\n=== 9. Yêu cầu thuê sau buổi xem: chủ trọ duyệt / không duyệt ===');
+  const lichT = (await api('GET', '/api/lich-xem?nguoi=u-trang')).body.items;
+  const p08 = lichT.find((i) => i.roomId === 'p08' && i.status === 'completed');
+  const chuaXem = lichT.find((i) => i.roomId === 'p05' && i.status === 'confirmed');
+  expect('chưa xem xong thì không gửi yêu cầu thuê được', (await api('POST', '/api/yeu-cau-thue', { nguoi: 'u-trang', appointmentId: chuaXem.id, wantDate: '2026-10-01' })).body.error, 'not_viewed');
+  const cung = await Promise.all(Array.from({ length: 5 }, () => api('POST', '/api/yeu-cau-thue', { nguoi: 'u-trang', appointmentId: daXem.id, wantDate: '2026-10-01', note: 'Muốn thuê dài hạn' })));
+  expect('5 lần gửi cùng lúc cho một buổi xem: đúng 1 yêu cầu', [cung.filter((r) => r.status === 201).length, cung.filter((r) => r.body.error === 'already_requested').length], [1, 4]);
+  expect('người khác không gửi thay được', (await api('POST', '/api/yeu-cau-thue', { nguoi: 'u-an', appointmentId: p08.id, wantDate: '2026-10-01' })).status, 403);
+
+  // Trang gửi yêu cầu thứ hai ngay trên trang lịch xem
+  await da.reload({ waitUntil: 'domcontentloaded' });
+  await lichSan(da);
+  await da.waitForTimeout(500);
+  await da.click(`#calView .cal-ev[data-id="${p08.id}"]`);
+  await da.waitForTimeout(250);
+  await da.click('#rentOpen');
+  await da.fill('#rentDate', '2026-10-05');
+  await da.fill('#rentNote', 'Muốn dọn vào đầu tháng 10');
+  await da.click('#rentSend');
+  await da.waitForTimeout(400);
+  expect('Trang gửi yêu cầu từ popover, hiện chờ duyệt', ((await da.locator('#rentState').textContent()) || '').includes('chờ chủ trọ duyệt'), true);
+  await da.keyboard.press('Escape');
+
+  // Chủ trọ: không duyệt P03 (có lý do), duyệt P08 trên bảng Yêu cầu thuê
+  await cp.reload({ waitUntil: 'domcontentloaded' });
+  await cp.waitForTimeout(900);
+  await cp.click('#tabBtnReq');
+  await cp.waitForTimeout(200);
+  const theTrang = (code) => cp.locator('#kanbanBoard .rcard', { hasText: 'Phạm Thu Trang' }).filter({ hasText: code });
+  // 3 = 2 yêu cầu vừa gửi trong kịch bản + 1 hợp đồng thuê P.301 có sẵn trong dữ liệu mẫu
+  expect('chủ trọ thấy 3 yêu cầu thuê của Trang', await cp.locator('#kanbanBoard .rcard', { hasText: 'Phạm Thu Trang' }).count(), 3);
+  await theTrang('P03').locator('[data-to="tu_choi"]').click();
+  await cp.waitForTimeout(150);
+  await cp.fill('#rejectReason', 'Phòng đã có người đặt cọc trước');
+  await cp.click('#rejectOk');
+  expect('chủ trọ không duyệt được', await toast(cp, 'Đã cập nhật yêu cầu'), 'Đã cập nhật yêu cầu');
+  await theTrang('P08').locator('[data-to="xem_xet"]').click();
+  await cp.waitForTimeout(400);
+  await theTrang('P08').locator('[data-to="duyet"]').click();
+  await cp.waitForTimeout(400);
+  await cp.screenshot({ path: resolve(outDir, 'may-chu-yeu-cau-thue-chu-tro-desktop.png') });
+  const yc = (await api('GET', '/api/yeu-cau-thue?nguoi=u-trang')).body.items;
+  expect('trạng thái trên máy chủ', yc.map((r) => r.roomId + ':' + r.status).sort(), ['P.301:approved', 'p03:rejected', 'p08:approved']);
+  expect('lý do không duyệt lưu lại', yc.find((r) => r.roomId === 'p03').reason, 'Phòng đã có người đặt cọc trước');
+
+  // Trang được báo: "không duyệt" trước, rồi "đã duyệt" và tự chuyển sang đặt cọc
+  await da.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await da.waitForSelector('#decideOverlay:not([hidden])', { timeout: 5000 }).catch(() => {});
+  expect('Trang được báo P03 không được duyệt, kèm lý do',
+    [(await da.locator('#decideTitle').textContent()).trim(), (await da.locator('#decideReason').textContent()).trim()],
+    ['Yêu cầu thuê không được duyệt', 'Lý do: Phòng đã có người đặt cọc trước']);
+  await da.click('#decideGo');
+  await da.waitForTimeout(300);
+  expect('tiếp theo báo P08 đã được duyệt', (await da.locator('#decideTitle').textContent()).trim(), 'Chủ trọ đã duyệt yêu cầu thuê');
+  await da.waitForURL('**/dat-coc.html**', { timeout: 10000 }).catch(() => {});
+  expect('tự chuyển sang bước đặt cọc của P08', new URL(da.url()).pathname.endsWith('dat-coc.html') && new URL(da.url()).searchParams.get('phong'), 'p08');
+  expect('đã đánh dấu đã báo, không báo lại', (await api('GET', '/api/yeu-cau-thue?nguoi=u-trang')).body.items.every((r) => r.seenAt), true);
+  expect('đã duyệt rồi thì không đổi sang không duyệt được',
+    (await api('PATCH', `/api/chu-tro/yeu-cau-thue/${yc.find((r) => r.roomId === 'p08').id}`, { action: 'reject' })).body.error, 'bad_state');
+
+  expect('chủ trọ không thấy ghi chú riêng', 'memo' in (await api('GET', '/api/chu-tro/lich-xem')).body.items.find((i) => i.id === daXem.id), false);
 
   expect('không có lỗi JavaScript trên các trang', errors.length, 0);
   if (errors.length) console.log(errors.join('\n'));

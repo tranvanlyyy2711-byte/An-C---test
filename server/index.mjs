@@ -1,9 +1,9 @@
 // Máy chủ prototype An Cư: phục vụ các trang tĩnh + API lịch xem phòng trên SQLite.
 //   npm start                 -> http://localhost:5500
 //   PORT=5600 npm start       -> đổi cổng
-//   AN_CU_DB=đường/dẫn.sqlite -> đổi file dữ liệu (mặc định data/an-cu.sqlite)
-//   AN_CU_NOW=2026-09-19T09:00:00 -> đổi "bây giờ" mô phỏng (mặc định 18/09/2026 08:15,
-//                                    cùng mốc với các trang), dùng để thử hết hạn giữ chỗ.
+//   AN_CU_DB=đường/dẫn.sqlite -> đổi file dữ liệu (mặc định 'Trang admin/an-cu.sqlite')
+//   AN_CU_NOW=2026-09-19T09:00:00 -> đóng băng "bây giờ" ở một mốc (mặc định: giờ thật của máy),
+//                                    dùng cho kiểm thử và để thử hết hạn giữ chỗ.
 import { createServer } from 'http';
 import { readFile } from 'fs/promises';
 import { extname, join, normalize, sep, dirname } from 'path';
@@ -11,17 +11,20 @@ import { fileURLToPath } from 'url';
 import { networkInterfaces } from 'os';
 import { openDb, ApiError } from './db.mjs';
 import { createAuth, sessionCookie, clearCookie } from './auth.mjs';
+import { createAdmin, PLANS } from './quan-tri.mjs';
 import { NGUOI_THUE } from './phong.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const port = Number(process.argv[2] || process.env.PORT || 5500);
-const dbFile = process.env.AN_CU_DB || join(root, 'data', 'an-cu.sqlite');
-const FIXED_NOW = new Date(process.env.AN_CU_NOW || '2026-09-18T08:15:00');
-if (Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
+const dbFile = process.env.AN_CU_DB || join(root, 'Trang admin', 'an-cu.sqlite');
+const FIXED_NOW = process.env.AN_CU_NOW ? new Date(process.env.AN_CU_NOW) : null;
+if (FIXED_NOW && Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
+const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());
 
-const store = openDb({ file: dbFile, now: () => new Date(FIXED_NOW.getTime()) });
+const store = openDb({ file: dbFile, now });
 const auth = createAuth(store.db, ApiError);
+const admin = createAdmin(store.db, ApiError, now);
 
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -60,7 +63,7 @@ async function api(req, res, url) {
 
   const me = auth.userFromReq(req);
 
-  if (p === '/api/suc-khoe' && m === 'GET') return send(res, 200, { ok: true, now: FIXED_NOW.toISOString(), me });
+  if (p === '/api/suc-khoe' && m === 'GET') return send(res, 200, { ok: true, now: now().toISOString(), me });
 
   // ----- Tài khoản -----
   if (p === '/api/toi' && m === 'GET') return send(res, 200, { user: me });
@@ -99,10 +102,54 @@ async function api(req, res, url) {
     const b = { ...body, nguoi: renterId(body.nguoi) };
     if (body.action === 'reschedule') return send(res, 200, { item: store.rescheduleForRenter(id[1], b) });
     if (body.action === 'cancel') return send(res, 200, { item: store.cancelForRenter(id[1], b) });
+    if (body.action === 'memo') return send(res, 200, { item: store.memoForRenter(id[1], b) });
+    throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+  }
+  if (p === '/api/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForRenter(renterId(qs.get('nguoi'))) });
+  if (p === '/api/yeu-cau-thue' && m === 'POST') {
+    const body = await readJson(req);
+    return send(res, 201, { item: store.createRequest({ ...body, nguoi: renterId(body.nguoi) }) });
+  }
+  if ((id = p.match(/^\/api\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action === 'seen') return send(res, 200, { item: store.markRequestSeen(id[1], { nguoi: renterId(body.nguoi) }) });
     throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
   }
   if (p === '/api/khung-gio' && m === 'GET') {
     return send(res, 200, { taken: store.takenFor({ roomId: qs.get('phong'), date: qs.get('ngay'), nguoi: renterId(qs.get('nguoi')), excludeId: qs.get('boQua') }) });
+  }
+
+  // ----- Quản trị -----
+  const sub = (prefix) => (p.startsWith(prefix) ? p.slice(prefix.length) : null);
+  if (p.startsWith('/api/quan-tri/')) {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản quản trị.');
+    if (me.role !== 'admin') throw new ApiError(403, 'not_admin', 'Chỉ tài khoản quản trị mới dùng được chức năng này.');
+  }
+  if (p === '/api/quan-tri/tong-quan' && m === 'GET') return send(res, 200, { summary: admin.summary(), plans: PLANS });
+  if (p === '/api/quan-tri/tai-khoan' && m === 'GET') {
+    return send(res, 200, { items: admin.listUsers({ role: qs.get('vaiTro'), q: qs.get('tim'), status: qs.get('trangThai') }) });
+  }
+  if ((id = sub('/api/quan-tri/tai-khoan/')) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action !== 'lock' && body.action !== 'unlock') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    return send(res, 200, { item: admin.setUserStatus(id, body.action === 'lock' ? 'locked' : 'active', me.id) });
+  }
+  if (p === '/api/quan-tri/tin-dang' && m === 'GET') {
+    return send(res, 200, { items: admin.listListings({ status: qs.get('trangThai'), q: qs.get('tim') }) });
+  }
+  if ((id = sub('/api/quan-tri/tin-dang/')) && m === 'PATCH') {
+    return send(res, 200, { item: admin.decideListing(id, await readJson(req), me.id) });
+  }
+  if (p === '/api/quan-tri/nha-tro' && m === 'GET') return send(res, 200, admin.listProperties({ q: qs.get('tim') }));
+  if (p === '/api/quan-tri/goi' && m === 'GET') return send(res, 200, { items: admin.listPlans() });
+  if (p === '/api/quan-tri/goi' && m === 'POST') return send(res, 201, { item: admin.createPlan(await readJson(req)) });
+  if ((id = sub('/api/quan-tri/goi/')) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action !== 'cancel') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+    return send(res, 200, { item: admin.cancelPlan(id) });
+  }
+  if ((id = sub('/api/quan-tri/hoa-don/')) && m === 'PATCH') {
+    return send(res, 200, { item: admin.payInvoice(id, await readJson(req)) });
   }
 
   // ----- Chủ trọ -----
@@ -116,24 +163,28 @@ async function api(req, res, url) {
   if ((id = p.match(/^\/api\/chu-tro\/lich-xem\/(\d+)$/)) && m === 'PATCH') {
     return send(res, 200, { item: store.updateForLandlord(id[1], await readJson(req)) });
   }
+  if (p === '/api/chu-tro/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForLandlord() });
+  if ((id = p.match(/^\/api\/chu-tro\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
+    return send(res, 200, { item: store.decideRequest(id[1], await readJson(req)) });
+  }
 
   throw new ApiError(404, 'not_found', 'Không có API này.');
 }
 
 // Chỉ phục vụ đúng những gì các trang cần. Mọi thứ khác trong thư mục dự án (.git, node_modules,
 // scripts, server, data, CLAUDE.md...) trả 404, để mở máy chủ ra mạng ngoài không lộ mã nguồn hay dữ liệu.
-const PUBLIC_DIRS = new Set(['quan-ly', 'tai-khoan', 'assets']);
+const PUBLIC_DIRS = new Set(['quan-ly', 'tai-khoan', 'quan-tri', 'assets']);
 
 async function staticFile(req, res, url) {
   let urlPath;
   try { urlPath = decodeURIComponent(url.pathname); }
   catch { res.writeHead(400); res.end('Bad request'); return; } // "%" sai định dạng: trước đây làm sập máy chủ
-  if (urlPath === '/') urlPath = '/index.html';
+  if (urlPath === '/') urlPath = '/trang-chu.html';
   const filePath = normalize(join(root, urlPath));
   if (filePath !== root && !filePath.startsWith(root + sep)) { res.writeHead(403); res.end('Forbidden'); return; }
   const parts = filePath.slice(root.length + 1).split(sep);
   const allowed = parts.every((s) => s && !s.startsWith('.'))
-    && ((parts.length === 1 && parts[0] === 'index.html') || PUBLIC_DIRS.has(parts[0]));
+    && ((parts.length === 1 && (parts[0] === 'trang-chu.html' || parts[0] === 'index.html')) || PUBLIC_DIRS.has(parts[0]));
   if (!allowed) { res.writeHead(404); res.end('Not found: ' + url.pathname); return; }
   try {
     const data = await readFile(filePath);
@@ -162,7 +213,7 @@ server.listen(port, () => {
   const lan = Object.values(networkInterfaces()).flat()
     .filter((a) => a && a.family === 'IPv4' && !a.internal && !a.address.startsWith('169.254.'))
     .map((a) => `http://${a.address}:${port}`);
-  console.log(`An Cư: http://localhost:${port}  (dữ liệu: ${dbFile}, bây giờ = ${FIXED_NOW.toLocaleString('vi-VN')})` +
+  console.log(`An Cư: http://localhost:${port}  (dữ liệu: ${dbFile}, bây giờ = ${now().toLocaleString('vi-VN')}${FIXED_NOW ? ' (đóng băng)' : ''})` +
     (lan.length ? `
   Máy khác cùng mạng: ${lan.join('  ')}` : ''));
 });

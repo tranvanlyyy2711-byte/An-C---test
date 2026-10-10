@@ -7,6 +7,10 @@
     "start": "node server/index.mjs",
     "test:lich": "node scripts/check-dat-lich-may-chu.mjs",
     "test:auth": "node scripts/check-dang-nhap.mjs",
+    "test:quan-tri": "node scripts/check-quan-tri.mjs",
+    "test:tinh": "node scripts/check-ban-tinh.mjs",
+    "test:quan-tri-tinh": "node scripts/shot-quan-tri-tinh.mjs",
+    "test:dong-thoi": "node --no-warnings scripts/check-dong-thoi.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

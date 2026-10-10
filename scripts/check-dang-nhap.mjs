@@ -27,7 +27,7 @@ const expect = (name, got, want) => {
 let sv = null;
 async function startServer() {
   sv = spawn(process.execPath, [join(root, 'server/index.mjs'), String(PORT)], {
-    env: { ...process.env, AN_CU_DB: DB }, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, AN_CU_DB: DB, AN_CU_NOW: '2026-09-18T08:15:00' }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   sv.stderr.on('data', (d) => { if (!/ExperimentalWarning|trace-warnings/.test(String(d))) process.stderr.write('[máy chủ] ' + d); });
   await new Promise((ok, fail) => { sv.stdout.once('data', ok); sv.once('exit', (c) => fail(new Error('Máy chủ thoát sớm, mã ' + c))); });
@@ -129,13 +129,15 @@ try {
   expect('không có mật khẩu gốc trong CSDL', row.password_hash.includes(PW), false);
   const tokens = db.prepare('SELECT token_hash FROM sessions').all().map((t) => t.token_hash);
   expect('CSDL không lưu token phiên gốc', tokens.includes(sessionToken), false);
-  expect('có sẵn 5 tài khoản demo', db.prepare("SELECT COUNT(*) AS n FROM users WHERE email LIKE '%@ancu.test'").get().n, 5);
+  expect('có sẵn 7 tài khoản demo (4 người thuê, 2 chủ trọ, 1 quản trị)', db.prepare("SELECT COUNT(*) AS n FROM users WHERE email LIKE '%@ancu.test'").get().n, 7);
+  expect('có đúng hai tài khoản chủ trọ demo', db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'landlord' AND email LIKE '%@ancu.test'").get().n, 2);
+  expect('có đúng một tài khoản quản trị', db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'admin'").get().n, 1);
   db.close();
 
   console.log('\n=== 4. Danh tính khi đặt lịch ===');
   const c = client();
   await c('POST', '/api/dang-nhap', { phone: '0911222333', password: PW });
-  r = await c('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'r12', date: '2026-09-21', time: '10:00' });
+  r = await c('POST', '/api/lich-xem', { nguoi: 'u-trang', roomId: 'p06', date: '2026-09-21', time: '10:00' });
   expect('đã đăng nhập: gửi nguoi=u-trang vẫn ghi lịch cho chính mình', [r.status, r.body.item && r.body.item.renterId], [201, newId]);
   expect('lịch mới hiện trong danh sách của mình', (await c('GET', '/api/lich-xem?nguoi=u-trang')).body.items.map((i) => i.renterId), [newId]);
   expect('người thuê đã đăng nhập không gọi được API chủ trọ', (await c('GET', '/api/chu-tro/lich-xem')).status, 403);
@@ -150,7 +152,7 @@ try {
 
   const t = client();
   await t('POST', '/api/dang-nhap', { phone: '0901234567', password: 'matkhau123' });
-  expect('đăng nhập Trang demo thấy đủ 5 lịch mẫu', (await t('GET', '/api/lich-xem')).body.items.length, 5);
+  expect('đăng nhập Trang demo thấy đủ 6 lịch mẫu', (await t('GET', '/api/lich-xem')).body.items.length, 6);
 
   // ================= 2. Giao diện =================
   console.log('\n=== 5. Giao diện: đăng ký, header, đăng xuất ===');
