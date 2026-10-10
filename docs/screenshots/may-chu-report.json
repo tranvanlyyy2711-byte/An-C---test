@@ -192,6 +192,102 @@
     "ok": true
   },
   {
+    "name": "xác nhận lịch p09 sinh đúng một khoản cọc",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "cọc bằng một tháng tiền phòng, chưa đóng",
+    "got": "6500000/unpaid",
+    "want": "6500000/unpaid",
+    "ok": true
+  },
+  {
+    "name": "An không thấy khoản cọc của Trang",
+    "got": false,
+    "want": false,
+    "ok": true
+  },
+  {
+    "name": "An không báo chuyển thay Trang được",
+    "got": 403,
+    "want": 403,
+    "ok": true
+  },
+  {
+    "name": "người thuê thấy mọi lịch chờ xác nhận ở mục Lịch xem phòng",
+    "got": 3,
+    "want": 3,
+    "ok": true
+  },
+  {
+    "name": "người thuê thấy khoản cọc p09 chưa đóng",
+    "got": "Chưa đóng cọc",
+    "want": "Chưa đóng cọc",
+    "ok": true
+  },
+  {
+    "name": "người thuê báo đã chuyển khoản",
+    "got": "Đã báo chuyển khoản",
+    "want": "Đã báo chuyển khoản",
+    "ok": true
+  },
+  {
+    "name": "chủ trọ thấy khoản Trang vừa báo chuyển",
+    "got": "Chờ xác nhận tiền",
+    "want": "Chờ xác nhận tiền",
+    "ok": true
+  },
+  {
+    "name": "chủ trọ xác nhận đã nhận tiền",
+    "got": "Đã nhận cọc",
+    "want": "Đã nhận cọc",
+    "ok": true
+  },
+  {
+    "name": "người thuê thấy chủ trọ đã nhận cọc",
+    "got": "Đã nhận cọc",
+    "want": "Đã nhận cọc",
+    "ok": true
+  },
+  {
+    "name": "không xác nhận nhận tiền hai lần",
+    "got": 409,
+    "want": 409,
+    "ok": true
+  },
+  {
+    "name": "chủ trọ xác nhận lịch từ trang Thanh toán",
+    "got": "Đã xác nhận lịch",
+    "want": "Đã xác nhận lịch",
+    "ok": true
+  },
+  {
+    "name": "lịch vừa xác nhận rời mục chờ, khoản cọc xuất hiện",
+    "got": [
+      0,
+      1
+    ],
+    "want": [
+      0,
+      1
+    ],
+    "ok": true
+  },
+  {
+    "name": "10 lần bấm \"Đã nhận tiền\" cùng lúc: đúng 1 lần ghi",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "huỷ lịch thì khoản cọc chưa đóng huỷ theo",
+    "got": "cancelled",
+    "want": "cancelled",
+    "ok": true
+  },
+  {
     "name": "Trang giữ chỗ p05 và p08",
     "got": [
       201,
@@ -231,6 +327,12 @@
     "name": "chủ trọ không xác nhận được lịch đã quá hạn",
     "got": 409,
     "want": 409,
+    "ok": true
+  },
+  {
+    "name": "lịch quá hạn không sinh khoản cọc",
+    "got": false,
+    "want": false,
     "ok": true
   },
   {

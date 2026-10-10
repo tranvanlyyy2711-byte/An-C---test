@@ -121,6 +121,31 @@ async function api(req, res, url) {
 
   // ----- Quản trị -----
   const sub = (prefix) => (p.startsWith(prefix) ? p.slice(prefix.length) : null);
+  // Hỗ trợ và thông báo của chính người dùng
+  if (p === '/api/ho-tro' && m === 'GET') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    return send(res, 200, { items: admin.myTickets(me.id) });
+  }
+  if (p === '/api/ho-tro' && m === 'POST') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập để gửi yêu cầu hỗ trợ.');
+    return send(res, 201, { item: admin.createTicket(me.id, await readJson(req)) });
+  }
+  if (p === '/api/thong-bao' && m === 'GET') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    return send(res, 200, admin.myNotifications(me.id));
+  }
+  if ((id = sub('/api/thong-bao/')) && m === 'PATCH') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    return send(res, 200, admin.readNotification(me.id, id));
+  }
+
+  // Chủ trọ xem gói của chính mình (trang quản lý)
+  if (p === '/api/goi-cua-toi' && m === 'GET') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ mới có gói dịch vụ.');
+    return send(res, 200, admin.planOf(me.id));
+  }
+
   if (p.startsWith('/api/quan-tri/')) {
     if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản quản trị.');
     if (me.role !== 'admin') throw new ApiError(403, 'not_admin', 'Chỉ tài khoản quản trị mới dùng được chức năng này.');
@@ -131,9 +156,22 @@ async function api(req, res, url) {
   }
   if ((id = sub('/api/quan-tri/tai-khoan/')) && m === 'PATCH') {
     const body = await readJson(req);
+    if (body.action === 'giay-to') return send(res, 200, { item: admin.setGiayTo(id, body) });
     if (body.action !== 'lock' && body.action !== 'unlock') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
     return send(res, 200, { item: admin.setUserStatus(id, body.action === 'lock' ? 'locked' : 'active', me.id) });
   }
+  if (p === '/api/quan-tri/ho-tro' && m === 'GET') {
+    return send(res, 200, { items: admin.listTickets({ status: qs.get('trangThai'), q: qs.get('tim') }) });
+  }
+  if ((id = sub('/api/quan-tri/ho-tro/')) && m === 'PATCH') {
+    return send(res, 200, { item: admin.answerTicket(id, await readJson(req), me.id) });
+  }
+  if (p === '/api/quan-tri/thong-bao' && m === 'GET') return send(res, 200, admin.listBroadcasts());
+  if (p === '/api/quan-tri/thong-bao' && m === 'POST') {
+    return send(res, 201, { item: admin.sendBroadcast(await readJson(req), me.id) });
+  }
+  if (p === '/api/quan-tri/nhac-han' && m === 'POST') return send(res, 200, admin.nhacHetHan());
+
   if (p === '/api/quan-tri/tin-dang' && m === 'GET') {
     return send(res, 200, { items: admin.listListings({ status: qs.get('trangThai'), q: qs.get('tim') }) });
   }
@@ -166,6 +204,18 @@ async function api(req, res, url) {
   if (p === '/api/chu-tro/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForLandlord() });
   if ((id = p.match(/^\/api\/chu-tro\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
     return send(res, 200, { item: store.decideRequest(id[1], await readJson(req)) });
+  }
+
+  // ----- Tiền cọc khi xem -----
+  if (p === '/api/thanh-toan' && m === 'GET') return send(res, 200, { items: store.depositsForRenter(renterId(qs.get('nguoi'))) });
+  if ((id = p.match(/^\/api\/thanh-toan\/(\d+)$/)) && m === 'PATCH') {
+    const body = await readJson(req);
+    if (body.action === 'submit') return send(res, 200, { item: store.submitDepositForRenter(id[1], { ...body, nguoi: renterId(body.nguoi) }) });
+    throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
+  }
+  if (p === '/api/chu-tro/thanh-toan' && m === 'GET') return send(res, 200, { items: store.depositsAll() });
+  if ((id = p.match(/^\/api\/chu-tro\/thanh-toan\/(\d+)$/)) && m === 'PATCH') {
+    return send(res, 200, { item: store.updateDepositForLandlord(id[1], await readJson(req)) });
   }
 
   throw new ApiError(404, 'not_found', 'Không có API này.');
@@ -206,6 +256,23 @@ const server = createServer(async (req, res) => {
     console.error(e);
     send(res, 500, { error: 'server_error', message: 'Máy chủ gặp lỗi, vui lòng thử lại.' });
   }
+});
+
+// Cổng bị chiếm là lỗi hay gặp nhất khi chạy lại: nói rõ cách xử lý thay vì đổ stack trace
+server.on('error', (e) => {
+  if (e.code !== 'EADDRINUSE') throw e;
+  console.error(`
+Cổng ${port} đang bị chương trình khác giữ nên không khởi động được.
+
+Hai nguyên nhân thường gặp:
+  1. Một máy chủ An Cư cũ còn chạy. Tắt nó trong PowerShell rồi chạy lại 'npm start':
+     Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*server/index.mjs*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }
+  2. Live Server của VS Code cũng mặc định cổng 5500. Bấm nút "Port : 5500" ở thanh dưới VS Code để tắt,
+     hoặc đổi cổng của nó trong cài đặt 'liveServer.settings.port'.
+
+Hoặc chạy An Cư ở cổng khác:  $env:PORT=5600; npm start
+`);
+  process.exit(1);
 });
 
 server.listen(port, () => {

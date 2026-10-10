@@ -27,12 +27,15 @@ const PHONG_CHU_TRO = [
   ['P.202', 3800000], ['P.203', 3800000], ['P.301', 3500000], ['P.302', 3000000],
 ];
 
+// Tiền cọc khi xem phòng: một tháng tiền phòng. Máy chủ tự tính, không nhận số tiền từ trình duyệt.
+const tienCoc = (price) => price;
+
 export const PHONG = {};
 for (const [id, title, address, price, phone, img] of PHONG_NGUOI_THUE) {
-  PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, phone, image: IMG + img };
+  PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, deposit: tienCoc(price), phone, image: IMG + img };
 }
 for (const [code, price] of PHONG_CHU_TRO) {
-  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price, phone: '', image: '' };
+  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price, deposit: tienCoc(price), phone: '', image: '' };
 }
 
 // ================= Nhà trọ và chủ sở hữu =================

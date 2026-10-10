@@ -253,9 +253,17 @@
     <nav class="side-menu" aria-label="Công cụ khu quản trị">
       <a href="trang-chu.html" class="side-link" data-muc="tong-quan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Tổng quan</a>
       <a href="tong-quan.html#tai-khoan" class="side-link" data-muc="tai-khoan"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> Tài khoản</a>
+<<<<<<< HEAD
       <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Thanh toán</a>
       <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Đăng tin<span class="side-tag">Chờ duyệt</span></a>
       <span class="side-link is-off" data-muc="ho-tro" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ &amp; thông báo<span class="side-tag">Chưa làm</span></span>
+=======
+      <a href="tong-quan.html#nha-tro" class="side-link" data-muc="nha-tro"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg> Nhà trọ &amp; người thuê</a>
+      <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Gói &amp; thanh toán</a>
+      <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Tin đăng<span class="side-tag">Chờ duyệt</span></a>
+      <a href="tong-quan.html#ho-tro" class="side-link" data-muc="ho-tro"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ<span class="side-tag">Chờ xử lý</span></a>
+      <div class="side-sep" role="presentation"></div>
+>>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
       <span class="side-link is-off" data-muc="bao-cao" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg> Báo cáo tài chính<span class="side-tag">Chưa làm</span></span>
       <span class="side-link is-off" data-muc="cau-hinh" aria-disabled="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15"/></svg> Cấu hình hệ thống<span class="side-tag">Chưa làm</span></span>
     </nav>
@@ -526,6 +534,26 @@
     }).join('') + '</ul>';
   }
 
+<<<<<<< HEAD
+=======
+  /* ================= Những phần chưa làm ================= */
+  // Ghi đúng hiện trạng, không vẽ nút chết. Mỗi dòng ứng với một mục "Chưa làm" ở cột bên trái.
+  var CHUA_LAM = [
+    ['Tin đăng — phần còn thiếu', 'Tin nổi bật / đẩy tin VIP, bài viết blog, banner, trang điều khoản — việc duyệt tin đã chạy'],
+    ['Hỗ trợ — phần còn thiếu', 'Gửi email thật (SMTP / Zalo ZNS) — ticket, thông báo trong ứng dụng và nhắc hết hạn đã chạy'],
+    ['Báo cáo tài chính', 'Tỷ lệ gia hạn / huỷ gói, lịch sử giao dịch cổng thanh toán, thống kê truy cập — doanh thu cơ bản đã có ở Tổng quan'],
+    ['Cấu hình hệ thống', 'Thông tin công ty, tài khoản ngân hàng, nhật ký hệ thống, khoá API'],
+    ['Tài khoản — phần còn thiếu', 'Nhân viên nội bộ và phân quyền — căn cước, địa chỉ chủ trọ đã quản lý được'],
+    ['Gói dịch vụ — phần còn thiếu', 'Sửa giá và hạn mức từ giao diện, gói Enterprise, giảm giá khi mua 6 / 12 tháng']
+  ];
+  function renderChuaLam(){
+    document.getElementById('chuaLam').innerHTML = CHUA_LAM.map(function(x){
+      return '<li><span class="nm"><b>' + x[0] + '</b><small>' + x[1] + '</small></span>' +
+        '<span class="tag mute">Chưa làm</span></li>';
+    }).join('');
+  }
+
+>>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
   /* ================= Nạp dữ liệu ================= */
   function nap(){
     return Promise.all([
@@ -552,6 +580,17 @@
             : 'Không có tin nào chờ duyệt. <a href="tong-quan.html#tin-dang">Xem lịch sử duyệt tin →</a>');
       var nhan = document.querySelector('.side-link[data-muc="tin-dang"] .side-tag');
       if (nhan) nhan.textContent = choDuyet ? choDuyet + ' chờ duyệt' : 'Không có tin chờ';
+<<<<<<< HEAD
+=======
+      var tk = s.support ? s.support.openTickets : null;
+      el('taskTickets').innerHTML = tk === null
+        ? 'Bản này chưa có hệ thống ticket.'
+        : (tk
+            ? '<b>' + tk + ' yêu cầu</b> đang chờ xử lý. <a href="tong-quan.html#ho-tro">Mở khu hỗ trợ →</a>'
+            : 'Không có yêu cầu nào đang chờ. <a href="tong-quan.html#ho-tro">Xem lịch sử hỗ trợ →</a>');
+      var nhanTk = document.querySelector('.side-link[data-muc="ho-tro"] .side-tag');
+      if (nhanTk) nhanTk.textContent = tk ? tk + ' chờ xử lý' : 'Không có yêu cầu';
+>>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
       el('footNote').innerHTML = '<b>Phạm vi bản này:</b> khu quản trị đang chạy thật phần tài khoản, nhà trọ – người thuê, ' +
         'gói dịch vụ và lịch thanh toán (' + s.users.total + ' tài khoản, ' + s.properties.total + ' nhà trọ, ' +
         s.properties.rooms + ' phòng). Lịch sử hiện mới gồm thanh toán gói dịch vụ; tiền thuê và điện nước chưa được ghi nhận trong prototype.';

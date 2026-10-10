@@ -95,7 +95,7 @@ supabase/
   seed.sql
 ```
 
-Route công khai dùng **slug tiếng Việt** (`/tim-tro`, `/phong/[id]`, `/dang-nhap`) để SEO. Khu quản lý dùng `/quan-ly/...` với các trang: `nha-tro`, `phong`, `hop-dong`, `hoa-don`, `tin-nhan`, `lich-xem`. Khu người thuê: `/tai-khoan/` với `da-luu`, `lich-xem`, `tin-nhan`, `hop-dong`.
+Route công khai dùng **slug tiếng Việt** (`/tim-tro`, `/phong/[id]`, `/dang-nhap`) để SEO. Khu quản lý dùng `/quan-ly/...` với các trang: `nha-tro`, `phong`, `hop-dong`, `hoa-don`, `tin-nhan`, `lich-xem`, `thanh-toan`. Khu người thuê: `/tai-khoan/` với `da-luu`, `lich-xem`, `tin-nhan`, `hop-dong`, `thanh-toan`. Trang `thanh-toan` có hai tab "Lịch xem phòng" (lịch chờ xác nhận) và "Thanh toán" (tiền cọc khi xem).
 
 ---
 
@@ -109,6 +109,7 @@ Tên bảng số nhiều, snake_case. Mọi bảng **bật RLS**.
 - `room_images` — `room_id`, `url`, `sort_order`.
 - `favorites` — `renter_id`, `room_id` (unique cặp).
 - `viewing_appointments` (lịch xem) — `room_id`, `renter_id`, `landlord_id`, `scheduled_at`, `status` `'requested' | 'confirmed' | 'cancelled' | 'completed'`, `note`.
+- `viewing_deposits` (tiền cọc khi xem) — `appointment_id` (unique), `amount` (VND, = 1 tháng tiền phòng), `status` `'unpaid' | 'submitted' | 'paid' | 'cancelled'`, `submitted_at`, `paid_at`, `reject_note`. Sinh khi chủ trọ xác nhận lịch; chủ trọ xác nhận đã nhận tiền thủ công (không phải thanh toán trực tuyến). Xem `docs/coc-khi-xem.md`.
 - `conversations` — `room_id`, `renter_id`, `landlord_id` (unique bộ ba).
 - `messages` — `conversation_id`, `sender_id`, `body`, `read_at`.
 - `contracts` (hợp đồng) — `room_id`, `tenant_id`, `landlord_id`, `start_date`, `end_date`, `monthly_rent`, `deposit`, `terms`, `status` `'draft' | 'active' | 'ended'`.
@@ -169,6 +170,7 @@ npm run test:lich      # kiểm thử "một khung giờ chỉ một người" �
 npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
 npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịch vụ, lịch thanh toán
+npm run test:goi       # gói đang dùng hiện đúng ở trang quản lý của chủ trọ
 npm run test:tinh      # bản tĩnh (như trên Vercel): mọi trang mở được, không lỗi JS
 npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và bản tĩnh
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
@@ -176,7 +178,7 @@ node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API —
 
 **Luôn tự chạy server xem trước trong terminal của mình, không nhờ AI khởi động hộ.** Nếu để AI chạy nền, tiến trình đó gắn với phiên làm việc của AI và sẽ tắt khi phiên kết thúc, khiến link `localhost:5500` báo lỗi dù trang không có vấn đề gì. Mở một cửa sổ terminal riêng, chạy lệnh ở trên, và **giữ cửa sổ đó mở** suốt lúc làm việc — mỗi lần AI sửa file xong chỉ cần reload trình duyệt.
 
-Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`.
+Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`. Tiền cọc khi xem và mục Thanh toán: xem `docs/coc-khi-xem.md` (chụp kiểm tra: `node scripts/shot-thanh-toan.mjs`).
 
 Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999` (Trần Hoà — Nhà trọ An Bình), `0977111222` (Lê Thu Mai). Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
 
@@ -190,7 +192,7 @@ vị của Hà Nội sau sáp nhập để bộ lọc vị trí tìm được �
 trang người thuê (`tai-khoan/*`), trang chủ trọ (`quan-ly/*`) và khu quản trị. Nguồn sự thật là
 `DEMO_USERS` trong `server/auth.mjs`; `seedDemoUsers` đồng bộ lại tên cho CSDL cũ. Bốn người thuê đang ở
 nhà trọ An Bình: An `P.101`, Linh `P.201`, Trang `P.301`, Huy `P.302` — khớp `quan-ly/nguoi-thue.html`,
-`hop-dong-dien-tu.html`, `phong-dien-nuoc.html`, `thanh-toan.html` và dữ liệu seed trong `server/db.mjs`.
+`hop-dong-dien-tu.html`, `phong-dien-nuoc.html`, `hoa-don.html` và dữ liệu seed trong `server/db.mjs`.
 Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` là khách chưa có tài khoản An Cư.
 
 **Khu quản trị** (`quan-tri/trang-chu.html` + `quan-tri/tong-quan.html`, API `/api/quan-tri/*` trong
@@ -211,7 +213,10 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 - Dữ liệu mẫu của chế độ xem thử nằm ở `quan-tri/du-lieu-xem-thu.js` (`window.XemThu`), **hai trang dùng
   chung** nên số liệu luôn khớp. Thêm trường mới vào `summary()` thì phải thêm cả ở đây.
 
-- **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. Khoá là xoá mọi phiên
+- **Tài khoản:** xem và lọc theo vai trò, trạng thái, từ khoá; khoá / mở khoá tài khoản. **Giấy tờ
+  (`users.cccd`, `users.address`) chỉ dành cho chủ trọ** — người thuê và quản trị hiện "Không áp dụng",
+  API trả `null` cho hai trường này. Căn cước phải đúng 12 chữ số và đi kèm địa chỉ thường trú; sửa qua
+  `PATCH /api/quan-tri/tai-khoan/:id` với `action: 'giay-to'`. Khoá là xoá mọi phiên
   của người đó và chặn đăng nhập (`users.status = 'locked'`). Không khoá được tài khoản admin hay chính mình.
 - **Nhà trọ & người thuê:** chủ trọ nào đang quản lý nhà trọ / phòng nào và ai đang thuê ở đó, khoá được cả
   chủ trọ lẫn người thuê ngay tại chỗ khi có báo cáo. Prototype chưa có bảng `properties`, nên quyền sở hữu
@@ -224,8 +229,21 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
   đẩy sang Zalo, giá thấp bất thường, số lạ, tài khoản bị khoá, địa chỉ không rõ) — chỉ là **gợi ý cho
   người duyệt**, không tự động từ chối tin nào. Tin gắn với phòng trong danh mục (`listings.room_id`) mà
   không ở trạng thái `approved` thì máy chủ **từ chối đặt lịch xem** phòng đó.
-- **Gói dịch vụ:** hai gói, **không có gói miễn phí** — Plus `199.000₫/tháng` (tối đa 15 phòng, 1 tài khoản),
-  Pro `499.000₫/tháng` (tối đa 60 phòng, 5 tài khoản); cả hai dùng thử 15 ngày. Giá và hạn mức khai một chỗ
+- **Hỗ trợ & thông báo:** `support_tickets` + `ticket_replies` + `notifications` trong `server/db.mjs`.
+  Chủ trọ gửi yêu cầu ở trang quản lý (`POST /api/ho-tro`), quản trị trả lời và đổi trạng thái
+  (`moi` → `dang-xu-ly` → `da-xong`); mỗi lần trả lời sinh một thông báo cho người gửi. **Gửi hàng loạt**
+  chọn nhóm (tất cả / chủ trọ / người thuê / chủ trọ chưa mua gói), mỗi đợt một `batch_id` để đếm số
+  người nhận và số người đã đọc. **Nhắc hết hạn gói** quét kỳ quá hạn hoặc tới hạn trong 7 ngày, `ref`
+  (`nhac-han:<landlord>:<kỳ>`) chặn gửi trùng nên bấm nhiều lần cũng chỉ nhắc một lần mỗi kỳ.
+  Kênh `email` **mới chỉ ghi nhận** — prototype chưa nối SMTP / Zalo ZNS, giao diện nói rõ điều đó.
+  Chuông thông báo ở `quan-ly/tong-quan.html` đọc `GET /api/thong-bao` và đánh dấu đã đọc qua `PATCH`.
+- **Gói dịch vụ:** hai gói, **không có gói miễn phí và không có dùng thử** — Plus `199.000₫/tháng` (tối đa
+  15 phòng, 1 tài khoản), Pro `499.000₫/tháng` (tối đa 60 phòng, 5 tài khoản). Chủ trọ phải mua gói mới
+  quản lý phòng được; gói chạy ngay khi đăng ký, kỳ đầu đến hạn luôn hôm đó. Gói `trial` của bản cũ được
+  `createAdmin` chuyển sang `active` khi khởi động. Trang quản lý của chủ trọ (`quan-ly/tong-quan.html`)
+  hiện dải gói đang dùng qua `GET /api/goi-cua-toi`; chưa mua thì báo "Chưa kích hoạt gói dịch vụ" kèm
+  lối sang bảng giá. **CSDL chưa có gói nào thì mỗi chủ trọ demo được seed sẵn một gói Plus 12 kỳ**
+  (bắt đầu 2 tháng trước, kỳ đã tới hạn ghi nhận đã thu) — `seedGoi` trong `server/quan-tri.mjs`. Giá và hạn mức khai một chỗ
   ở `PLANS` trong `server/quan-tri.mjs`, phải khớp bảng giá `#bang-gia` của `trang-chu.html`. Hạn mức hiện
   mới để hiển thị, prototype chưa chặn khi vượt. Chủ trọ chưa có gói hiện là **"Chưa kích hoạt gói"**.
   `plan_subscriptions` (mỗi chủ trọ tối đa MỘT gói còn hiệu lực, bảo đảm bằng chỉ mục duy nhất
