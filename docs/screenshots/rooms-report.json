@@ -3,99 +3,625 @@
     "viewport": "desktop",
     "checks": [
       {
-        "name": "số phòng mặc định",
+        "name": "mới vào trang: hiện 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "mới vào trang: đếm phòng mẫu",
+        "got": "Có 9 phòng mới đăng",
+        "want": "Có 9 phòng mới đăng",
+        "ok": true
+      },
+      {
+        "name": "mới vào trang: có nút Xem thêm phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "ô vị trí để trống",
+        "got": "Chọn tỉnh/thành, phường/xã",
+        "want": "Chọn tỉnh/thành, phường/xã",
+        "ok": true
+      },
+      {
+        "name": "bấm Xem thêm phòng: hiện đủ 9 phòng",
         "got": 9,
         "want": 9,
         "ok": true
       },
       {
-        "name": "lọc Ngô Quyền",
-        "got": 3,
-        "want": 3,
-        "ok": true
-      },
-      {
-        "name": "lọc giá 2-3 triệu",
-        "got": 2,
-        "want": 2,
-        "ok": true
-      },
-      {
-        "name": "lọc nuôi thú cưng",
-        "got": 3,
-        "want": 3,
-        "ok": true
-      },
-      {
-        "name": "không có kết quả",
-        "got": 0,
-        "want": 0,
-        "ok": true
-      },
-      {
-        "name": "hiện trạng thái rỗng",
+        "name": "mọi ảnh phòng là ảnh thật trong assets/rooms/",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "xoá bộ lọc trả lại đủ phòng",
-        "got": 9,
-        "want": 9,
-        "ok": true
-      },
-      {
-        "name": "rẻ nhất đứng đầu",
-        "got": "1.800.000₫/tháng",
-        "want": "1.800.000₫/tháng",
-        "ok": true
-      },
-      {
-        "name": "tiêu đề chi tiết",
-        "got": "Phòng trọ giá mềm cho sinh viên",
-        "want": "Phòng trọ giá mềm cho sinh viên",
-        "ok": true
-      },
-      {
-        "name": "địa chỉ đầy đủ",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "có đủ 4 ảnh",
-        "got": 4,
-        "want": 4,
-        "ok": true
-      },
-      {
-        "name": "có 4 thông số",
-        "got": 4,
-        "want": 4,
-        "ok": true
-      },
-      {
-        "name": "bấm thumbnail đổi ảnh chính",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "số điện thoại ẩn trước khi bấm",
+        "name": "đã mở hết: ẩn nút Xem thêm",
         "got": false,
         "want": false,
         "ok": true
       },
       {
-        "name": "hiện số điện thoại sau khi bấm",
+        "name": "thiếu cả 3: báo lỗi",
+        "got": "Vui lòng chọn vị trí, khoảng giá và số người ở rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn vị trí, khoảng giá và số người ở rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: đánh dấu 3 ô",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: không lọc, giữ nguyên 9 phòng mẫu",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "tab Phường ghi 51",
+        "got": "51",
+        "want": "51",
+        "ok": true
+      },
+      {
+        "name": "tab Xã ghi 75",
+        "got": "75",
+        "want": "75",
+        "ok": true
+      },
+      {
+        "name": "mở hết tab Phường: 51 lựa chọn",
+        "got": 51,
+        "want": 51,
+        "ok": true
+      },
+      {
+        "name": "mở hết tab Xã: 75 lựa chọn",
+        "got": 75,
+        "want": 75,
+        "ok": true
+      },
+      {
+        "name": "không còn tab \"Khu vực\" (phường cũ trước sáp nhập)",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "gõ không dấu \"hoa lac\" ra xã Hòa Lạc",
+        "got": [
+          "Hòa Lạc"
+        ],
+        "want": [
+          "Hòa Lạc"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tìm \"nghia do\" tự chuyển sang tab Phường",
+        "got": "Phường1",
+        "want": "Phường1",
+        "ok": true
+      },
+      {
+        "name": "ô vị trí hiện phường đã chọn kèm thành phố",
+        "got": "Phường Nghĩa Đô, Hà Nội",
+        "want": "Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "bấm Áp dụng vị trí: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "chọn giá: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "bấm chip Lọc nhanh: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "thiếu số người: báo đúng ô còn thiếu",
+        "got": "Vui lòng chọn số người ở rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn số người ở rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "thiếu số người: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "chọn đủ 3 nhưng chưa bấm: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "đủ 3 + bấm Tìm phòng: hiện đúng 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "hết báo lỗi",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "đếm kết quả kèm vị trí",
+        "got": "Tìm thấy 1 phòng phù hợp tại Phường Nghĩa Đô, Hà Nội",
+        "want": "Tìm thấy 1 phòng phù hợp tại Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "địa chỉ trên card theo phường mới, không còn quận",
+        "got": "Phường Nghĩa Đô, Hà Nội",
+        "want": "Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "đổi giá sau khi tìm: kết quả cũ giữ nguyên",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "đổi giá sau khi tìm: nhắc bấm Tìm phòng",
+        "got": "Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.",
+        "want": "Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.",
+        "ok": true
+      },
+      {
+        "name": "bấm lại: áp dụng giá mới -> không có phòng",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có phòng: hiện trạng thái rỗng",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đúng số của chủ phòng",
-        "got": "0968 110 447",
-        "want": "0968 110 447",
+        "name": "bấm lại: hết lời nhắc",
+        "got": "",
+        "want": "",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: về 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: đếm lại phòng mẫu",
+        "got": "Có 9 phòng mới đăng",
+        "want": "Có 9 phòng mới đăng",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: trống ô vị trí",
+        "got": "Chọn tỉnh/thành, phường/xã",
+        "want": "Chọn tỉnh/thành, phường/xã",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: trống giá và số người",
+        "got": [
+          "",
+          ""
+        ],
+        "want": [
+          "",
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: tắt chip Lọc nhanh",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: ẩn khung không có phòng",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chọn được xã trong danh sách",
+        "got": "Xã Hòa Lạc, Hà Nội",
+        "want": "Xã Hòa Lạc, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng",
+        "got": [
+          0,
+          true
+        ],
+        "want": [
+          0,
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "địa chỉ theo phường mới",
+        "got": "Phường Từ Liêm, Hà Nội",
+        "want": "Phường Từ Liêm, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "nút Xoá bộ lọc ở hàng Lọc nhanh: về 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "nút Xoá bộ lọc cao ≥ 44px",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Xoá bộ lọc: bỏ luôn số người tự nhập",
+        "got": [
+          false,
+          ""
+        ],
+        "want": [
+          false,
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Đống Đa không ra phòng của phường Kim Liên (quận Đống Đa cũ)",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "1 người vẫn ra phòng ở được 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "2 người ra phòng ở được 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "3 người trở lên: phòng 2 người không đủ chỗ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: hiện ô nhập số người",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: ẩn danh sách",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: con trỏ vào ô nhập",
+        "got": "fPeopleCustom",
+        "want": "fPeopleCustom",
+        "ok": true
+      },
+      {
+        "name": "Tuỳ chọn chưa nhập: báo lỗi",
+        "got": "Vui lòng chọn số người ở (nhập từ 1 đến 10) rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn số người ở (nhập từ 1 đến 10) rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "nhập 12 người (quá 10): vẫn báo lỗi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "tự nhập 3 người: không phòng nào đủ chỗ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "bấm ×: quay lại danh sách, chưa chọn",
+        "got": [
+          true,
+          ""
+        ],
+        "want": [
+          true,
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "có đủ 6 tỉnh/thành",
+        "got": [
+          "Hà Nội",
+          "Hải Phòng",
+          "Đà Nẵng",
+          "TP. Hồ Chí Minh",
+          "Bình Dương nay thuộc TP.HCM",
+          "Cần Thơ"
+        ],
+        "want": [
+          "Hà Nội",
+          "Hải Phòng",
+          "Đà Nẵng",
+          "TP. Hồ Chí Minh",
+          "Bình Dương nay thuộc TP.HCM",
+          "Cần Thơ"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hà Nội: 51 phường, 75 xã, không đặc khu",
+        "got": [
+          "51",
+          "75",
+          "không có"
+        ],
+        "want": [
+          "51",
+          "75",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hải Phòng: 45 phường, 67 xã, 2 đặc khu",
+        "got": [
+          "45",
+          "67",
+          "2"
+        ],
+        "want": [
+          "45",
+          "67",
+          "2"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hải Phòng: đặc khu Bạch Long Vĩ, Cát Hải",
+        "got": [
+          "Bạch Long Vĩ",
+          "Cát Hải"
+        ],
+        "want": [
+          "Bạch Long Vĩ",
+          "Cát Hải"
+        ],
+        "ok": true
+      },
+      {
+        "name": "chọn đặc khu: nhãn kèm thành phố",
+        "got": "Đặc khu Cát Hải, Hải Phòng",
+        "want": "Đặc khu Cát Hải, Hải Phòng",
+        "ok": true
+      },
+      {
+        "name": "Đà Nẵng: 23 phường, 70 xã, 1 đặc khu",
+        "got": [
+          "23",
+          "70",
+          "1"
+        ],
+        "want": [
+          "23",
+          "70",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh: 113 phường, 54 xã, 1 đặc khu",
+        "got": [
+          "113",
+          "54",
+          "1"
+        ],
+        "want": [
+          "113",
+          "54",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Bình Dương cũ: 24 phường, 12 xã",
+        "got": [
+          "24",
+          "12",
+          "không có"
+        ],
+        "want": [
+          "24",
+          "12",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Bình Dương: ghi chú đã nhập vào TP. Hồ Chí Minh",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Cần Thơ: 31 phường, 72 xã, không đặc khu",
+        "got": [
+          "31",
+          "72",
+          "không có"
+        ],
+        "want": [
+          "31",
+          "72",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "nhãn khi chọn cả thành phố",
+        "got": "TP. Hồ Chí Minh",
+        "want": "TP. Hồ Chí Minh",
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh chưa có tin: hiện trạng thái rỗng",
+        "got": [
+          true,
+          "Không có phòng phù hợp tại TP. Hồ Chí Minh"
+        ],
+        "want": [
+          true,
+          "Không có phòng phù hợp tại TP. Hồ Chí Minh"
+        ],
+        "ok": true
+      },
+      {
+        "name": "nhãn Bình Dương cũ",
+        "got": "Bình Dương cũ (TP. Hồ Chí Minh)",
+        "want": "Bình Dương cũ (TP. Hồ Chí Minh)",
+        "ok": true
+      },
+      {
+        "name": "Bình Dương cũ chưa có tin",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "chọn phường Dĩ An trong Bình Dương: nhãn theo TP. Hồ Chí Minh",
+        "got": "Phường Dĩ An, TP. Hồ Chí Minh",
+        "want": "Phường Dĩ An, TP. Hồ Chí Minh",
+        "ok": true
+      },
+      {
+        "name": "hai-phong chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "da-nang chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "can-tho chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "cả Hà Nội không lẫn phòng tỉnh khác",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chi tiết: đúng phòng",
+        "got": "Căn hộ mini full nội thất",
+        "want": "Căn hộ mini full nội thất",
+        "ok": true
+      },
+      {
+        "name": "chi tiết: địa chỉ theo phường mới",
+        "got": "Phường Kim Liên, Hà Nội",
+        "want": "Phường Kim Liên, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "chi tiết: đúng 4 ảnh thật của tin",
+        "got": [
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
+        ],
+        "want": [
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
+        ],
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện số đã đăng ký của chủ trọ",
+        "got": "0977 111 222",
+        "want": "0977 111 222",
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện tên chủ trọ sở hữu phòng",
+        "got": "Lê Thu Mai",
+        "want": "Lê Thu Mai",
         "ok": true
       },
       {
@@ -111,21 +637,655 @@
         "ok": true
       },
       {
-        "name": "chi tiết đóng lại",
+        "name": "không có lỗi JS",
+        "got": [],
+        "want": [],
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  {
+    "viewport": "tablet",
+    "checks": [
+      {
+        "name": "mới vào trang: hiện 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "mới vào trang: đếm phòng mẫu",
+        "got": "Có 9 phòng mới đăng",
+        "want": "Có 9 phòng mới đăng",
+        "ok": true
+      },
+      {
+        "name": "mới vào trang: có nút Xem thêm phòng",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "mở modal đăng nhập",
+        "name": "ô vị trí để trống",
+        "got": "Chọn tỉnh/thành, phường/xã",
+        "want": "Chọn tỉnh/thành, phường/xã",
+        "ok": true
+      },
+      {
+        "name": "bấm Xem thêm phòng: hiện đủ 9 phòng",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "mọi ảnh phòng là ảnh thật trong assets/rooms/",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "đã mở hết: ẩn nút Xem thêm",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: báo lỗi",
+        "got": "Vui lòng chọn vị trí, khoảng giá và số người ở rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn vị trí, khoảng giá và số người ở rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: đánh dấu 3 ô",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: không lọc, giữ nguyên 9 phòng mẫu",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "tab Phường ghi 51",
+        "got": "51",
+        "want": "51",
+        "ok": true
+      },
+      {
+        "name": "tab Xã ghi 75",
+        "got": "75",
+        "want": "75",
+        "ok": true
+      },
+      {
+        "name": "mở hết tab Phường: 51 lựa chọn",
+        "got": 51,
+        "want": 51,
+        "ok": true
+      },
+      {
+        "name": "mở hết tab Xã: 75 lựa chọn",
+        "got": 75,
+        "want": 75,
+        "ok": true
+      },
+      {
+        "name": "không còn tab \"Khu vực\" (phường cũ trước sáp nhập)",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "gõ không dấu \"hoa lac\" ra xã Hòa Lạc",
+        "got": [
+          "Hòa Lạc"
+        ],
+        "want": [
+          "Hòa Lạc"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tìm \"nghia do\" tự chuyển sang tab Phường",
+        "got": "Phường1",
+        "want": "Phường1",
+        "ok": true
+      },
+      {
+        "name": "ô vị trí hiện phường đã chọn kèm thành phố",
+        "got": "Phường Nghĩa Đô, Hà Nội",
+        "want": "Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "bấm Áp dụng vị trí: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "chọn giá: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "bấm chip Lọc nhanh: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "thiếu số người: báo đúng ô còn thiếu",
+        "got": "Vui lòng chọn số người ở rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn số người ở rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "thiếu số người: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "chọn đủ 3 nhưng chưa bấm: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "đủ 3 + bấm Tìm phòng: hiện đúng 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "hết báo lỗi",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "đếm kết quả kèm vị trí",
+        "got": "Tìm thấy 1 phòng phù hợp tại Phường Nghĩa Đô, Hà Nội",
+        "want": "Tìm thấy 1 phòng phù hợp tại Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "địa chỉ trên card theo phường mới, không còn quận",
+        "got": "Phường Nghĩa Đô, Hà Nội",
+        "want": "Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "đổi giá sau khi tìm: kết quả cũ giữ nguyên",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "đổi giá sau khi tìm: nhắc bấm Tìm phòng",
+        "got": "Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.",
+        "want": "Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.",
+        "ok": true
+      },
+      {
+        "name": "bấm lại: áp dụng giá mới -> không có phòng",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có phòng: hiện trạng thái rỗng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "bấm lại: hết lời nhắc",
+        "got": "",
+        "want": "",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: về 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: đếm lại phòng mẫu",
+        "got": "Có 9 phòng mới đăng",
+        "want": "Có 9 phòng mới đăng",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: trống ô vị trí",
+        "got": "Chọn tỉnh/thành, phường/xã",
+        "want": "Chọn tỉnh/thành, phường/xã",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: trống giá và số người",
+        "got": [
+          "",
+          ""
+        ],
+        "want": [
+          "",
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: tắt chip Lọc nhanh",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: ẩn khung không có phòng",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chọn được xã trong danh sách",
+        "got": "Xã Hòa Lạc, Hà Nội",
+        "want": "Xã Hòa Lạc, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng",
+        "got": [
+          0,
+          true
+        ],
+        "want": [
+          0,
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "địa chỉ theo phường mới",
+        "got": "Phường Từ Liêm, Hà Nội",
+        "want": "Phường Từ Liêm, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "nút Xoá bộ lọc ở hàng Lọc nhanh: về 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "nút Xoá bộ lọc cao ≥ 44px",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Xoá bộ lọc: bỏ luôn số người tự nhập",
+        "got": [
+          false,
+          ""
+        ],
+        "want": [
+          false,
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Đống Đa không ra phòng của phường Kim Liên (quận Đống Đa cũ)",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "1 người vẫn ra phòng ở được 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "2 người ra phòng ở được 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "3 người trở lên: phòng 2 người không đủ chỗ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: hiện ô nhập số người",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: ẩn danh sách",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: con trỏ vào ô nhập",
+        "got": "fPeopleCustom",
+        "want": "fPeopleCustom",
+        "ok": true
+      },
+      {
+        "name": "Tuỳ chọn chưa nhập: báo lỗi",
+        "got": "Vui lòng chọn số người ở (nhập từ 1 đến 10) rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn số người ở (nhập từ 1 đến 10) rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "nhập 12 người (quá 10): vẫn báo lỗi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "tự nhập 3 người: không phòng nào đủ chỗ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "bấm ×: quay lại danh sách, chưa chọn",
+        "got": [
+          true,
+          ""
+        ],
+        "want": [
+          true,
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "có đủ 6 tỉnh/thành",
+        "got": [
+          "Hà Nội",
+          "Hải Phòng",
+          "Đà Nẵng",
+          "TP. Hồ Chí Minh",
+          "Bình Dương nay thuộc TP.HCM",
+          "Cần Thơ"
+        ],
+        "want": [
+          "Hà Nội",
+          "Hải Phòng",
+          "Đà Nẵng",
+          "TP. Hồ Chí Minh",
+          "Bình Dương nay thuộc TP.HCM",
+          "Cần Thơ"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hà Nội: 51 phường, 75 xã, không đặc khu",
+        "got": [
+          "51",
+          "75",
+          "không có"
+        ],
+        "want": [
+          "51",
+          "75",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hải Phòng: 45 phường, 67 xã, 2 đặc khu",
+        "got": [
+          "45",
+          "67",
+          "2"
+        ],
+        "want": [
+          "45",
+          "67",
+          "2"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hải Phòng: đặc khu Bạch Long Vĩ, Cát Hải",
+        "got": [
+          "Bạch Long Vĩ",
+          "Cát Hải"
+        ],
+        "want": [
+          "Bạch Long Vĩ",
+          "Cát Hải"
+        ],
+        "ok": true
+      },
+      {
+        "name": "chọn đặc khu: nhãn kèm thành phố",
+        "got": "Đặc khu Cát Hải, Hải Phòng",
+        "want": "Đặc khu Cát Hải, Hải Phòng",
+        "ok": true
+      },
+      {
+        "name": "Đà Nẵng: 23 phường, 70 xã, 1 đặc khu",
+        "got": [
+          "23",
+          "70",
+          "1"
+        ],
+        "want": [
+          "23",
+          "70",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh: 113 phường, 54 xã, 1 đặc khu",
+        "got": [
+          "113",
+          "54",
+          "1"
+        ],
+        "want": [
+          "113",
+          "54",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Bình Dương cũ: 24 phường, 12 xã",
+        "got": [
+          "24",
+          "12",
+          "không có"
+        ],
+        "want": [
+          "24",
+          "12",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Bình Dương: ghi chú đã nhập vào TP. Hồ Chí Minh",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Cần Thơ: 31 phường, 72 xã, không đặc khu",
+        "got": [
+          "31",
+          "72",
+          "không có"
+        ],
+        "want": [
+          "31",
+          "72",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "nhãn khi chọn cả thành phố",
+        "got": "TP. Hồ Chí Minh",
+        "want": "TP. Hồ Chí Minh",
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh chưa có tin: hiện trạng thái rỗng",
+        "got": [
+          true,
+          "Không có phòng phù hợp tại TP. Hồ Chí Minh"
+        ],
+        "want": [
+          true,
+          "Không có phòng phù hợp tại TP. Hồ Chí Minh"
+        ],
+        "ok": true
+      },
+      {
+        "name": "nhãn Bình Dương cũ",
+        "got": "Bình Dương cũ (TP. Hồ Chí Minh)",
+        "want": "Bình Dương cũ (TP. Hồ Chí Minh)",
+        "ok": true
+      },
+      {
+        "name": "Bình Dương cũ chưa có tin",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "chọn phường Dĩ An trong Bình Dương: nhãn theo TP. Hồ Chí Minh",
+        "got": "Phường Dĩ An, TP. Hồ Chí Minh",
+        "want": "Phường Dĩ An, TP. Hồ Chí Minh",
+        "ok": true
+      },
+      {
+        "name": "hai-phong chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "da-nang chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "can-tho chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "cả Hà Nội không lẫn phòng tỉnh khác",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chi tiết: đúng phòng",
+        "got": "Căn hộ mini full nội thất",
+        "want": "Căn hộ mini full nội thất",
+        "ok": true
+      },
+      {
+        "name": "chi tiết: địa chỉ theo phường mới",
+        "got": "Phường Kim Liên, Hà Nội",
+        "want": "Phường Kim Liên, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "chi tiết: đúng 4 ảnh thật của tin",
+        "got": [
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
+        ],
+        "want": [
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
+        ],
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện số đã đăng ký của chủ trọ",
+        "got": "0977 111 222",
+        "want": "0977 111 222",
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện tên chủ trọ sở hữu phòng",
+        "got": "Lê Thu Mai",
+        "want": "Lê Thu Mai",
+        "ok": true
+      },
+      {
+        "name": "không cuộn ngang",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Esc đóng chi tiết",
         "got": true,
         "want": true,
         "ok": true
       },
       {
         "name": "không có lỗi JS",
-        "got": 0,
-        "want": 0,
+        "got": [],
+        "want": [],
         "ok": true
       }
     ],
@@ -135,99 +1295,625 @@
     "viewport": "mobile",
     "checks": [
       {
-        "name": "số phòng mặc định",
+        "name": "mới vào trang: hiện 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "mới vào trang: đếm phòng mẫu",
+        "got": "Có 9 phòng mới đăng",
+        "want": "Có 9 phòng mới đăng",
+        "ok": true
+      },
+      {
+        "name": "mới vào trang: có nút Xem thêm phòng",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "ô vị trí để trống",
+        "got": "Chọn tỉnh/thành, phường/xã",
+        "want": "Chọn tỉnh/thành, phường/xã",
+        "ok": true
+      },
+      {
+        "name": "bấm Xem thêm phòng: hiện đủ 9 phòng",
         "got": 9,
         "want": 9,
         "ok": true
       },
       {
-        "name": "lọc Ngô Quyền",
-        "got": 3,
-        "want": 3,
-        "ok": true
-      },
-      {
-        "name": "lọc giá 2-3 triệu",
-        "got": 2,
-        "want": 2,
-        "ok": true
-      },
-      {
-        "name": "lọc nuôi thú cưng",
-        "got": 3,
-        "want": 3,
-        "ok": true
-      },
-      {
-        "name": "không có kết quả",
-        "got": 0,
-        "want": 0,
-        "ok": true
-      },
-      {
-        "name": "hiện trạng thái rỗng",
+        "name": "mọi ảnh phòng là ảnh thật trong assets/rooms/",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "xoá bộ lọc trả lại đủ phòng",
-        "got": 9,
-        "want": 9,
-        "ok": true
-      },
-      {
-        "name": "rẻ nhất đứng đầu",
-        "got": "1.800.000₫/tháng",
-        "want": "1.800.000₫/tháng",
-        "ok": true
-      },
-      {
-        "name": "tiêu đề chi tiết",
-        "got": "Phòng trọ giá mềm cho sinh viên",
-        "want": "Phòng trọ giá mềm cho sinh viên",
-        "ok": true
-      },
-      {
-        "name": "địa chỉ đầy đủ",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "có đủ 4 ảnh",
-        "got": 4,
-        "want": 4,
-        "ok": true
-      },
-      {
-        "name": "có 4 thông số",
-        "got": 4,
-        "want": 4,
-        "ok": true
-      },
-      {
-        "name": "bấm thumbnail đổi ảnh chính",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "số điện thoại ẩn trước khi bấm",
+        "name": "đã mở hết: ẩn nút Xem thêm",
         "got": false,
         "want": false,
         "ok": true
       },
       {
-        "name": "hiện số điện thoại sau khi bấm",
+        "name": "thiếu cả 3: báo lỗi",
+        "got": "Vui lòng chọn vị trí, khoảng giá và số người ở rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn vị trí, khoảng giá và số người ở rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: đánh dấu 3 ô",
+        "got": 3,
+        "want": 3,
+        "ok": true
+      },
+      {
+        "name": "thiếu cả 3: không lọc, giữ nguyên 9 phòng mẫu",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "tab Phường ghi 51",
+        "got": "51",
+        "want": "51",
+        "ok": true
+      },
+      {
+        "name": "tab Xã ghi 75",
+        "got": "75",
+        "want": "75",
+        "ok": true
+      },
+      {
+        "name": "mở hết tab Phường: 51 lựa chọn",
+        "got": 51,
+        "want": 51,
+        "ok": true
+      },
+      {
+        "name": "mở hết tab Xã: 75 lựa chọn",
+        "got": 75,
+        "want": 75,
+        "ok": true
+      },
+      {
+        "name": "không còn tab \"Khu vực\" (phường cũ trước sáp nhập)",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "gõ không dấu \"hoa lac\" ra xã Hòa Lạc",
+        "got": [
+          "Hòa Lạc"
+        ],
+        "want": [
+          "Hòa Lạc"
+        ],
+        "ok": true
+      },
+      {
+        "name": "tìm \"nghia do\" tự chuyển sang tab Phường",
+        "got": "Phường1",
+        "want": "Phường1",
+        "ok": true
+      },
+      {
+        "name": "ô vị trí hiện phường đã chọn kèm thành phố",
+        "got": "Phường Nghĩa Đô, Hà Nội",
+        "want": "Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "bấm Áp dụng vị trí: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "chọn giá: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "bấm chip Lọc nhanh: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "thiếu số người: báo đúng ô còn thiếu",
+        "got": "Vui lòng chọn số người ở rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn số người ở rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "thiếu số người: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "chọn đủ 3 nhưng chưa bấm: chưa lọc",
+        "got": 9,
+        "want": 9,
+        "ok": true
+      },
+      {
+        "name": "đủ 3 + bấm Tìm phòng: hiện đúng 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "hết báo lỗi",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "đếm kết quả kèm vị trí",
+        "got": "Tìm thấy 1 phòng phù hợp tại Phường Nghĩa Đô, Hà Nội",
+        "want": "Tìm thấy 1 phòng phù hợp tại Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "địa chỉ trên card theo phường mới, không còn quận",
+        "got": "Phường Nghĩa Đô, Hà Nội",
+        "want": "Phường Nghĩa Đô, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "đổi giá sau khi tìm: kết quả cũ giữ nguyên",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "đổi giá sau khi tìm: nhắc bấm Tìm phòng",
+        "got": "Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.",
+        "want": "Bạn vừa đổi điều kiện, bấm Tìm phòng để cập nhật kết quả.",
+        "ok": true
+      },
+      {
+        "name": "bấm lại: áp dụng giá mới -> không có phòng",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "không có phòng: hiện trạng thái rỗng",
         "got": true,
         "want": true,
         "ok": true
       },
       {
-        "name": "đúng số của chủ phòng",
-        "got": "0968 110 447",
-        "want": "0968 110 447",
+        "name": "bấm lại: hết lời nhắc",
+        "got": "",
+        "want": "",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: về 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: đếm lại phòng mẫu",
+        "got": "Có 9 phòng mới đăng",
+        "want": "Có 9 phòng mới đăng",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: trống ô vị trí",
+        "got": "Chọn tỉnh/thành, phường/xã",
+        "want": "Chọn tỉnh/thành, phường/xã",
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: trống giá và số người",
+        "got": [
+          "",
+          ""
+        ],
+        "want": [
+          "",
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: tắt chip Lọc nhanh",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "xoá bộ lọc: ẩn khung không có phòng",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chọn được xã trong danh sách",
+        "got": "Xã Hòa Lạc, Hà Nội",
+        "want": "Xã Hòa Lạc, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "xã Hòa Lạc chưa có tin nào: hiện trạng thái rỗng",
+        "got": [
+          0,
+          true
+        ],
+        "want": [
+          0,
+          true
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Từ Liêm, dưới 2 triệu, 1 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "địa chỉ theo phường mới",
+        "got": "Phường Từ Liêm, Hà Nội",
+        "want": "Phường Từ Liêm, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "nút Xoá bộ lọc ở hàng Lọc nhanh: về 6 phòng mẫu",
+        "got": 6,
+        "want": 6,
+        "ok": true
+      },
+      {
+        "name": "nút Xoá bộ lọc cao ≥ 44px",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Xoá bộ lọc: bỏ luôn số người tự nhập",
+        "got": [
+          false,
+          ""
+        ],
+        "want": [
+          false,
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "phường Đống Đa không ra phòng của phường Kim Liên (quận Đống Đa cũ)",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "phường Kim Liên, 4–5 triệu, 1 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "1 người vẫn ra phòng ở được 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "2 người ra phòng ở được 2 người",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "3 người trở lên: phòng 2 người không đủ chỗ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: hiện ô nhập số người",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: ẩn danh sách",
+        "got": false,
+        "want": false,
+        "ok": true
+      },
+      {
+        "name": "chọn Tuỳ chọn: con trỏ vào ô nhập",
+        "got": "fPeopleCustom",
+        "want": "fPeopleCustom",
+        "ok": true
+      },
+      {
+        "name": "Tuỳ chọn chưa nhập: báo lỗi",
+        "got": "Vui lòng chọn số người ở (nhập từ 1 đến 10) rồi bấm Tìm phòng.",
+        "want": "Vui lòng chọn số người ở (nhập từ 1 đến 10) rồi bấm Tìm phòng.",
+        "ok": true
+      },
+      {
+        "name": "nhập 12 người (quá 10): vẫn báo lỗi",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "phường Bạch Mai, 3–4 triệu, tự nhập 2 người: ra 1 phòng",
+        "got": 1,
+        "want": 1,
+        "ok": true
+      },
+      {
+        "name": "tự nhập 3 người: không phòng nào đủ chỗ",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "bấm ×: quay lại danh sách, chưa chọn",
+        "got": [
+          true,
+          ""
+        ],
+        "want": [
+          true,
+          ""
+        ],
+        "ok": true
+      },
+      {
+        "name": "có đủ 6 tỉnh/thành",
+        "got": [
+          "Hà Nội",
+          "Hải Phòng",
+          "Đà Nẵng",
+          "TP. Hồ Chí Minh",
+          "Bình Dương nay thuộc TP.HCM",
+          "Cần Thơ"
+        ],
+        "want": [
+          "Hà Nội",
+          "Hải Phòng",
+          "Đà Nẵng",
+          "TP. Hồ Chí Minh",
+          "Bình Dương nay thuộc TP.HCM",
+          "Cần Thơ"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hà Nội: 51 phường, 75 xã, không đặc khu",
+        "got": [
+          "51",
+          "75",
+          "không có"
+        ],
+        "want": [
+          "51",
+          "75",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hải Phòng: 45 phường, 67 xã, 2 đặc khu",
+        "got": [
+          "45",
+          "67",
+          "2"
+        ],
+        "want": [
+          "45",
+          "67",
+          "2"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Hải Phòng: đặc khu Bạch Long Vĩ, Cát Hải",
+        "got": [
+          "Bạch Long Vĩ",
+          "Cát Hải"
+        ],
+        "want": [
+          "Bạch Long Vĩ",
+          "Cát Hải"
+        ],
+        "ok": true
+      },
+      {
+        "name": "chọn đặc khu: nhãn kèm thành phố",
+        "got": "Đặc khu Cát Hải, Hải Phòng",
+        "want": "Đặc khu Cát Hải, Hải Phòng",
+        "ok": true
+      },
+      {
+        "name": "Đà Nẵng: 23 phường, 70 xã, 1 đặc khu",
+        "got": [
+          "23",
+          "70",
+          "1"
+        ],
+        "want": [
+          "23",
+          "70",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh: 113 phường, 54 xã, 1 đặc khu",
+        "got": [
+          "113",
+          "54",
+          "1"
+        ],
+        "want": [
+          "113",
+          "54",
+          "1"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Bình Dương cũ: 24 phường, 12 xã",
+        "got": [
+          "24",
+          "12",
+          "không có"
+        ],
+        "want": [
+          "24",
+          "12",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "Bình Dương: ghi chú đã nhập vào TP. Hồ Chí Minh",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "Cần Thơ: 31 phường, 72 xã, không đặc khu",
+        "got": [
+          "31",
+          "72",
+          "không có"
+        ],
+        "want": [
+          "31",
+          "72",
+          "không có"
+        ],
+        "ok": true
+      },
+      {
+        "name": "nhãn khi chọn cả thành phố",
+        "got": "TP. Hồ Chí Minh",
+        "want": "TP. Hồ Chí Minh",
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "TP. Hồ Chí Minh chưa có tin: hiện trạng thái rỗng",
+        "got": [
+          true,
+          "Không có phòng phù hợp tại TP. Hồ Chí Minh"
+        ],
+        "want": [
+          true,
+          "Không có phòng phù hợp tại TP. Hồ Chí Minh"
+        ],
+        "ok": true
+      },
+      {
+        "name": "nhãn Bình Dương cũ",
+        "got": "Bình Dương cũ (TP. Hồ Chí Minh)",
+        "want": "Bình Dương cũ (TP. Hồ Chí Minh)",
+        "ok": true
+      },
+      {
+        "name": "Bình Dương cũ chưa có tin",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "chọn phường Dĩ An trong Bình Dương: nhãn theo TP. Hồ Chí Minh",
+        "got": "Phường Dĩ An, TP. Hồ Chí Minh",
+        "want": "Phường Dĩ An, TP. Hồ Chí Minh",
+        "ok": true
+      },
+      {
+        "name": "hai-phong chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "da-nang chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "can-tho chưa có tin: không lẫn phòng Hà Nội",
+        "got": 0,
+        "want": 0,
+        "ok": true
+      },
+      {
+        "name": "cả Hà Nội, 4–5 triệu, 2 người: ra 2 phòng",
+        "got": 2,
+        "want": 2,
+        "ok": true
+      },
+      {
+        "name": "cả Hà Nội không lẫn phòng tỉnh khác",
+        "got": true,
+        "want": true,
+        "ok": true
+      },
+      {
+        "name": "chi tiết: đúng phòng",
+        "got": "Căn hộ mini full nội thất",
+        "want": "Căn hộ mini full nội thất",
+        "ok": true
+      },
+      {
+        "name": "chi tiết: địa chỉ theo phường mới",
+        "got": "Phường Kim Liên, Hà Nội",
+        "want": "Phường Kim Liên, Hà Nội",
+        "ok": true
+      },
+      {
+        "name": "chi tiết: đúng 4 ảnh thật của tin",
+        "got": [
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
+        ],
+        "want": [
+          "assets/rooms/phongtrobachkinhxaygiare1.webp",
+          "assets/rooms/phongtrobachkinhxaygiare2.webp",
+          "assets/rooms/phongtrobachkinhxaygiare3.webp",
+          "assets/rooms/phongtrobachkinhxaygiare4.webp"
+        ],
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện số đã đăng ký của chủ trọ",
+        "got": "0977 111 222",
+        "want": "0977 111 222",
+        "ok": true
+      },
+      {
+        "name": "liên hệ: hiện tên chủ trọ sở hữu phòng",
+        "got": "Lê Thu Mai",
+        "want": "Lê Thu Mai",
         "ok": true
       },
       {
@@ -243,21 +1929,9 @@
         "ok": true
       },
       {
-        "name": "chi tiết đóng lại",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
-        "name": "mở modal đăng nhập",
-        "got": true,
-        "want": true,
-        "ok": true
-      },
-      {
         "name": "không có lỗi JS",
-        "got": 0,
-        "want": 0,
+        "got": [],
+        "want": [],
         "ok": true
       }
     ],

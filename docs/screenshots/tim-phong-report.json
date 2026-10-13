@@ -4,8 +4,8 @@
     "checks": [
       {
         "name": "số phòng mặc định",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
@@ -21,21 +21,21 @@
         "ok": true
       },
       {
-        "name": "lọc nuôi thú cưng + 2 người",
+        "name": "lọc nuôi thú cưng + từ 3 người",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
         "name": "xoá bộ lọc nâng cao trả lại đủ phòng",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
-        "name": "lọc loại phòng Ở ghép",
-        "got": 2,
-        "want": 2,
+        "name": "lọc loại phòng Căn hộ mini",
+        "got": 3,
+        "want": 3,
         "ok": true
       },
       {
@@ -52,8 +52,8 @@
       },
       {
         "name": "xoá toàn bộ bộ lọc trả lại đủ phòng",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
@@ -88,8 +88,8 @@
     "checks": [
       {
         "name": "số phòng mặc định",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
@@ -105,21 +105,21 @@
         "ok": true
       },
       {
-        "name": "lọc nuôi thú cưng + 2 người",
+        "name": "lọc nuôi thú cưng + từ 3 người",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
         "name": "xoá bộ lọc nâng cao trả lại đủ phòng",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
-        "name": "lọc loại phòng Ở ghép",
-        "got": 2,
-        "want": 2,
+        "name": "lọc loại phòng Căn hộ mini",
+        "got": 3,
+        "want": 3,
         "ok": true
       },
       {
@@ -136,8 +136,8 @@
       },
       {
         "name": "xoá toàn bộ bộ lọc trả lại đủ phòng",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
@@ -202,8 +202,8 @@
     "checks": [
       {
         "name": "số phòng mặc định",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
@@ -219,21 +219,21 @@
         "ok": true
       },
       {
-        "name": "lọc nuôi thú cưng + 2 người",
+        "name": "lọc nuôi thú cưng + từ 3 người",
         "got": 1,
         "want": 1,
         "ok": true
       },
       {
         "name": "xoá bộ lọc nâng cao trả lại đủ phòng",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {
-        "name": "lọc loại phòng Ở ghép",
-        "got": 2,
-        "want": 2,
+        "name": "lọc loại phòng Căn hộ mini",
+        "got": 3,
+        "want": 3,
         "ok": true
       },
       {
@@ -250,8 +250,8 @@
       },
       {
         "name": "xoá toàn bộ bộ lọc trả lại đủ phòng",
-        "got": 18,
-        "want": 18,
+        "got": 9,
+        "want": 9,
         "ok": true
       },
       {

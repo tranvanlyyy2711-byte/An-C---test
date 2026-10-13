@@ -23,6 +23,7 @@ let failed = false;
 
 for (const t of targets) {
   const page = await browser.newPage({ viewport: { width: t.width, height: t.height }, deviceScaleFactor: 1 });
+  await page.clock.setFixedTime(new Date(2026, 8, 18, 8, 15)); // dữ liệu mẫu neo quanh 18/09/2026 08:15
   const errors = [];
   const checks = [];
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -39,7 +40,7 @@ for (const t of targets) {
   };
 
   await page.waitForSelector('#roomList .room-row');
-  expect('số phòng mặc định', await rows(), 18);
+  expect('số phòng mặc định', await rows(), 9);
   expect('không cuộn ngang (tải trang)', await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 0), true);
 
   // Cuộn danh sách phòng một lượt để ảnh lazy-load kịp vào khung chụp
@@ -62,28 +63,29 @@ for (const t of targets) {
   expect('panel bộ lọc mở', await page.locator('#filterPanel').isVisible(), true);
   await shot('filter-panel');
 
-  // Lọc theo tiện ích + số người ở
+  // Lọc theo tiện ích + số người ở (p06 là phòng duy nhất vừa nuôi thú cưng vừa từ 3 người trở lên)
   await page.click('.qc[data-amen="Nuôi thú cưng"]');
-  await page.selectOption('#fPeople', '2');
+  await page.selectOption('#fPeople', '3');
   await page.click('#filterApply');
   await page.waitForTimeout(150);
-  expect('lọc nuôi thú cưng + 2 người', await rows(), 1);
+  expect('lọc nuôi thú cưng + từ 3 người', await rows(), 1);
 
   await page.click('#filterReset');
   await page.waitForTimeout(150);
-  expect('xoá bộ lọc nâng cao trả lại đủ phòng', await rows(), 18);
+  expect('xoá bộ lọc nâng cao trả lại đủ phòng', await rows(), 9);
 
-  // Lọc theo loại phòng
-  await page.selectOption('#fType', 'Ở ghép');
+  // Lọc theo loại phòng (p02/p04/p09 là Căn hộ mini)
+  await page.selectOption('#fType', 'Căn hộ mini');
   await page.waitForTimeout(150);
-  expect('lọc loại phòng Ở ghép', await rows(), 2);
+  expect('lọc loại phòng Căn hộ mini', await rows(), 3);
   await page.selectOption('#fType', '');
 
-  // Trạng thái rỗng — chọn một Phường/Xã không khớp phòng nào qua modal Vị trí
+  // Trạng thái rỗng — chọn một phường không khớp phòng nào qua modal Vị trí
+  // (Giảng Võ có trong danh mục phường của Hà Nội nhưng không phòng nào trong dữ liệu mẫu ở đó)
   await page.click('#locationTrigger');
   await page.waitForTimeout(200);
   await page.click('#locFilterOverlay .filter-tab[data-filter-tab="ward"]');
-  await page.fill('#locFilterSearch', 'Tây Hồ');
+  await page.fill('#locFilterSearch', 'Giảng Võ');
   await page.waitForTimeout(150);
   await page.click('#wardList .filter-chip');
   await page.click('#locFilterApply');
@@ -94,7 +96,7 @@ for (const t of targets) {
 
   await page.click('#roomReset');
   await page.waitForTimeout(150);
-  expect('xoá toàn bộ bộ lọc trả lại đủ phòng', await rows(), 18);
+  expect('xoá toàn bộ bộ lọc trả lại đủ phòng', await rows(), 9);
 
   if (t.width > 960) {
     // Desktop/tablet lớn: sidebar cố định luôn hiển thị, không có topbar hamburger
