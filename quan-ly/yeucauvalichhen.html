@@ -1194,6 +1194,26 @@ function initReveal(){
   document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
 }
 
+/* ================= Đồng bộ yêu cầu mới ================= */
+// Người thuê đặt lịch ở tim-phong.html / da-luu.html thì yêu cầu hiện ở đây trong vài giây,
+// không cần tải lại trang. Prototype dùng hỏi định kỳ; lên Supabase thay bằng Realtime.
+var DONG_BO_MS = 8000;
+function dauVanTay(){ return JSON.stringify(APPTS.map(function(a){ return [a.id, a.status, a.date, a.time]; })); }
+function dongBoLich(){
+  if (!API.on || document.hidden || document.querySelector('.modal-overlay.open, dialog[open]')) return;
+  var truoc = dauVanTay();
+  var idCu = {}; APPTS.forEach(function(a){ idCu[a.id] = true; });
+  taiLichMayChu().then(function(){
+    if (dauVanTay() === truoc) return;
+    renderAll();
+    var moi = APPTS.filter(function(a){ return !idCu[a.id] && a.status === 'pending'; });
+    if (moi.length === 1) showToast('Yêu cầu lịch xem mới', moi[0].tenant + ' muốn xem ' + moi[0].room + ' ngày ' + moi[0].date.split('-').reverse().join('/') + ' lúc ' + moi[0].time + '.');
+    else if (moi.length > 1) showToast('Yêu cầu lịch xem mới', 'Có ' + moi.length + ' yêu cầu đang chờ bạn xác nhận.');
+  }).catch(function(){});
+}
+setInterval(dongBoLich, DONG_BO_MS);
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) dongBoLich(); });
+
 /* ================= Khởi động ================= */
 API_READY.then(function(on){
   if (!on) return;

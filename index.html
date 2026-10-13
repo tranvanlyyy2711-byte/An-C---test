@@ -97,10 +97,6 @@
   .nav-links a:hover{color:var(--text);transform:translateY(-1px)}
   .nav-cta{display:flex;align-items:center;gap:12px}
   .nav-cta .btn{height:40px;padding:0 18px;font-size:14px}
-  .nav-cta > [hidden],.mobile-menu > [hidden]{display:none!important}
-  .nav-user{display:flex;align-items:center;gap:12px}
-  .nav-hello{font-size:14px;color:var(--text-muted);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
-  .nav-hello b{color:var(--text);font-weight:600}
   .menu-toggle{display:none;width:42px;height:42px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center}
   .menu-toggle span{position:relative;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
   .menu-toggle span::before,.menu-toggle span::after{content:"";position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.2s var(--ease)}
@@ -118,9 +114,6 @@
   body.menu-open .mobile-menu{transform:none;opacity:1;pointer-events:auto}
   .mobile-menu a{padding:14px 4px;font-size:17px;font-weight:800;border-bottom:1px solid var(--border);color:var(--text)}
   .mobile-menu .btn{margin-top:18px}
-  .mobile-menu a.btn-primary{color:var(--accent-fg)}
-  .mobile-menu .nav-user{flex-direction:column;align-items:stretch;gap:0}
-  .mobile-menu .nav-hello{padding:18px 4px 0;font-size:15px;max-width:none}
 
   /* ---------- Hero ---------- */
   .hero{padding:150px 0 90px;text-align:center;overflow:hidden}
@@ -497,7 +490,7 @@
   .pw-toggle.on .off{display:block}
   .pw-toggle.on .on{display:none}
 
-  .err{display:none;margin-top:7px;font-size:13px;line-height:1.45;color:var(--danger-ink)}
+  .err{display:none;margin-top:7px;font-size:13px;line-height:1.45;color:var(--danger)}
   .field.invalid .err{display:block}
 
   .auth-row{display:flex;justify-content:flex-end;margin:-4px 0 18px}
@@ -537,13 +530,6 @@
   .auth-done h3{font-size:1.2rem;margin-bottom:8px}
   .auth-done p{font-size:14.5px;color:var(--text-muted);line-height:1.6;margin-bottom:20px}
   .auth-done .mock{display:block;margin-top:10px;font-size:12.5px;color:var(--text-dim)}
-  .auth-form-err{
-    display:none;margin:0 0 14px;padding:11px 14px;border-radius:var(--radius-sm);
-    background:color-mix(in srgb, var(--danger-ink) 6%, transparent);
-    border:1px solid color-mix(in srgb, var(--danger-ink) 24%, transparent);
-    font-size:13.5px;line-height:1.5;color:var(--danger-ink);
-  }
-  .auth-form-err.show{display:block}
 
   @media (max-width:480px){
     .auth-overlay{padding:16px}
@@ -554,14 +540,15 @@
 
   /* ---------- Bộ tìm phòng ---------- */
   .finder{
-    background:linear-gradient(180deg,#FFFFFF 0%,#F5FAF5 100%);border:1px solid var(--border);
-    border-radius:var(--radius-lg);padding:18px;margin-bottom:26px;
+    background:rgba(255,255,255,.72);border:1px solid rgba(34,139,34,.18);
+    border-radius:20px;padding:18px 18px 16px;margin-bottom:22px;
+    box-shadow:0 8px 24px rgba(18,49,22,.04);
   }
-  .finder-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:12px;align-items:end}
+  .finder-grid{display:grid;grid-template-columns:1.25fr 1.25fr 1.25fr auto;gap:12px;align-items:end}
   .fld > label{
     display:block;margin-bottom:8px;
-    font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;
-    letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);
+    font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);
   }
   .fld .ctrl{position:relative;display:flex;align-items:center}
   .fld .ctrl > svg{
@@ -574,16 +561,19 @@
     stroke:var(--text-dim);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
   }
   .fld select,.fld input{
-    width:100%;height:48px;padding:0 14px 0 42px;
-    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
-    color:var(--text);font-family:'Inter',sans-serif;font-size:16px;
+    width:100%;height:58px;padding:0 14px 0 42px;
+    background:#F0F7F1;border:1px solid rgba(34,139,34,.18);border-radius:14px;
+    color:var(--text);font-family:'Inter',sans-serif;font-size:15px;
     appearance:none;-webkit-appearance:none;
-    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease);
   }
   .fld select{padding-right:34px;cursor:pointer}
   .fld input::placeholder{color:var(--text-dim)}
-  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.14);background:#FFFFFF}
   .fld .ctrl:focus-within > svg{stroke:var(--accent)}
+  .finder .btn-find{
+    height:58px;padding:0 24px;border-radius:14px;font-size:1rem;font-weight:700;
+    box-shadow:0 12px 28px rgba(34,139,34,.22);
   .finder .btn-find{height:48px;padding:0 26px}
 
   .fld-location .location-trigger{
@@ -632,47 +622,16 @@
     height:42px;padding:0 20px;border-radius:12px;border:1px solid rgba(239,89,52,.9);background:linear-gradient(180deg,#f46c45 0%,#ef5934 100%);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;
   }
 
-  .filter-shell{display:grid;grid-template-columns:150px 1fr;min-height:420px;overflow:hidden}
-  .filter-sidebar{
-    background:linear-gradient(180deg,#F5FAF5 0%,#F2F7F2 100%);padding:14px 12px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:10px;
-  }
-  .filter-tab{
-    min-height:48px;padding:0 14px;border-radius:12px;border:1px solid transparent;background:transparent;
-    color:var(--text-muted);font-size:18px;font-weight:600;text-align:left;cursor:pointer;transition:all .18s ease;
-  }
-  .filter-tab.active{
-    background:var(--surface);border-color:var(--border);color:var(--text);box-shadow:inset 0 0 0 1px rgba(34,139,34,.08);
-  }
-
-  .filter-content{padding:20px 24px 0;overflow:auto}
-  .filter-panel{display:none;min-height:280px}
-  .filter-panel.active{display:block}
-  .filter-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
-  .filter-chip{
-    min-height:52px;padding:10px 14px;border-radius:12px;border:1px solid rgba(16,32,16,.08);background:#EEF3EE;
-    color:var(--text);font-size:18px;font-weight:500;text-align:left;cursor:pointer;transition:all .2s ease;
-  }
-  .filter-chip:hover{border-color:var(--border-strong)}
-  .filter-chip.active{background:rgba(34,139,34,.08);border-color:var(--accent);color:var(--text);box-shadow:0 0 0 1px rgba(34,139,34,.12)}
-  .filter-more{margin-top:18px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:15px;padding:0;cursor:pointer}
-  .filter-empty{grid-column:1 / -1;padding:18px 12px;color:var(--text-dim);font-size:15px}
-
-  .filter-footer{display:none}
-  .filter-reset,.filter-apply{height:56px;border-radius:14px;font-size:1.15rem;font-weight:700}
-  .filter-reset{background:transparent;border:1.5px solid rgba(238,97,68,.9);color:var(--text);}
-  .filter-apply{background:linear-gradient(180deg,#f46c45 0%,#ef5934 100%);border:1px solid rgba(239,89,52,.9);color:#fff}
-  .filter-reset:hover,.filter-apply:hover{filter:brightness(.98)}
-
-  .quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+  .quick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
   .quick > span{font-size:13px;color:var(--text-dim);margin-right:2px}
   .qc{
-    display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;
-    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 16px;
+    background:#F3F8F4;border:1px solid rgba(34,139,34,.18);border-radius:999px;
     color:var(--text-muted);font-family:'Inter',sans-serif;font-size:13.5px;cursor:pointer;
-    transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease);
+    transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease),transform .18s var(--ease);
   }
-  .qc:hover{color:var(--text);border-color:var(--border-strong)}
-  .qc.on{background:rgba(34,139,34,.08);border-color:var(--accent);color:var(--text)}
+  .qc:hover{color:var(--text);border-color:var(--border-strong);transform:translateY(-1px)}
+  .qc.on{background:rgba(34,139,34,.08);border-color:var(--accent);color:var(--text);box-shadow:0 0 0 1px rgba(34,139,34,.08)}
   .qc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   .result-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px}
@@ -691,10 +650,13 @@
   .result-bar .sort .caret{right:12px}
 
   .empty{
-    display:none;text-align:center;padding:14px 0 0;
-    background:transparent;border:none;border-radius:0;
+    display:none;text-align:center;padding:64px 24px;
+    background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--radius-lg);
   }
   .empty.show{display:block}
+  .empty svg{width:40px;height:40px;margin:0 auto 18px;stroke:var(--text-dim);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+  .empty h3{font-size:1.15rem;margin-bottom:8px}
+  .empty p{font-size:14.5px;color:var(--text-muted);margin-bottom:22px}
   .result-bar[hidden]{display:none}
   .fld.invalid select,.fld.invalid .location-trigger{border-color:var(--danger-ink);box-shadow:0 0 0 3px color-mix(in srgb, var(--danger-ink) 12%, transparent)}
   .finder-err{display:none;margin:14px 0 0;font-size:14px;line-height:1.5;color:var(--danger-ink)}
@@ -1185,16 +1147,24 @@
 
     <form class="finder reveal" id="finder" novalidate>
       <div class="finder-grid">
-        <div class="fld fld-location">
+        <div class="fld">
           <label for="fArea">Vị trí</label>
+          <div class="ctrl">
+            <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <select id="fArea">
+              <option value="">Toàn thành phố Hải Phòng</option>
+              <option value="Lê Chân">Quận Lê Chân</option>
+              <option value="Ngô Quyền">Quận Ngô Quyền</option>
+              <option value="Hồng Bàng">Quận Hồng Bàng</option>
+              <option value="Hải An">Quận Hải An</option>
+              <option value="Kiến An">Quận Kiến An</option>
+              <option value="Dương Kinh">Quận Dương Kinh</option>
+            </select>
           <button type="button" class="location-trigger is-empty" id="locationTrigger" aria-haspopup="dialog" aria-controls="filterOverlay">
             <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
             <span class="label-text" id="locationValue">Chọn tỉnh/thành, phường/xã</span>
             <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-          <select id="fArea" hidden aria-hidden="true">
-            <option value="">Hà Nội</option>
-          </select>
+          </div>
         </div>
 
         <div class="fld">
@@ -1276,6 +1246,13 @@
 
     <div class="empty empty-guide" id="roomEmpty">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8.5 11h5"/></svg>
+      <h3>Chưa có phòng nào khớp bộ lọc</h3>
+      <p>Thử nới rộng khoảng giá hoặc chọn thêm khu vực lân cận nhé.</p>
+      <button type="button" class="btn btn-ghost" id="roomReset">Xoá bộ lọc</button>
+    </div>
+
+    <div style="text-align:center;margin-top:44px" class="reveal">
+      <a href="#" class="btn btn-ghost btn-lg">Xem tất cả phòng tại Hải Phòng
       <h3>Hiện chưa có phòng trọ bạn muốn</h3>
       <p>Thử khoảng giá khác, hoặc chọn phường, xã lân cận.</p>
       <button type="button" class="btn btn-ghost" data-room-reset>Xoá bộ lọc, xem phòng mới đăng</button>
@@ -1494,6 +1471,9 @@
     <!-- ĐĂNG KÝ -->
     <section class="auth-pane" data-pane="register">
       <div class="auth-head">
+        <span class="brand"><span class="mark">A</span> An Cư</span>
+        <h2 id="authTitleRegister">Tạo tài khoản</h2>
+        <p>Miễn phí. Chọn vai trò để An Cư hiển thị đúng những gì bạn cần.</p>
         <span class="brand"><img class="brand-logo" src="assets/logo-ancu.png" alt=""> An Cư</span>
         <h2 id="authTitleRegister">Tạo tài khoản miễn phí</h2>
         <p>Chọn vai trò để An Cư hiển thị đúng những gì bạn cần.</p>
@@ -1623,11 +1603,6 @@
           <span id="rdAddr"></span>
         </p>
 
-        <div class="rd-block">
-          <h3>Địa chỉ chi tiết</h3>
-          <p id="rdAddrDetail"></p>
-        </div>
-
         <dl class="rd-specs" id="rdSpecs"></dl>
 
         <div class="rd-block">
@@ -1706,7 +1681,7 @@
     document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
   }
 
-  // ---------- Auth modal: đăng nhập thật khi chạy qua máy chủ, mô phỏng khi mở file:// ----------
+  // ---------- Auth modal (mock, chưa nối backend) ----------
   (function(){
     var overlay = document.getElementById('authOverlay');
     if(!overlay) return;
@@ -1767,8 +1742,6 @@
       pane.querySelector('.auth-head').hidden = false;
       var alt = pane.querySelector('.auth-alt');
       form.reset();
-      var formErr = form.querySelector('.auth-form-err');
-      if(formErr){ formErr.textContent = ''; formErr.classList.remove('show'); }
       form.hidden = false;
       if(alt) alt.hidden = false;
       done.hidden = true;
@@ -1784,6 +1757,58 @@
     }
 
     var AUTH_ROLE_KEY = 'an-cu-auth-role';
+    var AUTH_USERS_KEY = 'an-cu-auth-users';
+
+    function normalizePhone(value){
+      return String(value || '').replace(/\D/g, '');
+    }
+
+    function getRegisteredUsers(){
+      try {
+        var raw = localStorage.getItem(AUTH_USERS_KEY);
+        if(!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveRegisteredUser(user){
+      var users = getRegisteredUsers();
+      var normalized = normalizePhone(user.phone);
+      var nextUsers = users.filter(function(item){
+        return normalizePhone(item.phone) !== normalized;
+      });
+      nextUsers.push({
+        phone: user.phone,
+        email: user.email || '',
+        password: user.password,
+        role: user.role === 'landlord' ? 'landlord' : 'renter'
+      });
+      try {
+        localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(nextUsers));
+      } catch (e) {}
+    }
+
+    function findRegisteredUser(phone, password){
+      var cleanedPhone = normalizePhone(phone);
+      var users = getRegisteredUsers();
+      var match = users.filter(function(item){
+        return normalizePhone(item.phone) === cleanedPhone && String(item.password) === String(password);
+      })[0];
+      return match || null;
+    }
+
+    function redirectByRole(role){
+      var nextRole = role === 'landlord' ? 'landlord' : 'renter';
+      localStorage.setItem(AUTH_ROLE_KEY, nextRole);
+      if(nextRole === 'renter'){
+        window.location.href = 'tai-khoan/tim-phong.html';
+      } else {
+        window.location.href = 'quan-ly/tong-quan.html';
+      }
+    }
 
     function resolveAuthRole(role){
       var next = role || localStorage.getItem(AUTH_ROLE_KEY) || 'renter';
@@ -1803,12 +1828,20 @@
         var r = overlay.querySelector('.role-pick input[value="' + role + '"]');
         if(r) r.checked = true;
       }
+      if(name === 'login'){
+        var remembered = getRegisteredUsers();
+        if(remembered.length){
+          var last = remembered[remembered.length - 1];
+          var loginPhone = document.getElementById('loginPhone');
+          var loginPassword = document.getElementById('loginPassword');
+          if(loginPhone && last.phone){ loginPhone.value = last.phone; }
+          if(loginPassword && last.password){ loginPassword.value = last.password; }
+        }
+      }
       modal.scrollTop = 0;
     }
 
     function openAuth(name, role){
-      // Đã đăng nhập thì không mở lại form, đưa thẳng vào khu vực của mình
-      if(AUTH_API.me){ window.location.href = areaOf(AUTH_API.me); return; }
       lastFocus = document.activeElement;
       role = resolveAuthRole(role);
       setPane(name || 'login', role);
@@ -1827,12 +1860,6 @@
       if(lastFocus && lastFocus.focus) lastFocus.focus();
     }
 
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape' && overlay.classList.contains('open')) {
-        closeAuth();
-      }
-    });
-
     // Mở modal từ mọi nút có data-auth
     document.querySelectorAll('[data-auth]').forEach(function(el){
       el.addEventListener('click', function(e){
@@ -1850,14 +1877,7 @@
     overlay.querySelectorAll('[data-auth-close]').forEach(function(el){
       el.addEventListener('click', closeAuth);
     });
-    var authClose = document.getElementById('authClose');
-    if (authClose) {
-      authClose.addEventListener('click', function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        closeAuth();
-      });
-    }
+    document.getElementById('authClose').addEventListener('click', closeAuth);
     overlay.addEventListener('mousedown', function(e){ if(e.target === overlay) closeAuth(); });
 
     // Hiện / ẩn mật khẩu
@@ -1880,141 +1900,63 @@
       });
     });
 
-    // ---------- Máy chủ xác thực ----------
-    // Mở qua máy chủ (npm start): đăng ký / đăng nhập thật, tài khoản lưu trong SQLite (server/auth.mjs).
-    // Mở thẳng file (file://): không có máy chủ, form chạy mô phỏng để xem giao diện.
-    var AUTH_API = { on:false, me:null };
-    var AUTH_READY = (!/^https?:$/.test(location.protocol) || !window.fetch)
-      ? Promise.resolve(AUTH_API)
-      : fetch('/api/suc-khoe', { cache:'no-store', credentials:'same-origin' })
-          .then(function(r){ return r.ok ? r.json() : null; })
-          .then(function(j){ if(j && j.ok){ AUTH_API.on = true; AUTH_API.me = j.me || null; } return AUTH_API; })
-          .catch(function(){ return AUTH_API; });
-
-    function areaOf(user){ return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html'; }
-    function shortName(user){
-      if(!user) return '';
-      if(user.name === user.phone) return user.phone;
-      var w = String(user.name).trim().split(/\s+/);
-      return w[w.length - 1];
-    }
-    function authPost(url, body){
-      return fetch(url, { method:'POST', cache:'no-store', credentials:'same-origin',
-        headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body || {}) })
-        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; }); });
-    }
-    function formError(form, msg){
-      var box = form.querySelector('.auth-form-err');
-      if(!box){
-        box = document.createElement('p');
-        box.className = 'auth-form-err';
-        box.setAttribute('role', 'alert');
-        var submit = form.querySelector('.btn-submit');
-        submit.parentNode.insertBefore(box, submit);
-      }
-      box.textContent = msg || '';
-      box.classList.toggle('show', !!msg);
-    }
-    function showDone(form, note){
-      var pane = form.closest('.auth-pane');
-      var alt = pane.querySelector('.auth-alt');
-      var done = pane.querySelector('.auth-done');
-      var mock = done.querySelector('.mock');
-      if(mock && note) mock.textContent = note;
-      pane.querySelector('.auth-head').hidden = true;
-      form.hidden = true;
-      if(alt) alt.hidden = true;
-      done.hidden = false;
-      modal.scrollTop = 0;
-      done.querySelector('.btn').focus();
-    }
-
-    // Không có máy chủ: giữ hành vi mô phỏng cũ. Quên mật khẩu luôn mô phỏng vì chưa có SMS thật.
-    function mockSubmit(form, kind){
-      setTimeout(function(){
-        var checkedRole = form.querySelector('input[name="role"]:checked');
-        var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
-        resolveAuthRole(targetRole);
-        showDone(form, kind === 'forgot' ? '' : 'Chế độ xem giao diện: chưa lưu tài khoản. Chạy npm start rồi mở localhost:5500 để đăng ký, đăng nhập thật.');
-        if(kind !== 'forgot' && targetRole === 'renter'){
-          setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
-        }
-      }, 600);
-    }
-
+    // Submit (mock)
     overlay.querySelectorAll('[data-auth-form]').forEach(function(form){
-      var kind = form.getAttribute('data-auth-form');
       var btn = form.querySelector('.btn-submit');
       btn.setAttribute('data-label', btn.textContent);
-      function busy(on){ btn.disabled = on; btn.textContent = on ? 'Đang xử lý…' : btn.getAttribute('data-label'); }
-
       form.addEventListener('submit', function(e){
         e.preventDefault();
-        formError(form, '');
         var inputs = Array.prototype.slice.call(form.querySelectorAll('[data-rule]'));
         var firstBad = null;
         inputs.forEach(function(input){ if(!checkField(input) && !firstBad) firstBad = input; });
         if(firstBad){ firstBad.focus(); return; }
-        busy(true);
 
-        AUTH_READY.then(function(){
-          if(!AUTH_API.on || kind === 'forgot') return mockSubmit(form, kind);
+        btn.disabled = true;
+        btn.textContent = 'Đang xử lý…';
+        setTimeout(function(){
+          var pane = form.closest('.auth-pane');
+          var alt = pane.querySelector('.auth-alt');
+          var checkedRole = form.querySelector('input[name="role"]:checked');
+          var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
 
-          var f = form.elements;
-          var role = form.querySelector('input[name="role"]:checked');
-          var body = kind === 'register'
-            ? { role: role ? role.value : '', phone: f.phone.value, email: f.email.value, password: f.password.value }
-            : { phone: f.phone.value, password: f.password.value };
-          return authPost(kind === 'register' ? '/api/dang-ky' : '/api/dang-nhap', body).then(function(j){
-            if(!j.user){
-              busy(false);
-              var input = j.field ? form.querySelector('[name="' + j.field + '"][data-rule]') : null;
-              if(input){ failField(input, j.message); input.focus(); }
-              else formError(form, j.message || 'Máy chủ không phản hồi, vui lòng thử lại.');
-              return;
+          if(pane.getAttribute('data-pane') === 'register'){
+            var phoneInput = form.querySelector('input[name="phone"]');
+            var emailInput = form.querySelector('input[name="email"]');
+            var passInput = form.querySelector('input[name="password"]');
+            saveRegisteredUser({
+              phone: phoneInput ? phoneInput.value.trim() : '',
+              email: emailInput ? emailInput.value.trim() : '',
+              password: passInput ? passInput.value : '',
+              role: targetRole
+            });
+          }
+
+          if(pane.getAttribute('data-pane') === 'login'){
+            var loginPhone = form.querySelector('input[name="phone"]');
+            var loginPass = form.querySelector('input[name="password"]');
+            var remembered = findRegisteredUser(loginPhone ? loginPhone.value : '', loginPass ? loginPass.value : '');
+            if(remembered){
+              targetRole = remembered.role;
             }
-            AUTH_API.me = j.user;
-            resolveAuthRole(j.user.role);
-            renderHeader();
-            showDone(form, 'Đang chuyển tới ' + (j.user.role === 'landlord' ? 'trang quản lý của chủ trọ' : 'trang tìm phòng của bạn') + '…');
-            setTimeout(function(){ window.location.href = areaOf(j.user); }, 900);
-          });
-        }).catch(function(){
-          busy(false);
-          formError(form, 'Không kết nối được máy chủ. Kiểm tra cửa sổ chạy npm start còn mở không.');
-        });
+          }
+
+          resolveAuthRole(targetRole);
+
+          pane.querySelector('.auth-head').hidden = true;
+          form.hidden = true;
+          if(alt) alt.hidden = true;
+          pane.querySelector('.auth-done').hidden = false;
+          modal.scrollTop = 0;
+          pane.querySelector('.auth-done .btn').focus();
+
+          if(targetRole === 'renter'){
+            setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
+          } else if(targetRole === 'landlord'){
+            setTimeout(function(){ window.location.href = 'quan-ly/tong-quan.html'; }, 900);
+          }
+        }, 600);
       });
     });
-
-    // Header: đã đăng nhập thì thay "Đăng nhập / Đăng ký" bằng lời chào, lối vào khu vực riêng và Đăng xuất
-    function renderHeader(){
-      var me = AUTH_API.me;
-      [document.querySelector('.nav-cta'), document.getElementById('mobileMenu')].forEach(function(box){
-        if(!box) return;
-        var inMenu = box.id === 'mobileMenu';
-        Array.prototype.forEach.call(box.querySelectorAll(':scope > [data-auth]'), function(b){ b.hidden = !!me; });
-        var old = box.querySelector(':scope > .nav-user');
-        if(old) old.remove();
-        if(!me) return;
-        var wrap = document.createElement('div');
-        wrap.className = 'nav-user';
-        wrap.innerHTML = '<span class="nav-hello">Chào, <b></b></span>' +
-          '<a class="btn btn-primary' + (inMenu ? ' btn-lg' : '') + '"></a>' +
-          '<button type="button" class="btn btn-ghost' + (inMenu ? ' btn-lg' : '') + '" data-logout>Đăng xuất</button>';
-        wrap.querySelector('b').textContent = shortName(me);
-        var link = wrap.querySelector('a');
-        link.href = areaOf(me);
-        link.textContent = me.role === 'landlord' ? 'Trang quản lý' : 'Trang của tôi';
-        wrap.querySelector('[data-logout]').addEventListener('click', logout);
-        box.appendChild(wrap);
-      });
-    }
-    function logout(){
-      authPost('/api/dang-xuat')
-        .catch(function(){})
-        .then(function(){ AUTH_API.me = null; document.body.classList.remove('menu-open'); renderHeader(); });
-    }
-    AUTH_READY.then(renderHeader);
 
     // Bẫy focus + Esc
     overlay.addEventListener('keydown', function(e){
@@ -2038,6 +1980,86 @@
 
     // Chỉ dùng phòng có ảnh thật (assets/rooms/), ảnh khớp đúng tin và giá cho thuê.
     var ROOMS = [
+      { id:'p01', title:'Phòng gác lửng, thoáng sáng', price:2800000, deposit:2800000, area:22, people:2, floor:2,
+        ward:'P. Trại Cau', district:'Lê Chân', address:'145/12 Tô Hiệu, P. Trại Cau, Lê Chân, Hải Phòng',
+        posted:2, electric:3500, water:25000, service:100000,
+        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng',
+        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Trại Cau 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+        owner:{ name:'Chị Nguyễn Thu Hà', phone:'0912 345 678', rooms:8, reply:'~10 phút' },
+        images:[img('1522708323590-d24dbb6b0267'),img('1505873242700-f289a29e1e0f'),img('1484154218962-a197022b5858'),img('1556228453-efd6c1ff04f6')] },
+
+      { id:'p02', title:'Căn hộ mini full nội thất', price:4200000, deposit:4200000, area:30, people:2, floor:4,
+        ward:'P. Lạch Tray', district:'Ngô Quyền', address:'27 Lạch Tray, P. Lạch Tray, Ngô Quyền, Hải Phòng',
+        posted:1, electric:3800, water:30000, service:150000,
+        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng',
+        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Đối diện Đại học Hải Phòng, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
+        owner:{ name:'Anh Trần Quốc Việt', phone:'0938 221 574', rooms:14, reply:'~30 phút' },
+        images:[img('1560448204-e02f11c3d0e2'),img('1522771739844-6a9f6d5f14af'),img('1507089947368-19c1da9775ae'),img('1484154218962-a197022b5858')] },
+
+      { id:'p03', title:'Phòng ban công riêng, đón nắng', price:3100000, deposit:3100000, area:25, people:2, floor:3,
+        ward:'P. Sở Dầu', district:'Hồng Bàng', address:'88 Hùng Vương, P. Sở Dầu, Hồng Bàng, Hải Phòng',
+        posted:3, electric:3500, water:25000, service:100000,
+        alt:'Phòng trọ có ban công riêng nhiều ánh sáng',
+        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần bến xe Thượng Lý và chợ Sở Dầu. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
+        owner:{ name:'Cô Phạm Thị Lan', phone:'0906 887 302', rooms:4, reply:'~1 giờ' },
+        images:[img('1502672260266-1c1ef2d93688'),img('1505873242700-f289a29e1e0f'),img('1522708323590-d24dbb6b0267'),img('1556228453-efd6c1ff04f6')] },
+
+      { id:'p04', title:'Studio hiện đại gần trung tâm', price:3900000, deposit:3900000, area:28, people:2, floor:5,
+        ward:'P. An Biên', district:'Lê Chân', address:'12 Nguyễn Đức Cảnh, P. An Biên, Lê Chân, Hải Phòng',
+        posted:1, electric:3800, water:30000, service:150000,
+        alt:'Phòng studio hiện đại gần trung tâm thành phố',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách hồ Tam Bạc 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+        owner:{ name:'Anh Lê Hoàng Nam', phone:'0977 415 688', rooms:22, reply:'~15 phút' },
+        images:[img('1493809842364-78817add7ffb'),img('1507089947368-19c1da9775ae'),img('1522771739844-6a9f6d5f14af'),img('1484154218962-a197022b5858')] },
+
+      { id:'p05', title:'Phòng khép kín, an ninh tốt', price:2500000, deposit:2500000, area:20, people:2, floor:1,
+        ward:'P. Trần Thành Ngọ', district:'Kiến An', address:'56 Trần Nhân Tông, P. Trần Thành Ngọ, Kiến An, Hải Phòng',
+        posted:4, electric:3500, water:25000, service:80000,
+        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt',
+        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Đại học Hải Phòng cơ sở Kiến An 1,2km, gần chợ và trạm xe buýt.',
+        owner:{ name:'Chú Đỗ Văn Bình', phone:'0913 664 129', rooms:10, reply:'~2 giờ' },
+        images:[img('1524758631624-e2822e304c36'),img('1522708323590-d24dbb6b0267'),img('1556228453-efd6c1ff04f6'),img('1505873242700-f289a29e1e0f')] },
+
+      { id:'p06', title:'Phòng rộng, phù hợp gia đình', price:4600000, deposit:4600000, area:35, people:3, floor:2,
+        ward:'P. Đằng Lâm', district:'Hải An', address:'203 Lê Hồng Phong, P. Đằng Lâm, Hải An, Hải Phòng',
+        posted:2, electric:3800, water:30000, service:150000,
+        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình',
+        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Đằng Lâm và siêu thị Aeon Mall 2km.',
+        owner:{ name:'Chị Vũ Mai Phương', phone:'0904 332 871', rooms:6, reply:'~45 phút' },
+        images:[img('1567767292278-a4f21aa2d36e'),img('1507089947368-19c1da9775ae'),img('1484154218962-a197022b5858'),img('1522771739844-6a9f6d5f14af')] },
+
+      { id:'p07', title:'Phòng trọ giá mềm cho sinh viên', price:1800000, deposit:1800000, area:16, people:1, floor:3,
+        ward:'P. Hoà Nghĩa', district:'Dương Kinh', address:'9 Phạm Văn Đồng, P. Hoà Nghĩa, Dương Kinh, Hải Phòng',
+        posted:5, electric:3500, water:20000, service:50000,
+        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên',
+        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
+        owner:{ name:'Anh Nguyễn Đức Thắng', phone:'0968 110 447', rooms:12, reply:'~1 giờ' },
+        images:[img('1505873242700-f289a29e1e0f'),img('1524758631624-e2822e304c36'),img('1556228453-efd6c1ff04f6'),img('1522708323590-d24dbb6b0267')] },
+
+      { id:'p08', title:'Phòng có gác, cửa sổ hướng vườn', price:3400000, deposit:3400000, area:26, people:2, floor:2,
+        ward:'P. Đông Khê', district:'Ngô Quyền', address:'74/3 Đông Khê, P. Đông Khê, Ngô Quyền, Hải Phòng',
+        posted:3, electric:3500, water:25000, service:100000,
+        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn',
+        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn cây của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Rào 1,5km.',
+        owner:{ name:'Bác Hoàng Văn Sơn', phone:'0915 209 633', rooms:5, reply:'~2 giờ' },
+        images:[img('1522771739844-6a9f6d5f14af'),img('1502672260266-1c1ef2d93688'),img('1484154218962-a197022b5858'),img('1507089947368-19c1da9775ae')] },
+
+      { id:'p09', title:'Căn hộ dịch vụ 2 phòng ngủ', price:6500000, deposit:6500000, area:48, people:3, floor:6,
+        ward:'P. Máy Tơ', district:'Ngô Quyền', address:'15 Lê Thánh Tông, P. Máy Tơ, Ngô Quyền, Hải Phòng',
+        posted:1, electric:3800, water:30000, service:250000,
+        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi',
+        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Cấm. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+        owner:{ name:'Chị Đặng Khánh Linh', phone:'0902 778 916', rooms:18, reply:'~20 phút' },
+        images:[img('1507089947368-19c1da9775ae'),img('1560448204-e02f11c3d0e2'),img('1493809842364-78817add7ffb'),img('1484154218962-a197022b5858')] }
       { id:'h10', city:'ha-noi', title:'Phòng khép kín, gần các trường Bách Kinh Xây', price:3300000, deposit:3300000, area:35, people:2, floor:3,
         ward:'Phường Vĩnh Tuy', address:'Phố Lạc Trung, Phường Vĩnh Tuy, Hà Nội',
         posted:3, electric:3800, water:30000, service:100000,
@@ -2183,16 +2205,8 @@
       if (!on) fPeopleCustom.value = '';
     }
     var fSort = document.getElementById('fSort');
-    var locationTrigger = document.getElementById('locationTrigger');
-    var locationValue = document.getElementById('locationValue');
-    var filterOverlay = document.getElementById('filterOverlay');
-    var filterClose = document.getElementById('filterClose');
-    var filterApply = document.getElementById('filterApply');
-    var filterReset = document.getElementById('filterReset');
     var countEl = document.getElementById('roomCount');
     var emptyEl = document.getElementById('roomEmpty');
-    var viewAllWrap = document.getElementById('viewAllWrap');
-    var viewAllRooms = document.getElementById('viewAllRooms');
     var quickBtns = Array.prototype.slice.call(document.querySelectorAll('.qc'));
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var firstRender = true;
@@ -2442,7 +2456,7 @@
         '</div>' +
         '<div class="rb">' +
           '<h3>' + esc(r.title) + '</h3>' +
-          '<p class="addr">' + SVG_PIN + esc(mainAddressLine(r)) + '</p>' +
+          '<p class="addr">' + SVG_PIN + esc(r.ward + ', ' + r.district) + '</p>' +
           '<div class="facts">' +
             '<span>' + SVG_AREA + r.area + ' m²</span>' +
             '<span>' + SVG_PEOPLE + r.people + ' người</span>' +
@@ -2459,6 +2473,19 @@
                       .map(function(b){ return b.getAttribute('data-amen'); });
     }
 
+    function apply(){
+      var area = fArea.value;
+      var people = fPeople.value;
+      var amens = activeAmenities();
+      var range = fPrice.value ? fPrice.value.split('-').map(Number) : null;
+
+      var list = ROOMS.filter(function(r){
+        if(area && r.district !== area) return false;
+        if(range && (r.price < range[0] || r.price >= range[1])) return false;
+        if(people === '3' ? r.people < 3 : people && r.people !== Number(people)) return false;
+        for(var i=0;i<amens.length;i++){ if(r.amenities.indexOf(amens[i]) === -1) return false; }
+        return true;
+      });
     function renderRooms(list){
       var visibleList = roomsExpanded ? list : list.slice(0, roomsLimit);
       grid.innerHTML = visibleList.map(cardHtml).join('');
@@ -2521,6 +2548,18 @@
       });
     }
 
+      countEl.innerHTML = list.length
+        ? 'Tìm thấy <b>' + list.length + '</b> phòng phù hợp' + (area ? ' tại ' + esc(area) : ' tại Hải Phòng')
+        : 'Không có phòng nào khớp bộ lọc';
+      emptyEl.classList.toggle('show', list.length === 0);
+      grid.innerHTML = list.map(cardHtml).join('');
+
+      var cards = Array.prototype.slice.call(grid.querySelectorAll('.room'));
+      cards.forEach(function(el,i){
+        if(reduce){ el.classList.add('in'); return; }
+        el.style.setProperty('--d', ((i % 3) * 0.06) + 's');
+        if(firstRender) cardIO.observe(el);
+        else setTimeout(function(){ el.classList.add('in'); }, 20);
     function showResults(){
       var list = sortRooms(lastFilteredRooms);
       if (!hasSearched) {
@@ -2615,13 +2654,29 @@
         roomsExpanded = true;
         showResults();
       });
+      firstRender = false;
     }
+
+    document.getElementById('finder').addEventListener('submit', function(e){ e.preventDefault(); apply(); });
+    [fArea, fPrice, fPeople, fSort].forEach(function(el){ el.addEventListener('change', apply); });
     quickBtns.forEach(function(b){
       b.setAttribute('aria-pressed', 'false');
       b.addEventListener('click', function(){
         var on = !b.classList.contains('on');
         b.classList.toggle('on', on);
         b.setAttribute('aria-pressed', String(on));
+        apply();
+      });
+    });
+    document.getElementById('roomReset').addEventListener('click', function(){
+      fArea.value = ''; fPrice.value = ''; fPeople.value = ''; fSort.value = 'new';
+      quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
+      apply();
+    });
+
+    fArea.value = ''; fPrice.value = ''; fPeople.value = ''; fSort.value = 'new';
+    quickBtns.forEach(function(b){ b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
+    apply();
         onCriteriaChange();
       });
     });
@@ -2639,8 +2694,7 @@
     function fillDetail(r){
       document.getElementById('rdPrice').innerHTML = vnd(r.price) + ' <span>/ tháng</span>';
       document.getElementById('rdTitle').textContent = r.title;
-      document.getElementById('rdAddr').textContent = mainAddressLine(r);
-      document.getElementById('rdAddrDetail').textContent = splitAddress(r).detail;
+      document.getElementById('rdAddr').textContent = r.address;
       rdMain.src = r.images[0];
       rdMain.alt = r.alt;
 
