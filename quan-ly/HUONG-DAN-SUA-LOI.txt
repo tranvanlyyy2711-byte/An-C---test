@@ -1,0 +1,9 @@
+BẢN VÁ TIN ĐĂNG BỊ TRỐNG
+
+1. Giải nén gói bản vá này.
+2. Mở thư mục quan-ly trong bản vá, sao chép hai file tin-dang.html và tin-dang.js.
+3. Dán vào thư mục quan-ly của bộ web đang chạy trên máy bạn. Chọn Replace the files in the destination (Thay thế tệp).
+4. Giữ npm start đang chạy. Quay lại trình duyệt và tải lại http://localhost:5500/quan-ly/tin-dang.html bằng Ctrl + F5.
+5. Nếu hiện Đăng nhập, dùng 0967960926 / matkhau123 để thử phòng Đại Cồ Việt.
+
+Bản vá chỉ sửa cách tải JavaScript và trạng thái đang tải/lỗi kết nối. Không thay cơ sở dữ liệu, không xóa tin bạn đã sửa. Phần nối Tìm phòng và Bản đồ vẫn dùng API máy chủ trong bộ web đã gửi. Tin sửa nội dung cần quản trị duyệt theo quy trình hiện có.
