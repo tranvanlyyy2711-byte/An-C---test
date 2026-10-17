@@ -482,10 +482,16 @@ export function createAdmin(db, ApiError, now) {
 
   // ---------- Thông báo của chính người dùng (chuông trên trang quản lý) ----------
   function myNotifications(userId) {
-    const ds = q.notisOfUser.all(userId).map((n) => ({
-      id: n.id, type: n.type, title: n.title, body: n.body,
-      createdAt: n.created_at, read: !!n.read_at,
-    }));
+    const ds = q.notisOfUser.all(userId).map((n) => {
+      const item = { id: n.id, type: n.type, title: n.title, body: n.body, createdAt: n.created_at, read: !!n.read_at };
+      // Thông báo sự cố mang sẵn mã phiếu trong ref ('su-co:<ticketId>:<replyId>'), tách ra để
+      // giao diện bấm vào là mở đúng phiếu, không cần thêm cột mới trên bảng dùng chung này.
+      if (n.type === 'su-co' && n.ref) {
+        const m = /^su-co:([^:]+):/.exec(n.ref);
+        if (m) item.ticketId = m[1];
+      }
+      return item;
+    });
     return { items: ds, unread: ds.filter((x) => !x.read).length };
   }
   function readNotification(userId, id) {

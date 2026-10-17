@@ -1,0 +1,272 @@
+[
+  {
+    "name": "tạo phiếu mới thành công",
+    "got": 201,
+    "want": 201,
+    "ok": true
+  },
+  {
+    "name": "mã phiếu đúng định dạng YC-xxxx",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "phiếu mới ở trạng thái submitted",
+    "got": "submitted",
+    "want": "submitted",
+    "ok": true
+  },
+  {
+    "name": "badge tab Sự cố đếm đúng số phiếu chưa xong (5: 4 seed mở + 1 vừa tạo, YC-0009 đã done)",
+    "got": "5",
+    "want": "5",
+    "ok": true
+  },
+  {
+    "name": "badge tô đỏ vì có phiếu khẩn cấp",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "bấm chỉ báo nhiều phiếu -> chuyển sang tab Sự cố",
+    "got": "true",
+    "want": "true",
+    "ok": true
+  },
+  {
+    "name": "URL cập nhật ?tab=su-co",
+    "got": "su-co",
+    "want": "su-co",
+    "ok": true
+  },
+  {
+    "name": "ô tìm kiếm lọc sẵn theo phòng P.101",
+    "got": "P.101",
+    "want": "P.101",
+    "ok": true
+  },
+  {
+    "name": "danh sách lọc còn đúng 2 phiếu của P.101",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "URL cập nhật ?ticket=YC-0014",
+    "got": "YC-0014",
+    "want": "YC-0014",
+    "ok": true
+  },
+  {
+    "name": "tiêu đề drawer đúng mã phiếu",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "tin nhắn chủ trọ xuất hiện trong luồng trao đổi",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "tải lại trang với ?ticket= mở lại đúng phiếu",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "trạng thái đã lưu (Đang xử lý) hiển thị đúng sau khi tải lại",
+    "got": "in_progress",
+    "want": "in_progress",
+    "ok": true
+  },
+  {
+    "name": "đóng drawer xoá ?ticket khỏi URL",
+    "got": null,
+    "want": null,
+    "ok": true
+  },
+  {
+    "name": "vẫn ở tab Sự cố sau khi đóng drawer",
+    "got": "su-co",
+    "want": "su-co",
+    "ok": true
+  },
+  {
+    "name": "bộ lọc tìm kiếm vẫn còn \"P.101\"",
+    "got": "P.101",
+    "want": "P.101",
+    "ok": true
+  },
+  {
+    "name": "mở popover thông báo",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "có thông báo gắn sẵn mã phiếu để điều hướng",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "bấm thông báo mở đúng phiếu mà thông báo đó trỏ tới",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "bấm thông báo cũng chuyển sang tab Sự cố",
+    "got": "true",
+    "want": "true",
+    "ok": true
+  },
+  {
+    "name": "phiếu đầu danh sách là khẩn cấp + chưa xong",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "người thuê báo \"vẫn còn lỗi\" -> phiếu quay lại in_progress",
+    "got": "in_progress",
+    "want": "in_progress",
+    "ok": true
+  },
+  {
+    "name": "người thuê xác nhận \"Đã ổn\" -> done",
+    "got": "done",
+    "want": "done",
+    "ok": true
+  },
+  {
+    "name": "drawer phiếu đã xong chỉ còn ghi chú, không còn chọn trạng thái",
+    "got": 0,
+    "want": 0,
+    "ok": true
+  },
+  {
+    "name": "YC-0011 tự chuyển \"done\" sau 3 ngày chờ xác nhận không phản hồi",
+    "got": "done",
+    "want": "done",
+    "ok": true
+  },
+  {
+    "name": "có tin nhắn hệ thống ghi lại việc tự động hoàn thành",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "đăng nhập quản trị vẫn bình thường",
+    "got": 200,
+    "want": 200,
+    "ok": true
+  },
+  {
+    "name": "hệ thống hỗ trợ chủ trọ -> quản trị cũ không đổi (vẫn 3 phiếu mẫu)",
+    "got": 3,
+    "want": 3,
+    "ok": true
+  },
+  {
+    "name": "[desktop] không cuộn ngang",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "[desktop] không có touch target < 44px",
+    "got": 0,
+    "want": 0,
+    "ok": true
+  },
+  {
+    "name": "[mobile] không cuộn ngang",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "[mobile] không có touch target < 44px",
+    "got": 0,
+    "want": 0,
+    "ok": true
+  },
+  {
+    "name": "ô \"Gửi tới\" hiện đúng chủ trọ và phòng",
+    "got": "Gửi tới Trần Hoà · Phòng P.301 — Nhà trọ An Bình",
+    "want": "Gửi tới Trần Hoà · Phòng P.301 — Nhà trọ An Bình",
+    "ok": true
+  },
+  {
+    "name": "danh sách \"Yêu cầu đã gửi\" hiện đủ phiếu cũ của Trang (YC-0009, YC-0012)",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "gửi phiếu qua form thật thành công (toast hiện đúng)",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "phiếu mới xuất hiện ngay trong danh sách",
+    "got": 3,
+    "want": 3,
+    "ok": true
+  },
+  {
+    "name": "phiếu mới nhất trên danh sách đúng là phiếu vừa gửi",
+    "got": "YC-0015",
+    "want": "YC-0015",
+    "ok": true
+  },
+  {
+    "name": "tin nhắn gửi từ drawer thật xuất hiện trong luồng trao đổi",
+    "got": "Dạ thứ 7 này em vẫn ở nhà, anh chị sắp xếp giúp em nhé.",
+    "want": "Dạ thứ 7 này em vẫn ở nhà, anh chị sắp xếp giúp em nhé.",
+    "ok": true
+  },
+  {
+    "name": "phiếu \"chờ xác nhận\" hiện đúng 2 nút Đã ổn / Vẫn còn lỗi",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "bấm \"Vẫn còn lỗi\" -> phiếu quay lại Đang xử lý ngay trên giao diện",
+    "got": "Đang xử lý",
+    "want": "Đang xử lý",
+    "ok": true
+  },
+  {
+    "name": "hiện màn hình yêu cầu đăng nhập",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "không hiện form gửi yêu cầu khi chưa đăng nhập",
+    "got": false,
+    "want": false,
+    "ok": true
+  },
+  {
+    "name": "[ho-tro.html mobile] không cuộn ngang",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "không có lỗi JS trong suốt kịch bản",
+    "got": [],
+    "want": [],
+    "ok": true
+  }
+]

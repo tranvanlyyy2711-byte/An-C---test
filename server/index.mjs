@@ -12,7 +12,8 @@ import { networkInterfaces } from 'os';
 import { openDb, ApiError } from './db.mjs';
 import { createAuth, sessionCookie, clearCookie } from './auth.mjs';
 import { createAdmin, PLANS } from './quan-tri.mjs';
-import { NGUOI_THUE } from './phong.mjs';
+import { createSuCo } from './su-co.mjs';
+import { NGUOI_THUE, NHA_TRO } from './phong.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -25,6 +26,7 @@ const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());
 const store = openDb({ file: dbFile, now });
 const auth = createAuth(store.db, ApiError);
 const admin = createAdmin(store.db, ApiError, now);
+const suCo = createSuCo(store.db, ApiError, now);
 
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -119,6 +121,26 @@ async function api(req, res, url) {
     return send(res, 200, { taken: store.takenFor({ roomId: qs.get('phong'), date: qs.get('ngay'), nguoi: renterId(qs.get('nguoi')), excludeId: qs.get('boQua') }) });
   }
 
+  // ----- Sự cố & báo cáo (người thuê gửi chủ trọ) -----
+  // Bắt buộc đăng nhập thật, không có đường vòng ?nguoi= cho khách demo như /api/lich-xem —
+  // mô tả sự cố và ảnh hiện trạng nhạy cảm hơn, giống cách /api/ho-tro đang làm.
+  const mustRenter = () => {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập để dùng chức năng này.');
+    if (me.role !== 'renter') throw new ApiError(403, 'not_renter', 'Chỉ tài khoản người thuê mới gửi được yêu cầu hỗ trợ.');
+    return me.id;
+  };
+  if (p === '/api/su-co/nguoi-nhan' && m === 'GET') return send(res, 200, suCo.recipientFor(mustRenter()));
+  if (p === '/api/su-co' && m === 'GET') return send(res, 200, { items: suCo.listForRenter(mustRenter()) });
+  if (p === '/api/su-co' && m === 'POST') return send(res, 201, { item: suCo.createTicket(mustRenter(), await readJson(req)) });
+  if ((id = p.match(/^\/api\/su-co\/([A-Za-z0-9-]+)\/tin-nhan$/)) && m === 'POST') {
+    const body = await readJson(req);
+    return send(res, 201, { item: suCo.addRenterMessage(id[1], mustRenter(), body.body) });
+  }
+  if ((id = p.match(/^\/api\/su-co\/([A-Za-z0-9-]+)$/)) && m === 'PATCH') {
+    const body = await readJson(req);
+    return send(res, 200, { item: suCo.renterConfirm(id[1], mustRenter(), body.action) });
+  }
+
   // ----- Quản trị -----
   const sub = (prefix) => (p.startsWith(prefix) ? p.slice(prefix.length) : null);
   // Hỗ trợ và thông báo của chính người dùng
@@ -204,6 +226,32 @@ async function api(req, res, url) {
   if (p === '/api/chu-tro/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForLandlord() });
   if ((id = p.match(/^\/api\/chu-tro\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
     return send(res, 200, { item: store.decideRequest(id[1], await readJson(req)) });
+  }
+
+  // Sự cố & báo cáo: khác các route /api/chu-tro/* khác, bắt buộc đăng nhập thật (không có
+  // "chế độ demo chưa đăng nhập") — dữ liệu phiếu gắn trực tiếp với landlord_id của người gọi.
+  if (p.startsWith('/api/chu-tro/su-co') && !me) {
+    throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản chủ trọ.');
+  }
+  const roomsOfBuilding = (name) => (NHA_TRO.find((nt) => nt.name === name) || { rooms: [] }).rooms;
+  if (p === '/api/chu-tro/su-co' && m === 'GET') {
+    const toaNha = qs.get('toa-nha');
+    return send(res, 200, { items: suCo.listForLandlord(me.id, {
+      status: qs.get('trang-thai') || null,
+      buildingRoomIds: toaNha ? new Set(roomsOfBuilding(toaNha)) : null,
+      renterId: qs.get('nguoi-thue') || null,
+    }) });
+  }
+  if ((id = p.match(/^\/api\/chu-tro\/su-co\/([A-Za-z0-9-]+)\/tin-nhan$/)) && m === 'POST') {
+    const body = await readJson(req);
+    return send(res, 201, { item: suCo.addLandlordMessage(id[1], me.id, body.body) });
+  }
+  if ((id = p.match(/^\/api\/chu-tro\/su-co\/([A-Za-z0-9-]+)$/)) && m === 'GET') {
+    return send(res, 200, { item: suCo.getForLandlord(id[1], me.id) });
+  }
+  if ((id = p.match(/^\/api\/chu-tro\/su-co\/([A-Za-z0-9-]+)$/)) && m === 'PATCH') {
+    const body = await readJson(req);
+    return send(res, 200, { item: suCo.setLandlordStatus(id[1], me.id, body.status) });
   }
 
   // ----- Tiền cọc khi xem -----

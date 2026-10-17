@@ -13,7 +13,8 @@
     "test:dong-thoi": "node --no-warnings scripts/check-dong-thoi.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:goi": "node scripts/check-goi-chu-tro.mjs",
-    "test:tin-dang": "node scripts/check-tin-dang.mjs"
+    "test:tin-dang": "node scripts/check-tin-dang.mjs",
+    "test:su-co": "node scripts/check-su-co.mjs"
   },
   "keywords": [],
   "author": "",
