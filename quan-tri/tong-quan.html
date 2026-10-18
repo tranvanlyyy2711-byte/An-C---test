@@ -59,11 +59,15 @@
   .side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
   .side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
   .side-menu{display:flex;flex-direction:column;gap:4px}
-  .side-menu > [data-muc="nha-tro"],.side-menu > .side-sep,.side-menu > .side-link.is-off{display:none}
+  /* Thứ tự các mục trong cột công cụ. Mục "Chưa làm" vẫn hiện để biết sắp có gì. */
   .side-menu > [data-muc="tong-quan"]{order:0}
-  .side-menu > [data-muc="tin-dang"]{order:1}
-  .side-menu > [data-muc="tai-khoan"]{order:2}
-  .side-menu > [data-muc="thanh-toan"]{order:3}
+  .side-menu > [data-muc="tai-khoan"]{order:1}
+  .side-menu > [data-muc="nha-tro"]{order:2}
+  .side-menu > [data-muc="tin-dang"]{order:3}
+  .side-menu > [data-muc="ho-tro"]{order:4}
+  .side-menu > [data-muc="thanh-toan"]{order:5}
+  .side-menu > .side-sep{order:6}
+  .side-menu > .side-link.is-off{order:7}
   .side-link{
     display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);
     font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);
@@ -215,6 +219,55 @@
   .people .who-n b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
   .people .who-n small{display:block;color:var(--text-dim);font-size:12px}
   .room .none{display:block;margin-top:9px;font-size:12.5px;color:var(--text-dim)}
+
+  /* Báo cáo tài chính */
+  .rp-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;margin-bottom:16px}
+  .rp-head .fld{margin:0}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:var(--surface)}
+  .seg button{min-height:40px;padding:0 16px;border:0;background:none;cursor:pointer;
+    font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;color:var(--text-muted)}
+  .seg button.on{background:var(--accent);color:var(--accent-fg)}
+  .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+  .rp-so{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+  .rp-so .o{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .rp-so dt{font-size:13px;color:var(--text-dim)}
+  .rp-so dd{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:-.02em;margin-top:4px}
+  .rp-so small{display:block;font-size:12.5px;color:var(--text-muted);font-weight:500}
+
+  .rp-2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+  .rp-khung{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px}
+  .rp-khung h3{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:600}
+  .rp-khung > p{font-size:13px;color:var(--text-dim);margin-bottom:14px}
+
+  /* Biểu đồ cột */
+  .cot{display:flex;align-items:flex-end;gap:10px;height:230px;padding-top:8px}
+  .cot .mot{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+  .cot .than{width:100%;max-width:46px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;height:100%}
+  .cot .thu{background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:height .3s var(--ease)}
+  .cot .no{background:rgba(138,90,17,.35);border-radius:4px 4px 0 0}
+  .cot .nhan{font-size:11.5px;color:var(--text-dim);white-space:nowrap}
+  .cot .mot.co b{display:block;font-size:11px;color:var(--text);font-family:'Be Vietnam Pro',sans-serif}
+  .chu-thich{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:var(--text-muted)}
+  .chu-thich span{display:inline-flex;align-items:center;gap:6px}
+  .chu-thich i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  /* Biểu đồ tròn */
+  .tron{display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+  .tron svg{width:168px;height:168px;flex-shrink:0}
+  .tron .giua{font-family:'Be Vietnam Pro',sans-serif;font-weight:800;font-size:22px;fill:var(--text)}
+  .tron .giua-nho{font-size:11px;font-weight:600;fill:var(--text-dim)}
+  .tron ul{list-style:none;display:flex;flex-direction:column;gap:10px;min-width:150px;flex:1}
+  .tron li{display:flex;align-items:center;gap:9px;font-size:13.5px}
+  .tron li i{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+  .tron li b{font-family:'Be Vietnam Pro',sans-serif;font-weight:600;margin-left:auto}
+
+  @media (max-width:1000px){ .rp-2{grid-template-columns:1fr} }
+  @media (max-width:640px){
+    .cot{height:190px;gap:5px}
+    .cot .nhan{font-size:10px}
+    .cot .mot.co b{display:none}
+  }
 
   /* Hỗ trợ: yêu cầu của chủ trọ */
   .tk{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
@@ -376,18 +429,10 @@
     <nav class="side-menu" aria-label="Công cụ khu quản trị">
       <a href="trang-chu.html" class="side-link" data-muc="tong-quan"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Tổng quan</a>
       <a href="tong-quan.html#tai-khoan" class="side-link" data-muc="tai-khoan"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> Tài khoản</a>
-<<<<<<< HEAD
-      <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Thanh toán</a>
-      <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Đăng tin<span class="side-tag">Chờ duyệt</span></a>
-=======
       <a href="tong-quan.html#nha-tro" class="side-link" data-muc="nha-tro"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg> Nhà trọ &amp; người thuê</a>
       <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Gói &amp; thanh toán</a>
-      <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Tin đăng<span class="side-tag">Chờ duyệt</span></a>
+      <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Đăng tin<span class="side-tag">Chờ duyệt</span></a>
       <a href="tong-quan.html#ho-tro" class="side-link" data-muc="ho-tro"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ<span class="side-tag">Chờ xử lý</span></a>
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
-      <div class="side-sep" role="presentation"></div>
-      <span class="side-link is-off" data-muc="bao-cao" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg> Báo cáo tài chính<span class="side-tag">Chưa làm</span></span>
-      <span class="side-link is-off" data-muc="cau-hinh" aria-disabled="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15"/></svg> Cấu hình hệ thống<span class="side-tag">Chưa làm</span></span>
     </nav>
     <p class="side-note">Quản lý hoạt động An Cư từ một nơi.</p>
   </aside>
@@ -432,6 +477,7 @@
       <dl class="stats" id="stats"></dl>
       <div class="card" style="padding:20px">
         <h2>Hoạt động hệ thống</h2>
+        <p class="scope-note" style="margin-bottom:10px"><a href="#bao-cao" id="moBaoCao">Xem báo cáo tài chính: doanh thu theo tháng / theo năm và tỷ lệ phòng cho thuê qua website →</a></p>
         <p class="scope-note">Số liệu được tổng hợp từ tài khoản, danh mục phòng và các kỳ thanh toán đang lưu.</p>
         <div id="dashboardSnapshot"></div>
       </div>
@@ -475,8 +521,6 @@
       </div>
     </section>
 
-<<<<<<< HEAD
-=======
     <!-- NHÀ TRỌ & NGƯỜI THUÊ -->
     <section class="panel" data-panel="nha-tro">
       <div class="toolbar">
@@ -505,6 +549,42 @@
         </div>
       </form>
     </div>
+
+    <!-- BÁO CÁO TÀI CHÍNH -->
+    <section class="panel" data-panel="bao-cao">
+      <div class="rp-head">
+        <div class="seg" role="tablist" aria-label="Xem doanh thu theo">
+          <button type="button" class="on" data-rp="thang" role="tab" aria-selected="true">Theo tháng</button>
+          <button type="button" data-rp="nam" role="tab" aria-selected="false">Theo năm</button>
+        </div>
+        <div class="fld" id="rpNamBox">
+          <label for="rpNam">Năm</label>
+          <select id="rpNam"></select>
+        </div>
+      </div>
+
+      <dl class="rp-so" id="rpSo"></dl>
+
+      <div class="rp-2">
+        <div class="rp-khung">
+          <h3 id="rpTitle">Doanh thu theo tháng</h3>
+          <p id="rpDesc">Tiền gói dịch vụ đã thu và số còn phải thu của từng kỳ.</p>
+          <div class="cot" id="rpCot" role="img" aria-label="Biểu đồ doanh thu"></div>
+          <div class="chu-thich">
+            <span><i style="background:var(--accent)"></i> Đã thu</span>
+            <span><i style="background:rgba(138,90,17,.35)"></i> Còn phải thu</span>
+          </div>
+          <p class="bc-note" id="rpGhiChu"></p>
+        </div>
+
+        <div class="rp-khung">
+          <h3>Phòng cho thuê qua website</h3>
+          <p>Tính trên toàn bộ phòng các chủ trọ đang quản lý trên An Cư.</p>
+          <div class="tron" id="rpTron"></div>
+          <p class="bc-note">Chỉ đếm phòng có yêu cầu thuê đã được duyệt trên An Cư. Phòng chủ trọ tự cho thuê bên ngoài thì hệ thống không ghi nhận được.</p>
+        </div>
+      </div>
+    </section>
 
     <!-- HỖ TRỢ & THÔNG BÁO -->
     <section class="panel" data-panel="ho-tro">
@@ -576,7 +656,6 @@
       </div>
     </section>
 
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
     <!-- TIN ĐĂNG -->
     <section class="panel" data-panel="tin-dang">
       <div class="toolbar">
@@ -751,15 +830,11 @@
       var extra = u.role === 'landlord'
         ? (u.plan ? '<span class="tag ' + (PLAN_STATUS[u.plan.status][1]) + '">Gói ' + esc(u.plan.plan === 'pro' ? 'Pro' : 'Plus') + ' · ' + PLAN_STATUS[u.plan.status][0] + '</span>' : '<span class="tag wait">Chưa kích hoạt gói</span>')
         : (u.role === 'renter' ? esc(u.bookings) + ' lịch xem đang hiệu lực' : '—');
-<<<<<<< HEAD
+      // Nút xem chi tiết tài khoản (của bản mới) + khoá/mở khoá
       var act = '<button type="button" class="icon-button" data-account-detail="' + esc(u.id) + '" aria-label="Xem chi tiết tài khoản ' + esc(u.name) + '" title="Xem chi tiết">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button> ' +
         (u.role === 'admin' ? '<span class="tag mute">Không khoá được</span>' :
           '<button type="button" class="btn btn-ghost btn-sm" data-lock="' + esc(u.id) + '" data-to="' + (locked ? 'unlock' : 'lock') + '">' + (locked ? 'Mở khoá' : 'Khoá') + '</button>');
-=======
-      var act = u.role === 'admin'
-        ? '<span class="tag mute">Không khoá được</span>'
-        : '<button type="button" class="btn btn-ghost btn-sm" data-lock="' + esc(u.id) + '" data-to="' + (locked ? 'unlock' : 'lock') + '">' + (locked ? 'Mở khoá' : 'Khoá') + '</button>';
       // Giấy tờ: chỉ chủ trọ mới phải khai (cccd = null với vai trò khác)
       var giayTo = u.cccd === null
         ? '<span class="giay-to khong">Không áp dụng</span>'
@@ -770,7 +845,6 @@
         act = '<button type="button" class="btn btn-ghost btn-sm" data-giayto="' + esc(u.id) + '">' +
           (u.cccd ? 'Sửa giấy tờ' : 'Khai giấy tờ') + '</button> ' + act;
       }
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
       return '<tr>' +
         '<td data-th="Tài khoản"><b>' + esc(u.name) + '</b><small>' + esc(u.phone) + (u.email ? ' · ' + esc(u.email) : '') + '</small></td>' +
         '<td data-th="Vai trò">' + esc(ROLE[u.role] || u.role) + '</td>' +
@@ -878,10 +952,155 @@
     if (!el('accountDetail').open) el('accountDetail').showModal();
   }
 
+  function renderProps(){
+    el('propList').innerHTML = props.map(function(it){
+      var locked = it.status === 'locked';
+      var goi = it.plan
+        ? '<span class="tag ' + PLAN_STATUS[it.plan.status][1] + '">Gói ' + esc(it.plan.planName) + ' · ' + PLAN_STATUS[it.plan.status][0] + '</span>'
+        : '<span class="tag wait">Chưa kích hoạt gói</span>';
+      var nhaTro = it.properties.map(function(nt){
+        var rooms = nt.rooms.map(function(r){
+          var people = r.people.map(function(ng){
+            var k = KIND[ng.kind] || KIND.viewing;
+            var phu = ng.kind === 'tenant' ? (ng.since ? 'Thuê từ ' + ngay(ng.since) : 'Đang thuê')
+              : (ng.kind === 'pending' ? 'Xin thuê từ ' + ngay(ng.at) : 'Hẹn xem ' + ngay(ng.at) + (ng.time ? ' ' + ng.time : ''));
+            var tt = ng.userStatus === 'locked' ? '<span class="tag bad">Đã khoá</span>' : '';
+            return '<li><span class="who-n"><b>' + esc(ng.name) + '</b><small>' + esc(ng.phone || 'Chưa có số') + ' · ' + phu + '</small></span>' +
+              '<span class="tag ' + k[1] + '">' + k[0] + '</span>' + tt +
+              nutKhoa(ng.id, ng.userStatus, 'Khoá') + '</li>';
+          }).join('');
+          return '<div class="room"><div class="room-h"><b>' + esc(r.code) + '</b><span>' + (r.price ? vnd(r.price) + '/tháng' : 'Chưa đăng giá') + '</span></div>' +
+            (r.title && r.title !== r.code ? '<span class="room-addr">' + esc(r.title) + '</span>' : '') +
+            (people ? '<ul class="people">' + people + '</ul>' : '<span class="none">Chưa có người thuê hay lịch xem nào.</span>') +
+            '</div>';
+        }).join('');
+        return '<div class="prop"><h4>' + esc(nt.name) + '<small>' + esc(nt.address) + '</small></h4>' +
+          (rooms ? '<div class="rooms">' + rooms + '</div>' : '<span class="none">Nhà trọ này chưa có phòng nào.</span>') + '</div>';
+      }).join('');
+      return '<article class="card owner"><div class="owner-h">' +
+          '<div><h3>' + esc(it.landlord) + '</h3><small>' + esc(it.phone) + (it.email ? ' · ' + esc(it.email) : '') + '</small></div>' +
+          '<div class="right"><span class="tag ' + (locked ? 'bad' : 'ok') + '">' + (locked ? 'Đã khoá' : 'Đang hoạt động') + '</span>' +
+            goi + nutKhoa(it.landlordId, it.status, 'Khoá chủ trọ') + '</div>' +
+        '</div>' +
+        '<p class="owner-sum">' + it.properties.length + ' nhà trọ · ' + it.rooms + ' phòng · ' +
+          it.tenants + ' người đang thuê · ' + it.pending + ' chờ duyệt thuê · ' + it.viewings + ' lịch hẹn xem</p>' +
+        (nhaTro ? '<div class="props">' + nhaTro + '</div>' : '<p class="owner-sum">Chủ trọ này chưa có nhà trọ nào trên hệ thống.</p>') +
+      '</article>';
+    }).join('');
+    el('propEmpty').hidden = props.length > 0;
+  }
+
   function loadProps(){
-    return api('GET', '/api/quan-tri/nha-tro').then(function(j){
+    var tim = el('fProp') ? el('fProp').value.trim() : '';
+    return api('GET', '/api/quan-tri/nha-tro' + (tim ? '?tim=' + encodeURIComponent(tim) : '')).then(function(j){
       props = j.items;
+      renderProps();
       if (activeAccountId && el('accountDetail').open) renderAccountDetail(activeAccountId);
+    });
+  }
+
+  // ---------- Báo cáo tài chính ----------
+  var bcKieu = 'thang';     // 'thang' | 'nam'
+  var bcNam = null;         // năm đang xem khi nhìn theo tháng
+  var bcData = null;
+
+  var trieu = function(n){
+    if (!n) return '0';
+    if (n >= 1000000) return (Math.round(n / 100000) / 10).toString().replace('.', ',') + ' tr';
+    return Math.round(n / 1000) + 'k';
+  };
+
+  function veCot(){
+    var d = bcData;
+    var moc = bcKieu === 'thang'
+      ? d.months.map(function(m){ return { nhan: 'T' + m.thang, paid: m.paid, due: m.due }; })
+      : d.byYear.slice().sort(function(a, b){ return a.year - b.year; })
+          .map(function(y){ return { nhan: String(y.year), paid: y.paid, due: y.due }; });
+    var dinh = Math.max.apply(null, moc.map(function(x){ return x.paid + x.due; }).concat([1]));
+    el('rpCot').innerHTML = moc.map(function(x){
+      var hThu = Math.round((x.paid / dinh) * 100);
+      var hNo = Math.round((x.due / dinh) * 100);
+      var co = x.paid || x.due;
+      return '<div class="mot' + (co ? ' co' : '') + '" title="' + esc(x.nhan) + ': đã thu ' + vnd(x.paid) + ', còn phải thu ' + vnd(x.due) + '">' +
+        (x.paid ? '<b>' + trieu(x.paid) + '</b>' : '') +
+        '<div class="than">' +
+          (hNo ? '<div class="no" style="height:' + hNo + '%"></div>' : '') +
+          (hThu ? '<div class="thu" style="height:' + hThu + '%"></div>' : '') +
+        '</div>' +
+        '<span class="nhan">' + esc(x.nhan) + '</span>' +
+      '</div>';
+    }).join('');
+    el('rpCot').setAttribute('aria-label', bcKieu === 'thang'
+      ? 'Doanh thu từng tháng năm ' + d.year + ': ' + moc.map(function(x){ return x.nhan + ' ' + vnd(x.paid); }).join(', ')
+      : 'Doanh thu từng năm: ' + moc.map(function(x){ return x.nhan + ' ' + vnd(x.paid); }).join(', '));
+
+    el('rpTitle').textContent = bcKieu === 'thang' ? 'Doanh thu theo tháng năm ' + d.year : 'Doanh thu theo năm';
+    el('rpDesc').textContent = bcKieu === 'thang'
+      ? 'Tiền gói dịch vụ đã thu và số còn phải thu của từng tháng trong năm ' + d.year + '.'
+      : 'Tổng tiền gói dịch vụ đã thu và còn phải thu của từng năm.';
+    el('rpNamBox').hidden = bcKieu !== 'thang';
+    el('rpGhiChu').textContent = 'Doanh thu tính theo ngày ghi nhận thanh toán. Chỉ gồm tiền gói dịch vụ An Cư — '
+      + 'tiền thuê phòng và điện nước do chủ trọ tự thu, không đi qua hệ thống.';
+  }
+
+  function veSo(){
+    var d = bcData;
+    var lech = d.total.thisMonth - d.total.prevMonth;
+    el('rpSo').innerHTML = [
+      ['Đã thu năm ' + d.year, vnd(d.total.namXem), 'Tổng mọi năm: ' + vnd(d.total.paid)],
+      ['Tháng này', vnd(d.total.thisMonth),
+        !d.total.prevMonth ? 'Tháng trước chưa thu kỳ nào'
+          : (lech === 0 ? 'Bằng tháng trước' : (lech > 0 ? '+' : '−') + vnd(Math.abs(lech)) + ' so với tháng trước')],
+      ['Còn phải thu', vnd(d.total.due), 'Gồm cả kỳ chưa tới hạn'],
+      ['Phòng thuê qua website', String(d.occupancy.rate).replace('.', ',') + '%', d.occupancy.website + '/' + d.occupancy.rooms + ' phòng']
+    ].map(function(x){
+      return '<div class="o"><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>';
+    }).join('');
+  }
+
+  function veTron(){
+    var o = bcData.occupancy;
+    var phan = [
+      ['Đã cho thuê qua website', o.website, 'var(--accent)'],
+      ['Đang có khách hẹn xem', o.viewing, '#8CC63F'],
+      ['Chưa có ai quan tâm', o.empty, 'rgba(16,32,16,.14)']
+    ];
+    var tong = o.rooms || 1;
+    var R = 56, C = 2 * Math.PI * R, batDau = 0;
+    var vong = phan.map(function(x){
+      var dai = (x[1] / tong) * C;
+      var el2 = '<circle cx="84" cy="84" r="' + R + '" fill="none" stroke="' + x[2] + '" stroke-width="22"' +
+        ' stroke-dasharray="' + dai.toFixed(2) + ' ' + (C - dai).toFixed(2) + '"' +
+        ' stroke-dashoffset="' + (-batDau).toFixed(2) + '" transform="rotate(-90 84 84)"></circle>';
+      batDau += dai;
+      return x[1] ? el2 : '';
+    }).join('');
+    el('rpTron').innerHTML =
+      '<svg viewBox="0 0 168 168" role="img" aria-label="Tỷ lệ phòng cho thuê qua website: ' + o.rate + '%">' + vong +
+        '<text class="giua" x="84" y="80" text-anchor="middle">' + String(o.rate).replace('.', ',') + '%</text>' +
+        '<text class="giua-nho" x="84" y="98" text-anchor="middle">qua website</text>' +
+      '</svg>' +
+      '<ul>' + phan.map(function(x){
+        return '<li><i style="background:' + x[2] + '"></i>' + esc(x[0]) + '<b>' + x[1] + '</b></li>';
+      }).join('') + '<li style="border-top:1px dashed var(--border);padding-top:8px">Tổng số phòng<b>' + o.rooms + '</b></li></ul>';
+  }
+
+  function veBaoCao(){
+    if (!bcData) return;
+    var sel = el('rpNam');
+    sel.innerHTML = bcData.years.map(function(y){
+      return '<option value="' + y + '"' + (y === bcData.year ? ' selected' : '') + '>' + y + '</option>';
+    }).join('');
+    veSo();
+    veCot();
+    veTron();
+  }
+
+  function loadBaoCao(){
+    return api('GET', '/api/quan-tri/bao-cao' + (bcNam ? '?nam=' + encodeURIComponent(bcNam) : '')).then(function(j){
+      bcData = j;
+      bcNam = j.year;
+      veBaoCao();
     });
   }
 
@@ -1157,18 +1376,10 @@
       var properties = s.properties || {};
       var userCount = s.users.renters + s.users.landlords;
       el('stats').innerHTML = [
-<<<<<<< HEAD
         ['Tổng số phòng', properties.rooms || 0, (properties.total || 0) + ' nhà trọ trong hệ thống'],
         ['Phòng đang trống', properties.availableRooms || 0, (properties.tenants || 0) + ' phòng đang có người thuê'],
         ['Tổng tài khoản', userCount, s.users.renters + ' người thuê · ' + s.users.landlords + ' chủ trọ'],
         ['Doanh thu tháng này', vnd(s.revenue.month), 'Từ các kỳ thanh toán gói An Cư đã ghi nhận']
-=======
-        ['Tài khoản', s.users.total, s.users.renters + ' người thuê · ' + s.users.landlords + ' chủ trọ'],
-        ['Tài khoản bị khoá', s.users.locked, 'Không đăng nhập được'],
-        ['Nhà trọ', (s.properties ? s.properties.total : 0), (s.properties ? s.properties.rooms : 0) + ' phòng · ' + (s.properties ? s.properties.tenants : 0) + ' người đang thuê'],
-        ['Gói đang chạy', s.plans.active, s.plans.plus + ' Plus · ' + s.plans.pro + ' Pro · ' + s.plans.overdue + ' có kỳ quá hạn'],
-        ['Đã thu', vnd(s.plans.revenue), 'Còn phải thu ' + vnd(s.plans.due)]
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
       ].map(function(x){
         return '<div class="stat"><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>';
       }).join('');
@@ -1193,12 +1404,8 @@
   }
 
   function refresh(){
-<<<<<<< HEAD
-    return Promise.all([loadSummary(), loadUsers(), loadProps(), loadPosts(), loadPlans(), fillLandlords()])
+    return Promise.all([loadSummary(), loadUsers(), loadProps(), loadPosts(), loadTickets(), loadBroadcasts(), loadBaoCao(), loadPlans(), fillLandlords()])
       .then(function(){ renderNotifications(); });
-=======
-    return Promise.all([loadSummary(), loadUsers(), loadProps(), loadPosts(), loadTickets(), loadBroadcasts(), loadPlans(), fillLandlords()]);
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
   }
 
   // ---------- Sự kiện ----------
@@ -1206,15 +1413,11 @@
   var TIEU_DE = {
     'tong-quan': ['Tổng quan', 'Các chỉ số hoạt động và trạng thái hệ thống An Cư.'],
     'tai-khoan': ['Tài khoản', 'Tài khoản người thuê và chủ trọ đã đăng ký, khoá hoặc mở khoá khi cần.'],
-<<<<<<< HEAD
-    'tin-dang': ['Đăng tin', 'Quản lý tin cho thuê, xem trước nội dung và duyệt tin trước khi công khai.'],
-    'thanh-toan': ['Thanh toán', 'Theo dõi và đối soát các kỳ thanh toán gói dịch vụ An Cư.']
-=======
     'nha-tro': ['Nhà trọ & người thuê', 'Chủ trọ nào đang quản lý nhà trọ, phòng nào và ai đang thuê ở đó.'],
-    'tin-dang': ['Tin đăng & nội dung', 'Duyệt tin cho thuê trước khi công khai, chặn tin rác và tin lừa đảo.'],
+    'tin-dang': ['Đăng tin', 'Quản lý tin cho thuê, xem trước nội dung và duyệt tin trước khi công khai.'],
     'ho-tro': ['Hỗ trợ & thông báo', 'Trả lời yêu cầu của chủ trọ, gửi thông báo hàng loạt và nhắc hết hạn gói.'],
-    'thanh-toan': ['Gói & thanh toán', 'Chủ trọ đang dùng gói nào, lịch thanh toán từng kỳ và tình trạng thu tiền.']
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
+    'bao-cao': ['Báo cáo tài chính', 'Doanh thu gói dịch vụ theo tháng, theo năm và tỷ lệ phòng cho thuê qua website.'],
+    'thanh-toan': ['Thanh toán', 'Theo dõi và đối soát các kỳ thanh toán gói dịch vụ An Cư.']
   };
   var panelRevealObserver = window.IntersectionObserver ? new IntersectionObserver(function(entries, observer){
     entries.forEach(function(entry){
@@ -1407,6 +1610,30 @@
     }
   });
 
+  // Báo cáo: đổi giữa xem theo tháng và theo năm
+  document.querySelectorAll('[data-rp]').forEach(function(b){
+    b.addEventListener('click', function(){
+      bcKieu = b.dataset.rp;
+      document.querySelectorAll('[data-rp]').forEach(function(x){
+        var on = x === b;
+        x.classList.toggle('on', on);
+        x.setAttribute('aria-selected', String(on));
+      });
+      veBaoCao();
+    });
+  });
+  el('rpNam').addEventListener('change', function(){
+    bcNam = el('rpNam').value;
+    loadBaoCao().catch(function(e){ msg(e.message, 'err'); });
+  });
+
+  // Ô tìm trong khu Nhà trọ & người thuê
+  var timerProp = null;
+  el('fProp').addEventListener('input', function(){
+    clearTimeout(timerProp);
+    timerProp = setTimeout(function(){ loadProps().catch(function(e){ msg(e.message, 'err'); }); }, 250);
+  });
+
   el('fRole').addEventListener('change', function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); });
   el('fStatus').addEventListener('change', function(){ loadUsers().catch(function(e){ msg(e.message, 'err'); }); });
 
@@ -1419,9 +1646,6 @@
       .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
   }
 
-<<<<<<< HEAD
-  ['userRows', 'accountDetailBody'].forEach(function(id){
-=======
   // ---------- Khai / sửa giấy tờ chủ trọ ----------
   var gtDangSua = null;
   function moGiayTo(u){
@@ -1461,8 +1685,7 @@
     if (u) moGiayTo(u);
   });
 
-  ['userRows', 'propList'].forEach(function(id){
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
+  ['userRows', 'accountDetailBody', 'propList'].forEach(function(id){
     el(id).addEventListener('click', function(e){
       var btn = e.target.closest('[data-lock]');
       if (btn) doiTrangThai(btn);
@@ -1536,6 +1759,9 @@
       var nhan = ban.querySelector('.side-tag');
       if (nhan) nhan.parentNode.removeChild(nhan);
       document.getElementById('appTitle').textContent = ban.textContent.trim();
+    } else if (TIEU_DE[ten]) {
+      // Khu không có mục riêng ở cột công cụ (vd: báo cáo mở từ Tổng quan)
+      document.getElementById('appTitle').textContent = TIEU_DE[ten][0];
     }
   }
 

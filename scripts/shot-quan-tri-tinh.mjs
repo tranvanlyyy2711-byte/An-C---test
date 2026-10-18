@@ -40,6 +40,14 @@ await new Promise((r) => tinh.listen(PORT, r));
 
 const browser = await chromium.launch({ channel: 'msedge' });
 const errors = [];
+// Dưới 960px cột công cụ là ngăn kéo: mở ra rồi mới bấm được
+const bamCongCu = async (p, muc) => {
+  if (await p.locator('#menuBtn').isVisible()) {
+    await p.click('#menuBtn');
+    await p.waitForTimeout(320);
+  }
+  await p.click('.side-link[data-muc="' + muc + '"]');
+};
 const txt = async (p, sel) => ((await p.locator(sel).first().textContent()) || '').replace(/\s+/g, ' ').trim();
 
 try {
@@ -61,7 +69,8 @@ try {
       if (ten === 'desktop') {
         expect(`${nguon}: trang chủ quản trị mở được, có 4 chỉ số`, await p.locator('#kpis .kpi').count(), 4);
         expect(`${nguon}: trang chủ có dải báo chế độ xem thử`, (await txt(p, '#demoNote')).includes('Chế độ xem thử'), true);
-        expect(`${nguon}: trang chủ có cột công cụ bên trái`, await p.locator('.side-nav .side-link').count(), 8);
+        expect(`${nguon}: trang chủ có cột công cụ bên trái`, await p.locator('.side-nav .side-link').count(), 6);
+        expect(`${nguon}: không còn mục nào ghi Chưa làm`, await p.locator('.side-nav .side-link.is-off').count(), 0);
         expect(`${nguon}: trang chủ dùng chung số liệu với khu quản trị`,
           (await txt(p, '#footNote')).includes('7 tài khoản'), true);
       }
@@ -69,7 +78,7 @@ try {
       const tran = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(`${nguon}/${ten}: trang chủ quản trị không cuộn ngang`, tran <= 0, true);
       if (ten === 'desktop') {
-        await p.click('.side-link[data-muc="thanh-toan"]');
+        await bamCongCu(p, 'thanh-toan');
         await p.waitForSelector('#planRows tr');
         expect(`${nguon}: bấm từ trang chủ mở đúng khu Gói & thanh toán`, await txt(p, '.side-link.active'), 'Gói & người thuê'.replace('người thuê', 'thanh toán'));
       }
@@ -84,14 +93,17 @@ try {
       p.on('pageerror', (e) => errors.push(`${nguon}/${ten}: ${e}`));
       await p.emulateMedia({ reducedMotion: 'reduce' });
       await p.goto(url, { waitUntil: 'domcontentloaded' });
-      await p.waitForSelector('#userRows tr', { timeout: 10000 });
+      // Khu quản trị mở ở khu Tổng quan, phải sang khu Tài khoản mới thấy bảng tài khoản
+      await p.waitForSelector('.side-link.active', { timeout: 10000 });
+      await bamCongCu(p, 'tai-khoan');
+      await p.waitForSelector('#userRows tr', { state: 'visible', timeout: 10000 });
 
       if (ten === 'desktop') {
         expect(`${nguon}: mở được, không chặn bằng khung "cần máy chủ"`, await p.locator('#gate').isVisible(), false);
         expect(`${nguon}: có dải báo chế độ xem thử`, (await txt(p, '#demoNote')).includes('Chế độ xem thử'), true);
         expect(`${nguon}: bảng tài khoản có dữ liệu mẫu`, await p.locator('#userRows tr').count(), 7);
         expect(`${nguon}: ẩn nút Đăng xuất`, await p.locator('#logout').isVisible(), false);
-        expect(`${nguon}: ô số liệu tính đúng`, await txt(p, '#stats .stat:first-child dd'), '7');
+        expect(`${nguon}: ô số liệu đầu là tổng số phòng`, [await txt(p, '#stats .stat:first-child dt'), await txt(p, '#stats .stat:first-child dd')], ['Tổng số phòng', '9']);
 
         // Lọc và tìm kiếm
         await p.selectOption('#fRole', 'landlord');
@@ -113,8 +125,26 @@ try {
         await p.waitForSelector('#userRows tr:has-text("0933000333") .tag.ok');
         expect(`${nguon}: mở khoá lại`, await txt(p, '#userRows tr:has-text("0933000333") .tag'), 'Đang hoạt động');
 
+        // Báo cáo tài chính trên dữ liệu mẫu
+        await p.evaluate(() => { location.hash = '#tong-quan'; });
+        await p.waitForSelector('#moBaoCao', { state: 'visible' });
+        await p.click('#moBaoCao');
+        await p.waitForSelector('#rpCot .mot');
+        expect(`${nguon}: biểu đồ theo tháng có đủ 12 cột`, await p.locator('#rpCot .mot').count(), 12);
+        expect(`${nguon}: có 4 ô số liệu báo cáo`, await p.locator('#rpSo .o').count(), 4);
+        expect(`${nguon}: biểu đồ tròn có 3 phần`, await p.locator('#rpTron svg circle').count(), 3);
+        expect(`${nguon}: tỷ lệ thuê qua website khớp danh sách phòng`,
+          /^\d+(,\d+)?%qua website$/.test(await txt(p, '#rpTron svg')), true);
+        await p.click('[data-rp="nam"]');
+        await p.waitForTimeout(250);
+        expect(`${nguon}: xem theo năm thì đổi biểu đồ`, await txt(p, '#rpTitle'), 'Doanh thu theo năm');
+        expect(`${nguon}: xem theo năm thì ẩn ô chọn năm`, await p.locator('#rpNamBox').isVisible(), false);
+        if (nguon === 'file') await p.screenshot({ path: resolve(outDir, 'quan-tri-bao-cao-xem-thu.png'), fullPage: true });
+        await p.click('[data-rp="thang"]');
+        await p.waitForTimeout(200);
+
         // Hỗ trợ & thông báo trên dữ liệu mẫu
-        await p.click('.side-link[data-muc="ho-tro"]');
+        await bamCongCu(p, 'ho-tro');
         await p.waitForSelector('#tkList .tk');
         expect(`${nguon}: có yêu cầu hỗ trợ mẫu`, await p.locator('#tkList .tk').count(), 3);
         expect(`${nguon}: đếm theo trạng thái`, (await p.locator('#tkDem button').allTextContents()).map((x) => x.replace(/\s+/g, ' ').trim()),
@@ -134,23 +164,23 @@ try {
         if (nguon === 'file') await p.screenshot({ path: resolve(outDir, 'quan-tri-ho-tro-xem-thu-desktop.png'), fullPage: true });
 
         // Duyệt tin đăng trên dữ liệu mẫu
-        await p.click('.side-link[data-muc="tin-dang"]');
-        await p.waitForSelector('#postList .post');
-        expect(`${nguon}: hiện cả tin đã duyệt lẫn chưa duyệt`, await p.locator('#postList .post').count(), 6);
+        await bamCongCu(p, 'tin-dang');
+        await p.waitForSelector('#postRows tr');
+        expect(`${nguon}: hiện cả tin đã duyệt lẫn chưa duyệt`, await p.locator('#postRows tr').count(), 6);
         expect(`${nguon}: đếm đúng từng nhóm`, (await p.locator('#postDem button').allTextContents()).map((x) => x.replace(/\s+/g, ' ').trim()),
           ['Tất cả 6', 'Chờ duyệt 3', 'Đã duyệt 2', 'Đã từ chối 1']);
-        expect(`${nguon}: tin đáng ngờ bị gắn cờ`, await p.locator('#postList .post.co-co .tag.bad').count() > 3, true);
+        expect(`${nguon}: tin đáng ngờ được đánh dấu`, /có dấu hiệu cần xem xét/.test(await txt(p, '#postRows tr:has-text("GIÁ SỐC")')), true);
         if (nguon === 'file') await p.screenshot({ path: resolve(outDir, 'quan-tri-duyet-tin-desktop.png'), fullPage: true });
         p.once('dialog', (d) => d.accept());
-        await p.click('#postList .post:has-text("Long Biên") [data-act="duyet"]');
+        await p.click('#postRows tr:has-text("Long Biên") [data-act="duyet"]');
         await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã duyệt tin đăng.', null, { timeout: 5000 }).catch(() => {});
         expect(`${nguon}: duyệt tin trên dữ liệu mẫu`, await txt(p, '#msg'), 'Đã duyệt tin đăng.');
         await p.click('#postDem button[data-loc="pending"]');
         await p.waitForTimeout(200);
-        expect(`${nguon}: duyệt xong còn 2 tin chờ`, await p.locator('#postList .post').count(), 2);
+        expect(`${nguon}: duyệt xong còn 2 tin chờ`, await p.locator('#postRows tr').count(), 2);
 
         // Nhà trọ & người thuê trên dữ liệu mẫu
-        await p.click('.side-link[data-muc="nha-tro"]');
+        await bamCongCu(p, 'nha-tro');
         await p.waitForSelector('#propList .owner');
         expect(`${nguon}: tab Nhà trọ liệt kê hai chủ trọ`, await p.locator('#propList .owner').count(), 2);
         expect(`${nguon}: hiện đủ nhà trọ mẫu`, await p.locator('#propList .prop').count(), 3);
@@ -168,7 +198,7 @@ try {
         await p.waitForFunction(() => document.querySelectorAll('#propList .owner').length === 2, null, { timeout: 5000 }).catch(() => {});
 
         // Gói và lịch thanh toán
-        await p.click('.side-link[data-muc="thanh-toan"]');
+        await bamCongCu(p, 'thanh-toan');
         await p.waitForSelector('#planRows tr');
         // Cả hai chủ trọ đang dùng gói Plus: 2 gói × 3 kỳ
         expect(`${nguon}: có gói mẫu kèm lịch thanh toán`, await p.locator('#planRows .inv .one').count(), 6);
@@ -197,7 +227,7 @@ try {
         // Dữ liệu còn sau khi tải lại trang
         await p.reload({ waitUntil: 'domcontentloaded' });
         await p.waitForSelector('.side-link.active');
-        await p.click('.side-link[data-muc="thanh-toan"]');
+        await bamCongCu(p, 'thanh-toan');
         await p.waitForSelector('#planRows tr:not(.sub-rows)', { state: 'visible' });
         expect(`${nguon}: tải lại vẫn giữ dữ liệu vừa nhập`, await p.locator('#planRows tr:not(.sub-rows)').count(), 3);
       }

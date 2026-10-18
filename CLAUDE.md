@@ -203,6 +203,9 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 - **Khung giống khu chủ trọ:** cột công cụ cố định bên trái (`.side-nav`, 264px), dưới 960px thành ngăn
   kéo mở bằng nút hamburger. Markup sidebar lặp ở cả hai trang — sửa một bên thì sửa cả bên kia. Mục chưa
   làm để trong cột nhưng là `<span class="side-link is-off">` kèm nhãn **"Chưa làm"**, không bấm được.
+  Cột công cụ hiện có 6 mục, đều chạy được: Tổng quan · Tài khoản · Nhà trọ & người thuê · Gói & thanh
+  toán · Đăng tin · Hỗ trợ. Mục Cấu hình hệ thống và Báo cáo đã bỏ khỏi cột; **khu báo cáo tài chính vẫn
+  còn**, vào bằng liên kết trong khu Tổng quan hoặc `tong-quan.html#bao-cao`.
 - **Trang chủ quản trị** (`trang-chu.html`): 4 chỉ số cần nhìn mỗi ngày (doanh thu tháng này, gói đang
   hoạt động theo Plus/Pro, gói sắp đến hạn trong 7 ngày, yêu cầu hỗ trợ chưa xử lý), danh sách việc cần
   xử lý, và danh sách phần chưa làm. **Không vẽ nút chết hay số liệu bịa**: số liệu chưa có trả về `null`
@@ -237,6 +240,13 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
   (`nhac-han:<landlord>:<kỳ>`) chặn gửi trùng nên bấm nhiều lần cũng chỉ nhắc một lần mỗi kỳ.
   Kênh `email` **mới chỉ ghi nhận** — prototype chưa nối SMTP / Zalo ZNS, giao diện nói rõ điều đó.
   Chuông thông báo ở `quan-ly/tong-quan.html` đọc `GET /api/thong-bao` và đánh dấu đã đọc qua `PATCH`.
+- **Báo cáo tài chính:** `GET /api/quan-tri/bao-cao?nam=` (hàm `baoCao` trong `server/quan-tri.mjs`).
+  Doanh thu tính theo **tiền đã thu** (mốc là ngày ghi nhận thanh toán), tiền chưa thu tính theo hạn đóng;
+  chỉ gồm tiền gói dịch vụ An Cư — tiền thuê phòng và điện nước chủ trọ tự thu, không qua hệ thống.
+  Giao diện có biểu đồ cột xem **theo tháng** (12 tháng của năm đã chọn) hoặc **theo năm**, và biểu đồ
+  tròn tỷ lệ phòng cho thuê qua website chia ba nhóm: đã cho thuê qua website (có yêu cầu thuê đã duyệt),
+  đang có khách hẹn xem, chưa có ai quan tâm. Phòng chủ trọ tự cho thuê bên ngoài thì hệ thống không biết
+  — giao diện ghi rõ điều đó thay vì gộp bừa vào nhóm nào.
 - **Gói dịch vụ:** hai gói, **không có gói miễn phí và không có dùng thử** — Plus `199.000₫/tháng` (tối đa
   15 phòng, 1 tài khoản), Pro `499.000₫/tháng` (tối đa 60 phòng, 5 tài khoản). Chủ trọ phải mua gói mới
   quản lý phòng được; gói chạy ngay khi đăng ký, kỳ đầu đến hạn luôn hôm đó. Gói `trial` của bản cũ được

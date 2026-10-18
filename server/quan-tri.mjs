@@ -6,7 +6,7 @@
 //   lịch xem phòng tự nhả khung giờ quá hạn (xem docs/dat-lich-mot-khung-gio.md).
 // Prototype chỉ GHI NHẬN thanh toán, không xử lý thanh toán trực tuyến (ngoài phạm vi v1).
 
-import { PHONG, NHA_TRO } from './phong.mjs';
+import { PHONG, NHA_TRO, DANG_THUE } from './phong.mjs';
 
 export const ADMIN_SCHEMA = `
 CREATE TABLE IF NOT EXISTS plan_subscriptions (
@@ -633,12 +633,20 @@ export function createAdmin(db, ApiError, now) {
 
     const KIND_ORDER = { tenant: 0, pending: 1, viewing: 2 };
     const phongItem = (roomId) => {
-      const p = PHONG[roomId] || { code: roomId, title: roomId, address: '', price: 0 };
+      const p = PHONG[roomId] || { code: roomId, title: roomId, address: '', price: 0, status: 'listing', tenant: null };
       const people = (nguoiTheoPhong.get(roomId) || []).slice()
         .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || String(a.at).localeCompare(String(b.at)));
+      const quaWeb = people.filter((x) => x.kind === 'tenant').length;
+      // Trạng thái lấy từ danh mục (nguồn: trang chủ trọ). Tin đang rao mà đã có yêu cầu thuê
+      // được duyệt trên An Cư thì tính là đang thuê.
+      const status = p.status === 'listing' && quaWeb ? 'rented' : (p.status || 'listing');
       return {
         id: roomId, code: p.code, title: p.title, address: p.address, price: p.price, people,
-        tenants: people.filter((x) => x.kind === 'tenant').length,
+        status,
+        tenantName: quaWeb ? (people.find((x) => x.kind === 'tenant') || {}).name : (p.tenant || null),
+        rented: DANG_THUE.has(status),
+        viaWebsite: quaWeb > 0,
+        tenants: quaWeb,
         pending: people.filter((x) => x.kind === 'pending').length,
         viewings: people.filter((x) => x.kind === 'viewing').length,
       };
@@ -653,6 +661,8 @@ export function createAdmin(db, ApiError, now) {
         plan: sub ? { id: sub.id, plan: sub.plan, planName: PLANS[sub.plan].name, status: sub.status } : null,
         properties,
         rooms: properties.reduce((n, nt) => n + nt.rooms.length, 0),
+        // rented = phòng đang có người ở theo trang chủ trọ (kể cả khách không có tài khoản An Cư)
+        rented: dem((r) => (r.rented ? 1 : 0)),
         tenants: dem((r) => r.tenants),
         pending: dem((r) => r.pending),
         viewings: dem((r) => r.viewings),
@@ -707,6 +717,97 @@ export function createAdmin(db, ApiError, now) {
     };
   }
 
+  // ---------- Báo cáo tài chính ----------
+  // Doanh thu tính theo tiền ĐÃ THU (ngày ghi nhận thanh toán), tiền chưa thu tính theo hạn đóng.
+  // Chỉ gồm tiền gói dịch vụ An Cư — tiền thuê phòng và điện nước do chủ trọ tự thu, không qua đây.
+  function baoCao({ year } = {}) {
+    sweep();
+    const hoaDon = q.invoices.all();
+    const thang = new Map();    // 'YYYY-MM' -> { paid, due }
+    const nam = new Map();      // 'YYYY'    -> { paid, due }
+    const cong = (map, khoa, truong, tien) => {
+      if (!khoa) return;
+      if (!map.has(khoa)) map.set(khoa, { paid: 0, due: 0 });
+      map.get(khoa)[truong] += tien;
+    };
+    for (const i of hoaDon) {
+      if (i.status === 'paid') {
+        const moc = String(i.paid_at || i.due_date).slice(0, 7);
+        cong(thang, moc, 'paid', i.amount);
+        cong(nam, moc.slice(0, 4), 'paid', i.amount);
+      } else {
+        const moc = String(i.due_date).slice(0, 7);
+        cong(thang, moc, 'due', i.amount);
+        cong(nam, moc.slice(0, 4), 'due', i.amount);
+      }
+    }
+
+    const namNay = String(now().getFullYear());
+    const cacNam = [...new Set([...nam.keys(), namNay])].sort().reverse();
+    // Không chỉ định năm thì xem năm hiện tại (không nhảy sang năm sau chỉ vì có kỳ chưa tới hạn)
+    const namXem = cacNam.includes(String(year)) ? String(year) : namNay;
+    const thangCuaNam = [];
+    for (let m = 1; m <= 12; m++) {
+      const ky = `${namXem}-${pad(m)}`;
+      const o = thang.get(ky) || { paid: 0, due: 0 };
+      thangCuaNam.push({ period: ky, thang: m, paid: o.paid, due: o.due });
+    }
+
+    const kyNay = today().slice(0, 7);
+    const t = now();
+    const kyTruoc = t.getMonth() === 0 ? `${t.getFullYear() - 1}-12` : `${t.getFullYear()}-${pad(t.getMonth())}`;
+
+    // Tỷ lệ phòng được thuê qua website: phòng có yêu cầu thuê đã duyệt trên An Cư.
+    // Phòng chủ trọ tự cho thuê ngoài website thì hệ thống không biết, nên chỉ chia ba nhóm thật.
+    const nhaTro = listProperties();
+    const phong = nhaTro.items.flatMap((it) => it.properties.flatMap((nt) => nt.rooms));
+    const quaWeb = phong.filter((r) => r.rented && r.viaWebsite).length;
+    const ngoaiWeb = phong.filter((r) => r.rented && !r.viaWebsite).length;
+    const dangHen = phong.filter((r) => !r.rented && (r.viewings > 0 || r.pending > 0 || r.status === 'deposit')).length;
+    const chuaCoAi = phong.length - quaWeb - ngoaiWeb - dangHen;
+
+    return {
+      today: today(),
+      year: Number(namXem),
+      years: cacNam.map(Number),
+      months: thangCuaNam,
+      byYear: cacNam.map((y) => ({ year: Number(y), paid: nam.get(y).paid, due: nam.get(y).due })),
+      total: {
+        paid: [...nam.values()].reduce((n, o) => n + o.paid, 0),
+        due: [...nam.values()].reduce((n, o) => n + o.due, 0),
+        thisMonth: (thang.get(kyNay) || { paid: 0 }).paid,
+        prevMonth: (thang.get(kyTruoc) || { paid: 0 }).paid,
+        namXem: thangCuaNam.reduce((n, o) => n + o.paid, 0),
+      },
+      occupancy: {
+        rooms: phong.length,
+        website: quaWeb,
+        offline: ngoaiWeb,
+        viewing: dangHen,
+        empty: chuaCoAi,
+        // Tỷ lệ lấp phòng: mọi phòng đang có người ở, bám theo trạng thái ở trang chủ trọ
+        rate: phong.length ? Math.round(((quaWeb + ngoaiWeb) / phong.length) * 1000) / 10 : 0,
+        rateWebsite: phong.length ? Math.round((quaWeb / phong.length) * 1000) / 10 : 0,
+      },
+    };
+  }
+
+  // Số liệu phòng của một chủ trọ — trang quản lý của họ và khu quản trị dùng chung nguồn này.
+  function roomsOf(landlordId) {
+    const it = listProperties().items.find((x) => x.landlordId === landlordId);
+    if (!it) return { rooms: 0, rented: 0, vacant: 0, occupancy: 0, properties: [] };
+    return {
+      rooms: it.rooms,
+      rented: it.rented,
+      vacant: it.rooms - it.rented,
+      occupancy: it.rooms ? Math.round((it.rented / it.rooms) * 1000) / 10 : 0,
+      properties: it.properties.map((nt) => ({
+        id: nt.id, name: nt.name, address: nt.address,
+        rooms: nt.rooms.map((r) => ({ id: r.id, code: r.code, price: r.price, status: r.status, tenant: r.tenantName })),
+      })),
+    };
+  }
+
   function summary() {
     const users = listUsers();
     const plans = listPlans();
@@ -736,12 +837,19 @@ export function createAdmin(db, ApiError, now) {
         landlords: users.filter((u) => u.role === 'landlord').length,
         locked: users.filter((u) => u.status === 'locked').length,
       },
-      properties: {
-        total: nhaTro.items.reduce((n, it) => n + it.properties.length, 0),
-        rooms: nhaTro.items.reduce((n, it) => n + it.rooms, 0),
-        availableRooms: nhaTro.items.reduce((n, it) => n + Math.max(0, it.rooms - it.tenants), 0),
-        tenants: nhaTro.items.reduce((n, it) => n + it.tenants, 0),
-      },
+      properties: (() => {
+        // Số phòng, phòng đã thuê và tỷ lệ lấp đầy bám theo trạng thái phòng ở trang chủ trọ
+        const rooms = nhaTro.items.reduce((n, it) => n + it.rooms, 0);
+        const rented = nhaTro.items.reduce((n, it) => n + it.rented, 0);
+        return {
+          total: nhaTro.items.reduce((n, it) => n + it.properties.length, 0),
+          rooms,
+          rented,
+          availableRooms: rooms - rented,
+          tenants: nhaTro.items.reduce((n, it) => n + it.tenants, 0),
+          occupancy: rooms ? Math.round((rented / rooms) * 1000) / 10 : 0,
+        };
+      })(),
       plans: {
         active: active.length,
         plus: active.filter((p) => p.plan === 'plus').length,
@@ -754,7 +862,7 @@ export function createAdmin(db, ApiError, now) {
     };
   }
 
-  return { listUsers, setUserStatus, setGiayTo,
+  return { listUsers, setUserStatus, setGiayTo, baoCao, roomsOf,
     listTickets, createTicket, answerTicket, sendBroadcast, nhacHetHan, listBroadcasts,
     myNotifications, readNotification, myTickets,
     listListings, decideListing, listPlans, createPlan, cancelPlan, payInvoice, listProperties, planOf, summary, sweep };

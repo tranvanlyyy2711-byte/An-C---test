@@ -306,8 +306,42 @@ try {
   tb = (await ctHoTro('PATCH', '/api/thong-bao/tat-ca', {})).body;
   expect('đánh dấu đã đọc hết', tb.unread, 0);
 
-  // ================= 6. Gói dịch vụ và lịch thanh toán =================
-  console.log('\n=== 6. Gói dịch vụ và lịch thanh toán ===');
+  // ================= 6. Báo cáo tài chính =================
+  console.log('\n=== 6. Báo cáo tài chính ===');
+  const bc = (await a('GET', '/api/quan-tri/bao-cao')).body;
+  const namNay = new Date(bc.today).getFullYear();
+  expect('mặc định xem năm hiện tại', bc.year, namNay);
+  expect('có đủ 12 tháng trong năm', [bc.months.length, bc.months[0].period, bc.months[11].period],
+    [12, namNay + '-01', namNay + '-12']);
+  expect('tổng tiền đã thu của năm bằng tổng 12 tháng',
+    bc.total.namXem, bc.months.reduce((n, m) => n + m.paid, 0));
+  expect('có số liệu theo từng năm', bc.byYear.length >= 1 && bc.byYear.every((y) => y.year && y.paid >= 0), true);
+  expect('chọn năm khác thì đổi theo', (await a('GET', '/api/quan-tri/bao-cao?nam=' + (namNay + 1))).body.year, namNay + 1);
+  expect('năm không có thật thì quay về năm hiện tại', (await a('GET', '/api/quan-tri/bao-cao?nam=1999')).body.year, namNay);
+
+  // Tỷ lệ phòng cho thuê qua website
+  const nhaTroBC = (await a('GET', '/api/quan-tri/nha-tro')).body.items;
+  const tongPhong = nhaTroBC.reduce((n, it) => n + it.rooms, 0);
+  const dangThue = nhaTroBC.reduce((n, it) => n + it.tenants, 0);
+  expect('đếm đúng tổng số phòng', bc.occupancy.rooms, tongPhong);
+  expect('phòng thuê qua website = phòng có yêu cầu thuê đã duyệt', bc.occupancy.website, dangThue);
+  expect('ba nhóm cộng lại bằng tổng số phòng',
+    bc.occupancy.website + bc.occupancy.viewing + bc.occupancy.empty, bc.occupancy.rooms);
+  expect('tỷ lệ tính đúng', bc.occupancy.rate, Math.round((dangThue / tongPhong) * 1000) / 10);
+
+  // Thu thêm một kỳ thì doanh thu tháng này tăng
+  const goiBC = (await a('GET', '/api/quan-tri/goi')).body.items.find((g) => g.status !== 'cancelled');
+  const kyChuaThu = goiBC && goiBC.invoices.find((i) => i.status !== 'paid');
+  if (kyChuaThu) {
+    const truoc = (await a('GET', '/api/quan-tri/bao-cao')).body.total.paid;
+    await a('PATCH', '/api/quan-tri/hoa-don/' + kyChuaThu.id, { method: 'chuyen-khoan' });
+    const sauKhiThu = (await a('GET', '/api/quan-tri/bao-cao')).body;
+    expect('ghi nhận thu xong thì doanh thu tăng đúng số tiền', sauKhiThu.total.paid - truoc, kyChuaThu.amount);
+    await a('PATCH', '/api/quan-tri/hoa-don/' + kyChuaThu.id, { paid: false });
+  }
+
+  // ================= 7. Gói dịch vụ và lịch thanh toán =================
+  console.log('\n=== 7. Gói dịch vụ và lịch thanh toán ===');
   // Mỗi chủ trọ được seed sẵn một gói Plus đang dùng
   const goiSeed = (await a('GET', '/api/quan-tri/goi')).body.items;
   expect('cả hai chủ trọ đều đang dùng gói Plus',
@@ -385,8 +419,8 @@ try {
   expect('mỗi kỳ của một gói chỉ một dòng', db.prepare('SELECT COUNT(*) AS n FROM (SELECT subscription_id, period FROM plan_invoices GROUP BY subscription_id, period HAVING COUNT(*) > 1)').get().n, 0);
   db.close();
 
-  // ================= 7. Giao diện =================
-  console.log('\n=== 7. Giao diện khu quản trị ===');
+  // ================= 8. Giao diện =================
+  console.log('\n=== 8. Giao diện khu quản trị ===');
   const guest = await newPage();
   await guest.p.goto(B + '/quan-tri/tong-quan.html', { waitUntil: 'domcontentloaded' });
   await guest.p.waitForTimeout(400);
@@ -423,21 +457,16 @@ try {
     if (name === 'desktop') {
       expect('đăng nhập admin vào thẳng trang chủ quản trị', new URL(u.p.url()).pathname, '/quan-tri/trang-chu.html');
       expect('trang chủ: đúng 4 chỉ số', await u.p.locator('#kpis .kpi').count(), 4);
-<<<<<<< HEAD
       expect('trang chủ: hiển thị bốn thẻ tổng quan', await u.p.locator('#kpis .kpi').count(), 4);
       expect('trang chủ: thẻ đầu là tổng số phòng', await txt(u.p, '#kpis .kpi:first-child dt'), 'Tổng số phòng');
       expect('trang chủ: thẻ cuối là doanh thu tháng này', await txt(u.p, '#kpis .kpi:nth-child(4) dt'), 'Doanh thu tháng này');
       expect('trang chủ: có biểu đồ doanh thu', await u.p.locator('#revenueChart .chart-month').count(), 12);
       expect('trang chủ: có tỷ lệ lấp đầy', await txt(u.p, '#occupancyPercent'), '24%');
-      expect('cột công cụ bên trái: có đúng bốn mục hiển thị', await u.p.locator('.side-nav a.side-link[data-muc]:visible').count(), 4);
-=======
-      expect('trang chủ: chỉ số đầu là doanh thu tháng này', await txt(u.p, '#kpis .kpi:first-child dt'), 'Doanh thu tháng này');
-      expect('trang chủ: đếm gói Plus / Pro đang chạy', await txt(u.p, '#kpis .kpi:nth-child(2) small'), '0 Plus · 1 Pro');
-      expect('trang chủ: đếm tin đăng chờ duyệt', await txt(u.p, '#kpis .kpi:nth-child(4) dt'), 'Tin đăng chờ duyệt');
       expect('trang chủ: nhắc số yêu cầu hỗ trợ đang chờ', /\d+ yêu cầu/.test(await txt(u.p, '#taskTickets')), true);
       expect('cột công cụ bên trái: 6 mục dùng được', await u.p.locator('.side-nav a.side-link[data-muc]').count(), 6);
-      expect('cột công cụ bên trái: 2 mục ghi Chưa làm', await u.p.locator('.side-nav .side-link.is-off').count(), 2);
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
+      expect('đã bỏ mục Báo cáo khỏi cột công cụ', await u.p.locator('.side-nav [data-muc="bao-cao"]').count(), 0);
+      expect('không còn mục nào ghi Chưa làm', await u.p.locator('.side-nav .side-link.is-off').count(), 0);
+      expect('đã bỏ mục Cấu hình hệ thống', await u.p.locator('.side-nav [data-muc="cau-hinh"]').count(), 0);
       expect('cột công cụ: mục Tin đăng hiện số tin chờ duyệt',
         await txt(u.p, '.side-link[data-muc="tin-dang"] .side-tag'), '1 chờ duyệt');
       expect('trang chủ: đánh dấu đang ở Tổng quan', await txt(u.p, '.side-link.active'), 'Tổng quan');
@@ -517,9 +546,29 @@ try {
     }
     await u.p.screenshot({ path: resolve(outDir, `quan-tri-tai-khoan-${name}.png`) });
 
-<<<<<<< HEAD
-    // Khu Đăng tin: preview / duyệt tin ngay trên giao diện
-=======
+    // Khu Báo cáo tài chính: vào từ liên kết trong khu Tổng quan (không còn mục riêng bên trái)
+    await u.p.evaluate(() => { location.hash = '#tong-quan'; });
+    await u.p.waitForSelector('#moBaoCao', { state: 'visible' });
+    await u.p.click('#moBaoCao');
+    await u.p.waitForSelector('#rpCot .mot');
+    if (name === 'desktop') {
+      expect('mở đúng khu Báo cáo', await txt(u.p, '#appTitle'), 'Báo cáo tài chính');
+      expect('biểu đồ tháng có đủ 12 cột', await u.p.locator('#rpCot .mot').count(), 12);
+      expect('có 4 ô số liệu', await u.p.locator('#rpSo .o').count(), 4);
+      expect('biểu đồ tròn chia ba nhóm', await u.p.locator('#rpTron svg circle').count(), 3);
+      expect('biểu đồ tròn ghi tổng số phòng', /Tổng số phòng/.test(await txt(u.p, '#rpTron ul')), true);
+      await u.p.screenshot({ path: resolve(outDir, 'quan-tri-bao-cao-desktop.png'), fullPage: true });
+
+      await u.p.click('[data-rp="nam"]');
+      await u.p.waitForFunction(() => document.getElementById('rpTitle').textContent.trim() === 'Doanh thu theo năm', null, { timeout: 5000 }).catch(() => {});
+      expect('đổi sang xem theo năm', await txt(u.p, '#rpTitle'), 'Doanh thu theo năm');
+      expect('xem theo năm thì ẩn ô chọn năm', await u.p.locator('#rpNamBox').isVisible(), false);
+      expect('mỗi năm một cột', await u.p.locator('#rpCot .mot').count(), (await u.p.evaluate(() => document.querySelectorAll('#rpNam option').length)));
+      await u.p.click('[data-rp="thang"]');
+      await u.p.waitForFunction(() => /Doanh thu theo tháng/.test(document.getElementById('rpTitle').textContent), null, { timeout: 5000 }).catch(() => {});
+      expect('quay lại xem theo tháng', /Doanh thu theo tháng/.test(await txt(u.p, '#rpTitle')), true);
+    }
+
     // Khu Hỗ trợ: trả lời yêu cầu và gửi thông báo
     await bamCongCu(u.p, 'ho-tro');
     await u.p.waitForSelector('#tkList .tk');
@@ -552,8 +601,7 @@ try {
       expect('nút nhắc hết hạn báo kết quả rõ ràng', (await txt(u.p, '#nhacInfo')).length > 10, true);
     }
 
-    // Khu Tin đăng: duyệt / từ chối ngay trên giao diện
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
+    // Khu Đăng tin: preview / duyệt tin ngay trên giao diện
     await bamCongCu(u.p, 'tin-dang');
     await u.p.waitForSelector('#postRows tr');
     if (name === 'desktop') {
@@ -627,7 +675,6 @@ try {
     await bamCongCu(u.p, 'thanh-toan');
     await u.p.waitForSelector('#planRows tr');
     if (name === 'desktop') {
-<<<<<<< HEAD
       const invoiceTotal = await u.p.locator('#invoiceRows tr').count();
       expect('có danh sách khoản thanh toán', invoiceTotal > 0, true);
       await u.p.selectOption('#fInvoiceStatus', 'paid');
@@ -642,13 +689,9 @@ try {
       const downloadPromise = u.p.waitForEvent('download');
       await u.p.click('#exportInvoices');
       expect('xuất được báo cáo CSV cho Excel', (await downloadPromise).suggestedFilename(), 'lich-su-thanh-toan.csv');
-      expect('tab Thanh toán gói hiện gói đã mua', await u.p.locator('#planRows tr:not(.sub-rows)').count(), 2);
-      expect('hiện lịch thanh toán từng kỳ', await u.p.locator('#planRows .inv .one').count(), 4);
-=======
       // 4 dòng: 2 gói seed đã huỷ + gói Plus đã huỷ + gói Pro đang dùng của kịch bản trên
       expect('tab Thanh toán gói hiện gói đã mua', await u.p.locator('#planRows tr:not(.sub-rows)').count(), 4);
       expect('hiện lịch thanh toán từng kỳ', await u.p.locator('#planRows .inv .one').count(), 10);
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
       await u.p.click('#planRows .inv .one [data-pay][data-paid="1"]');
       // Chờ đúng nội dung: thông báo cũ vẫn đang hiện nên không thể chờ chung '.msg.show.ok'
       await u.p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã ghi nhận thanh toán.', null, { timeout: 5000 }).catch(() => {});

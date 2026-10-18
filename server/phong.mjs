@@ -21,21 +21,36 @@ const PHONG_NGUOI_THUE = [
 ];
 
 // Phòng của nhà trọ trong trang chủ trọ (khớp ROOM_CODES trong quan-ly/yeucauvalichhen.html).
+// Trạng thái và người thuê lấy đúng theo quan-ly/phong-dien-nuoc.html — đây là NGUỒN SỰ THẬT về tình
+// trạng phòng; khu quản trị đọc lại chỗ này chứ không tự đếm kiểu khác.
+//   rented = đang có người thuê · vacant = còn trống · deposit = khách đã cọc giữ chỗ · leaving = sắp trả phòng
 // Giá lấy theo danh sách phòng ở quan-ly/tong-quan.html để khu quản trị hiện cùng một con số.
 const PHONG_CHU_TRO = [
-  ['P.101', 3500000], ['P.102', 3200000], ['P.103', 3200000], ['P.201', 4100000],
-  ['P.202', 3800000], ['P.203', 3800000], ['P.301', 3500000], ['P.302', 3000000],
+  ['P.101', 3500000, 'rented',  'Nguyễn Văn An'],
+  ['P.102', 3200000, 'vacant',  null],
+  ['P.103', 3200000, 'deposit', 'Trần Minh Anh'],
+  ['P.201', 4100000, 'leaving', 'Trần Mỹ Linh'],
+  ['P.202', 3800000, 'rented',  'Lê Minh Tú'],
+  ['P.203', 3800000, 'rented',  'Đỗ Thảo'],
+  ['P.301', 3500000, 'rented',  'Phạm Thu Trang'],
+  ['P.302', 3000000, 'rented',  'Lê Quang Huy'],
 ];
+
+// Trạng thái nào tính là "phòng đã có người thuê" khi đếm tỷ lệ lấp đầy
+export const DANG_THUE = new Set(['rented', 'leaving']);
 
 // Tiền cọc khi xem phòng: một tháng tiền phòng. Máy chủ tự tính, không nhận số tiền từ trình duyệt.
 const tienCoc = (price) => price;
 
 export const PHONG = {};
 for (const [id, title, address, price, phone, img] of PHONG_NGUOI_THUE) {
-  PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, deposit: tienCoc(price), phone, image: IMG + img };
+  // Tin đang rao cho thuê: mặc định còn trống; có người ở hay không suy từ yêu cầu thuê đã duyệt
+  PHONG[id] = { id, kind: 'renter', code: id.toUpperCase(), title, address, price, deposit: tienCoc(price),
+    phone, image: IMG + img, status: 'listing', tenant: null };
 }
-for (const [code, price] of PHONG_CHU_TRO) {
-  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', price, deposit: tienCoc(price), phone: '', image: '' };
+for (const [code, price, status, tenant] of PHONG_CHU_TRO) {
+  PHONG[code] = { id: code, kind: 'landlord', code, title: code, address: 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
+    price, deposit: tienCoc(price), phone: '', image: '', status, tenant };
 }
 
 // ================= Nhà trọ và chủ sở hữu =================

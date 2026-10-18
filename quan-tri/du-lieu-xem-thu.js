@@ -21,14 +21,11 @@ window.XemThu = (function(){
   var PLAN_PRICE = { plus: 199000, pro: 499000 };
   var PLAN_LIMIT = { plus: { rooms: 15, accounts: 1 }, pro: { rooms: 60, accounts: 5 } };
   var PLAN_LABEL = { plus: 'Plus', pro: 'Pro' };
-<<<<<<< HEAD
-  var TRIAL_DAYS = 15;
+  // Ảnh phòng cho tin đăng mẫu (bản thật lấy từ PHONG ở server/phong.mjs)
   var ROOM_IMAGE = {
     p01:'phong-lac-trung-vinh-tuy.jpg', p02:'phongtrobachkinhxaygiare1.webp', p03:'210hqv1.webp',
     p04:'moixay1.webp', p05:'ttt1.webp', p06:'hoalac1.webp', p07:'ga1.webp', p08:'dd1.webp', p09:'hmai1.webp'
   };
-=======
->>>>>>> 4f4ce43e5fcbbab2a2b945a47ff191619c58bd32
 
   var d2 = function(n){ return (n < 10 ? '0' : '') + n; };
   function dYmd(d){ return d.getUTCFullYear() + '-' + d2(d.getUTCMonth() + 1) + '-' + d2(d.getUTCDate()); }
@@ -395,6 +392,77 @@ window.XemThu = (function(){
     return { items: items, chuaGan: [] };
   }
 
+  // Báo cáo tài chính: gom tiền đã thu theo tháng / theo năm, và tỷ lệ phòng thuê qua website.
+  // Tính giống baoCao() ở server/quan-tri.mjs để hai bản nói cùng một con số.
+  function demoBaoCao(nam){
+    demoQuet();
+    var thang = {}, theoNam = {};
+    var cong = function(map, khoa, truong, tien){
+      if (!khoa) return;
+      if (!map[khoa]) map[khoa] = { paid: 0, due: 0 };
+      map[khoa][truong] += tien;
+    };
+    demo.invoices.forEach(function(i){
+      if (i.status === 'paid') {
+        var m = String(i.paidAt || i.dueDate).slice(0, 7);
+        cong(thang, m, 'paid', i.amount);
+        cong(theoNam, m.slice(0, 4), 'paid', i.amount);
+      } else {
+        var d = String(i.dueDate).slice(0, 7);
+        cong(thang, d, 'due', i.amount);
+        cong(theoNam, d.slice(0, 4), 'due', i.amount);
+      }
+    });
+
+    var t0 = homNay();
+    var namNay = t0.slice(0, 4);
+    var cacNam = Object.keys(theoNam);
+    if (cacNam.indexOf(namNay) === -1) cacNam.push(namNay);
+    cacNam.sort().reverse();
+    var namXem = cacNam.indexOf(String(nam)) !== -1 ? String(nam) : namNay;
+
+    var months = [];
+    for (var m2 = 1; m2 <= 12; m2++) {
+      var ky = namXem + '-' + d2(m2);
+      var o = thang[ky] || { paid: 0, due: 0 };
+      months.push({ period: ky, thang: m2, paid: o.paid, due: o.due });
+    }
+    var p0 = t0.split('-');
+    var kyTruoc = p0[1] === '01' ? (Number(p0[0]) - 1) + '-12' : p0[0] + '-' + d2(Number(p0[1]) - 1);
+
+    // Phòng: lấy từ nhà trọ mẫu, phân ba nhóm như bản thật
+    var phong = [];
+    demoNhaTroList('').items.forEach(function(it){
+      it.properties.forEach(function(nt){ nt.rooms.forEach(function(r){ phong.push(r); }); });
+    });
+    var quaWeb = phong.filter(function(r){ return r.tenants > 0; }).length;
+    var dangHen = phong.filter(function(r){ return r.tenants === 0 && (r.viewings > 0 || r.pending > 0); }).length;
+
+    return {
+      today: t0,
+      year: Number(namXem),
+      years: cacNam.map(Number),
+      months: months,
+      byYear: cacNam.map(function(y){
+        return { year: Number(y), paid: (theoNam[y] || {}).paid || 0, due: (theoNam[y] || {}).due || 0 };
+      }),
+      total: {
+        paid: Object.keys(theoNam).reduce(function(n, y){ return n + theoNam[y].paid; }, 0),
+        due: Object.keys(theoNam).reduce(function(n, y){ return n + theoNam[y].due; }, 0),
+        thisMonth: (thang[t0.slice(0, 7)] || { paid: 0 }).paid,
+        prevMonth: (thang[kyTruoc] || { paid: 0 }).paid,
+        namXem: months.reduce(function(n, o2){ return n + o2.paid; }, 0)
+      },
+      occupancy: {
+        rooms: phong.length,
+        website: quaWeb,
+        viewing: dangHen,
+        empty: phong.length - quaWeb - dangHen,
+        rate: phong.length ? Math.round((quaWeb / phong.length) * 1000) / 10 : 0
+      }
+    };
+  }
+
   function demoApi(method, path, body){
     var duong = path.split('?')[0];
     var params = {};
@@ -514,6 +582,8 @@ window.XemThu = (function(){
       demoSave();
       return { canNhac: can.length, daGui: daGui, boQua: can.length - daGui, chiTiet: can };
     }
+
+    if (duong === '/api/quan-tri/bao-cao' && method === 'GET') return demoBaoCao(params.nam);
 
     if (duong === '/api/quan-tri/tin-dang' && method === 'GET') return { items: demoTinDangList(params) };
     if (duong.indexOf('/api/quan-tri/tin-dang/') === 0 && method === 'PATCH') {

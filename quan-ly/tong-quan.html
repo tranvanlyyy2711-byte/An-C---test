@@ -794,17 +794,36 @@
   }
 
   // ---------- Vẽ số liệu ----------
+  // Số phòng, phòng đang thuê và tỷ lệ lấp đầy lấy từ /api/chu-tro/phong — cùng một nguồn với khu
+  // quản trị, nên hai nơi không bao giờ nói hai con số khác nhau. Không có máy chủ thì dùng DATA mẫu.
+  function veSoPhong(tong, dangThue){
+    var vacant = Math.max(0, tong - dangThue);
+    var occ = tong ? (dangThue / tong) * 100 : 0;
+    document.getElementById('sTotal').textContent = nf.format(tong);
+    document.getElementById('sTotalSub').textContent = nf.format(dangThue) + ' phòng đang thuê';
+    document.getElementById('sOcc').textContent = formatPercent(occ);
+    document.getElementById('sOccSub').textContent = vacant > 0 ? nf.format(vacant) + ' phòng trống' : 'Đã lấp đầy toàn bộ';
+    var bar = document.getElementById('sOccBar');
+    if (bar) requestAnimationFrame(function(){ bar.style.width = occ.toFixed(1) + '%'; });
+  }
+
+  fetch('/api/chu-tro/phong', { cache: 'no-store', credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(j){
+      if (!j || !j.rooms) return;
+      veSoPhong(j.rooms, j.rented);
+      var sub = document.getElementById('roomsSub');
+      if (sub) sub.textContent = nf.format(j.rooms) + ' phòng · ' + nf.format(j.rented) + ' đang thuê · ' + nf.format(j.vacant) + ' trống';
+    });
+
   (function(){
     var vacant = DATA.totalRooms - DATA.rentedRooms;
     var occ = DATA.totalRooms ? (DATA.rentedRooms / DATA.totalRooms) * 100 : 0;
 
     document.getElementById('periodLine').textContent = 'Tình hình vận hành ' + formatPeriod(DATA.period);
 
-    document.getElementById('sTotal').textContent = nf.format(DATA.totalRooms);
-    document.getElementById('sTotalSub').textContent = nf.format(DATA.rentedRooms) + ' phòng đang thuê';
-
-    document.getElementById('sOcc').textContent = formatPercent(occ);
-    document.getElementById('sOccSub').textContent = vacant > 0 ? nf.format(vacant) + ' phòng trống' : 'Đã lấp đầy toàn bộ';
+    veSoPhong(DATA.totalRooms, DATA.rentedRooms);
 
     document.getElementById('sRev').textContent = formatShortVnd(DATA.monthRevenue);
     document.getElementById('sRevSub').textContent = 'Dự kiến thu ' + formatVnd(DATA.monthRevenue);
@@ -815,9 +834,6 @@
     document.getElementById('roomsSub').textContent =
       nf.format(DATA.totalRooms) + ' phòng · ' + nf.format(DATA.rentedRooms) + ' đang thuê · ' + nf.format(vacant) + ' trống';
 
-    // Thanh lấp đầy chạy sau khi vẽ để có transition (tôn trọng reduced-motion qua @media)
-    var bar = document.getElementById('sOccBar');
-    requestAnimationFrame(function(){ bar.style.width = occ.toFixed(1) + '%'; });
   })();
 
   // ---------- Vẽ danh sách phòng ----------

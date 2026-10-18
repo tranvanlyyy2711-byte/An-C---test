@@ -161,6 +161,13 @@ async function api(req, res, url) {
     return send(res, 200, admin.readNotification(me.id, id));
   }
 
+  // Chủ trọ xem số liệu phòng của chính mình (trang quản lý dùng chung nguồn với khu quản trị)
+  if (p === '/api/chu-tro/phong' && m === 'GET') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ mới xem được mục này.');
+    return send(res, 200, admin.roomsOf(me.id));
+  }
+
   // Chủ trọ xem gói của chính mình (trang quản lý)
   if (p === '/api/goi-cua-toi' && m === 'GET') {
     if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
@@ -181,6 +188,9 @@ async function api(req, res, url) {
     if (body.action === 'giay-to') return send(res, 200, { item: admin.setGiayTo(id, body) });
     if (body.action !== 'lock' && body.action !== 'unlock') throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
     return send(res, 200, { item: admin.setUserStatus(id, body.action === 'lock' ? 'locked' : 'active', me.id) });
+  }
+  if (p === '/api/quan-tri/bao-cao' && m === 'GET') {
+    return send(res, 200, admin.baoCao({ year: qs.get('nam') }));
   }
   if (p === '/api/quan-tri/ho-tro' && m === 'GET') {
     return send(res, 200, { items: admin.listTickets({ status: qs.get('trangThai'), q: qs.get('tim') }) });
