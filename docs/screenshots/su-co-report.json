@@ -168,9 +168,15 @@
     "ok": true
   },
   {
-    "name": "hệ thống hỗ trợ chủ trọ -> quản trị cũ không đổi (vẫn 3 phiếu mẫu)",
-    "got": 3,
-    "want": 3,
+    "name": "hệ thống hỗ trợ gửi quản trị không đổi (vẫn 4 yêu cầu mẫu)",
+    "got": 4,
+    "want": 4,
+    "ok": true
+  },
+  {
+    "name": "phiếu sự cố không lẫn vào bảng hỗ trợ của quản trị",
+    "got": true,
+    "want": true,
     "ok": true
   },
   {
@@ -303,6 +309,74 @@
     "name": "[mobile 390px] chưa đăng nhập vẫn không cuộn ngang",
     "got": true,
     "want": true,
+    "ok": true
+  },
+  {
+    "name": "chọn An Cư thì dòng \"gửi tới\" đổi theo",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "gửi An Cư thì ẩn ô ảnh (API chưa nhận ảnh)",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "danh mục đổi sang nhóm việc của An Cư",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "yêu cầu An Cư hiện ở thẻ riêng, không lẫn phiếu gửi chủ trọ",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "phiếu gửi chủ trọ không nhận thêm dòng nào",
+    "got": false,
+    "want": false,
+    "ok": true
+  },
+  {
+    "name": "khu quản trị thấy yêu cầu của người thuê",
+    "got": [
+      1,
+      "renter",
+      true
+    ],
+    "want": [
+      1,
+      "renter",
+      true
+    ],
+    "ok": true
+  },
+  {
+    "name": "quản trị có thông báo ngay khi người thuê bấm gửi",
+    "got": [
+      true,
+      null
+    ],
+    "want": [
+      true,
+      null
+    ],
+    "ok": true
+  },
+  {
+    "name": "[mobile 390px] ô \"Gửi tới\" và thẻ An Cư không gây cuộn ngang",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "[mobile 390px] ô chọn và nút gửi đủ 44px",
+    "got": 0,
+    "want": 0,
     "ok": true
   },
   {

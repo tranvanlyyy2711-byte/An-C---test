@@ -58,7 +58,7 @@ window.XemThu = (function(){
       posts: demoTinDang(t),
       nextPost: 7,
       tickets: demoTicket(t),
-      nextTicket: 4,
+      nextTicket: 5,
       notis: demoThongBao(t),
       nextNoti: 3,
       // Cả hai chủ trọ đều đang dùng gói Plus (khớp seedGoi ở server/quan-tri.mjs)
@@ -86,22 +86,27 @@ window.XemThu = (function(){
   // ng(id, kind, ngay): id trỏ tới tài khoản trong demo.users; id null = khách chưa có tài khoản.
   function demoNhaTro(t){
     var ng = function(id, name, phone, kind, at){ return { id:id, name:name, phone:phone, kind:kind, at:at }; };
-    var P = function(id, code, title, price, address, people){
-      return { id:id, code:code, title:title, price:price, address:address, people:people };
+    // P(id, mã, tên, giá, địa chỉ, người, trạng thái, người thuê ghi trong danh mục của chủ trọ)
+    //   rented = đang thuê · vacant = trống · deposit = đã cọc giữ chỗ · leaving = sắp trả phòng
+    var P = function(id, code, title, price, address, people, status, tenant){
+      return { id:id, code:code, title:title, price:price, address:address, people:people,
+               status: status || 'listing', tenant: tenant || null };
     };
     return [
       { id:'nt-an-binh', name:'Nhà trọ An Bình', address:'Cầu Giấy, Hà Nội', landlordId:'l-binh', rooms:[
         P('P.101', 'P.101', 'Phòng P.101', 3500000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
-          [ng('u-an', 'Nguyễn Văn An', '0912000111', 'tenant', congNgay(t, -60))]),
+          [ng('u-an', 'Nguyễn Văn An', '0912000111', 'tenant', congNgay(t, -60))], 'rented', 'Nguyễn Văn An'),
         P('P.102', 'P.102', 'Phòng P.102', 3200000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
-          [ng(null, 'Trần Minh Anh', '0987654321', 'viewing', congNgay(t, 2))]),
+          [ng(null, 'Trần Minh Anh', '0987654321', 'viewing', congNgay(t, 2))], 'vacant', null),
+        P('P.103', 'P.103', 'Phòng P.103', 3200000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
+          [], 'deposit', 'Trần Minh Anh'),
         P('P.201', 'P.201', 'Phòng P.201', 4100000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
-          [ng('u-linh', 'Trần Mỹ Linh', '0987000222', 'tenant', congNgay(t, -45))]),
+          [ng('u-linh', 'Trần Mỹ Linh', '0987000222', 'tenant', congNgay(t, -45))], 'leaving', 'Trần Mỹ Linh'),
         P('P.301', 'P.301', 'Phòng P.301', 3500000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
-          [ng('u-trang', 'Phạm Thu Trang', '0901234567', 'tenant', congNgay(t, -35))]),
+          [ng('u-trang', 'Phạm Thu Trang', '0901234567', 'tenant', congNgay(t, -35))], 'rented', 'Phạm Thu Trang'),
         P('P.302', 'P.302', 'Phòng P.302', 3000000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
-          [ng('u-huy', 'Lê Quang Huy', '0933000333', 'tenant', congNgay(t, -20))]),
-        P('P.202', 'P.202', 'Phòng P.202', 3800000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', [])
+          [ng('u-huy', 'Lê Quang Huy', '0933000333', 'tenant', congNgay(t, -20))], 'rented', 'Lê Quang Huy'),
+        P('P.202', 'P.202', 'Phòng P.202', 3800000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', [], 'rented', 'Lê Minh Tú')
       ] },
       { id:'nt-khuong-dinh', name:'Nhà trọ Khương Đình', address:'12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội', landlordId:'l-mai', rooms:[
         P('p04', 'P04', 'Studio hiện đại gần trung tâm', 3900000, '12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội',
@@ -211,7 +216,11 @@ window.XemThu = (function(){
       { id:3, userId:'l-binh', kind:'tai-khoan', subject:'Xin đổi số điện thoại đăng nhập',
         body:'Mình muốn đổi số đăng nhập sang 0988000111 vì số cũ sắp khoá.',
         status:'da-xong', createdAt:congNgay(t,-9), updatedAt:congNgay(t,-9), closedAt:congNgay(t,-9),
-        replies:[{ id:2, authorId:'ad-01', fromAdmin:true, body:'Anh gửi ảnh căn cước để bên mình đối chiếu rồi đổi giúp anh nhé.', createdAt:congNgay(t,-9) }] }
+        replies:[{ id:2, authorId:'ad-01', fromAdmin:true, body:'Anh gửi ảnh căn cước để bên mình đối chiếu rồi đổi giúp anh nhé.', createdAt:congNgay(t,-9) }] },
+      // Người thuê cũng gửi được yêu cầu cho đội hỗ trợ An Cư
+      { id:4, userId:'u-trang', kind:'thanh-toan', subject:'Đã chuyển cọc xem phòng nhưng trạng thái chưa đổi',
+        body:'Mình chuyển tiền cọc xem phòng p02 từ chiều qua, có ảnh chuyển khoản, nhưng mục Thanh toán vẫn ghi chưa thanh toán.',
+        status:'moi', createdAt:congNgay(t,-1), updatedAt:congNgay(t,-1), closedAt:null, replies:[] }
     ];
   }
   function demoThongBao(t){
@@ -270,7 +279,7 @@ window.XemThu = (function(){
           if (!o.props) o.props = demoNhaTro(homNay());
           if (!o.posts) { o.posts = demoTinDang(homNay()); o.nextPost = 7; }
           o.users.forEach(function(u){ if (u.role === 'landlord' && u.cccd === undefined) { u.cccd = ''; u.address = ''; } });
-          if (!o.tickets) { o.tickets = demoTicket(homNay()); o.nextTicket = 4; }
+          if (!o.tickets) { o.tickets = demoTicket(homNay()); o.nextTicket = 5; }
           if (!o.notis) { o.notis = demoThongBao(homNay()); o.nextNoti = 3; }
           return o;
         }
@@ -359,8 +368,15 @@ window.XemThu = (function(){
             };
           });
           var sl = function(kind){ return people.filter(function(x){ return x.kind === kind; }).length; };
+          var quaWeb = sl('tenant');
+          // Trạng thái lấy từ danh mục phòng của chủ trọ; tin đang rao mà có người thuê thì tính là đã thuê
+          var tt = r.status === 'listing' && quaWeb ? 'rented' : (r.status || 'listing');
           return { id:r.id, code:r.code, title:r.title, address:r.address, price:r.price, people:people,
-                   tenants:sl('tenant'), pending:sl('pending'), viewings:sl('viewing') };
+                   status: tt,
+                   tenantName: quaWeb ? people.filter(function(x){ return x.kind === 'tenant'; })[0].name : (r.tenant || null),
+                   rented: tt === 'rented' || tt === 'leaving',
+                   viaWebsite: quaWeb > 0,
+                   tenants:quaWeb, pending:sl('pending'), viewings:sl('viewing') };
         }) };
       });
       return {
@@ -368,6 +384,9 @@ window.XemThu = (function(){
         plan: s ? { id:s.id, plan:s.plan, planName:PLAN_LABEL[s.plan], status:s.status } : null,
         properties: props,
         rooms: props.reduce(function(n, nt){ return n + nt.rooms.length; }, 0),
+        rented: props.reduce(function(n, nt){
+          return n + nt.rooms.filter(function(r){ return r.rented; }).length;
+        }, 0),
         tenants: dem(props, 'tenant'), pending: dem(props, 'pending'), viewings: dem(props, 'viewing')
       };
     });
@@ -435,8 +454,11 @@ window.XemThu = (function(){
     demoNhaTroList('').items.forEach(function(it){
       it.properties.forEach(function(nt){ nt.rooms.forEach(function(r){ phong.push(r); }); });
     });
-    var quaWeb = phong.filter(function(r){ return r.tenants > 0; }).length;
-    var dangHen = phong.filter(function(r){ return r.tenants === 0 && (r.viewings > 0 || r.pending > 0); }).length;
+    var quaWeb = phong.filter(function(r){ return r.rented && r.viaWebsite; }).length;
+    var ngoaiWeb = phong.filter(function(r){ return r.rented && !r.viaWebsite; }).length;
+    var dangHen = phong.filter(function(r){
+      return !r.rented && (r.viewings > 0 || r.pending > 0 || r.status === 'deposit');
+    }).length;
 
     return {
       today: t0,
@@ -456,9 +478,11 @@ window.XemThu = (function(){
       occupancy: {
         rooms: phong.length,
         website: quaWeb,
+        offline: ngoaiWeb,
         viewing: dangHen,
-        empty: phong.length - quaWeb - dangHen,
-        rate: phong.length ? Math.round((quaWeb / phong.length) * 1000) / 10 : 0
+        empty: phong.length - quaWeb - ngoaiWeb - dangHen,
+        rate: phong.length ? Math.round(((quaWeb + ngoaiWeb) / phong.length) * 1000) / 10 : 0,
+        rateWebsite: phong.length ? Math.round((quaWeb / phong.length) * 1000) / 10 : 0
       }
     };
   }
@@ -674,12 +698,19 @@ window.XemThu = (function(){
         // Chưa làm: hệ thống ticket hỗ trợ
         support: { openTickets: demo.tickets.filter(function(x){ return x.status !== 'da-xong'; }).length },
         listings: { pending: demo.posts.filter(function(x){ return x.status === 'pending'; }).length },
-        properties: {
-          total: nt.reduce(function(n, x){ return n + x.properties.length; }, 0),
-          rooms: nt.reduce(function(n, x){ return n + x.rooms; }, 0),
-          availableRooms: nt.reduce(function(n, x){ return n + Math.max(0, x.rooms - x.tenants); }, 0),
-          tenants: nt.reduce(function(n, x){ return n + x.tenants; }, 0)
-        },
+        properties: (function(){
+          // Số phòng đã thuê và tỷ lệ lấp đầy bám theo trạng thái phòng ở trang chủ trọ
+          var rooms = nt.reduce(function(n, x){ return n + x.rooms; }, 0);
+          var rented = nt.reduce(function(n, x){ return n + x.rented; }, 0);
+          return {
+            total: nt.reduce(function(n, x){ return n + x.properties.length; }, 0),
+            rooms: rooms,
+            rented: rented,
+            availableRooms: rooms - rented,
+            tenants: nt.reduce(function(n, x){ return n + x.tenants; }, 0),
+            occupancy: rooms ? Math.round((rented / rooms) * 1000) / 10 : 0
+          };
+        })(),
         users: {
           total: us.length,
           renters: us.filter(function(u){ return u.role === 'renter'; }).length,

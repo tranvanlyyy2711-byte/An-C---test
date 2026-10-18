@@ -243,13 +243,17 @@ try {
   // ================= 5. Hỗ trợ và thông báo =================
   console.log('\n=== 5. Hỗ trợ khách hàng và thông báo ===');
   const tk = (await a('GET', '/api/quan-tri/ho-tro')).body.items;
-  expect('nhận đủ yêu cầu hỗ trợ của chủ trọ',
-    ['moi', 'dang-xu-ly', 'da-xong'].map((st) => tk.filter((t) => t.status === st).length), [1, 1, 1]);
+  expect('nhận đủ yêu cầu hỗ trợ của chủ trọ và người thuê',
+    ['moi', 'dang-xu-ly', 'da-xong'].map((st) => tk.filter((t) => t.status === st).length), [2, 1, 1]);
   expect('yêu cầu mới xếp lên đầu', tk[0].status, 'moi');
+  const tkChuTro = tk.find((t) => t.userRole === 'landlord');
   expect('mỗi yêu cầu ghi rõ ai gửi và gói của họ',
-    [tk[0].user, tk[0].userPhone, tk[0].plan.planName], ['Trần Hoà', '0988000999', 'Plus']);
+    [tkChuTro.user, tkChuTro.userPhone, tkChuTro.plan.planName], ['Trần Hoà', '0988000999', 'Plus']);
+  const tkNguoiThue = tk.find((t) => t.userRole === 'renter');
+  expect('yêu cầu của người thuê cũng về chung một chỗ',
+    [tkNguoiThue.user, tkNguoiThue.userPhone, tkNguoiThue.plan], ['Phạm Thu Trang', '0901234567', null]);
   expect('đánh dấu yêu cầu chưa được trả lời lần nào', tk[0].answered, false);
-  expect('lọc theo trạng thái', (await a('GET', '/api/quan-tri/ho-tro?trangThai=moi')).body.items.length, 1);
+  expect('lọc theo trạng thái', (await a('GET', '/api/quan-tri/ho-tro?trangThai=moi')).body.items.length, 2);
   expect('tìm theo người gửi', (await a('GET', '/api/quan-tri/ho-tro?tim=thu mai')).body.items.every((t) => t.userId === 'l-mai'), true);
 
   // Chủ trọ gửi yêu cầu mới
@@ -259,7 +263,31 @@ try {
   expect('chủ trọ gửi được yêu cầu hỗ trợ', [rr.status, rr.body.item.status], [201, 'moi']);
   expect('mô tả quá ngắn thì bị chặn',
     (await ctHoTro('POST', '/api/ho-tro', { kind: 'khac', subject: 'Hỏi', body: 'abc' })).body.error, 'body_required');
-  expect('số yêu cầu chờ xử lý tăng', (await a('GET', '/api/quan-tri/tong-quan')).body.summary.support.openTickets, 3);
+  expect('số yêu cầu chờ xử lý tăng', (await a('GET', '/api/quan-tri/tong-quan')).body.summary.support.openTickets, 4);
+
+  // Quản trị phải nhận thông báo ngay lúc người kia bấm gửi, không chờ tải lại trang
+  let tbAd = (await a('GET', '/api/thong-bao')).body;
+  const tinChuTro = tbAd.items.find((x) => x.type === 'ho-tro' && x.title.indexOf('Trần Hoà') !== -1);
+  expect('chủ trọ gửi yêu cầu thì quản trị có thông báo ngay',
+    [!!tinChuTro, tinChuTro && /^Yêu cầu hỗ trợ mới từ chủ trọ/.test(tinChuTro.title), tinChuTro && tinChuTro.readAt], [true, true, null]);
+
+  // Người thuê gửi từ trang tai-khoan/ho-tro.html — cùng một đường vào
+  const ntHoTro = client();
+  await ntHoTro('POST', '/api/dang-nhap', { phone: '0933000333', password: 'matkhau123' });
+  const rNt = await ntHoTro('POST', '/api/ho-tro', { kind: 'loi-ky-thuat', subject: 'Lỗi website / ứng dụng', body: 'Bấm đặt lịch xem phòng thì trang trắng, thử lại vẫn vậy từ sáng nay.' });
+  expect('người thuê gửi được yêu cầu cho đội hỗ trợ An Cư', [rNt.status, rNt.body.item.status], [201, 'moi']);
+  tbAd = (await a('GET', '/api/thong-bao')).body;
+  expect('người thuê gửi thì quản trị cũng có thông báo ngay',
+    [/^Yêu cầu hỗ trợ mới từ người thuê Lê Quang Huy$/.test(tbAd.items[0].title), tbAd.items[0].type, tbAd.unread > 0], [true, 'ho-tro', true]);
+  expect('yêu cầu của người thuê nằm trong danh sách của quản trị',
+    (await a('GET', '/api/quan-tri/ho-tro?tim=0933000333')).body.items.map((t) => t.userRole), ['renter']);
+
+  // Trả lời xong thì chính người thuê đó nhận được thông báo
+  await a('PATCH', '/api/quan-tri/ho-tro/' + rNt.body.item.id, { action: 'tra-loi', body: 'Bên mình đã sửa lỗi trang trắng, bạn thử lại giúp nhé.' });
+  const tbNt = (await ntHoTro('GET', '/api/thong-bao')).body;
+  expect('người thuê nhận được trả lời của An Cư',
+    [tbNt.unread > 0, tbNt.items[0].type, /đã trả lời/.test(tbNt.items[0].title)], [true, 'ho-tro', true]);
+  await a('PATCH', '/api/quan-tri/ho-tro/' + rNt.body.item.id, { action: 'trang-thai', status: 'da-xong' });
 
   // Quản trị trả lời: người gửi nhận được thông báo
   const moi = rr.body.item;
@@ -325,9 +353,32 @@ try {
   const dangThue = nhaTroBC.reduce((n, it) => n + it.tenants, 0);
   expect('đếm đúng tổng số phòng', bc.occupancy.rooms, tongPhong);
   expect('phòng thuê qua website = phòng có yêu cầu thuê đã duyệt', bc.occupancy.website, dangThue);
-  expect('ba nhóm cộng lại bằng tổng số phòng',
-    bc.occupancy.website + bc.occupancy.viewing + bc.occupancy.empty, bc.occupancy.rooms);
-  expect('tỷ lệ tính đúng', bc.occupancy.rate, Math.round((dangThue / tongPhong) * 1000) / 10);
+  // Phòng chủ trọ tự cho thuê (khách không có tài khoản) đếm riêng, nhưng vẫn vào tỷ lệ lấp phòng
+  const daThue = nhaTroBC.reduce((n, it) => n + it.rented, 0);
+  expect('số phòng đang có người ở lấy theo trạng thái ở trang chủ trọ',
+    bc.occupancy.website + bc.occupancy.offline, daThue);
+  expect('bốn nhóm cộng lại bằng tổng số phòng',
+    bc.occupancy.website + bc.occupancy.offline + bc.occupancy.viewing + bc.occupancy.empty, bc.occupancy.rooms);
+  expect('tỷ lệ lấp phòng tính đúng', bc.occupancy.rate, Math.round((daThue / tongPhong) * 1000) / 10);
+  expect('tách riêng phần đến từ An Cư', bc.occupancy.rateWebsite, Math.round((dangThue / tongPhong) * 1000) / 10);
+
+  // Tổng quan hệ thống phải nói đúng con số đó
+  const tq = (await a('GET', '/api/quan-tri/tong-quan')).body.summary.properties;
+  expect('tổng quan: số phòng và số phòng đã thuê khớp báo cáo',
+    [tq.rooms, tq.rented, tq.availableRooms, tq.occupancy],
+    [bc.occupancy.rooms, daThue, bc.occupancy.rooms - daThue, bc.occupancy.rate]);
+
+  // Chủ trọ xem số liệu phòng của chính mình
+  const ctPhong = client();
+  await ctPhong('POST', '/api/dang-nhap', { phone: '0988000999', password: 'matkhau123' });
+  const cuaToi = (await ctPhong('GET', '/api/chu-tro/phong')).body;
+  const binhBC = nhaTroBC.find((x) => x.landlordId === 'l-binh');
+  expect('trang chủ trọ và khu quản trị cùng một con số',
+    [cuaToi.rooms, cuaToi.rented, cuaToi.vacant], [binhBC.rooms, binhBC.rented, binhBC.rooms - binhBC.rented]);
+  expect('kèm trạng thái từng phòng', cuaToi.properties[0].rooms.map((r) => r.code + ':' + r.status).join(' '),
+    'P.101:rented P.102:vacant P.103:deposit P.201:leaving P.202:rented P.203:rented P.301:rented P.302:rented');
+  expect('người thuê không xem được mục này',
+    (await (async () => { const c = client(); await c('POST', '/api/dang-nhap', { phone: '0901234567', password: 'matkhau123' }); return c('GET', '/api/chu-tro/phong'); })()).body.error, 'not_landlord');
 
   // Thu thêm một kỳ thì doanh thu tháng này tăng
   const goiBC = (await a('GET', '/api/quan-tri/goi')).body.items.find((g) => g.status !== 'cancelled');
@@ -461,7 +512,7 @@ try {
       expect('trang chủ: thẻ đầu là tổng số phòng', await txt(u.p, '#kpis .kpi:first-child dt'), 'Tổng số phòng');
       expect('trang chủ: thẻ cuối là doanh thu tháng này', await txt(u.p, '#kpis .kpi:nth-child(4) dt'), 'Doanh thu tháng này');
       expect('trang chủ: có biểu đồ doanh thu', await u.p.locator('#revenueChart .chart-month').count(), 12);
-      expect('trang chủ: có tỷ lệ lấp đầy', await txt(u.p, '#occupancyPercent'), '24%');
+      expect('trang chủ: có tỷ lệ lấp đầy', await txt(u.p, '#occupancyPercent'), '35%');
       expect('trang chủ: nhắc số yêu cầu hỗ trợ đang chờ', /\d+ yêu cầu/.test(await txt(u.p, '#taskTickets')), true);
       expect('cột công cụ bên trái: 6 mục dùng được', await u.p.locator('.side-nav a.side-link[data-muc]').count(), 6);
       expect('đã bỏ mục Báo cáo khỏi cột công cụ', await u.p.locator('.side-nav [data-muc="bao-cao"]').count(), 0);
@@ -555,7 +606,8 @@ try {
       expect('mở đúng khu Báo cáo', await txt(u.p, '#appTitle'), 'Báo cáo tài chính');
       expect('biểu đồ tháng có đủ 12 cột', await u.p.locator('#rpCot .mot').count(), 12);
       expect('có 4 ô số liệu', await u.p.locator('#rpSo .o').count(), 4);
-      expect('biểu đồ tròn chia ba nhóm', await u.p.locator('#rpTron svg circle').count(), 3);
+      expect('biểu đồ tròn chia bốn nhóm', await u.p.locator('#rpTron ul li').count(), 5);
+      expect('vòng tròn ghi tỷ lệ lấp phòng', /đã lấp đầy/.test(await txt(u.p, '#rpTron svg')), true);
       expect('biểu đồ tròn ghi tổng số phòng', /Tổng số phòng/.test(await txt(u.p, '#rpTron ul')), true);
       await u.p.screenshot({ path: resolve(outDir, 'quan-tri-bao-cao-desktop.png'), fullPage: true });
 
@@ -574,7 +626,9 @@ try {
     await u.p.waitForSelector('#tkList .tk');
     if (name === 'desktop') {
       expect('mở đúng khu Hỗ trợ', await txt(u.p, '#appTitle'), 'Hỗ trợ');
-      expect('hiện cả yêu cầu đã xong lẫn đang chờ', await u.p.locator('#tkList .tk').count(), 4);
+      expect('hiện cả yêu cầu đã xong lẫn đang chờ', await u.p.locator('#tkList .tk').count(), 6);
+      expect('ghi rõ người gửi là chủ trọ hay người thuê',
+        /Người thuê/.test(await txt(u.p, '#tkList')) && /Chủ trọ/.test(await txt(u.p, '#tkList')), true);
       expect('có hàng đếm theo trạng thái', await u.p.locator('#tkDem button').count(), 4);
       expect('đánh dấu yêu cầu chưa trả lời', /chưa trả lời lần nào/.test(await txt(u.p, '#tkList .tk.moi .tk-meta')), true);
       await u.p.screenshot({ path: resolve(outDir, 'quan-tri-ho-tro-desktop.png'), fullPage: true });
@@ -583,8 +637,8 @@ try {
       const idMoi = await u.p.locator('#tkList .tk.moi [data-tk]').first().getAttribute('data-tk');
       await u.p.fill('#tkList [data-tra-loi="' + idMoi + '"]', 'Bên mình đã kiểm tra và sửa, anh thử lại giúp nhé.');
       await u.p.click('#tkList .tk.moi [data-tt="tra-loi"]');
-      await u.p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã gửi trả lời cho chủ trọ.', null, { timeout: 5000 }).catch(() => {});
-      expect('gửi trả lời từ giao diện', await txt(u.p, '#msg'), 'Đã gửi trả lời cho chủ trọ.');
+      await u.p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã gửi trả lời cho người gửi.', null, { timeout: 5000 }).catch(() => {});
+      expect('gửi trả lời từ giao diện', await txt(u.p, '#msg'), 'Đã gửi trả lời cho người gửi.');
 
       // Gửi thông báo hàng loạt
       await u.p.selectOption('#bcAi', 'renter');

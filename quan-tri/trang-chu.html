@@ -403,7 +403,7 @@
     var landlords = s.users && s.users.landlords || 0;
     el('kpis').innerHTML = [
       ['Tổng số phòng', properties.rooms || 0, (properties.total || 0) + ' nhà trọ đang quản lý', ''],
-      ['Phòng đang trống', properties.availableRooms || 0, (properties.tenants || 0) + ' phòng đang có người thuê', ''],
+      ['Phòng đang trống', properties.availableRooms || 0, (properties.rented || 0) + ' phòng đang có người thuê', ''],
       ['Tổng tài khoản', renters + landlords, renters + ' người thuê · ' + landlords + ' chủ trọ', ''],
       ['Doanh thu tháng này', vnd(s.revenue ? s.revenue.month : 0), 'Từ gói dịch vụ đã ghi nhận', '']
     ].map(function(x){
@@ -451,12 +451,14 @@
     renderRevenueChart(revenuePlans);
   });
 
+  // Tỷ lệ lấp đầy lấy thẳng từ máy chủ (đếm theo trạng thái phòng ở trang chủ trọ),
+  // không tự tính kiểu khác để hai nơi khỏi lệch nhau.
   function renderOccupancy(summary){
     var properties = summary.properties || {};
     var rooms = properties.rooms || 0;
-    var available = properties.availableRooms || 0;
-    var occupied = Math.max(0, rooms - available);
-    var percent = rooms ? Math.round(occupied / rooms * 100) : 0;
+    var occupied = properties.rented || 0;
+    var available = properties.availableRooms != null ? properties.availableRooms : Math.max(0, rooms - occupied);
+    var percent = properties.occupancy != null ? Math.round(properties.occupancy) : (rooms ? Math.round(occupied / rooms * 100) : 0);
     el('occupancyRing').style.setProperty('--occupancy', percent + '%');
     el('occupancyPercent').textContent = rooms ? percent + '%' : '—';
     el('occupancyLegend').innerHTML = '<div><b>' + occupied + '</b>Phòng đang thuê</div><div><b>' +

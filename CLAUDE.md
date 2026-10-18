@@ -233,13 +233,28 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
   người duyệt**, không tự động từ chối tin nào. Tin gắn với phòng trong danh mục (`listings.room_id`) mà
   không ở trạng thái `approved` thì máy chủ **từ chối đặt lịch xem** phòng đó.
 - **Hỗ trợ & thông báo:** `support_tickets` + `ticket_replies` + `notifications` trong `server/db.mjs`.
-  Chủ trọ gửi yêu cầu ở trang quản lý (`POST /api/ho-tro`), quản trị trả lời và đổi trạng thái
+  **Một đường vào duy nhất:** chủ trọ gửi ở `quan-ly/tong-quan.html` (nút Hỗ trợ) và người thuê gửi ở
+  `tai-khoan/ho-tro.html` (ô **Gửi tới** chọn "Đội hỗ trợ An Cư"), cả hai cùng `POST /api/ho-tro`. Phiếu
+  sự cố gửi **chủ trọ** vẫn đi đường riêng `/api/su-co*` — hai việc khác nhau, đừng gộp. `createTicket`
+  sinh ngay một thông báo `type='ho-tro'` cho **mọi tài khoản admin đang hoạt động**, `ref`
+  (`ho-tro:<id>:<admin>`) chặn gửi trùng; khu quản trị hiện nó ở chuông và hỏi lại máy chủ mỗi 15 giây
+  (prototype chưa có WebSocket/SSE), tab ẩn thì không hỏi. Quản trị trả lời và đổi trạng thái
   (`moi` → `dang-xu-ly` → `da-xong`); mỗi lần trả lời sinh một thông báo cho người gửi. **Gửi hàng loạt**
   chọn nhóm (tất cả / chủ trọ / người thuê / chủ trọ chưa mua gói), mỗi đợt một `batch_id` để đếm số
   người nhận và số người đã đọc. **Nhắc hết hạn gói** quét kỳ quá hạn hoặc tới hạn trong 7 ngày, `ref`
   (`nhac-han:<landlord>:<kỳ>`) chặn gửi trùng nên bấm nhiều lần cũng chỉ nhắc một lần mỗi kỳ.
   Kênh `email` **mới chỉ ghi nhận** — prototype chưa nối SMTP / Zalo ZNS, giao diện nói rõ điều đó.
-  Chuông thông báo ở `quan-ly/tong-quan.html` đọc `GET /api/thong-bao` và đánh dấu đã đọc qua `PATCH`.
+  Chuông thông báo ở `quan-ly/tong-quan.html` đọc `GET /api/thong-bao` và đánh dấu đã đọc qua `PATCH`;
+  người thuê xem trả lời của An Cư ngay trong thẻ "Yêu cầu gửi đội hỗ trợ An Cư" (`GET /api/ho-tro`).
+  Kiểm tra liên thông: `npm run test:su-co` (mục 19) và `npm run test:quan-tri` (mục 5).
+- **Số phòng và tỷ lệ lấp đầy — một nguồn duy nhất.** Trạng thái từng phòng khai trong `PHONG_CHU_TRO`
+  ở `server/phong.mjs`, **lấy đúng theo `quan-ly/phong-dien-nuoc.html`**: `rented` (đang thuê) ·
+  `vacant` (trống) · `deposit` (đã cọc giữ chỗ) · `leaving` (sắp trả phòng); tin rao `p01`–`p09` mang
+  trạng thái `listing`, có yêu cầu thuê đã duyệt thì thành `rented`. `DANG_THUE` quyết định phòng nào
+  tính là đã lấp. Khu quản trị (`summary.properties.rented/occupancy`, `baoCao.occupancy`) và trang quản
+  lý của chủ trọ (`GET /api/chu-tro/phong`) đọc chung chỗ này — **không nơi nào tự đếm kiểu khác**.
+  Biểu đồ tròn tách bốn nhóm: thuê qua website · thuê ngoài website (chủ trọ tự cho thuê) · có khách hẹn
+  xem hoặc đã cọc · còn trống; `rate` là tỷ lệ lấp phòng, `rateWebsite` là phần đến từ An Cư.
 - **Báo cáo tài chính:** `GET /api/quan-tri/bao-cao?nam=` (hàm `baoCao` trong `server/quan-tri.mjs`).
   Doanh thu tính theo **tiền đã thu** (mốc là ngày ghi nhận thanh toán), tiền chưa thu tính theo hạn đóng;
   chỉ gồm tiền gói dịch vụ An Cư — tiền thuê phòng và điện nước chủ trọ tự thu, không qua hệ thống.

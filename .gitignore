@@ -5,3 +5,5 @@ data/
 .env.local
 .env*.local
 .env*.bak
+.env*
+.env_files/

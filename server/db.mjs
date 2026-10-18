@@ -655,6 +655,17 @@ function seedHoTro(db) {
   insR.run(t3, 'ad-01', 1, 'Anh gửi ảnh căn cước để bên mình đối chiếu rồi đổi giúp anh nhé.', iso('2026-09-30T09:10:00'));
   insR.run(t3, 'l-binh', 0, 'Mình gửi rồi nhé, cảm ơn bạn.', iso('2026-09-30T10:00:00'));
 
+  // Người thuê cũng gửi được yêu cầu cho đội hỗ trợ An Cư (trang tai-khoan/ho-tro.html)
+  const t4 = insT.run('u-trang', 'thanh-toan', 'Đã chuyển cọc xem phòng nhưng trạng thái chưa đổi',
+    'Mình chuyển tiền cọc xem phòng p02 từ chiều qua, có ảnh chuyển khoản, nhưng mục Thanh toán vẫn ghi chưa thanh toán.',
+    'moi', iso('2026-10-09T20:10:00'), iso('2026-10-09T20:10:00'), null).lastInsertRowid;
+
+  // Quản trị nhận được thông báo ngay khi có yêu cầu mới (cùng ref như createTicket)
+  for (const t of [[t1, 'chủ trọ Trần Hoà', 'Ghi điện nước xong không lưu được', '2026-10-08T09:15:00'],
+                   [t4, 'người thuê Phạm Thu Trang', 'Đã chuyển cọc xem phòng nhưng trạng thái chưa đổi', '2026-10-09T20:10:00']]) {
+    insN.run('ad-01', 'ho-tro', `Yêu cầu hỗ trợ mới từ ${t[1]}`, t[2], 'in-app', null, `ho-tro:${t[0]}:ad-01`, iso(t[3]), null);
+  }
+
   // Một đợt thông báo bảo trì đã gửi cho cả hai chủ trọ
   const batch = 'bt-2026-10-01';
   for (const u of ['l-binh', 'l-mai']) {

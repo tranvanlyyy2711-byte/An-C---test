@@ -103,7 +103,7 @@ try {
         expect(`${nguon}: có dải báo chế độ xem thử`, (await txt(p, '#demoNote')).includes('Chế độ xem thử'), true);
         expect(`${nguon}: bảng tài khoản có dữ liệu mẫu`, await p.locator('#userRows tr').count(), 7);
         expect(`${nguon}: ẩn nút Đăng xuất`, await p.locator('#logout').isVisible(), false);
-        expect(`${nguon}: ô số liệu đầu là tổng số phòng`, [await txt(p, '#stats .stat:first-child dt'), await txt(p, '#stats .stat:first-child dd')], ['Tổng số phòng', '9']);
+        expect(`${nguon}: ô số liệu đầu là tổng số phòng`, [await txt(p, '#stats .stat:first-child dt'), await txt(p, '#stats .stat:first-child dd')], ['Tổng số phòng', '10']);
 
         // Lọc và tìm kiếm
         await p.selectOption('#fRole', 'landlord');
@@ -132,9 +132,11 @@ try {
         await p.waitForSelector('#rpCot .mot');
         expect(`${nguon}: biểu đồ theo tháng có đủ 12 cột`, await p.locator('#rpCot .mot').count(), 12);
         expect(`${nguon}: có 4 ô số liệu báo cáo`, await p.locator('#rpSo .o').count(), 4);
-        expect(`${nguon}: biểu đồ tròn có 3 phần`, await p.locator('#rpTron svg circle').count(), 3);
-        expect(`${nguon}: tỷ lệ thuê qua website khớp danh sách phòng`,
-          /^\d+(,\d+)?%qua website$/.test(await txt(p, '#rpTron svg')), true);
+        expect(`${nguon}: biểu đồ tròn chia bốn nhóm`, await p.locator('#rpTron ul li').count(), 5);
+        expect(`${nguon}: vòng tròn ghi tỷ lệ lấp phòng`,
+          /^\d+(,\d+)?%đã lấp đầy$/.test(await txt(p, '#rpTron svg')), true);
+        expect(`${nguon}: tách rõ thuê qua website và thuê ngoài`,
+          /chốt qua An Cư/.test(await txt(p, '#rpTronNote')), true);
         await p.click('[data-rp="nam"]');
         await p.waitForTimeout(250);
         expect(`${nguon}: xem theo năm thì đổi biểu đồ`, await txt(p, '#rpTitle'), 'Doanh thu theo năm');
@@ -146,14 +148,15 @@ try {
         // Hỗ trợ & thông báo trên dữ liệu mẫu
         await bamCongCu(p, 'ho-tro');
         await p.waitForSelector('#tkList .tk');
-        expect(`${nguon}: có yêu cầu hỗ trợ mẫu`, await p.locator('#tkList .tk').count(), 3);
+        expect(`${nguon}: có yêu cầu hỗ trợ mẫu`, await p.locator('#tkList .tk').count(), 4);
         expect(`${nguon}: đếm theo trạng thái`, (await p.locator('#tkDem button').allTextContents()).map((x) => x.replace(/\s+/g, ' ').trim()),
-          ['Tất cả 3', 'Mới gửi 1', 'Đang xử lý 1', 'Đã xong 1']);
+          ['Tất cả 4', 'Mới gửi 2', 'Đang xử lý 1', 'Đã xong 1']);
+        expect(`${nguon}: có cả yêu cầu của người thuê`, /Người thuê/.test(await txt(p, '#tkList')), true);
         const tkMoi = await p.locator('#tkList .tk.moi [data-tk]').first().getAttribute('data-tk');
         await p.fill(`#tkList [data-tra-loi="${tkMoi}"]`, 'Bên mình đã sửa lỗi này, anh thử lại giúp nhé.');
         await p.click('#tkList .tk.moi [data-tt="tra-loi"]');
-        await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã gửi trả lời cho chủ trọ.', null, { timeout: 5000 }).catch(() => {});
-        expect(`${nguon}: trả lời hỗ trợ trên dữ liệu mẫu`, await txt(p, '#msg'), 'Đã gửi trả lời cho chủ trọ.');
+        await p.waitForFunction(() => document.getElementById('msg').textContent.trim() === 'Đã gửi trả lời cho người gửi.', null, { timeout: 5000 }).catch(() => {});
+        expect(`${nguon}: trả lời hỗ trợ trên dữ liệu mẫu`, await txt(p, '#msg'), 'Đã gửi trả lời cho người gửi.');
 
         await p.selectOption('#bcAi', 'landlord');
         await p.fill('#bcTitle', 'Bảo trì đêm 20/10');

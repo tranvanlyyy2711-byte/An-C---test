@@ -214,7 +214,9 @@ try {
   const adminLogin = await adminTickets.call('POST', '/api/dang-nhap', { phone: '0900000001', password: 'matkhau123' });
   expect('đăng nhập quản trị vẫn bình thường', adminLogin.status, 200);
   const hoTroCu = await adminTickets.call('GET', '/api/quan-tri/ho-tro');
-  expect('hệ thống hỗ trợ chủ trọ -> quản trị cũ không đổi (vẫn 3 phiếu mẫu)', hoTroCu.body.items.length, 3);
+  expect('hệ thống hỗ trợ gửi quản trị không đổi (vẫn 4 yêu cầu mẫu)', hoTroCu.body.items.length, 4);
+  expect('phiếu sự cố không lẫn vào bảng hỗ trợ của quản trị',
+    hoTroCu.body.items.every((t) => !/YC-\d+/.test(t.subject)), true);
 
   console.log('\n=== 14. Responsive: không cuộn ngang, chạm đủ 44px, không lỗi JS ===');
   for (const vp of [{ w: 1440, h: 1000, tag: 'desktop' }, { w: 390, h: 844, tag: 'mobile' }]) {
@@ -334,6 +336,56 @@ try {
   await shot(anonPage, 'ho-tro-can-dang-nhap-mobile');
   await ctxAnon.close();
   await ctxHuy.close();
+
+  console.log('\n=== 19. Gửi tới đội hỗ trợ An Cư: khu quản trị nhận được ngay ===');
+  const ctxAnCu = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await ctxAnCu.request.post(B + '/api/dang-nhap', { data: { phone: '0933000333', password: 'matkhau123' } });
+  const hoTroAnCu = await openPage(ctxAnCu, '/tai-khoan/ho-tro.html');
+  await hoTroAnCu.waitForTimeout(600);
+  await hoTroAnCu.selectOption('#fTo', 'an-cu');
+  await hoTroAnCu.waitForTimeout(200);
+  expect('chọn An Cư thì dòng "gửi tới" đổi theo', ((await hoTroAnCu.locator('#toLine').textContent()) || '').includes('Đội hỗ trợ An Cư'), true);
+  expect('gửi An Cư thì ẩn ô ảnh (API chưa nhận ảnh)', await hoTroAnCu.locator('#imgFld').isHidden(), true);
+  expect('danh mục đổi sang nhóm việc của An Cư',
+    await hoTroAnCu.locator('#fCat option[value="loi-ky-thuat"]').count(), 1);
+
+  const moTaAnCu = 'Bấm đặt lịch xem phòng thì trang trắng, thử lại trên cả điện thoại vẫn vậy từ sáng nay.';
+  await hoTroAnCu.selectOption('#fCat', 'loi-ky-thuat');
+  await hoTroAnCu.fill('#fDesc', moTaAnCu);
+  await hoTroAnCu.click('#sendBtn');
+  await hoTroAnCu.waitForSelector('#ancuCard .ticket');
+  expect('yêu cầu An Cư hiện ở thẻ riêng, không lẫn phiếu gửi chủ trọ',
+    ((await hoTroAnCu.locator('#ancuCard .ticket').first().textContent()) || '').includes('Lỗi website'), true);
+  expect('phiếu gửi chủ trọ không nhận thêm dòng nào',
+    ((await hoTroAnCu.locator('#ticketBox .ticket').first().textContent()) || '').includes('Lỗi website'), false);
+  await shot(hoTroAnCu, 'ho-tro-gui-an-cu-desktop');
+
+  // Quản trị: yêu cầu vào thẳng danh sách và sinh thông báo ngay, không chờ tải lại trang
+  const ctxAdmin = await browser.newContext();
+  await ctxAdmin.request.post(B + '/api/dang-nhap', { data: { phone: '0900000001', password: 'matkhau123' } });
+  const dsQT = await (await ctxAdmin.request.get(B + '/api/quan-tri/ho-tro?tim=0933000333')).json();
+  expect('khu quản trị thấy yêu cầu của người thuê',
+    [dsQT.items.length, dsQT.items[0].userRole, dsQT.items[0].body.includes('trang trắng')], [1, 'renter', true]);
+  const tbQT = await (await ctxAdmin.request.get(B + '/api/thong-bao')).json();
+  expect('quản trị có thông báo ngay khi người thuê bấm gửi',
+    [/^Yêu cầu hỗ trợ mới từ người thuê Lê Quang Huy$/.test(tbQT.items[0].title), tbQT.items[0].readAt], [true, null]);
+  await ctxAdmin.close();
+
+  // 390px: ô "Gửi tới" và thẻ yêu cầu An Cư không làm vỡ bố cục
+  const ctxAnCuMobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await ctxAnCuMobile.request.post(B + '/api/dang-nhap', { data: { phone: '0933000333', password: 'matkhau123' } });
+  const anCuMobile = await openPage(ctxAnCuMobile, '/tai-khoan/ho-tro.html');
+  await anCuMobile.waitForSelector('#ancuCard .ticket');
+  await anCuMobile.selectOption('#fTo', 'an-cu');
+  await anCuMobile.waitForTimeout(200);
+  const anCuOverflow = await anCuMobile.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect('[mobile 390px] ô "Gửi tới" và thẻ An Cư không gây cuộn ngang', anCuOverflow <= 0, true);
+  const nhoHon44 = await anCuMobile.evaluate(() => [...document.querySelectorAll('#fTo, #fCat, #sendBtn')]
+    .map((el) => el.getBoundingClientRect()).filter((r) => r.height < 44).length);
+  expect('[mobile 390px] ô chọn và nút gửi đủ 44px', nhoHon44, 0);
+  await shot(anCuMobile, 'ho-tro-gui-an-cu-mobile');
+  await ctxAnCuMobile.close();
+  await ctxAnCu.close();
 
   expect('không có lỗi JS trong suốt kịch bản', errors, []);
 } finally {

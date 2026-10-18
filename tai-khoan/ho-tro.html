@@ -243,12 +243,19 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
           <div class="col">
             <!-- Gửi yêu cầu mới -->
             <section class="card feature reveal" aria-labelledby="newTitle">
-              <div class="card-head"><div><h2 id="newTitle">Gửi yêu cầu mới</h2><p>Mô tả càng rõ, kèm ảnh hiện trạng, chủ trọ càng xử lý nhanh</p></div></div>
+              <div class="card-head"><div><h2 id="newTitle">Gửi yêu cầu mới</h2><p>Sự cố trong phòng thì gửi chủ trọ; lỗi website, tài khoản, thanh toán thì gửi đội hỗ trợ An Cư</p></div></div>
               <form class="card-body" id="newForm" novalidate>
                 <p class="to-line" id="toLine"></p>
                 <div class="form-grid">
                   <div class="fld">
-                    <label for="fCat">Phân loại sự cố</label>
+                    <label for="fTo">Gửi tới</label>
+                    <select class="field" id="fTo">
+                      <option value="chu-tro">Chủ trọ — sự cố phòng, điện nước, hoá đơn</option>
+                      <option value="an-cu">Đội hỗ trợ An Cư — website, tài khoản, thanh toán</option>
+                    </select>
+                  </div>
+                  <div class="fld">
+                    <label for="fCat" id="fCatLabel">Phân loại sự cố</label>
                     <select class="field" id="fCat" required aria-describedby="fCatErr">
                       <option value="">Chọn loại sự cố</option>
                     </select>
@@ -267,7 +274,7 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
                     <textarea class="field" id="fDesc" maxlength="1000" placeholder="Mô tả vấn đề: xảy ra từ khi nào, ở vị trí nào, đã thử xử lý gì…" aria-describedby="fDescErr fDescCount"></textarea>
                     <div class="hint-row"><p class="err" id="fDescErr" hidden></p><span id="fDescCount" style="margin-left:auto">0/1000</span></div>
                   </div>
-                  <div class="fld full">
+                  <div class="fld full" id="imgFld">
                     <span id="fImgLabel" style="font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600">Ảnh hiện trạng <span class="opt">(tối đa 4 ảnh)</span></span>
                     <label class="drop" id="drop">
                       <input type="file" id="fImg" class="sr-only" accept="image/*" multiple aria-labelledby="fImgLabel" aria-describedby="fImgHint" />
@@ -295,6 +302,14 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
                 </div>
               </div>
               <div class="card-body" id="ticketBox" aria-live="polite"></div>
+            </section>
+
+            <!-- Yêu cầu gửi đội hỗ trợ An Cư (khác phiếu sự cố gửi chủ trọ) -->
+            <section class="card reveal" id="ancuCard" aria-labelledby="ancuTitle" hidden>
+              <div class="card-head">
+                <div><h2 id="ancuTitle">Yêu cầu gửi đội hỗ trợ An Cư</h2><p>Do An Cư xử lý, không phải chủ trọ — trả lời hiện ở đây</p></div>
+              </div>
+              <div class="card-body" id="ancuBox" aria-live="polite"></div>
             </section>
           </div>
 
@@ -359,7 +374,19 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     { id:'an-ninh',   label:'An ninh / Vệ sinh', icon:ICON.shield, hint:'Ví dụ: Khoá cổng chính bị hỏng, người lạ ra vào được sau 23:00.' },
     { id:'khac',      label:'Khác', icon:ICON.dots, hint:'Mô tả vấn đề bạn cần chủ trọ hỗ trợ.' }
   ];
-  function catOf(id){ for(var i = 0; i < CATS.length; i++){ if(CATS[i].id === id) return CATS[i]; } return CATS[CATS.length - 1]; }
+  // Nhóm việc do đội hỗ trợ An Cư xử lý — id khớp TICKET_KIND ở server/quan-tri.mjs
+  var CATS_AN_CU = [
+    { id:'loi-ky-thuat', label:'Lỗi website / ứng dụng', icon:ICON.bolt, hint:'Ví dụ: Bấm đặt lịch xem phòng thì trang trắng, thử lại vẫn vậy từ sáng nay.' },
+    { id:'thanh-toan',   label:'Thanh toán / tiền cọc', icon:ICON.receipt, hint:'Ví dụ: Mình đã chuyển tiền cọc xem phòng nhưng trạng thái vẫn là "chưa thanh toán".' },
+    { id:'tai-khoan',    label:'Tài khoản / đăng nhập', icon:ICON.user, hint:'Ví dụ: Không đăng nhập được bằng số 0901234567, báo sai mật khẩu dù mật khẩu đúng.' },
+    { id:'khac',         label:'Khác', icon:ICON.dots, hint:'Mô tả việc bạn cần đội hỗ trợ An Cư giúp.' }
+  ];
+  function nhomDangChon(){ return document.getElementById('fTo').value === 'an-cu' ? CATS_AN_CU : CATS; }
+  function catOf(id){
+    var ds = CATS.concat(CATS_AN_CU);
+    for(var i = 0; i < ds.length; i++){ if(ds[i].id === id) return ds[i]; }
+    return CATS[CATS.length - 1];
+  }
   var STATUS = { submitted:'Đã gửi · Chờ tiếp nhận', in_progress:'Đang xử lý', cho_xac_nhan:'Chờ xác nhận', done:'Đã hoàn thành' };
   function badge(st){ return '<span class="status is-' + st + '">' + (STATUS[st] || st) + '</span>'; }
   var landlordName = 'Đội hỗ trợ An Cư';
@@ -396,10 +423,36 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
   var drop = document.getElementById('drop');
   var images = []; // dataURL đã thu nhỏ
 
-  fCat.insertAdjacentHTML('beforeend', CATS.map(function(c){ return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join(''));
+  var fTo = document.getElementById('fTo');
+  function napCat(){
+    var anCu = fTo.value === 'an-cu';
+    document.getElementById('fCatLabel').textContent = anCu ? 'Phân loại yêu cầu' : 'Phân loại sự cố';
+    fCat.innerHTML = '<option value="">' + (anCu ? 'Chọn loại yêu cầu' : 'Chọn loại sự cố') + '</option>' +
+      nhomDangChon().map(function(c){ return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join('');
+    // /api/ho-tro chưa nhận ảnh, nên gửi An Cư thì ẩn ô ảnh để không hứa điều chưa làm được
+    document.getElementById('imgFld').hidden = anCu;
+    fDesc.placeholder = anCu
+      ? 'Mô tả việc cần hỗ trợ: xảy ra ở trang nào, từ khi nào, bạn đã thử gì…'
+      : 'Mô tả vấn đề: xảy ra từ khi nào, ở vị trí nào, đã thử xử lý gì…';
+    setErr(fCat, 'fCatErr', ''); setErr(null, 'fImgErr', '');
+    renderToLine();
+  }
+  fTo.addEventListener('change', napCat);
 
   function renderToLine(){
     var toLine = document.getElementById('toLine');
+    if(document.getElementById('fTo').value === 'an-cu'){
+      // Gửi An Cư thì không cần đang thuê phòng, chỉ cần đã đăng nhập
+      if(loadError && loadError.httpStatus !== 403){
+        toLine.innerHTML = svg(ICON.user) + '<span>' +
+          (loadError.httpStatus === 401
+            ? 'Cần đăng nhập để gửi yêu cầu hỗ trợ. <b><a href="../trang-chu.html">Về trang chủ để đăng nhập</a></b>'
+            : 'Không kết nối được tới máy chủ.') + '</span>';
+        return;
+      }
+      toLine.innerHTML = svg(ICON.user) + '<span>Gửi tới <b>Đội hỗ trợ An Cư</b> · quản trị viên nhận được ngay khi bạn gửi</span>';
+      return;
+    }
     if(loadError){
       var msg = loadError.httpStatus === 401 ? 'Cần đăng nhập để gửi yêu cầu hỗ trợ.' :
         loadError.httpStatus === 403 ? (loadError.message || 'Tài khoản đang đăng nhập không phải tài khoản người thuê.') :
@@ -485,8 +538,51 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     fImg.focus();
   });
 
+  // Yêu cầu gửi đội hỗ trợ An Cư: vào bảng support_tickets của khu quản trị (/api/ho-tro),
+  // máy chủ tạo luôn thông báo cho mọi tài khoản quản trị nên trang admin thấy ngay.
+  function guiAnCu(form, desc, urgent){
+    var sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    // Tiêu đề lấy câu đầu của phần mô tả: danh sách bên quản trị đọc là hiểu ngay,
+    // không phải bốn dòng trùng tên nhóm việc.
+    var tieuDe = desc.split(/[.\n]/)[0].trim().slice(0, 80) || catOf(fCat.value).label;
+    apiCall('POST', '/api/ho-tro', {
+      kind: fCat.value,
+      subject: (urgent ? '[Khẩn cấp] ' : '') + tieuDe,
+      body: desc
+    }).then(function(j){
+      sendBtn.disabled = false;
+      if(j.httpStatus !== 201){
+        setErr(null, 'fDescErr', j.message || 'Không gửi được yêu cầu, hãy thử lại.');
+        return;
+      }
+      anCuTickets.unshift(j.item);
+      var noiNhan = fTo.value;
+      form.reset();
+      fTo.value = noiNhan;
+      napCat();
+      document.getElementById('fDescCount').textContent = '0/' + MAX_DESC;
+      document.getElementById('urgNote').hidden = true;
+      renderAnCu();
+      document.getElementById('ancuCard').scrollIntoView({ behavior:reduce ? 'auto' : 'smooth', block:'center' });
+      showToast('Đã gửi yêu cầu tới An Cư', 'Quản trị viên đã nhận được thông báo và sẽ trả lời trong mục này.');
+    }).catch(function(){
+      sendBtn.disabled = false;
+      setErr(null, 'fDescErr', 'Không kết nối được tới máy chủ, hãy thử lại.');
+    });
+  }
+
   document.getElementById('newForm').addEventListener('submit', function(e){
     e.preventDefault();
+    if(document.getElementById('fTo').value === 'an-cu'){
+      var d = fDesc.value.trim();
+      var ok1 = setErr(fCat, 'fCatErr', fCat.value ? '' : 'Vui lòng chọn loại yêu cầu.');
+      var ok2 = setErr(fDesc, 'fDescErr', d.length < MIN_DESC ? 'Mô tả ít nhất ' + MIN_DESC + ' ký tự để đội hỗ trợ hiểu đúng vấn đề.' : '');
+      if(!ok1){ fCat.focus(); return; }
+      if(!ok2){ fDesc.focus(); return; }
+      guiAnCu(e.target, d, document.querySelector('input[name="fUrg"]:checked').value === 'urgent');
+      return;
+    }
     if(loadError || !recipient.room){
       setErr(null, 'fImgErr', loadError ? 'Hãy đăng nhập rồi thử lại.' : 'Bạn chưa có phòng đang thuê nên chưa gửi được yêu cầu.');
       return;
@@ -744,6 +840,41 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     if(io) io.observe(el); else el.classList.add('in');
   });
 
+  // ---------- Yêu cầu gửi đội hỗ trợ An Cư ----------
+  var anCuTickets = [];
+  var AN_CU_STATUS = {
+    'moi': ['submitted', 'Đã gửi · Chờ tiếp nhận'],
+    'dang-xu-ly': ['in_progress', 'Đang xử lý'],
+    'da-xong': ['done', 'Đã xong']
+  };
+  function renderAnCu(){
+    var card = document.getElementById('ancuCard');
+    card.hidden = !anCuTickets.length;
+    if(!anCuTickets.length) return;
+    card.classList.add('in');
+    document.getElementById('ancuBox').innerHTML = '<ul class="tickets">' + anCuTickets.map(function(t){
+      var st = AN_CU_STATUS[t.status] || ['submitted', t.status];
+      var c = catOf(t.kind);
+      var tl = (t.replies || []).filter(function(r){ return r.fromAdmin; }).slice(-1)[0];
+      return '<li><div class="ticket" style="cursor:default">' +
+        '<span class="tk-ic">' + svg(c.icon) + '</span>' +
+        '<span style="min-width:0"><span class="tk-top"><b>HT' + t.id + '</b><span>' + esc(c.label) + '</span>' +
+          '<span>· ' + fmtTime(t.createdAt) + '</span></span>' +
+          '<span class="tk-title">' + esc(t.subject) + '</span>' +
+          '<span class="tk-meta" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+            (tl ? 'An Cư trả lời: ' + esc(tl.body) : 'An Cư chưa trả lời') + '</span></span>' +
+        '<span class="tk-right"><span class="status is-' + st[0] + '">' + st[1] + '</span></span>' +
+      '</div></li>';
+    }).join('') + '</ul>';
+  }
+  function loadAnCu(){
+    if(!API_ON) return Promise.resolve();
+    return apiCall('GET', '/api/ho-tro').then(function(j){
+      anCuTickets = (j.httpStatus === 200 && j.items) || [];
+      renderAnCu();
+    }).catch(function(){ /* chưa đăng nhập hoặc mất mạng: để trống thẻ */ });
+  }
+
   // ---------- Tải dữ liệu thật từ máy chủ ----------
   function afterLoad(){
     renderToLine();
@@ -775,7 +906,9 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
   }
 
   renderThumbs();
+  napCat();
   loadAll();
+  loadAnCu();
 })();
 </script>
 </body>

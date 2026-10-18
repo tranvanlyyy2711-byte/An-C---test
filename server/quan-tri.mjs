@@ -352,6 +352,17 @@ export function createAdmin(db, ApiError, now) {
     if (noiDung.length < 10) throw new ApiError(400, 'body_required', 'Hãy mô tả rõ hơn (ít nhất 10 ký tự) để bên hỗ trợ hiểu vấn đề.', { field: 'body' });
     const at = now().toISOString();
     const id = q.insertTicket.run(u.id, loai, tieuDe, noiDung, at, at).lastInsertRowid;
+    // Báo ngay cho mọi tài khoản quản trị: chuông ở khu quản trị đọc notifications của chính họ.
+    // ref chặn gửi trùng nếu hàm này chạy lại cho cùng một yêu cầu.
+    const ai = u.role === 'landlord' ? 'Chủ trọ' : u.role === 'renter' ? 'Người thuê' : 'Tài khoản';
+    for (const ad of q.users.all().filter((x) => x.role === 'admin' && x.status === 'active')) {
+      try {
+        q.insertNoti.run(ad.id, 'ho-tro', `Yêu cầu hỗ trợ mới từ ${ai.toLowerCase()} ${u.full_name || u.phone}`,
+          tieuDe, 'in-app', null, `ho-tro:${id}:${ad.id}`, at);
+      } catch (e) {
+        if (!/UNIQUE constraint failed/i.test(String(e && e.message))) throw e;
+      }
+    }
     const byId = new Map(q.users.all().map((x) => [x.id, x]));
     return ticketItem(q.ticketById.get(id), byId, q.replies.all());
   }

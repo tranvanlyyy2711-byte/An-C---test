@@ -578,10 +578,10 @@
         </div>
 
         <div class="rp-khung">
-          <h3>Phòng cho thuê qua website</h3>
-          <p>Tính trên toàn bộ phòng các chủ trọ đang quản lý trên An Cư.</p>
+          <h3>Tỷ lệ lấp phòng</h3>
+          <p>Theo trạng thái phòng ở trang quản lý của chủ trọ, tính trên toàn bộ phòng trên An Cư.</p>
           <div class="tron" id="rpTron"></div>
-          <p class="bc-note">Chỉ đếm phòng có yêu cầu thuê đã được duyệt trên An Cư. Phòng chủ trọ tự cho thuê bên ngoài thì hệ thống không ghi nhận được.</p>
+          <p class="bc-note" id="rpTronNote"></p>
         </div>
       </div>
     </section>
@@ -1052,7 +1052,8 @@
         !d.total.prevMonth ? 'Tháng trước chưa thu kỳ nào'
           : (lech === 0 ? 'Bằng tháng trước' : (lech > 0 ? '+' : '−') + vnd(Math.abs(lech)) + ' so với tháng trước')],
       ['Còn phải thu', vnd(d.total.due), 'Gồm cả kỳ chưa tới hạn'],
-      ['Phòng thuê qua website', String(d.occupancy.rate).replace('.', ',') + '%', d.occupancy.website + '/' + d.occupancy.rooms + ' phòng']
+      ['Tỷ lệ lấp phòng', String(d.occupancy.rate).replace('.', ',') + '%',
+        (d.occupancy.website + (d.occupancy.offline || 0)) + '/' + d.occupancy.rooms + ' phòng đang có người thuê']
     ].map(function(x){
       return '<div class="o"><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>';
     }).join('');
@@ -1061,9 +1062,10 @@
   function veTron(){
     var o = bcData.occupancy;
     var phan = [
-      ['Đã cho thuê qua website', o.website, 'var(--accent)'],
-      ['Đang có khách hẹn xem', o.viewing, '#8CC63F'],
-      ['Chưa có ai quan tâm', o.empty, 'rgba(16,32,16,.14)']
+      ['Đã thuê qua website', o.website, 'var(--accent)'],
+      ['Đã thuê ngoài website', o.offline || 0, '#1D7C1D'],
+      ['Có khách hẹn xem / đã cọc', o.viewing, '#8CC63F'],
+      ['Còn trống', o.empty, 'rgba(16,32,16,.14)']
     ];
     var tong = o.rooms || 1;
     var R = 56, C = 2 * Math.PI * R, batDau = 0;
@@ -1076,13 +1078,16 @@
       return x[1] ? el2 : '';
     }).join('');
     el('rpTron').innerHTML =
-      '<svg viewBox="0 0 168 168" role="img" aria-label="Tỷ lệ phòng cho thuê qua website: ' + o.rate + '%">' + vong +
+      '<svg viewBox="0 0 168 168" role="img" aria-label="Tỷ lệ lấp phòng: ' + o.rate + '%, trong đó ' + (o.rateWebsite || 0) + '% thuê qua An Cư">' + vong +
         '<text class="giua" x="84" y="80" text-anchor="middle">' + String(o.rate).replace('.', ',') + '%</text>' +
-        '<text class="giua-nho" x="84" y="98" text-anchor="middle">qua website</text>' +
+        '<text class="giua-nho" x="84" y="98" text-anchor="middle">đã lấp đầy</text>' +
       '</svg>' +
       '<ul>' + phan.map(function(x){
         return '<li><i style="background:' + x[2] + '"></i>' + esc(x[0]) + '<b>' + x[1] + '</b></li>';
       }).join('') + '<li style="border-top:1px dashed var(--border);padding-top:8px">Tổng số phòng<b>' + o.rooms + '</b></li></ul>';
+    el('rpTronNote').textContent = 'Trong ' + (o.website + (o.offline || 0)) + ' phòng đang có người thuê, '
+      + o.website + ' phòng chốt qua An Cư (' + String(o.rateWebsite || 0).replace('.', ',') + '% tổng số phòng), '
+      + (o.offline || 0) + ' phòng chủ trọ tự cho thuê rồi ghi vào trang quản lý.';
   }
 
   function veBaoCao(){
@@ -1110,6 +1115,7 @@
   var tickets = [];
   var allTickets = [];
 
+  var VAI_TRO_GUI = { landlord:'Chủ trọ', renter:'Người thuê', admin:'Quản trị' };
   function renderTickets(){
     el('tkList').innerHTML = tickets.map(function(t){
       var st = TK_STATUS[t.status] || TK_STATUS.moi;
@@ -1127,12 +1133,13 @@
           '<span class="tag mute">' + esc(TK_KIND[t.kind] || 'Khác') + '</span>' +
           '<span class="tag ' + st[1] + '">' + st[0] + '</span></div>' +
         '<p class="tk-meta">' + esc(t.user) + ' · ' + esc(t.userPhone) +
-          (t.plan ? ' · gói ' + esc(t.plan.planName) : ' · chưa mua gói') +
+          ' · ' + esc(VAI_TRO_GUI[t.userRole] || 'Tài khoản') +
+          (t.userRole === 'landlord' ? (t.plan ? ' · gói ' + esc(t.plan.planName) : ' · chưa mua gói') : '') +
           ' · gửi ' + ngay(t.createdAt) +
           (t.status !== 'da-xong' && !t.answered ? ' · <b>chưa trả lời lần nào</b>' : '') + '</p>' +
         '<p class="tk-body">' + esc(t.body) + '</p>' +
         (chat ? '<div class="tk-chat">' + chat + '</div>' : '') +
-        '<div class="tk-form"><textarea data-tra-loi="' + t.id + '" placeholder="Trả lời chủ trọ…" aria-label="Nội dung trả lời"></textarea>' +
+        '<div class="tk-form"><textarea data-tra-loi="' + t.id + '" placeholder="Trả lời người gửi…" aria-label="Nội dung trả lời"></textarea>' +
           '<div class="tk-act"><button type="button" class="btn btn-primary btn-sm" data-tk="' + t.id + '" data-tt="tra-loi">Gửi trả lời</button>' +
           nut.join('') + '</div></div>' +
       '</article>';
@@ -1319,6 +1326,16 @@
     allPosts.filter(function(post){ return post.status === 'pending'; }).forEach(function(post){
       pending.push({ text: post.landlord + ' đang chờ duyệt tin “' + post.title + '”.', href: '#tin-dang' });
     });
+    // Yêu cầu hỗ trợ chưa xử lý — chưa trả lời lần nào thì đẩy lên đầu
+    allTickets.filter(function(t){ return t.status !== 'da-xong'; })
+      .sort(function(a, b){ return (a.answered ? 1 : 0) - (b.answered ? 1 : 0); })
+      .forEach(function(t){
+        pending.push({
+          text: (VAI_TRO_GUI[t.userRole] || 'Tài khoản') + ' ' + t.user + ' gửi yêu cầu hỗ trợ: “' +
+            t.subject + '”' + (t.answered ? '' : ' — chưa trả lời'),
+          href: '#ho-tro'
+        });
+      });
     var latestPaid = tatCaHoaDon().filter(function(row){ return row.invoice.status === 'paid'; })
       .sort(function(a, b){ return String(b.invoice.paidAt).localeCompare(String(a.invoice.paidAt)); }).slice(0, 3);
     latestPaid.forEach(function(row){
@@ -1377,14 +1394,16 @@
       var userCount = s.users.renters + s.users.landlords;
       el('stats').innerHTML = [
         ['Tổng số phòng', properties.rooms || 0, (properties.total || 0) + ' nhà trọ trong hệ thống'],
-        ['Phòng đang trống', properties.availableRooms || 0, (properties.tenants || 0) + ' phòng đang có người thuê'],
+        ['Phòng đang trống', properties.availableRooms || 0, (properties.rented || 0) + ' phòng đang có người thuê'],
         ['Tổng tài khoản', userCount, s.users.renters + ' người thuê · ' + s.users.landlords + ' chủ trọ'],
         ['Doanh thu tháng này', vnd(s.revenue.month), 'Từ các kỳ thanh toán gói An Cư đã ghi nhận']
       ].map(function(x){
         return '<div class="stat"><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>';
       }).join('');
-      var occupied = Math.max(0, (properties.rooms || 0) - (properties.availableRooms || 0));
-      var percent = properties.rooms ? Math.round(occupied / properties.rooms * 100) : 0;
+      // Lấy thẳng số máy chủ đã đếm theo trạng thái phòng ở trang chủ trọ
+      var occupied = properties.rented || 0;
+      var percent = properties.occupancy != null ? Math.round(properties.occupancy)
+        : (properties.rooms ? Math.round(occupied / properties.rooms * 100) : 0);
       el('dashboardSnapshot').innerHTML = '<p><b>' + occupied + '</b> phòng đang có người thuê · <b>' +
         (properties.availableRooms || 0) + '</b> phòng trống</p><div class="occupancy-track">' +
         '<div class="occupancy-fill" style="--fill:' + percent + '%"></div></div>' +
@@ -1415,7 +1434,7 @@
     'tai-khoan': ['Tài khoản', 'Tài khoản người thuê và chủ trọ đã đăng ký, khoá hoặc mở khoá khi cần.'],
     'nha-tro': ['Nhà trọ & người thuê', 'Chủ trọ nào đang quản lý nhà trọ, phòng nào và ai đang thuê ở đó.'],
     'tin-dang': ['Đăng tin', 'Quản lý tin cho thuê, xem trước nội dung và duyệt tin trước khi công khai.'],
-    'ho-tro': ['Hỗ trợ & thông báo', 'Trả lời yêu cầu của chủ trọ, gửi thông báo hàng loạt và nhắc hết hạn gói.'],
+    'ho-tro': ['Hỗ trợ & thông báo', 'Trả lời yêu cầu của chủ trọ và người thuê, gửi thông báo hàng loạt và nhắc hết hạn gói.'],
     'bao-cao': ['Báo cáo tài chính', 'Doanh thu gói dịch vụ theo tháng, theo năm và tỷ lệ phòng cho thuê qua website.'],
     'thanh-toan': ['Thanh toán', 'Theo dõi và đối soát các kỳ thanh toán gói dịch vụ An Cư.']
   };
@@ -1477,7 +1496,7 @@
     btn.disabled = true;
     api('PATCH', '/api/quan-tri/ho-tro/' + id, body)
       .then(function(){
-        msg(body.action === 'tra-loi' ? 'Đã gửi trả lời cho chủ trọ.' : 'Đã đổi trạng thái yêu cầu.', 'ok');
+        msg(body.action === 'tra-loi' ? 'Đã gửi trả lời cho người gửi.' : 'Đã đổi trạng thái yêu cầu.', 'ok');
         return refresh();
       })
       .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
@@ -1765,6 +1784,30 @@
     }
   }
 
+  // ---------- Theo dõi yêu cầu hỗ trợ mới ----------
+  // Prototype chưa có kênh đẩy (WebSocket/SSE), nên hỏi lại máy chủ mỗi 15 giây.
+  // Có yêu cầu mới thì cập nhật chuông, huy hiệu ở cột công cụ và báo một dòng ngay trên trang.
+  var CHU_KY_HOI = 15000;
+  var soYeuCauCu = null;
+  function soChuaXuLy(){
+    return allTickets.filter(function(t){ return t.status !== 'da-xong'; }).length;
+  }
+  function theoDoiHoTro(){
+    if (demo) return;                       // chế độ xem thử: dữ liệu nằm ngay trong máy, không cần hỏi lại
+    setInterval(function(){
+      if (document.hidden) return;          // tab đang ẩn thì thôi, mở lại sẽ hỏi tiếp
+      loadTickets().then(function(){
+        var n = soChuaXuLy();
+        if (soYeuCauCu !== null && n > soYeuCauCu) {
+          var them = n - soYeuCauCu;
+          msg('Có ' + them + ' yêu cầu hỗ trợ mới vừa gửi tới. Mở khu Hỗ trợ để trả lời.', 'ok');
+        }
+        soYeuCauCu = n;
+        renderNotifications();
+      }).catch(function(){ /* mất mạng tạm thời: lần sau hỏi lại */ });
+    }, CHU_KY_HOI);
+  }
+
   // ---------- Khởi động: chỉ admin mới vào được ----------
   function gate(title, text){
     el('gate').hidden = false;
@@ -1785,7 +1828,10 @@
         + 'Chạy npm start rồi đăng nhập bằng tài khoản quản trị để làm việc trên dữ liệu thật.';
     }
     moKhu(location.hash.slice(1));
-    return refresh();
+    return refresh().then(function(){
+      soYeuCauCu = soChuaXuLy();
+      theoDoiHoTro();
+    });
   }
 
   function batCheDoXemThu(){
