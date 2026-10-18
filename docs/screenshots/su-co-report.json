@@ -198,6 +198,114 @@
     "ok": true
   },
   {
+    "name": "toLine lấy đúng tên chủ trọ thật (Trần Hoà), không phải dữ liệu mẫu",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "toLine không còn hiện dữ liệu mẫu cứng \"Nguyễn Văn A\"",
+    "got": false,
+    "want": false,
+    "ok": true
+  },
+  {
+    "name": "gửi phiếu qua trang thật -> danh sách tăng thêm 1",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "phiếu mới nhất hiện đúng mô tả vừa gửi",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "hộp thoại chi tiết hiện đúng mô tả (description từ máy chủ)",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "tin nhắn hệ thống do máy chủ sinh ra xuất hiện trong luồng trao đổi",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "chủ trọ thấy phiếu người thuê vừa gửi từ trang thật",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "thanh tiến độ có đủ 4 bước (thêm \"Chờ xác nhận\")",
+    "got": 4,
+    "want": 4,
+    "ok": true
+  },
+  {
+    "name": "bước thứ 3 đúng là \"Chờ xác nhận\"",
+    "got": "Chờ xác nhận",
+    "want": "Chờ xác nhận",
+    "ok": true
+  },
+  {
+    "name": "bước hiện tại (now) đúng là \"Chờ xác nhận\", không lẫn với \"Đang xử lý\"",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "có 2 nút xác nhận \"Vẫn còn lỗi\" và \"Đã ổn\"",
+    "got": 2,
+    "want": 2,
+    "ok": true
+  },
+  {
+    "name": "bấm \"Vẫn còn lỗi\" -> huy hiện trạng thái Đang xử lý",
+    "got": "Đang xử lý",
+    "want": "Đang xử lý",
+    "ok": true
+  },
+  {
+    "name": "bấm \"Đã ổn\" -> chuyển Đã hoàn thành",
+    "got": "Đã hoàn thành",
+    "want": "Đã hoàn thành",
+    "ok": true
+  },
+  {
+    "name": "phiếu đã xong: không còn nút xác nhận, chỉ còn \"Gửi yêu cầu mới\"",
+    "got": 0,
+    "want": 0,
+    "ok": true
+  },
+  {
+    "name": "phiếu đã xong hiện nút \"Gửi yêu cầu mới\"",
+    "got": 1,
+    "want": 1,
+    "ok": true
+  },
+  {
+    "name": "[mobile 390px] thanh 4 bước không làm vỡ bố cục (không cuộn ngang)",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "chưa đăng nhập: toLine báo cần đăng nhập",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
+    "name": "[mobile 390px] chưa đăng nhập vẫn không cuộn ngang",
+    "got": true,
+    "want": true,
+    "ok": true
+  },
+  {
     "name": "không có lỗi JS trong suốt kịch bản",
     "got": [],
     "want": [],

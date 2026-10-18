@@ -271,7 +271,7 @@ async function api(req, res, url) {
 
 // Chỉ phục vụ đúng những gì các trang cần. Mọi thứ khác trong thư mục dự án (.git, node_modules,
 // scripts, server, data, CLAUDE.md...) trả 404, để mở máy chủ ra mạng ngoài không lộ mã nguồn hay dữ liệu.
-const PUBLIC_DIRS = new Set(['quan-ly', 'tai-khoan', 'quan-tri', 'assets']);
+const PUBLIC_DIRS = new Set(['quan-ly', 'tai-khoan', 'quan-tri', 'assets', 'components']);
 
 async function staticFile(req, res, url) {
   let urlPath;

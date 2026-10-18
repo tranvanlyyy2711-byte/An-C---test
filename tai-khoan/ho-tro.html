@@ -129,6 +129,7 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
 .status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
 .status.is-submitted{color:var(--warning-ink);background:rgba(245,177,76,.15);border-color:rgba(245,177,76,.35)}
 .status.is-in_progress{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(47,111,237,.22)}
+.status.is-cho_xac_nhan{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(47,111,237,.22)}
 .status.is-done{color:var(--success-ink);background:rgba(34,139,34,.09);border-color:rgba(34,139,34,.22)}
 .tag-urgent{display:inline-flex;align-items:center;min-height:22px;padding:0 8px;border-radius:999px;font-size:11.5px;font-weight:700;color:var(--danger-ink);background:rgba(255,107,107,.1)}
 
@@ -169,7 +170,7 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
 .dlg-x{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text-muted);flex-shrink:0}
 .dlg-x svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
 .dlg-body{padding:18px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
-.steps{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .steps li{position:relative;display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--text-dim)}
 .steps li::before{content:'';height:4px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
 .steps li.done::before{background:var(--accent);border-color:var(--accent)}
@@ -214,6 +215,9 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
   .dlg{width:100vw;max-width:100vw;max-height:92vh;margin:auto 0 0;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
   .desc-imgs{grid-template-columns:repeat(2,minmax(0,1fr))}
   .toast{left:16px;right:16px;bottom:16px;max-width:none}
+  .steps{gap:6px}
+  .steps b{font-size:11.5px}
+  .done-note{align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after,.dlg::backdrop{animation:none!important;transition:none!important}
@@ -325,14 +329,11 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
 <script>
 (function(){
   'use strict';
-  // Prototype: phiếu lưu trong trình duyệt (localStorage), theo từng người thuê. Phía chủ trọ chưa có
-  // trang nhận phiếu. Lên Next.js: bảng maintenance_requests + messages, Storage bucket cho ảnh, Realtime.
-  var STORE_KEY = 'an-cu-ho-tro-v1';
+  // Phiếu lưu ở máy chủ (bảng incident_tickets / incident_replies, xem server/su-co.mjs), gọi qua
+  // /api/su-co* — bắt buộc đăng nhập thật bằng tài khoản người thuê, không có lối demo ?nguoi=.
   var MAX_IMG = 4, MAX_DESC = 1000, MIN_DESC = 10;
   var HD = window.AnCuHopDong, U = HD.util;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var who = HD.renterId();
-  var contract = HD.isTenantActive(who) ? HD.contractFor(who) : null;
 
   var ICON = {
     bolt:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>',
@@ -359,55 +360,34 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     { id:'khac',      label:'Khác', icon:ICON.dots, hint:'Mô tả vấn đề bạn cần chủ trọ hỗ trợ.' }
   ];
   function catOf(id){ for(var i = 0; i < CATS.length; i++){ if(CATS[i].id === id) return CATS[i]; } return CATS[CATS.length - 1]; }
-  var STATUS = { submitted:'Đã gửi · Chờ tiếp nhận', in_progress:'Đang xử lý', done:'Đã hoàn thành' };
-  var landlordName = contract ? contract.landlord : 'Đội hỗ trợ An Cư';
+  var STATUS = { submitted:'Đã gửi · Chờ tiếp nhận', in_progress:'Đang xử lý', cho_xac_nhan:'Chờ xác nhận', done:'Đã hoàn thành' };
+  function badge(st){ return '<span class="status is-' + st + '">' + (STATUS[st] || st) + '</span>'; }
+  var landlordName = 'Đội hỗ trợ An Cư';
 
-  // ---------- Kho phiếu ----------
-  function readStore(){
-    try{ var o = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); return o && o.v === 1 && Array.isArray(o.items) ? o : null; }
-    catch(e){ return null; }
+  // ---------- Dữ liệu từ máy chủ ----------
+  var recipient = { room:null, title:'', landlord:landlordName, landlordPhone:'', dueDay:5 };
+  var tickets = [];
+  var loadError = null; // { httpStatus, error, message } khi chưa tải được
+  function mine(){ return tickets; }
+  function findTicket(id){ return tickets.filter(function(t){ return t.id === id; })[0] || null; }
+  function upsertTicket(item){
+    for(var i = 0; i < tickets.length; i++){ if(tickets[i].id === item.id){ tickets[i] = item; return; } }
+    tickets.unshift(item);
   }
-  function writeStore(o){
-    try{ localStorage.setItem(STORE_KEY, JSON.stringify(o)); return true; }
-    catch(e){ return false; }
+
+  var API_ON = /^https?:$/.test(location.protocol) && !!window.fetch;
+  function apiCall(method, url, body){
+    return fetch(url, { method:method, cache:'no-store',
+      headers: body ? { 'Content-Type':'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){ j.httpStatus = r.status; return j; });
+    });
   }
-  // Dữ liệu mẫu cho người đang thuê P.301 (gieo một lần)
-  function seed(){
-    var o = readStore() || { v:1, seq:13, items:[], seeded:{} };
-    if(contract && !o.seeded[who]){
-      o.items.push(
-        { id:'YC-0012', renterId:who, room:contract.room, category:'noi-that', urgency:'normal', status:'in_progress',
-          desc:'Bình nóng lạnh trong nhà tắm không nóng nữa, đèn báo vẫn sáng. Đã thử tắt mở lại aptomat bình nhưng không được.',
-          images:[], createdAt:'2026-10-09T13:20:00+07:00', messages:[
-            { from:'system', body:'Phiếu đã gửi tới chủ trọ ' + contract.landlord + '.', at:'2026-10-09T13:20:00+07:00' },
-            { from:'landlord', body:'Chị đã nhận được phiếu. Sáng thứ 7 (11/10) thợ qua kiểm tra khoảng 9h, em có nhà không?', at:'2026-10-09T18:05:00+07:00' },
-            { from:'renter', body:'Dạ thứ 7 em có nhà cả buổi sáng ạ.', at:'2026-10-09T18:30:00+07:00' },
-            { from:'system', body:'Chủ trọ đã chuyển phiếu sang Đang xử lý.', at:'2026-10-09T18:31:00+07:00' },
-            { from:'landlord', body:'Thợ báo hỏng thanh đốt, đang đặt linh kiện, khoảng 2–3 ngày nữa thay xong nhé.', at:'2026-10-11T10:15:00+07:00' }
-          ] },
-        { id:'YC-0009', renterId:who, room:contract.room, category:'dien-nuoc', urgency:'urgent', status:'done',
-          desc:'Mất điện cả phòng lúc 21h, aptomat tổng trong phòng bật lên lại nhảy ngay.',
-          images:[], createdAt:'2026-08-22T21:10:00+07:00', messages:[
-            { from:'system', body:'Phiếu khẩn cấp đã gửi tới chủ trọ ' + contract.landlord + '.', at:'2026-08-22T21:10:00+07:00' },
-            { from:'landlord', body:'Em rút hết thiết bị ra rồi bật lại aptomat thử nhé, chị qua ngay.', at:'2026-08-22T21:14:00+07:00' },
-            { from:'system', body:'Chủ trọ đã chuyển phiếu sang Đang xử lý.', at:'2026-08-22T21:15:00+07:00' },
-            { from:'landlord', body:'Đã thay ổ cắm bị chập sau tủ lạnh, điện ổn định rồi.', at:'2026-08-22T22:02:00+07:00' },
-            { from:'system', body:'Chủ trọ đã đánh dấu phiếu Đã hoàn thành.', at:'2026-08-22T22:03:00+07:00' }
-          ] }
-      );
-      o.seeded[who] = true;
-      writeStore(o);
-    }
-    return o;
-  }
-  var store = seed();
-  function mine(){ return store.items.filter(function(t){ return t.renterId === who; }).sort(function(a, b){ return b.createdAt.localeCompare(a.createdAt); }); }
-  function findTicket(id){ return store.items.filter(function(t){ return t.id === id; })[0] || null; }
 
   function fmtTime(iso){
     return new Intl.DateTimeFormat('vi-VN', { timeZone:'Asia/Ho_Chi_Minh', hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric' }).format(new Date(iso));
   }
-  function badge(st){ return '<span class="status is-' + st + '">' + STATUS[st] + '</span>'; }
 
   // ---------- Form ----------
   var fCat = document.getElementById('fCat');
@@ -417,8 +397,20 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
   var images = []; // dataURL đã thu nhỏ
 
   fCat.insertAdjacentHTML('beforeend', CATS.map(function(c){ return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join(''));
-  document.getElementById('toLine').innerHTML = svg(ICON.user) + '<span>Gửi tới <b>' + esc(landlordName) + '</b>' +
-    (contract ? ' · ' + esc(contract.title) : ' · bạn chưa có phòng đang thuê') + '</span>';
+
+  function renderToLine(){
+    var toLine = document.getElementById('toLine');
+    if(loadError){
+      var msg = loadError.httpStatus === 401 ? 'Cần đăng nhập để gửi yêu cầu hỗ trợ.' :
+        loadError.httpStatus === 403 ? (loadError.message || 'Tài khoản đang đăng nhập không phải tài khoản người thuê.') :
+        'Không kết nối được tới máy chủ.';
+      toLine.innerHTML = svg(ICON.user) + '<span>' + esc(msg) +
+        (loadError.httpStatus === 401 ? ' <b><a href="../trang-chu.html">Về trang chủ để đăng nhập</a></b>' : '') + '</span>';
+      return;
+    }
+    toLine.innerHTML = svg(ICON.user) + '<span>Gửi tới <b>' + esc(landlordName) + '</b>' +
+      (recipient.room ? ' · ' + esc(recipient.title) : ' · bạn chưa có phòng đang thuê') + '</span>';
+  }
 
   function setErr(input, id, msg){
     var el = document.getElementById(id);
@@ -495,40 +487,46 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
 
   document.getElementById('newForm').addEventListener('submit', function(e){
     e.preventDefault();
+    if(loadError || !recipient.room){
+      setErr(null, 'fImgErr', loadError ? 'Hãy đăng nhập rồi thử lại.' : 'Bạn chưa có phòng đang thuê nên chưa gửi được yêu cầu.');
+      return;
+    }
     var desc = fDesc.value.trim();
     var okCat = setErr(fCat, 'fCatErr', fCat.value ? '' : 'Vui lòng chọn loại sự cố.');
     var okDesc = setErr(fDesc, 'fDescErr', desc.length < MIN_DESC ? 'Mô tả ít nhất ' + MIN_DESC + ' ký tự để chủ trọ hiểu đúng vấn đề.' : '');
     if(!okCat){ fCat.focus(); return; }
     if(!okDesc){ fDesc.focus(); return; }
     var urgent = document.querySelector('input[name="fUrg"]:checked').value === 'urgent';
-    var now = new Date().toISOString();
-    var t = {
-      id:'YC-' + String(store.seq).padStart(4, '0'), renterId:who, room:contract ? contract.room : '',
-      category:fCat.value, urgency:urgent ? 'urgent' : 'normal', status:'submitted', desc:desc, images:images.slice(),
-      createdAt:now, messages:[{ from:'system', body:(urgent ? 'Phiếu khẩn cấp' : 'Phiếu') + ' đã gửi tới ' + landlordName + '. Chủ trọ thường phản hồi trong 24 giờ.', at:now }]
-    };
-    store = readStore() || store;
-    store.items.push(t);
-    store.seq++;
-    if(!writeStore(store)){
-      store.items.pop(); store.seq--;
-      setErr(null, 'fImgErr', 'Bộ nhớ trình duyệt đã đầy. Hãy bỏ bớt ảnh rồi gửi lại.');
-      return;
-    }
-    // Đặt lại form
-    e.target.reset();
-    images = []; renderThumbs();
-    document.getElementById('fDescCount').textContent = '0/' + MAX_DESC;
-    document.getElementById('urgNote').hidden = true;
-    fDesc.placeholder = 'Mô tả vấn đề: xảy ra từ khi nào, ở vị trí nào, đã thử xử lý gì…';
-    filter = 'all'; syncChips();
-    renderTickets();
-    var row = document.querySelector('[data-ticket="' + t.id + '"]');
-    if(row){
-      row.scrollIntoView({ behavior:reduce ? 'auto' : 'smooth', block:'center' });
-      if(!reduce){ row.classList.add('flash'); }
-    }
-    showToast('Đã gửi yêu cầu ' + t.id, 'Chủ trọ sẽ tiếp nhận và phản hồi trong phiếu này.');
+    var sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    apiCall('POST', '/api/su-co', { category:fCat.value, urgency:urgent ? 'urgent' : 'normal', description:desc, images:images.slice() })
+      .then(function(j){
+        sendBtn.disabled = false;
+        if(j.httpStatus !== 201){
+          setErr(null, 'fImgErr', j.message || 'Không gửi được yêu cầu, hãy thử lại.');
+          return;
+        }
+        var t = j.item;
+        upsertTicket(t);
+        // Đặt lại form
+        e.target.reset();
+        images = []; renderThumbs();
+        document.getElementById('fDescCount').textContent = '0/' + MAX_DESC;
+        document.getElementById('urgNote').hidden = true;
+        fDesc.placeholder = 'Mô tả vấn đề: xảy ra từ khi nào, ở vị trí nào, đã thử xử lý gì…';
+        filter = 'all'; syncChips();
+        renderTickets();
+        var row = document.querySelector('[data-ticket="' + t.id + '"]');
+        if(row){
+          row.scrollIntoView({ behavior:reduce ? 'auto' : 'smooth', block:'center' });
+          if(!reduce){ row.classList.add('flash'); }
+        }
+        showToast('Đã gửi yêu cầu ' + t.id, 'Chủ trọ sẽ tiếp nhận và phản hồi trong phiếu này.');
+      })
+      .catch(function(){
+        sendBtn.disabled = false;
+        setErr(null, 'fImgErr', 'Không kết nối được tới máy chủ, hãy thử lại.');
+      });
   });
 
   // ---------- Danh sách phiếu ----------
@@ -541,9 +539,19 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     filter = c.getAttribute('data-filter'); syncChips(); renderTickets();
   });
   function renderTickets(){
+    var box = document.getElementById('ticketBox');
+    if(loadError){
+      var msg = loadError.httpStatus === 401 ? 'Đăng nhập để xem các yêu cầu bạn đã gửi.' :
+        loadError.httpStatus === 403 ? (loadError.message || 'Tài khoản đang đăng nhập không phải tài khoản người thuê.') :
+        'Không kết nối được tới máy chủ.';
+      box.innerHTML = '<div class="empty-state">' + svg(ICON.receipt) + '<h3>Chưa tải được yêu cầu</h3><p>' + esc(msg) + '</p>' +
+        '<p style="margin-top:10px">' + (loadError.httpStatus === 401
+          ? '<a class="btn btn-ghost btn-sm" href="../trang-chu.html">Về trang chủ để đăng nhập</a>'
+          : '<button type="button" class="btn btn-ghost btn-sm" data-reload>Tải lại trang</button>') + '</p></div>';
+      return;
+    }
     var all = mine();
     var list = all.filter(function(t){ return filter === 'all' || (filter === 'done' ? t.status === 'done' : t.status !== 'done'); });
-    var box = document.getElementById('ticketBox');
     if(!list.length){
       box.innerHTML = '<div class="empty-state">' + svg(ICON.receipt) +
         '<h3>' + (all.length ? 'Không có phiếu nào ở mục này' : 'Bạn chưa gửi yêu cầu nào') + '</h3>' +
@@ -558,13 +566,14 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
         '<span class="tk-ic">' + svg(c.icon) + '</span>' +
         '<span style="min-width:0"><span class="tk-top"><b>' + t.id + '</b><span>' + esc(c.label.replace(/ \(.*\)$/, '')) + '</span><span>· ' + fmtTime(t.createdAt) + '</span>' +
           (t.urgency === 'urgent' ? '<span class="tag-urgent">Khẩn cấp</span>' : '') + '</span>' +
-          '<span class="tk-title">' + esc(t.desc) + '</span>' +
+          '<span class="tk-title">' + esc(t.description) + '</span>' +
           '<span class="tk-meta" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(meta) + '</span></span>' +
         '<span class="tk-right">' + badge(t.status) + svg(ICON.chevR) + '</span>' +
       '</button></li>';
     }).join('') + '</ul>';
   }
   document.getElementById('ticketBox').addEventListener('click', function(e){
+    if(e.target.closest('[data-reload]')){ location.reload(); return; }
     var b = e.target.closest('[data-ticket]'); if(b) openTicket(b.getAttribute('data-ticket'), b);
   });
 
@@ -572,9 +581,9 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
   var dlg = document.getElementById('tkDlg');
   var openId = null, lastFocus = null;
   function stepsHtml(t){
-    var order = ['submitted', 'in_progress', 'done'];
+    var order = ['submitted', 'in_progress', 'cho_xac_nhan', 'done'];
     var at = order.indexOf(t.status);
-    var label = ['Đã gửi', 'Đang xử lý', 'Đã hoàn thành'];
+    var label = ['Đã gửi', 'Đang xử lý', 'Chờ xác nhận', 'Đã hoàn thành'];
     return '<ol class="steps" aria-label="Tiến độ xử lý">' + label.map(function(l, i){
       return '<li class="' + (i <= at ? 'done' : '') + (i === at ? ' now' : '') + '"' + (i === at ? ' aria-current="step"' : '') + '><b>' + l + '</b></li>';
     }).join('') + '</ol>';
@@ -592,13 +601,17 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     document.getElementById('tkSub').innerHTML = badge(t.status) + (t.urgency === 'urgent' ? '<span class="tag-urgent">Khẩn cấp</span>' : '') +
       '<span>Gửi lúc ' + fmtTime(t.createdAt) + (t.room ? ' · ' + esc(t.room) : '') + '</span>';
     document.getElementById('tkBody').innerHTML = stepsHtml(t) +
-      '<div><p class="sec-title">Nội dung yêu cầu</p><div class="desc-box">' + esc(t.desc) + '</div>' +
+      '<div><p class="sec-title">Nội dung yêu cầu</p><div class="desc-box">' + esc(t.description) + '</div>' +
         (t.images.length ? '<div class="desc-imgs">' + t.images.map(function(src, i){
           return '<a href="' + src + '" target="_blank" rel="noopener" aria-label="Mở ảnh ' + (i + 1) + ' cỡ lớn"><img src="' + src + '" alt="Ảnh hiện trạng ' + (i + 1) + '" /></a>';
         }).join('') + '</div>' : '') + '</div>' +
       '<div><p class="sec-title">Trao đổi với chủ trọ</p>' + threadHtml(t) + '</div>';
     document.getElementById('tkFoot').innerHTML = t.status === 'done'
       ? '<div class="done-note"><span>Phiếu đã hoàn thành. Sự cố lặp lại?</span><button type="button" class="btn btn-ghost btn-sm" data-again="' + t.category + '">Gửi yêu cầu mới</button></div>'
+      : t.status === 'cho_xac_nhan'
+      ? '<div class="done-note"><span>Chủ trọ báo đã xử lý xong. Sự cố đã hết chưa?</span>' +
+          '<div style="display:flex;gap:10px"><button type="button" class="btn btn-ghost btn-sm" data-confirm="van-con-loi">Vẫn còn lỗi</button>' +
+          '<button type="button" class="btn btn-primary btn-sm" data-confirm="da-on">Đã ổn</button></div></div>'
       : '<form class="reply" id="replyForm"><label class="sr-only" for="replyText">Nhắn cho chủ trọ</label>' +
           '<textarea class="field" id="replyText" maxlength="500" placeholder="Nhắn thêm cho chủ trọ…"></textarea>' +
           '<button type="submit" class="btn btn-primary">Gửi</button></form>';
@@ -627,6 +640,31 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
       fDesc.focus({ preventScroll:true });
       return;
     }
+    var confirmBtn = e.target.closest('[data-confirm]');
+    if(confirmBtn){
+      var id = openId; if(!id) return;
+      var action = confirmBtn.getAttribute('data-confirm');
+      var btns = confirmBtn.closest('.done-note').querySelectorAll('button');
+      btns.forEach(function(b){ b.disabled = true; });
+      apiCall('PATCH', '/api/su-co/' + encodeURIComponent(id), { action:action }).then(function(j){
+        if(j.httpStatus !== 200){
+          showToast('Không thực hiện được', j.message || 'Hãy thử lại.');
+          btns.forEach(function(b){ b.disabled = false; });
+          return;
+        }
+        upsertTicket(j.item);
+        if(openId === id) renderTicket(j.item);
+        renderTickets();
+        showToast(
+          action === 'da-on' ? 'Đã xác nhận xong' : 'Đã báo lại cho chủ trọ',
+          action === 'da-on' ? 'Phiếu chuyển sang Đã hoàn thành.' : 'Phiếu quay lại Đang xử lý, chủ trọ sẽ xem lại.'
+        );
+      }).catch(function(){
+        showToast('Không thực hiện được', 'Không kết nối được tới máy chủ.');
+        btns.forEach(function(b){ b.disabled = false; });
+      });
+      return;
+    }
     if(e.target === dlg){
       var r = dlg.getBoundingClientRect();
       if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
@@ -637,14 +675,21 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     e.preventDefault();
     var txt = document.getElementById('replyText').value.trim();
     if(!txt) { document.getElementById('replyText').focus(); return; }
-    store = readStore() || store;
-    var t = findTicket(openId); if(!t) return;
-    t.messages.push({ from:'renter', body:txt, at:new Date().toISOString() });
-    writeStore(store);
-    renderTicket(t);
-    renderTickets();
-    var body = document.getElementById('tkBody'); body.scrollTop = body.scrollHeight;
-    document.getElementById('replyText').focus();
+    var id = openId; if(!id) return;
+    var replyBtn = e.target.querySelector('button[type="submit"]');
+    replyBtn.disabled = true;
+    apiCall('POST', '/api/su-co/' + encodeURIComponent(id) + '/tin-nhan', { body:txt }).then(function(j){
+      replyBtn.disabled = false;
+      if(j.httpStatus !== 201){ showToast('Không gửi được', j.message || 'Hãy thử lại.'); return; }
+      upsertTicket(j.item);
+      if(openId === id) renderTicket(j.item);
+      renderTickets();
+      var body = document.getElementById('tkBody'); body.scrollTop = body.scrollHeight;
+      document.getElementById('replyText').focus();
+    }).catch(function(){
+      replyBtn.disabled = false;
+      showToast('Không gửi được', 'Không kết nối được tới máy chủ.');
+    });
   });
   // Ctrl/⌘ + Enter để gửi nhanh tin nhắn
   dlg.addEventListener('keydown', function(e){
@@ -652,33 +697,36 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
   });
 
   // ---------- Liên hệ nhanh + FAQ ----------
-  var phone = contract ? contract.landlordPhone.replace(/\s/g, '') : '';
-  document.getElementById('quick').innerHTML =
-    (contract ? '<a href="tel:' + phone + '">' + svg(ICON.phone) + '<span><b>Gọi chủ trọ ' + esc(contract.landlord) + '</b><small>' + esc(contract.landlordPhone) + ' · sự cố gấp, cần người đến ngay</small></span></a>' : '') +
-    '<a class="sos" href="tel:114">' + svg(ICON.flame) + '<span><b>114 · Cứu hoả</b><small>Cháy, chập điện, người mắc kẹt</small></span></a>' +
-    '<a class="sos" href="tel:113">' + svg(ICON.shield) + '<span><b>113 · Công an</b><small>Trộm cắp, xâm nhập, gây rối</small></span></a>' +
-    '<a class="sos" href="tel:115">' + svg(ICON.plus) + '<span><b>115 · Cấp cứu</b><small>Tai nạn, cần hỗ trợ y tế</small></span></a>';
-
-  var dueDay = contract ? contract.dueDay : 5;
-  var FAQ = [
-    ['Tự xử lý sự cố', [
-      ['Mất điện trong phòng: bật lại aptomat thế nào?', '<ol><li>Rút phích các thiết bị công suất lớn (bình nóng lạnh, điều hoà, bếp điện).</li><li>Mở hộp aptomat cạnh cửa, gạt cần đang ở vị trí <b>OFF</b> lên <b>ON</b>.</li><li>Cắm lại từng thiết bị. Thiết bị nào làm aptomat nhảy là thiết bị bị chập, ngừng dùng và gửi phiếu <b>Điện / Nước</b>.</li></ol>Aptomat nhảy ngay cả khi đã rút hết thiết bị: <b>không bật lại nhiều lần</b>, gọi chủ trọ.'],
-      ['Bình nóng lạnh không nóng', '<ul><li>Kiểm tra aptomat riêng của bình và đèn báo trên thân bình.</li><li>Bật bình 15–20 phút trước khi tắm; vặn núm nhiệt độ lên mức giữa.</li><li>Đèn sáng mà nước vẫn lạnh sau 30 phút: gửi phiếu <b>Thiết bị nội thất</b>.</li></ul>'],
-      ['Điều hoà chạy nhưng không mát', '<ul><li>Đặt chế độ <b>Cool</b>, 25–26°C, đóng kín cửa.</li><li>Tháo lưới lọc ở mặt trước, rửa nước sạch, phơi khô rồi lắp lại (khoảng 2 tuần một lần).</li><li>Dàn nóng không quay hoặc chảy nước nhiều: gửi phiếu, đừng tự tháo máy.</li></ul>'],
-      ['Nước yếu hoặc mất nước', 'Kiểm tra van tổng dưới bồn rửa đã mở hết chưa. Cả nhà trọ cùng mất nước thường do bơm hoặc bồn trên mái; chủ trọ sẽ báo trong nhóm chung. Chỉ phòng bạn bị: gửi phiếu <b>Điện / Nước</b>.']
-    ]],
-    ['Nội quy nhà trọ', [
-      ['Giờ giấc ra vào', 'Cổng chính đóng lúc <b>23:00</b>, mở lúc <b>5:30</b>. Về muộn hãy báo chủ trọ trước và dùng thẻ / mã cổng riêng của phòng, không cho người lạ đi cùng vào.'],
-      ['Khách đến chơi, ở lại qua đêm', 'Khách được ở đến 22:00. Ở lại qua đêm cần báo chủ trọ trước để khai báo tạm trú theo quy định.'],
-      ['Hạn thanh toán tiền nhà', 'Hoá đơn chốt ngày 1, hạn thanh toán <b>ngày ' + dueDay + '</b> hằng tháng. Thắc mắc số điện nước: chụp ảnh công tơ và gửi phiếu <b>Thắc mắc hoá đơn</b> trước hạn để chủ trọ kiểm tra.'],
-      ['Rác, vệ sinh chung, gửi xe', '<ul><li>Bỏ rác đúng giờ thu gom (18:00–20:00) tại điểm tập kết tầng 1.</li><li>Giữ sạch hành lang, cầu thang; không để đồ cá nhân ở lối đi.</li><li>Xe để đúng vị trí trong nhà xe, khoá cổ và không sạc xe điện qua đêm.</li></ul>']
-    ]]
-  ];
-  document.getElementById('faq').innerHTML = FAQ.map(function(g){
-    return '<p class="faq-group">' + g[0] + '</p>' + g[1].map(function(q){
-      return '<details><summary>' + esc(q[0]) + svg(ICON.chevD) + '</summary><div class="ans">' + q[1] + '</div></details>';
+  function renderQuick(){
+    var phone = recipient.room ? (recipient.landlordPhone || '').replace(/\s/g, '') : '';
+    document.getElementById('quick').innerHTML =
+      (recipient.room ? '<a href="tel:' + phone + '">' + svg(ICON.phone) + '<span><b>Gọi chủ trọ ' + esc(recipient.landlord) + '</b><small>' + esc(recipient.landlordPhone) + ' · sự cố gấp, cần người đến ngay</small></span></a>' : '') +
+      '<a class="sos" href="tel:114">' + svg(ICON.flame) + '<span><b>114 · Cứu hoả</b><small>Cháy, chập điện, người mắc kẹt</small></span></a>' +
+      '<a class="sos" href="tel:113">' + svg(ICON.shield) + '<span><b>113 · Công an</b><small>Trộm cắp, xâm nhập, gây rối</small></span></a>' +
+      '<a class="sos" href="tel:115">' + svg(ICON.plus) + '<span><b>115 · Cấp cứu</b><small>Tai nạn, cần hỗ trợ y tế</small></span></a>';
+  }
+  function renderFaq(){
+    var dueDay = recipient.dueDay || 5;
+    var FAQ = [
+      ['Tự xử lý sự cố', [
+        ['Mất điện trong phòng: bật lại aptomat thế nào?', '<ol><li>Rút phích các thiết bị công suất lớn (bình nóng lạnh, điều hoà, bếp điện).</li><li>Mở hộp aptomat cạnh cửa, gạt cần đang ở vị trí <b>OFF</b> lên <b>ON</b>.</li><li>Cắm lại từng thiết bị. Thiết bị nào làm aptomat nhảy là thiết bị bị chập, ngừng dùng và gửi phiếu <b>Điện / Nước</b>.</li></ol>Aptomat nhảy ngay cả khi đã rút hết thiết bị: <b>không bật lại nhiều lần</b>, gọi chủ trọ.'],
+        ['Bình nóng lạnh không nóng', '<ul><li>Kiểm tra aptomat riêng của bình và đèn báo trên thân bình.</li><li>Bật bình 15–20 phút trước khi tắm; vặn núm nhiệt độ lên mức giữa.</li><li>Đèn sáng mà nước vẫn lạnh sau 30 phút: gửi phiếu <b>Thiết bị nội thất</b>.</li></ul>'],
+        ['Điều hoà chạy nhưng không mát', '<ul><li>Đặt chế độ <b>Cool</b>, 25–26°C, đóng kín cửa.</li><li>Tháo lưới lọc ở mặt trước, rửa nước sạch, phơi khô rồi lắp lại (khoảng 2 tuần một lần).</li><li>Dàn nóng không quay hoặc chảy nước nhiều: gửi phiếu, đừng tự tháo máy.</li></ul>'],
+        ['Nước yếu hoặc mất nước', 'Kiểm tra van tổng dưới bồn rửa đã mở hết chưa. Cả nhà trọ cùng mất nước thường do bơm hoặc bồn trên mái; chủ trọ sẽ báo trong nhóm chung. Chỉ phòng bạn bị: gửi phiếu <b>Điện / Nước</b>.']
+      ]],
+      ['Nội quy nhà trọ', [
+        ['Giờ giấc ra vào', 'Cổng chính đóng lúc <b>23:00</b>, mở lúc <b>5:30</b>. Về muộn hãy báo chủ trọ trước và dùng thẻ / mã cổng riêng của phòng, không cho người lạ đi cùng vào.'],
+        ['Khách đến chơi, ở lại qua đêm', 'Khách được ở đến 22:00. Ở lại qua đêm cần báo chủ trọ trước để khai báo tạm trú theo quy định.'],
+        ['Hạn thanh toán tiền nhà', 'Hoá đơn chốt ngày 1, hạn thanh toán <b>ngày ' + dueDay + '</b> hằng tháng. Thắc mắc số điện nước: chụp ảnh công tơ và gửi phiếu <b>Thắc mắc hoá đơn</b> trước hạn để chủ trọ kiểm tra.'],
+        ['Rác, vệ sinh chung, gửi xe', '<ul><li>Bỏ rác đúng giờ thu gom (18:00–20:00) tại điểm tập kết tầng 1.</li><li>Giữ sạch hành lang, cầu thang; không để đồ cá nhân ở lối đi.</li><li>Xe để đúng vị trí trong nhà xe, khoá cổ và không sạc xe điện qua đêm.</li></ul>']
+      ]]
+    ];
+    document.getElementById('faq').innerHTML = FAQ.map(function(g){
+      return '<p class="faq-group">' + g[0] + '</p>' + g[1].map(function(q){
+        return '<details><summary>' + esc(q[0]) + svg(ICON.chevD) + '</summary><div class="ans">' + q[1] + '</div></details>';
+      }).join('');
     }).join('');
-  }).join('');
+  }
 
   // ---------- Toast + hiện dần ----------
   function showToast(title, text){
@@ -696,16 +744,38 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.5}
     if(io) io.observe(el); else el.classList.add('in');
   });
 
-  // Tab khác thêm / trả lời phiếu thì cập nhật
-  window.addEventListener('storage', function(e){
-    if(e.key !== STORE_KEY) return;
-    store = readStore() || store;
+  // ---------- Tải dữ liệu thật từ máy chủ ----------
+  function afterLoad(){
+    renderToLine();
+    renderQuick();
+    renderFaq();
     renderTickets();
-    if(openId){ var t = findTicket(openId); if(t) renderTicket(t); }
-  });
+  }
+  function loadAll(){
+    if(!API_ON){
+      loadError = { httpStatus:0, message:'Không kết nối được tới máy chủ.' };
+      afterLoad();
+      return;
+    }
+    Promise.all([ apiCall('GET', '/api/su-co/nguoi-nhan'), apiCall('GET', '/api/su-co') ]).then(function(res){
+      var rec = res[0], list = res[1];
+      if(rec.httpStatus !== 200){
+        loadError = rec;
+      } else {
+        recipient = rec;
+        landlordName = recipient.landlord || 'Đội hỗ trợ An Cư';
+        tickets = (list.httpStatus === 200 && list.items) || [];
+        loadError = null;
+      }
+      afterLoad();
+    }).catch(function(){
+      loadError = { httpStatus:0, message:'Không kết nối được tới máy chủ.' };
+      afterLoad();
+    });
+  }
 
   renderThumbs();
-  renderTickets();
+  loadAll();
 })();
 </script>
 </body>

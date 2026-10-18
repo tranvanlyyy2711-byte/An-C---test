@@ -1,8 +1,9 @@
 // Kiểm thử phiếu sự cố người thuê gửi chủ trọ, trên máy chủ thật (SQLite dùng chung).
 // Chạy: npm run test:su-co
-// Mô phỏng người thuê bằng fetch API trực tiếp (trang tai-khoan/ho-tro.html chưa nối API thật —
-// xem docs/su-co-nguoi-thue.md), và chủ trọ bằng trình duyệt thật trên quan-ly/nguoi-thue.html,
-// để kiểm cả 3 lối vào drawer, chỉ báo trong dòng người thuê, và chuông thông báo.
+// Mục 1-14: mô phỏng người thuê bằng fetch API trực tiếp, chủ trọ bằng trình duyệt thật trên
+// quan-ly/nguoi-thue.html (kiểm cả 3 lối vào drawer, chỉ báo trong dòng người thuê, chuông thông báo).
+// Mục 15-17: tai-khoan/ho-tro.html (trang thật, đã nối API /api/su-co*) bằng trình duyệt thật —
+// xem docs/su-co-nguoi-thue.md.
 import { chromium } from 'playwright';
 import { spawn } from 'child_process';
 import { rmSync, mkdirSync, writeFileSync } from 'fs';
@@ -233,10 +234,106 @@ try {
     await ctx.close();
   }
 
-  // tai-khoan/ho-tro.html: kiểm tra giao diện thật tạm gỡ khỏi đây — trang đang chờ bạn của
-  // tranvanlyyy2711-byte đẩy bản gốc lên đúng vị trí này. Phần API bên trên (mục 1, 5, 8, 10-12)
-  // đã phủ đủ các route /api/su-co* mà trang đó sẽ gọi, nên khi trang về chỉ cần thêm lại phần
-  // giao diện (không cần viết lại API hay dữ liệu mẫu).
+  console.log('\n=== 15. tai-khoan/ho-tro.html (trang thật) nối đúng API /api/su-co*, bỏ dữ liệu mẫu cứng ===');
+  const ctxHuy = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await ctxHuy.request.post(B + '/api/dang-nhap', { data: { phone: '0933000333', password: 'matkhau123' } }); // Lê Quang Huy, P.302
+  const hoTro = await openPage(ctxHuy, '/tai-khoan/ho-tro.html');
+  await hoTro.waitForTimeout(600);
+  const toLineText = (await hoTro.locator('#toLine').textContent()) || '';
+  expect('toLine lấy đúng tên chủ trọ thật (Trần Hoà), không phải dữ liệu mẫu', toLineText.includes('Trần Hoà'), true);
+  expect('toLine không còn hiện dữ liệu mẫu cứng "Nguyễn Văn A"', toLineText.includes('Nguyễn Văn A'), false);
+
+  const existingCount = await hoTro.locator('#ticketBox .ticket').count();
+  await hoTro.selectOption('#fCat', 'dien-nuoc');
+  const moTa = 'Ổ điện trong phòng tắm bị ẩm, bật quạt hút thì nhảy aptomat, kiểm thử gửi qua trang thật.';
+  await hoTro.fill('#fDesc', moTa);
+  await hoTro.click('#sendBtn');
+  await hoTro.waitForSelector('#toast.show');
+  await hoTro.waitForTimeout(400);
+  const newCount = await hoTro.locator('#ticketBox .ticket').count();
+  expect('gửi phiếu qua trang thật -> danh sách tăng thêm 1', newCount, existingCount + 1);
+  const rowText = await hoTro.locator('#ticketBox .ticket').first().textContent();
+  expect('phiếu mới nhất hiện đúng mô tả vừa gửi', (rowText || '').includes('Ổ điện trong phòng tắm bị ẩm'), true);
+  const huyTicketId = await hoTro.locator('#ticketBox .ticket').first().getAttribute('data-ticket');
+  await shot(hoTro, 'ho-tro-gui-phieu-desktop');
+
+  await hoTro.locator('#ticketBox .ticket').first().click();
+  await hoTro.waitForSelector('#tkDlg[open]');
+  const descBoxText = await hoTro.locator('.desc-box').textContent();
+  expect('hộp thoại chi tiết hiện đúng mô tả (description từ máy chủ)', (descBoxText || '').includes('Ổ điện trong phòng tắm bị ẩm'), true);
+  const sysMsg = await hoTro.locator('.msg.system .bubble').first().textContent();
+  expect('tin nhắn hệ thống do máy chủ sinh ra xuất hiện trong luồng trao đổi', (sysMsg || '').includes('đã gửi tới chủ trọ'), true);
+  await hoTro.click('[data-close]');
+
+  console.log('\n=== 16. Phiếu gửi từ tai-khoan/ho-tro.html thật sự tới được phía Chủ trọ ===');
+  await land.bringToFront();
+  await land.reload({ waitUntil: 'domcontentloaded' });
+  await land.waitForTimeout(600);
+  const landlordRows = await land.locator('#ticketRows .ticket-row').allTextContents();
+  expect('chủ trọ thấy phiếu người thuê vừa gửi từ trang thật', landlordRows.some((t) => t.includes('Lê Quang Huy') && t.includes('P.302')), true);
+
+  console.log('\n=== 17. "Chờ xác nhận" trên tai-khoan/ho-tro.html: 4 bước tiến độ + nút Đã ổn / Vẫn còn lỗi ===');
+  await land.goto(B + '/quan-ly/nguoi-thue.html?tab=su-co&ticket=' + huyTicketId, { waitUntil: 'domcontentloaded' });
+  await land.waitForSelector('#ticketDrawer.open');
+  await land.selectOption('#drawerStatus', 'cho_xac_nhan');
+  await land.waitForTimeout(300);
+
+  await hoTro.bringToFront();
+  await hoTro.reload({ waitUntil: 'domcontentloaded' });
+  await hoTro.waitForTimeout(600);
+  await hoTro.locator('#ticketBox [data-ticket="' + huyTicketId + '"]').click();
+  await hoTro.waitForSelector('#tkDlg[open]');
+  const stepCount = await hoTro.locator('.steps li').count();
+  expect('thanh tiến độ có đủ 4 bước (thêm "Chờ xác nhận")', stepCount, 4);
+  const stepLabels = await hoTro.locator('.steps li b').allTextContents();
+  expect('bước thứ 3 đúng là "Chờ xác nhận"', stepLabels[2], 'Chờ xác nhận');
+  const nowStepIdx = await hoTro.locator('.steps li.now').evaluate((el) => Array.from(el.parentElement.children).indexOf(el));
+  expect('bước hiện tại (now) đúng là "Chờ xác nhận", không lẫn với "Đang xử lý"', nowStepIdx, 2);
+  expect('có 2 nút xác nhận "Vẫn còn lỗi" và "Đã ổn"', await hoTro.locator('[data-confirm]').count(), 2);
+
+  await hoTro.click('[data-confirm="van-con-loi"]');
+  await hoTro.waitForSelector('#toast.show');
+  await hoTro.waitForTimeout(300);
+  expect('bấm "Vẫn còn lỗi" -> huy hiện trạng thái Đang xử lý', (await hoTro.locator('#tkSub .status').textContent()) || '', 'Đang xử lý');
+
+  await land.bringToFront();
+  await land.waitForTimeout(300);
+  await land.selectOption('#drawerStatus', 'cho_xac_nhan');
+  await land.waitForTimeout(300);
+  await hoTro.bringToFront();
+  await hoTro.reload({ waitUntil: 'domcontentloaded' });
+  await hoTro.waitForTimeout(600);
+  await hoTro.locator('#ticketBox [data-ticket="' + huyTicketId + '"]').click();
+  await hoTro.waitForSelector('#tkDlg[open]');
+  await hoTro.click('[data-confirm="da-on"]');
+  await hoTro.waitForSelector('#toast.show');
+  await hoTro.waitForTimeout(300);
+  expect('bấm "Đã ổn" -> chuyển Đã hoàn thành', (await hoTro.locator('#tkSub .status').textContent()) || '', 'Đã hoàn thành');
+  expect('phiếu đã xong: không còn nút xác nhận, chỉ còn "Gửi yêu cầu mới"', await hoTro.locator('[data-confirm]').count(), 0);
+  expect('phiếu đã xong hiện nút "Gửi yêu cầu mới"', await hoTro.locator('[data-again]').count(), 1);
+
+  const ctxMobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await ctxMobile.request.post(B + '/api/dang-nhap', { data: { phone: '0933000333', password: 'matkhau123' } });
+  const hoTroMobile = await openPage(ctxMobile, '/tai-khoan/ho-tro.html');
+  await hoTroMobile.waitForTimeout(600);
+  await hoTroMobile.locator('#ticketBox [data-ticket="' + huyTicketId + '"]').click();
+  await hoTroMobile.waitForSelector('#tkDlg[open]');
+  const mobileOverflow = await hoTroMobile.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect('[mobile 390px] thanh 4 bước không làm vỡ bố cục (không cuộn ngang)', mobileOverflow <= 0, true);
+  await shot(hoTroMobile, 'ho-tro-4-buoc-mobile');
+  await ctxMobile.close();
+
+  console.log('\n=== 18. Chưa đăng nhập: trang hiện đúng thông báo "cần đăng nhập", không vỡ giao diện ===');
+  const ctxAnon = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const anonPage = await openPage(ctxAnon, '/tai-khoan/ho-tro.html');
+  await anonPage.waitForTimeout(600);
+  const anonToLine = (await anonPage.locator('#toLine').textContent()) || '';
+  expect('chưa đăng nhập: toLine báo cần đăng nhập', anonToLine.includes('đăng nhập'), true);
+  const anonOverflow = await anonPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect('[mobile 390px] chưa đăng nhập vẫn không cuộn ngang', anonOverflow <= 0, true);
+  await shot(anonPage, 'ho-tro-can-dang-nhap-mobile');
+  await ctxAnon.close();
+  await ctxHuy.close();
 
   expect('không có lỗi JS trong suốt kịch bản', errors, []);
 } finally {
