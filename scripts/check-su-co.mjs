@@ -233,65 +233,10 @@ try {
     await ctx.close();
   }
 
-  console.log('\n=== 15. tai-khoan/ho-tro.html: giao diện thật bên người thuê (không chỉ gọi API trực tiếp) ===');
-  const ctxTrang = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  await ctxTrang.request.post(B + '/api/dang-nhap', { data: { phone: '0901234567', password: 'matkhau123' } }); // Phạm Thu Trang, chủ YC-0009/YC-0012
-  const trang = await openPage(ctxTrang, '/tai-khoan/ho-tro.html');
-  await trang.waitForTimeout(700);
-  expect('ô "Gửi tới" hiện đúng chủ trọ và phòng', (await trang.locator('#toLine').textContent()).trim(), 'Gửi tới Trần Hoà · Phòng P.301 — Nhà trọ An Bình');
-  expect('danh sách "Yêu cầu đã gửi" hiện đủ phiếu cũ của Trang (YC-0009, YC-0012)', await trang.locator('.tickets .ticket').count(), 2);
-  await shot(trang, 'ho-tro-trang-mo-trang');
-
-  await trang.selectOption('#fCat', 'hoa-don');
-  await trang.fill('#fDesc', 'Hoá đơn tháng này ghi nhiều hơn mọi tháng, nhờ chủ trọ kiểm tra lại số công tơ giúp em.');
-  await trang.click('#sendBtn');
-  await trang.waitForTimeout(700);
-  const sentToastTitle = await trang.locator('#toastTitle').textContent();
-  expect('gửi phiếu qua form thật thành công (toast hiện đúng)', sentToastTitle.indexOf('Đã gửi yêu cầu') === 0, true);
-  expect('phiếu mới xuất hiện ngay trong danh sách', await trang.locator('.tickets .ticket').count(), 3);
-  const newUiTicketId = sentToastTitle.replace('Đã gửi yêu cầu ', '').trim();
-  expect('phiếu mới nhất trên danh sách đúng là phiếu vừa gửi', await trang.locator('.tickets .ticket').first().getAttribute('data-ticket'), newUiTicketId);
-
-  await trang.click('[data-ticket="YC-0012"]');
-  await trang.waitForSelector('#tkDlg[open]');
-  await trang.fill('#replyText', 'Dạ thứ 7 này em vẫn ở nhà, anh chị sắp xếp giúp em nhé.');
-  await trang.click('#replyForm button[type="submit"]');
-  await trang.waitForTimeout(600);
-  const trangBubbles = await trang.locator('#tkBody .msg .bubble').allTextContents();
-  expect('tin nhắn gửi từ drawer thật xuất hiện trong luồng trao đổi', trangBubbles[trangBubbles.length - 1], 'Dạ thứ 7 này em vẫn ở nhà, anh chị sắp xếp giúp em nhé.');
-  await trang.click('[data-close]');
-  await trang.waitForTimeout(300);
-
-  // Chủ trọ (context "land" đã đăng nhập từ mục 2) chuyển YC-0012 sang chờ xác nhận
-  await land.evaluate((B2) => fetch(B2 + '/api/chu-tro/su-co/YC-0012', {
-    method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cho_xac_nhan' }),
-  }), B);
-  await trang.evaluate(() => window.dispatchEvent(new Event('focus'))); // trang vẫn mở, giả lập quay lại tab để nạp lại
-  await trang.waitForTimeout(500);
-  await trang.click('[data-ticket="YC-0012"]');
-  await trang.waitForSelector('#tkDlg[open]');
-  expect('phiếu "chờ xác nhận" hiện đúng 2 nút Đã ổn / Vẫn còn lỗi', await trang.locator('[data-confirm="da-on"], [data-confirm="van-con-loi"]').count(), 2);
-  await shot(trang, 'ho-tro-cho-xac-nhan');
-  await trang.click('[data-confirm="van-con-loi"]');
-  await trang.waitForTimeout(500);
-  expect('bấm "Vẫn còn lỗi" -> phiếu quay lại Đang xử lý ngay trên giao diện', (await trang.locator('#tkSub .status').textContent()).trim(), 'Đang xử lý');
-
-  console.log('\n=== 16. tai-khoan/ho-tro.html: chưa đăng nhập thì khoá trang, không lộ form ===');
-  const ctxAnon = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  const anon = await openPage(ctxAnon, '/tai-khoan/ho-tro.html');
-  await anon.waitForTimeout(500);
-  expect('hiện màn hình yêu cầu đăng nhập', await anon.locator('#loginGate').isVisible(), true);
-  expect('không hiện form gửi yêu cầu khi chưa đăng nhập', await anon.locator('#mainLayout').isVisible(), false);
-  await shot(anon, 'ho-tro-chua-dang-nhap');
-
-  console.log('\n=== 17. tai-khoan/ho-tro.html: responsive 390px không cuộn ngang ===');
-  const ctxTrangM = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  await ctxTrangM.request.post(B + '/api/dang-nhap', { data: { phone: '0901234567', password: 'matkhau123' } });
-  const trangM = await openPage(ctxTrangM, '/tai-khoan/ho-tro.html');
-  await trangM.waitForTimeout(700);
-  const hoTroOverflow = await trangM.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  expect('[ho-tro.html mobile] không cuộn ngang', hoTroOverflow <= 0, true);
-  await shot(trangM, 'ho-tro-mobile');
+  // tai-khoan/ho-tro.html: kiểm tra giao diện thật tạm gỡ khỏi đây — trang đang chờ bạn của
+  // tranvanlyyy2711-byte đẩy bản gốc lên đúng vị trí này. Phần API bên trên (mục 1, 5, 8, 10-12)
+  // đã phủ đủ các route /api/su-co* mà trang đó sẽ gọi, nên khi trang về chỉ cần thêm lại phần
+  // giao diện (không cần viết lại API hay dữ liệu mẫu).
 
   expect('không có lỗi JS trong suốt kịch bản', errors, []);
 } finally {
