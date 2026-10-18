@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phòng của tôi — An Cư</title>
+<meta name="description" content="Phòng bạn đang thuê trên An Cư: hoá đơn tháng này, chi tiết điện nước, hợp đồng và tài khoản nhận tiền của chủ trọ." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../components/sidebar.css" />
+<script src="../components/hop-dong.js"></script>
+<script src="../components/sidebar.js"></script>
+<style>
+:root{
+  --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
+  --border:rgba(34,139,34,.12);--border-strong:rgba(34,139,34,.2);
+  --text:#102010;--text-muted:#4B5C4B;--text-dim:#667565;
+  --accent:#228B22;--accent-hover:#1D7C1D;--accent-fg:#FFFFFF;
+  --success:#228B22;--success-ink:#1B7A1B;--warning:#F5B14C;
+  --warning-ink:#8A5A11;--danger:#FF6B6B;--danger-ink:#B4291F;
+  --info:#2F6FED;--info-ink:#1D4FBE;
+  --grad:linear-gradient(120deg,#228B22 0%,#36A44A 100%);
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:clip}
+h1,h2,h3,h4{font-family:'Be Vietnam Pro','Inter',sans-serif;line-height:1.15;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
+button{cursor:pointer}img{display:block;max-width:100%}[hidden]{display:none!important}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .45s var(--ease),transform .45s var(--ease);transition-delay:var(--d,0s)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+/* Sidebar + thanh trên cùng: components/sidebar.css */
+.side-count{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);background:rgba(34,139,34,.1);border:1px solid var(--border-strong);padding:2px 8px;border-radius:999px}
+
+/* ===== Chung (khớp thanh-toan-tien-nha.html) ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:var(--radius);font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14px;border:1px solid transparent;white-space:nowrap;transition:.18s var(--ease)}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 10px 28px -10px rgba(34,139,34,.85)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-strong)}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(34,139,34,.04)}
+.btn-sm{min-height:44px;padding:0 14px;font-size:13px}
+.btn:focus-visible,.side-link:focus-visible,.modal-close:focus-visible,.acc-btn:focus-visible,.copy:focus-visible,.menu-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.container-fluid{width:100%;max-width:1280px;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:clamp(1.6rem,2.6vw,2.05rem);margin-bottom:6px}
+.page-head p{color:var(--text-muted);font-size:.95rem;max-width:60ch}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat{border:1px solid var(--border);border-radius:var(--radius-lg);background:linear-gradient(180deg,#fff,#F6FBF6);padding:20px;transition:.25s var(--ease)}
+.stat:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 14px 32px -18px rgba(16,48,16,.25)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.stat-label{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted)}
+.stat-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(34,139,34,.08);border:1px solid var(--border-strong);flex-shrink:0}
+.stat-icon svg{width:18px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.stat.warn .stat-icon{background:rgba(245,177,76,.14);border-color:rgba(245,177,76,.34)}.stat.warn .stat-icon svg{stroke:var(--warning-ink)}
+.stat.danger .stat-icon{background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.22)}.stat.danger .stat-icon svg{stroke:var(--danger-ink)}
+.stat.info .stat-icon{background:rgba(47,111,237,.1);border-color:rgba(47,111,237,.28)}.stat.info .stat-icon svg{stroke:var(--info-ink)}
+.stat-value{font-family:'Be Vietnam Pro',sans-serif;font-size:clamp(1.35rem,2.1vw,1.65rem);font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.stat-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.stat.danger .stat-sub{color:var(--danger-ink);font-weight:600}
+
+.pay-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+.col{display:flex;flex-direction:column;gap:24px;min-width:0}
+.card{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-head h2{font-size:16.5px}
+.card-head p{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.card-body{padding:18px 20px 20px}
+
+.status{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid}
+.status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.status.is-paid{color:var(--success-ink);background:rgba(34,139,34,.09);border-color:rgba(34,139,34,.22)}
+.status.is-pending{color:var(--warning-ink);background:rgba(245,177,76,.15);border-color:rgba(245,177,76,.35)}
+.status.is-overdue{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.22)}
+.status.is-submitted{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(47,111,237,.22)}
+
+.due-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:20px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);margin-bottom:18px}
+.due-hero .lbl{font-size:13px;color:var(--text-muted);font-weight:500}
+.due-hero .amt{font-family:'Be Vietnam Pro',sans-serif;font-size:clamp(1.9rem,4vw,2.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:4px}
+.due-hero .due{font-size:13.5px;color:var(--text-muted);margin-top:6px}
+.due-hero .due b{color:var(--text)}
+.due-hero .due.late b{color:var(--danger-ink)}
+.due-cta{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.due-cta .btn{min-width:200px}
+
+.lines{list-style:none;display:flex;flex-direction:column}
+.lines li{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14.5px}
+.lines li:last-child{border-bottom:0}
+.lines .name{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.lines .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(34,139,34,.07);flex-shrink:0}
+.lines .ic svg{width:17px;height:17px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.lines .name b{display:block;font-weight:600}
+.lines .name small{display:block;font-size:12.5px;color:var(--text-dim);line-height:1.45;margin-top:1px}
+.lines .val{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.lines li.total{border-top:1px solid var(--border-strong);border-bottom:0;margin-top:2px;padding-top:14px;font-weight:600}
+.lines li.total .val{font-family:'Be Vietnam Pro',sans-serif;font-size:18px;color:var(--success-ink)}
+
+.notice{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;background:rgba(34,139,34,.06);border:1px solid var(--border);border-radius:var(--radius);font-size:13.5px;color:var(--text-muted);line-height:1.5}
+.notice svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.notice b{color:var(--text)}
+.notice.info{background:rgba(47,111,237,.06);border-color:rgba(47,111,237,.18)}
+.notice.info svg{stroke:var(--info-ink)}
+
+.room-mini{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.room-mini img{width:96px;aspect-ratio:4/3;object-fit:cover;border-radius:10px;flex-shrink:0;background:var(--surface-2)}
+.room-mini h3{font-size:15px;line-height:1.35}
+.room-mini p{font-size:12.5px;color:var(--text-dim);line-height:1.45;margin-top:3px}
+.kv{display:flex;flex-direction:column}
+.kv > div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.kv > div:last-child{border-bottom:0}
+.kv dt{color:var(--text-muted)}
+.kv dd{font-weight:600;text-align:right;display:flex;align-items:center;gap:4px;justify-content:flex-end;overflow-wrap:anywhere}
+.progress{height:6px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden;margin:6px 0 4px}
+.progress span{display:block;height:100%;background:var(--grad);border-radius:inherit}
+.progress-lbl{font-size:12px;color:var(--text-dim)}
+.side-card-actions{display:flex;gap:8px;margin-top:14px}
+.side-card-actions .btn{flex:1;padding:0 12px}
+
+/* Mã VietQR trong khối tài khoản nhận tiền */
+.acc-qr{display:flex;gap:14px;align-items:center;padding:12px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+.acc-qr .code{width:112px;height:112px;padding:7px;flex-shrink:0;background:#fff;border:1px solid var(--border);border-radius:10px}
+.acc-qr .code svg{width:100%;height:100%;display:block}
+.acc-qr b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;margin-bottom:4px}
+.acc-qr small{display:block;font-size:12.5px;color:var(--text-dim);line-height:1.45;overflow-wrap:anywhere}
+.acc-qr small + small{margin-top:4px}
+
+.empty-state{padding:44px 20px;text-align:center;color:var(--text-muted)}
+.empty-state svg{width:40px;height:40px;stroke:var(--text-dim);fill:none;stroke-width:1.4;margin:0 auto 12px}
+.empty-state h3{font-size:15px;margin-bottom:6px;color:var(--text)}
+.empty-state p{font-size:13.5px;margin:0 auto 16px;max-width:44ch}
+.empty-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ===== Hộp thoại chuyển khoản ===== */
+body.modal-open{overflow:hidden}
+.modal-overlay{position:fixed;inset:0;z-index:180;background:rgba(16,32,16,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:.2s var(--ease)}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{width:100%;max-width:520px;background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:0 40px 90px -30px rgba(16,48,16,.4);transform:translateY(14px) scale(.98);transition:.22s var(--ease);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:none}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal-head h2{font-size:17px}
+.modal-head p{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.modal-close{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;color:var(--text-muted);flex-shrink:0}
+.modal-close:hover{border-color:var(--accent);color:var(--accent)}
+.modal-close svg{width:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.modal-body{padding:18px 20px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 20px;border-top:1px solid var(--border)}
+.pay-box{display:grid;grid-template-columns:auto 1fr;gap:18px;padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+.qr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.qr .code{width:140px;height:140px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:10px}
+.qr .code svg{width:100%;height:100%;display:block}
+.qr small{font-size:12px;color:var(--text-dim);text-align:center;line-height:1.4}
+.bank{display:flex;flex-direction:column;gap:10px;min-width:0}
+.bank > div{display:flex;flex-direction:column;gap:1px}
+.bank dt{font-size:12.5px;color:var(--text-dim)}
+.bank dd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.bank dd.amount{color:var(--success-ink);font-family:'Be Vietnam Pro',sans-serif;font-size:18px}
+.copy{display:inline-grid;place-items:center;width:44px;height:44px;margin:-10px -6px;border:0;background:none;border-radius:var(--radius-sm);color:var(--text-muted)}
+.copy:hover{background:rgba(34,139,34,.08);color:var(--accent)}
+.copy svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+.toast{position:fixed;right:24px;bottom:24px;z-index:200;max-width:360px;padding:14px 16px;border-radius:var(--radius);background:#102010;color:#fff;box-shadow:0 20px 50px rgba(16,32,16,.25);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s var(--ease);font-size:14px}
+.toast.show{transform:none;opacity:1}
+.toast b{display:block;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:2px}
+.toast span{color:rgba(255,255,255,.78);font-size:12.5px}
+
+@media(max-width:1180px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .pay-layout{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .page-head .btn{width:100%}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .stat{padding:16px}
+  .stat-icon{width:34px;height:34px}
+  .card-head,.card-body{padding-left:16px;padding-right:16px}
+  .due-hero{padding:16px}
+  .due-cta{width:100%;align-items:stretch}
+  .due-cta .btn{width:100%;min-width:0;white-space:normal}
+  .pay-box{grid-template-columns:1fr}
+  .qr{flex-direction:row;justify-content:flex-start;gap:14px}
+  .qr .code{width:120px;height:120px}
+  .qr small{text-align:left}
+  .toast{left:16px;right:16px;bottom:16px;max-width:none}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{max-height:100dvh;border-radius:var(--radius-lg) var(--radius-lg) 0 0;max-width:100%}
+  .modal-foot{flex-direction:column-reverse}
+  .modal-foot .btn{width:100%}
+}
+@media(max-width:400px){
+  .stat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+  <an-cu-sidebar></an-cu-sidebar>
+
+  <div class="dash-main">
+    <an-cu-header></an-cu-header>
+
+    <main class="dash-body">
+      <div class="container-fluid">
+        <div class="page-head reveal">
+          <div>
+            <h1>Phòng của tôi</h1>
+            <p id="pageSub">Hoá đơn tháng này, hợp đồng và thông tin chuyển khoản cho chủ trọ.</p>
+          </div>
+          <a class="btn btn-ghost" href="thanh-toan-tien-nha.html" id="historyLink">Lịch sử hoá đơn</a>
+        </div>
+        <div id="content" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Hộp thoại chuyển khoản -->
+<div class="modal-overlay" id="payModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+    <div class="modal-head">
+      <div><h2 id="payTitle">Chuyển khoản tiền nhà</h2><p id="paySub"></p></div>
+      <button class="modal-close" type="button" data-close aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="payBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" type="button" data-close>Đóng</button>
+      <button class="btn btn-primary" type="button" id="paidBtn"><svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg>Tôi đã chuyển khoản</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
+
+<script>
+(function(){
+  'use strict';
+  // Trang chủ của người đang ở trọ (isTenantActive). Dữ liệu và các khối giao diện dùng chung với
+  // trang Thanh toán ở components/hop-dong.js, nên báo chuyển khoản ở trang nào cũng thấy ở trang kia.
+  var HD = window.AnCuHopDong, U = HD.util;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var who = HD.renterId();
+  var contract = HD.contractFor(who);
+  var active = HD.isTenantActive(who);
+  var invoices = active ? HD.invoices(contract) : [];
+  var content = document.getElementById('content');
+
+  // Mở trực tiếp khi chưa có hợp đồng (link cũ, đổi người thuê): báo rõ thay vì chuyển hướng im lặng
+  function emptyView(){
+    document.getElementById('historyLink').hidden = true;
+    return '<section class="card reveal"><div class="empty-state">' + U.svg(U.ICON.home) +
+      '<h3>Bạn chưa có phòng đang thuê</h3>' +
+      '<p>Khi chủ trọ xác nhận hợp đồng, hoá đơn hằng tháng, chỉ số điện nước và thông tin hợp đồng sẽ hiện ở đây.</p>' +
+      '<div class="empty-actions"><a class="btn btn-ghost" href="dat-lich.html">Yêu cầu &amp; Lịch hẹn</a><a class="btn btn-primary" href="tim-phong.html">Tìm phòng</a></div>' +
+    '</div></section>';
+  }
+
+  function render(){
+    if(!active){ content.innerHTML = emptyView(); reveal(); return; }
+    var cur = invoices[0];
+    document.getElementById('pageSub').textContent = contract.title + ' · ' + contract.address;
+    content.innerHTML = HD.html.stats(contract, invoices) +
+      '<div class="pay-layout">' +
+        '<div class="col">' + HD.html.currentCard(contract, cur) + '</div>' +
+        '<div class="col">' + HD.html.contractCard(contract) +
+          HD.html.accountCard(contract, { qr:true, invoice:cur }) + '</div>' +
+      '</div>';
+    AnCuSidebar.setBadge('thanh-toan', invoices.filter(HD.isOpen).length);
+    reveal();
+  }
+
+  content.addEventListener('click', function(e){
+    var t;
+    if((t = e.target.closest('[data-pay]'))){ openPay(t.getAttribute('data-pay'), t); return; }
+    if((t = e.target.closest('[data-copy]'))){ copy(t.getAttribute('data-copy')); }
+  });
+
+  // ---------- Hộp thoại chuyển khoản ----------
+  var modal = document.getElementById('payModal');
+  var paying = null, lastFocus = null;
+  function openPay(id, trigger){
+    paying = invoices.filter(function(i){ return i.id === id; })[0];
+    if(!paying) return;
+    lastFocus = trigger || document.activeElement;
+    document.getElementById('payTitle').textContent = paying.status === 'submitted' ? 'Thông tin chuyển khoản đã gửi' : 'Chuyển khoản tiền nhà';
+    document.getElementById('paySub').textContent = U.fmtPeriod(paying.period) + ' · ' + paying.id;
+    document.getElementById('payBody').innerHTML = HD.html.payBody(contract, paying);
+    document.getElementById('paidBtn').hidden = paying.status === 'submitted';
+    modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    modal.querySelector('.modal-close').focus();
+  }
+  function closePay(){
+    modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    paying = null;
+    if(lastFocus && document.body.contains(lastFocus)) lastFocus.focus();
+  }
+  modal.addEventListener('click', function(e){
+    if(e.target === modal || e.target.closest('[data-close]')){ closePay(); return; }
+    var c = e.target.closest('[data-copy]'); if(c) copy(c.getAttribute('data-copy'));
+  });
+  document.getElementById('paidBtn').addEventListener('click', function(){
+    var inv = paying;
+    HD.markSubmitted(inv.id);
+    invoices = HD.invoices(contract);
+    lastFocus = null;
+    closePay(); render();
+    var h = document.getElementById('curTitle'); if(h){ h.setAttribute('tabindex', '-1'); h.focus({ preventScroll:true }); }
+    showToast('Đã báo chuyển khoản', 'Chủ trọ sẽ xác nhận hoá đơn ' + inv.id + ' trong vòng 24 giờ.');
+  });
+  document.addEventListener('keydown', function(e){
+    if(!modal.classList.contains('open')) return;
+    if(e.key === 'Escape'){ closePay(); return; }
+    if(e.key === 'Tab'){
+      var f = Array.prototype.filter.call(modal.querySelectorAll('button,a[href]'), function(el){ return !el.hidden && el.offsetParent !== null; });
+      var first = f[0], last = f[f.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Báo chuyển khoản ở trang Thanh toán (tab khác) thì cập nhật ngay
+  window.addEventListener('storage', function(e){
+    if(e.key !== HD.STORE_KEY || !active || modal.classList.contains('open')) return;
+    invoices = HD.invoices(contract); render();
+  });
+
+  function copy(text){
+    var done = function(){ showToast('Đã sao chép', text); };
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(err){ showToast('Không sao chép được', 'Hãy chép thủ công.'); }
+      ta.remove();
+    }
+  }
+  function showToast(title, text){
+    var t = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastText').textContent = text;
+    t.classList.add('show');
+    clearTimeout(showToast.timer); showToast.timer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  // ---------- Hiện dần khi cuộn (tắt hẳn khi giảm chuyển động) ----------
+  var io = !reduce && 'IntersectionObserver' in window ? new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin:'0px 0px -10% 0px' }) : null;
+  function reveal(){
+    document.querySelectorAll('.reveal:not(.in)').forEach(function(el){
+      if(io) io.observe(el); else el.classList.add('in');
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

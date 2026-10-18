@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../An-C---test"
+		},
+		{
+			"path": "../quan-ly"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "An-C---test"
+	}
+}
