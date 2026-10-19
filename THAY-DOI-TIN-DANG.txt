@@ -1,0 +1,29 @@
+Các tệp thêm/sửa so với bộ web nhóm gửi:
+
+BAT-DAU-O-DAY.txt
+HUONG-DAN-TIN-DANG.md
+MO-WEB.cmd
+THAY-DOI-TIN-DANG.txt
+assets/tin-dang-preview.js
+package.json
+quan-ly/bao-cao.html
+quan-ly/hoa-don.html
+quan-ly/hop-dong-dien-tu.html
+quan-ly/nguoi-thue.html
+quan-ly/phong-dien-nuoc.html
+quan-ly/thanh-toan.html
+quan-ly/tin-dang.css
+quan-ly/tin-dang.html
+quan-ly/tin-dang.js
+quan-ly/tong-quan.html
+quan-ly/yeucauvalichhen.html
+scripts/check-tin-dang-bootstrap.mjs
+scripts/check-tin-dang.mjs
+server/db.mjs
+server/index.mjs
+server/tin-dang.mjs
+server/tin-dang.seed.json
+tai-khoan/tim-phong.html
+trang-chu.html
+
+Chạy MO-WEB.cmd sau khi giải nén toàn bộ.
