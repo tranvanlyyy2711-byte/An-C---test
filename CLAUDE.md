@@ -288,6 +288,43 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 `an-cu-quan-tri-demo`) và hiện dải báo "Chế độ xem thử"; mọi thao tác vẫn chạy nhưng chỉ lưu trên máy
 người xem, không chia sẻ. Các trang người thuê và chủ trọ đã có sẵn cách dự phòng tương tự.
 
+**Đăng nhập thật trên bản Vercel — Supabase Auth.** Bản tĩnh không có `/api/*`, nên trang gọi thẳng
+REST API của Supabase bằng khoá công khai, không thêm thư viện nào:
+
+- `supabase/migrations/0001_profiles.sql` — bảng `profiles` (khoá ngoại tới `auth.users`), RLS bật, chỉ
+  đọc/sửa hồ sơ của chính mình, quyền `UPDATE` chỉ cấp trên `full_name`/`phone`/`avatar_url` nên **không ai
+  tự nâng mình thành admin**; trigger `tao_ho_so_khi_dang_ky` tạo hồ sơ ngay khi có tài khoản mới và chỉ
+  nhận vai trò `renter` | `landlord`. Chạy một lần trong Supabase SQL Editor.
+- `components/cau-hinh-supabase.js` — địa chỉ dự án + khoá công khai. Để trống thì mọi trang tự quay về
+  chế độ xem thử. Khoá `service_role` **không bao giờ** được xuất hiện ở đây.
+- `components/supabase-auth.js` (`window.AnCuAuth`) — `dangKy` / `dangNhap` / `toi` / `dangXuat`, phiên lưu
+  ở `localStorage` khoá `an-cu-supabase-phien`, tự làm mới token khi hết hạn, lời báo lỗi dịch sang tiếng Việt.
+  Vai trò **luôn đọc từ bảng `profiles`**, không tin dữ liệu người dùng tự khai.
+- `components/nguoi-dung.js` (`AnCuNguoiDung.hienTai()`) — một chỗ hỏi duy nhất cho cả ba khu, thứ tự ưu
+  tiên: máy chủ prototype (`/api/toi`) → Supabase → phiên xem thử. Mọi trang `tai-khoan/*`, `quan-ly/*`,
+  `quan-tri/*` đều nạp bốn file này trước `an-cu-store.js`.
+- Trang chủ tự chọn một trong ba chế độ: `may-chu` (đăng nhập bằng **số điện thoại**, như cũ), `supabase`
+  (đăng nhập bằng **email**), `xem-thu` (tài khoản demo). Ô đăng nhập đổi nhãn theo chế độ đang chạy.
+- Hai việc phải làm tay một lần trên Supabase Dashboard: chạy file SQL ở trên, và **tắt "Confirm email"**
+  (Authentication > Providers > Email) — nếu không, tài khoản mới chưa xác nhận sẽ không đăng nhập được.
+  Nâng quản trị: `update public.profiles set role = 'admin' where id = ...` (xem cuối file SQL).
+- Kiểm tra: `node scripts/check-supabase-auth.mjs` (**tạo tài khoản thật** `kiem-thu-…@ancu.test`, nhớ xoá
+  sau; không nằm trong `npm test:*`). `npm run test:tinh` vẫn kiểm lối xem thử bằng cách chặn
+  `components/cau-hinh-supabase.js` và trả về cấu hình rỗng.
+- **Mới chỉ tài khoản là thật.** Phòng, lịch xem, hợp đồng, hoá đơn… trên bản tĩnh vẫn là dữ liệu mẫu dùng
+  chung; trang quản lý của chủ trọ có dải báo rõ điều đó. Đưa nốt dữ liệu lên Supabase là đợt làm riêng.
+
+**Đăng nhập ở chế độ xem thử** — `components/phien-xem-thu.js` (`window.PhienXemThu`). Không có máy chủ
+thì hộp đăng nhập ở `trang-chu.html` nhận đúng bộ tài khoản demo (mật khẩu `matkhau123`) và lưu phiên
+trong `localStorage` khoá `an-cu-phien-xem-thu`; đăng nhập xong ghi luôn `an-cu-nguoi-thue` /
+`an-cu-chu-tro` nên hai khu người thuê và chủ trọ hiện đúng người vừa đăng nhập, còn vai trò `admin` vào
+thẳng `quan-tri/trang-chu.html`. Danh sách tài khoản trong file này phải khớp `DEMO_USERS` ở
+`server/auth.mjs`. Đăng nhập bằng tài khoản không có trong bộ demo, hoặc sai mật khẩu, thì báo lỗi ngay
+tại ô nhập; đăng ký mới vẫn chỉ là mô phỏng (bản tĩnh không có chỗ lưu tài khoản). Người thuê / chủ trọ
+đã đăng nhập mà mở `quan-tri/*` thì bị chặn như khi chạy thật. Có máy chủ thì KHÔNG dùng lối này — trang
+gọi `/api/dang-nhap` như bình thường. Kiểm tra: `npm run test:tinh`; ảnh: `node
+scripts/shot-dang-nhap-xem-thu.mjs`.
+
 **Deploy tĩnh lên Vercel:** `vercel.json` đặt `outputDirectory: "."`, không build; `.vercelignore` loại
 `server/`, `scripts/`, `node_modules/`, CSDL và `.env*`. Bản trên Vercel là **bản xem thử**: không có máy
 chủ nên không có đăng nhập thật, dữ liệu không dùng chung giữa người xem. Muốn chạy thật thì cần đưa

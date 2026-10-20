@@ -254,6 +254,12 @@
   .ht-cu .tl{margin-top:6px;padding:8px 10px;border-radius:var(--radius-sm);background:rgba(34,139,34,.07);font-size:12.5px}
 
   /* Dải gói dịch vụ đang dùng */
+  .xem-thu-dai{
+    margin-bottom:18px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--surface-2);color:var(--text-muted);font-size:13.5px;line-height:1.6
+  }
+  .xem-thu-dai b{color:var(--text)}
+  .xem-thu-dai code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
   .goi-bar{
     display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:22px;padding:16px 20px;
     background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
@@ -427,6 +433,10 @@
     .tbl td.act::before{display:none}
   }
 </style>
+<script src="../components/cau-hinh-supabase.js"></script>
+<script src="../components/supabase-auth.js"></script>
+<script src="../components/phien-xem-thu.js"></script>
+<script src="../components/nguoi-dung.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -594,8 +604,8 @@
         <!-- Tài khoản -->
         <div class="pop-wrap">
           <button type="button" class="acc-btn" id="accBtn" aria-expanded="false" aria-controls="accPop" aria-haspopup="true">
-            <span class="av">TH</span>
-            <span class="nm">Trần Hoà</span>
+            <span class="av" id="accAv">TH</span>
+            <span class="nm" id="accTen">Trần Hoà</span>
             <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
           </button>
 
@@ -603,7 +613,7 @@
             <p class="pop-title">Tài khoản chủ trọ</p>
             <button type="button" class="pop-item" role="menuitem">
               <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <span class="gr"><b>Trần Hoà</b><span>0988 000 999</span></span>
+              <span class="gr"><b id="accTen2">Trần Hoà</b><span id="accSo">0988 000 999</span></span>
             </button>
             <div class="pop-sep" role="presentation"></div>
             <button type="button" class="pop-item" role="menuitem">
@@ -615,7 +625,7 @@
               <span class="gr"><b>Quản lý khu trọ</b></span>
             </button>
             <div class="pop-sep" role="presentation"></div>
-            <button type="button" class="pop-item" role="menuitem">
+            <button type="button" class="pop-item" role="menuitem" id="btnDangXuat">
               <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
               <span class="gr"><b>Đăng xuất</b></span>
             </button>
@@ -630,7 +640,7 @@
 
         <div class="page-head reveal">
           <div>
-            <h1>Xin chào, Trần Hoà</h1>
+            <h1 id="loiChao">Xin chào, Trần Hoà</h1>
             <p id="periodLine">Tình hình vận hành tháng 09/2026</p>
           </div>
           <a href="#" class="btn btn-ghost btn-sm">
@@ -638,6 +648,12 @@
             Xem báo cáo tháng
           </a>
         </div>
+
+        <!-- Bản tĩnh (Vercel) / file://: nói rõ số liệu bên dưới là dữ liệu mẫu dùng chung -->
+        <p class="xem-thu-dai" id="xemThuDai" hidden>
+          <b>Chế độ xem thử</b> — trang đang mở không qua máy chủ nên số liệu bên dưới là dữ liệu mẫu dùng chung,
+          chưa phải nhà trọ của riêng tài khoản này. Chạy <code>npm start</code> rồi đăng nhập để làm việc trên dữ liệu thật.
+        </p>
 
         <!-- Gói dịch vụ đang dùng. Không có gói thì không quản lý phòng được, nên báo ngay ở đầu trang. -->
         <section class="goi-bar reveal" id="goiBar" hidden aria-label="Gói dịch vụ"></section>
@@ -988,6 +1004,51 @@
     });
     nap();
     AnCu.on('thong-bao', nap);   // thông báo mới tới (SSE) thì số chưa đọc đổi ngay
+  })();
+
+  // ---------- Ai đang đăng nhập ----------
+  // Một chỗ hỏi duy nhất: máy chủ prototype → Supabase → phiên xem thử (components/nguoi-dung.js).
+  // Số liệu bên dưới vẫn là dữ liệu mẫu khi không có máy chủ, nên có dải báo rõ.
+  (function(){
+    var CHU = {
+      'l-binh': { name:'Trần Hoà',   phone:'0988 000 999' },
+      'l-mai':  { name:'Lê Thu Mai', phone:'0977 111 222' }
+    };
+    function chuChu(ten){
+      var w = String(ten || '').trim().split(/\s+/);
+      return ((w[0] || '').charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : '')).toUpperCase();
+    }
+    function ve(ten, so){
+      var dat = function(id, v){ var o = document.getElementById(id); if (o) o.textContent = v; };
+      dat('accTen', ten); dat('accTen2', ten); dat('accAv', chuChu(ten));
+      dat('loiChao', 'Xin chào, ' + ten);
+      if (so) dat('accSo', so);
+    }
+    function chuTroDemo(){
+      var id = null;
+      try { id = localStorage.getItem('an-cu-chu-tro'); } catch (e) {}
+      if (CHU[id]) ve(CHU[id].name, CHU[id].phone);
+    }
+
+    window.AnCuNguoiDung.hienTai().then(function(me){
+      if (!me || me.nguon !== 'may-chu') {
+        var dai = document.getElementById('xemThuDai');
+        if (dai) dai.hidden = false;
+      }
+      if (me && me.role === 'landlord') ve(me.name, me.phone || '');
+      else chuTroDemo();
+    });
+
+    var nut = document.getElementById('btnDangXuat');
+    if (nut) nut.addEventListener('click', function(){
+      if (window.PhienXemThu) window.PhienXemThu.dangXuat();
+      var xong = function(){ location.href = '../trang-chu.html'; };
+      var sb = window.AnCuAuth && window.AnCuAuth.coCauHinh()
+        ? window.AnCuAuth.dangXuat() : Promise.resolve();
+      sb.catch(function(){}).then(function(){
+        return fetch('/api/dang-xuat', { method:'POST', credentials:'same-origin' }).catch(function(){});
+      }).then(xong, xong);
+    });
   })();
 
   // ---------- Gửi yêu cầu hỗ trợ ----------

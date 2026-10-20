@@ -160,6 +160,7 @@ try {
   await gotoHome(u1.p);
   await u1.p.click('.nav-cta [data-auth="register"]');
   await u1.p.click('.role-pick .role:has(input[value="renter"]) span');
+  await u1.p.fill('#regName', 'Ngô Thuỳ Dung');
   await u1.p.fill('#regPhone', '0977555444');
   await u1.p.fill('#regEmail', 'giaodien@ancu.vn');
   await u1.p.fill('#regPassword', PW);
@@ -172,8 +173,8 @@ try {
   expect('JavaScript trang không đọc được cookie phiên', await u1.p.evaluate(() => document.cookie.includes('ancu_sid')), false);
 
   await u1.p.goto(B + '/tai-khoan/dat-lich.html', { waitUntil: 'domcontentloaded' });
-  await u1.p.waitForFunction(() => document.querySelector('.acc-btn .nm').textContent.trim() === '0977555444', null, { timeout: 5000 }).catch(() => {});
-  expect('trang lịch xem hiện đúng tài khoản vừa đăng ký', await text(u1.p, '.acc-btn .nm'), '0977555444');
+  await u1.p.waitForFunction(() => document.querySelector('.acc-btn .nm').textContent.trim() === 'Ngô Thuỳ Dung', null, { timeout: 5000 }).catch(() => {});
+  expect('trang lịch xem hiện đúng tên vừa đăng ký', await text(u1.p, '.acc-btn .nm'), 'Ngô Thuỳ Dung');
 
   await gotoHome(u1.p);
   await u1.p.waitForSelector('.nav-cta .nav-user');
@@ -187,6 +188,7 @@ try {
 
   console.log('\n=== 6. Giao diện: báo lỗi từ máy chủ ===');
   await u1.p.click('.nav-cta [data-auth="register"]');
+  await u1.p.fill('#regName', 'Người Trùng Số');
   await u1.p.fill('#regPhone', '0977 555 444');
   await u1.p.fill('#regEmail', 'khac-han@ancu.vn');
   await u1.p.fill('#regPassword', PW);

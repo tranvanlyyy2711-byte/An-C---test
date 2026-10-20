@@ -275,17 +275,22 @@
       '</div>' +
     '</header>';
   }
+  // Tên trên thanh tiêu đề: lấy người đang đăng nhập thật (máy chủ prototype hoặc Supabase), không có
+  // thì giữ người thuê demo. components/nguoi-dung.js lo thứ tự ưu tiên.
   function loadRealUser(){
-    if(!hasServer) return;
-    fetch('/api/toi', { cache:'no-store' })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){
-        if(!j || !j.user || j.user.role !== 'renter') return;
-        var nm = document.getElementById('accName'), av = document.getElementById('accAv');
-        if(nm) nm.textContent = j.user.name;
-        if(av) av.textContent = initials(j.user.name);
-      })
-      .catch(function(){});
+    var hoi = window.AnCuNguoiDung
+      ? window.AnCuNguoiDung.hienTai()
+      : (hasServer
+          ? fetch('/api/toi', { cache:'no-store' })
+              .then(function(r){ return r.ok ? r.json() : null; })
+              .then(function(j){ return j && j.user ? j.user : null; })
+          : Promise.resolve(null));
+    hoi.then(function(u){
+      if(!u || u.role !== 'renter' || u.nguon === 'xem-thu') return;
+      var nm = document.getElementById('accName'), av = document.getElementById('accAv');
+      if(nm) nm.textContent = u.name;
+      if(av) av.textContent = initials(u.name);
+    }).catch(function(){});
   }
 
   /* ---------- Điều hướng di động + thông báo ---------- */

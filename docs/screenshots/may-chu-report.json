@@ -223,8 +223,8 @@
   },
   {
     "name": "người thuê thấy mọi lịch chờ xác nhận ở mục Lịch xem phòng",
-    "got": 2,
-    "want": 2,
+    "got": 3,
+    "want": 3,
     "ok": true
   },
   {

@@ -762,6 +762,10 @@
   <h2 id="accountDetailTitle">Chi tiết tài khoản</h2>
   <div id="accountDetailBody"></div>
 </dialog>
+<script src="../components/cau-hinh-supabase.js"></script>
+<script src="../components/supabase-auth.js"></script>
+<script src="../components/phien-xem-thu.js"></script>
+<script src="../components/nguoi-dung.js"></script>
 <script src="du-lieu-xem-thu.js"></script>
 <script>
 (function(){
@@ -1839,16 +1843,38 @@
     return moKhuQuanTri(demoMe(), true);
   }
 
+  // Không có máy chủ prototype thì vai trò vẫn phải có nghĩa: đã đăng nhập (Supabase thật hoặc phiên
+  // xem thử) mà không phải quản trị thì chặn, giống hệt khi chạy thật.
+  function khongPhaiQuanTri(){
+    var me = window.PhienXemThu && window.PhienXemThu.toi();
+    return me && me.role !== 'admin' ? me : null;
+  }
+  function chanNeuKhongPhaiQuanTri(tiep){
+    var me = khongPhaiQuanTri();
+    if (me) {
+      gate('Không có quyền truy cập', 'Tài khoản ' + me.name + ' không phải quản trị viên nên không mở được khu vực này.');
+      return;
+    }
+    // Supabase trả lời không đồng bộ, nên hỏi rồi mới quyết định
+    window.AnCuNguoiDung.hienTai().then(function(ai){
+      if (ai && ai.nguon === 'supabase' && ai.role !== 'admin') {
+        gate('Không có quyền truy cập', 'Tài khoản ' + ai.name + ' không phải quản trị viên nên không mở được khu vực này.');
+        return;
+      }
+      tiep(ai && ai.nguon === 'supabase' ? ai : null);
+    });
+  }
+
   // Không chạy qua http(s) (mở file:// từ ổ đĩa) thì chắc chắn không có máy chủ
   if (!/^https?:$/.test(location.protocol)) {
-    batCheDoXemThu();
+    chanNeuKhongPhaiQuanTri(function(){ batCheDoXemThu(); });
   } else {
     // Có http(s) nhưng vẫn có thể là bản tĩnh trên Vercel: thử gọi API, không có thì chuyển sang xem thử
     fetch('/api/toi', { cache: 'no-store', credentials: 'same-origin' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .catch(function(){ return null; })
       .then(function(j){
-        if (!j || typeof j.user === 'undefined') return batCheDoXemThu();
+        if (!j || typeof j.user === 'undefined') return chanNeuKhongPhaiQuanTri(function(){ batCheDoXemThu(); });
         var me = j.user;
         if (!me) return gate('Khu vực dành cho quản trị viên', 'Bạn chưa đăng nhập. Hãy đăng nhập bằng tài khoản quản trị để tiếp tục.');
         if (me.role !== 'admin') return gate('Không có quyền truy cập', 'Tài khoản ' + me.name + ' không phải quản trị viên nên không mở được khu vực này.');

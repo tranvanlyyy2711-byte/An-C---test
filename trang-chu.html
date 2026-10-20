@@ -527,6 +527,12 @@
   .auth-terms a{color:var(--text-muted);text-decoration:underline;text-underline-offset:2px}
   .auth-terms a:hover{color:var(--text)}
 
+  .auth-demo{
+    margin:0 0 16px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);
+    background:var(--surface-2);color:var(--text-muted);font-size:13px;line-height:1.6
+  }
+  .auth-demo b{color:var(--text)}
+  .auth-demo span{display:inline-block;margin-top:4px;color:var(--text-dim)}
   .auth-done{text-align:center;padding:8px 0 4px}
   .auth-done .tick{
     width:56px;height:56px;margin:0 auto 18px;border-radius:50%;
@@ -1438,12 +1444,21 @@
         <p>Nhập số điện thoại và mật khẩu để tiếp tục.</p>
       </div>
 
+      <p class="auth-demo" id="authDemoNote" hidden>
+        <b>Chế độ xem thử</b> — bản này không có máy chủ nên chỉ đăng nhập được bằng tài khoản demo,
+        mật khẩu <b>matkhau123</b>:<br />
+        <span>0901234567 người thuê · 0988000999 chủ trọ · 0900000001 quản trị</span>
+      </p>
+
       <form novalidate data-auth-form="login">
+        <!-- Đăng nhập thật qua Supabase thì ô này là email; chạy máy chủ prototype thì là số điện
+             thoại. Nhãn, kiểu và luật kiểm tra do capNhatOLogin() đặt lại theo chế độ đang chạy. -->
         <div class="field">
-          <label for="loginPhone">Số điện thoại</label>
+          <label for="loginPhone" id="loginIdLabel">Email</label>
           <div class="ctrl">
-            <input id="loginPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912 345 678" data-rule="phone" aria-describedby="loginPhoneErr" />
-            <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+            <input id="loginPhone" name="phone" type="email" inputmode="email" autocomplete="email" placeholder="ban@email.com" data-rule="email" aria-describedby="loginPhoneErr" />
+            <svg id="loginIconMail" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg>
+            <svg id="loginIconPhone" viewBox="0 0 24 24" hidden><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
           </div>
           <p class="err" id="loginPhoneErr" role="alert"></p>
         </div>
@@ -1496,6 +1511,15 @@
             <input type="radio" name="role" value="landlord" />
             <span>Tôi là chủ trọ</span>
           </label>
+        </div>
+
+        <div class="field">
+          <label for="regName">Họ và tên</label>
+          <div class="ctrl">
+            <input id="regName" name="name" type="text" autocomplete="name" placeholder="Nguyễn Văn An" data-rule="ten" aria-describedby="regNameErr" />
+            <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <p class="err" id="regNameErr" role="alert"></p>
         </div>
 
         <div class="field">
@@ -1664,6 +1688,9 @@
   </div>
 </div>
 
+<script src="components/cau-hinh-supabase.js"></script>
+<script src="components/supabase-auth.js"></script>
+<script src="components/phien-xem-thu.js"></script>
 <script>
   // Header scroll state
   var hdr = document.getElementById('hdr');
@@ -1887,14 +1914,59 @@
     })();
     function areaOf(user){
       if (user && user.role === 'admin') return 'quan-tri/trang-chu.html';
+      if (user && user.role === 'admin') return 'quan-tri/trang-chu.html';
       if (NEXT_URL && user && NEXT_URL.indexOf(user.role === 'landlord' ? 'quan-ly/' : 'tai-khoan/') === 0) return NEXT_URL;
       return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html';
     }
-    AUTH_READY.then(function(){
+    // Ba lối đăng nhập, theo thứ tự ưu tiên:
+    //   'may-chu'  — đang chạy npm start, dùng /api/dang-nhap như cũ (số điện thoại + mật khẩu)
+    //   'supabase' — bản tĩnh (Vercel) có khai dự án Supabase: tài khoản thật, lưu trên Supabase
+    //   'xem-thu'  — không có cả hai: tài khoản demo lưu trong máy người xem
+    var XEM_THU = window.PhienXemThu || null;
+    var SB = window.AnCuAuth && window.AnCuAuth.coCauHinh() ? window.AnCuAuth : null;
+    var CHE_DO = 'xem-thu';
+
+    function capNhatOLogin(){
+      var o = document.getElementById('loginPhone');
+      var nhan = document.getElementById('loginIdLabel');
+      // Supabase đăng nhập bằng email; máy chủ prototype và chế độ xem thử dùng số điện thoại
+      var laEmail = CHE_DO === 'supabase';
+      nhan.textContent = laEmail ? 'Email' : 'Số điện thoại';
+      o.type = laEmail ? 'email' : 'tel';
+      o.setAttribute('inputmode', laEmail ? 'email' : 'tel');
+      o.setAttribute('autocomplete', laEmail ? 'email' : 'tel');
+      o.setAttribute('data-rule', laEmail ? 'email' : 'phone');
+      o.placeholder = laEmail ? 'ban@email.com' : '0912 345 678';
+      document.getElementById('loginIconMail').hidden = !laEmail;
+      document.getElementById('loginIconPhone').hidden = laEmail;
+      var note = document.getElementById('authDemoNote');
+      if(note) note.hidden = CHE_DO !== 'xem-thu';
+      var head = document.querySelector('[data-pane="login"] .auth-head p');
+      if(head) head.textContent = laEmail
+        ? 'Nhập email và mật khẩu để tiếp tục.'
+        : 'Nhập số điện thoại và mật khẩu để tiếp tục.';
+    }
+
+    // Xong khi đã biết chạy ở chế độ nào VÀ đã lấy lại phiên đăng nhập cũ (nếu có)
+    var SAN_SANG = AUTH_READY.then(function(){
+      if(AUTH_API.on){ CHE_DO = 'may-chu'; capNhatOLogin(); return AUTH_API; }
+      if(SB){
+        CHE_DO = 'supabase';
+        capNhatOLogin();
+        return SB.toi().then(function(u){ AUTH_API.me = u; return AUTH_API; });
+      }
+      CHE_DO = 'xem-thu';
+      capNhatOLogin();
+      if(XEM_THU) AUTH_API.me = XEM_THU.toi();
+      return AUTH_API;
+    });
+
+    SAN_SANG.then(function(){
       var want = null;
       try{ want = new URLSearchParams(location.search).get('dang-nhap'); }catch(e){}
       if(want) openAuth('login', NEXT_URL && NEXT_URL.indexOf('quan-ly/') === 0 ? 'landlord' : 'renter');
     });
+    function areaTuVaiTro(user){ return areaOf(user); }
     function shortName(user){
       if(!user) return '';
       if(user.name === user.phone) return user.phone;
@@ -1932,16 +2004,64 @@
       done.querySelector('.btn').focus();
     }
 
-    // Không có máy chủ: giữ hành vi mô phỏng cũ. Quên mật khẩu luôn mô phỏng vì chưa có SMS thật.
+    // Tài khoản thật trên Supabase (bản tĩnh vẫn dùng được vì gọi thẳng REST API của Supabase)
+    function supabaseSubmit(form, kind, busy){
+      var f = form.elements;
+      var viec = kind === 'register'
+        ? SB.dangKy({
+            email: f.email.value,
+            matKhau: f.password.value,
+            hoTen: f.name.value,
+            soDienThoai: f.phone.value,
+            vaiTro: (form.querySelector('input[name="role"]:checked') || {}).value
+          })
+        : SB.dangNhap({ email: f.phone.value, matKhau: f.password.value });
+
+      return viec.then(function(kq){
+        if(!kq.user){
+          busy(false);
+          var o = kq.field ? form.querySelector('[name="' + kq.field + '"][data-rule]') : null;
+          if(o){ failField(o, kq.message); o.focus(); }
+          else formError(form, kq.message);
+          return;
+        }
+        AUTH_API.me = kq.user;
+        if(kq.user.role !== 'admin') resolveAuthRole(kq.user.role);
+        renderHeader();
+        showDone(form, kind === 'register'
+          ? 'Tài khoản đã được lưu trên Supabase. Lần sau đăng nhập bằng email và mật khẩu này.'
+          : 'Đang chuyển tới ' + (kq.user.role === 'landlord' ? 'trang quản lý của chủ trọ'
+            : kq.user.role === 'admin' ? 'khu quản trị' : 'trang tìm phòng của bạn') + '…');
+        setTimeout(function(){ window.location.href = areaOf(kq.user); }, 900);
+      });
+    }
+
+    // Không có máy chủ (bản tĩnh trên Vercel, file://): đăng nhập bằng tài khoản demo, phiên lưu ngay
+    // trong máy người xem. Đăng ký và quên mật khẩu vẫn là mô phỏng — chưa có chỗ lưu tài khoản mới.
     function mockSubmit(form, kind){
+      if(kind === 'login' && XEM_THU){
+        var kq = XEM_THU.dangNhap(form.elements.phone.value, form.elements.password.value);
+        if(!kq.user){
+          var o = form.querySelector('[name="' + kq.field + '"][data-rule]');
+          if(o){ failField(o, kq.message); o.focus(); }
+          else formError(form, kq.message);
+          var btn = form.querySelector('.btn-submit');
+          btn.disabled = false; btn.textContent = btn.getAttribute('data-label');
+          return;
+        }
+        AUTH_API.me = kq.user;
+        if(kq.user.role !== 'admin') resolveAuthRole(kq.user.role);
+        renderHeader();
+        showDone(form, 'Chế độ xem thử: phiên này chỉ lưu trên máy bạn, không có dữ liệu dùng chung.');
+        setTimeout(function(){ window.location.href = areaOf(kq.user); }, 900);
+        return;
+      }
       setTimeout(function(){
         var checkedRole = form.querySelector('input[name="role"]:checked');
         var targetRole = checkedRole ? checkedRole.value : resolveAuthRole();
         resolveAuthRole(targetRole);
-        showDone(form, kind === 'forgot' ? '' : 'Chế độ xem giao diện: chưa lưu tài khoản. Chạy npm start rồi mở localhost:5500 để đăng ký, đăng nhập thật.');
-        if(kind !== 'forgot' && targetRole === 'renter'){
-          setTimeout(function(){ window.location.href = 'tai-khoan/tim-phong.html'; }, 900);
-        }
+        showDone(form, kind === 'forgot' ? ''
+          : 'Chế độ xem thử chưa lưu được tài khoản mới. Đăng nhập bằng tài khoản demo (mật khẩu matkhau123) để xem đủ ba khu, hoặc chạy npm start để đăng ký thật.');
       }, 600);
     }
 
@@ -1960,13 +2080,14 @@
         if(firstBad){ firstBad.focus(); return; }
         busy(true);
 
-        AUTH_READY.then(function(){
+        SAN_SANG.then(function(){
+          if(kind !== 'forgot' && CHE_DO === 'supabase') return supabaseSubmit(form, kind, busy);
           if(!AUTH_API.on || kind === 'forgot') return mockSubmit(form, kind);
 
           var f = form.elements;
           var role = form.querySelector('input[name="role"]:checked');
           var body = kind === 'register'
-            ? { role: role ? role.value : '', phone: f.phone.value, email: f.email.value, password: f.password.value }
+            ? { role: role ? role.value : '', name: f.name.value, phone: f.phone.value, email: f.email.value, password: f.password.value }
             : { phone: f.phone.value, password: f.password.value };
           return authPost(kind === 'register' ? '/api/dang-ky' : '/api/dang-nhap', body).then(function(j){
             if(!j.user){
@@ -2013,11 +2134,26 @@
       });
     }
     function logout(){
+      if(CHE_DO === 'supabase' && SB){
+        SB.dangXuat().then(function(){
+          AUTH_API.me = null;
+          document.body.classList.remove('menu-open');
+          renderHeader();
+        });
+        return;
+      }
+      if(!AUTH_API.on){
+        if(XEM_THU) XEM_THU.dangXuat();
+        AUTH_API.me = null;
+        document.body.classList.remove('menu-open');
+        renderHeader();
+        return;
+      }
       authPost('/api/dang-xuat')
         .catch(function(){})
         .then(function(){ AUTH_API.me = null; document.body.classList.remove('menu-open'); renderHeader(); });
     }
-    AUTH_READY.then(renderHeader);
+    SAN_SANG.then(renderHeader);
 
     // Bẫy focus + Esc
     overlay.addEventListener('keydown', function(e){

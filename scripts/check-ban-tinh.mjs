@@ -80,6 +80,96 @@ try {
     expect(`${ten}: không cuộn ngang`, overflow <= 0, true);
     await ctx.close();
   }
+
+  // ---------- Đăng nhập trên bản tĩnh (Vercel): tài khoản demo, phiên lưu trong trình duyệt ----------
+  // Mỗi vai trò vào đúng khu của mình, tên hiện đúng người vừa đăng nhập.
+  const VAI_TRO = [
+    { so: '0901234567', ten: 'Phạm Thu Trang', khu: '/tai-khoan/tim-phong.html', cho: '#accName', xemTenO: '/tai-khoan/da-luu.html' },
+    { so: '0988000999', ten: 'Trần Hoà', khu: '/quan-ly/tong-quan.html', cho: '#accTen' },
+    { so: '0977111222', ten: 'Lê Thu Mai', khu: '/quan-ly/tong-quan.html', cho: '#accTen' },
+    { so: '0900000001', ten: 'Quản trị An Cư', khu: '/quan-tri/trang-chu.html', cho: null },
+  ];
+  // Kịch bản này kiểm tra lối dự phòng khi KHÔNG khai Supabase (chế độ xem thử). Khai rỗng cấu hình
+  // ngay trước khi trang chạy để khỏi đụng tới dự án Supabase thật.
+  // Lối đăng nhập thật qua Supabase kiểm bằng: node scripts/check-supabase-auth.mjs
+  const khongSupabase = (ctx) => ctx.route('**/components/cau-hinh-supabase.js', (r) => r.fulfill({
+    contentType: 'text/javascript; charset=utf-8',
+    body: 'window.CAU_HINH_SUPABASE = { url: "", khoaCongKhai: "" };',
+  }));
+
+  for (const v of VAI_TRO) {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await khongSupabase(ctx);
+    const p = await ctx.newPage();
+    const errors = [];
+    p.on('pageerror', (e) => errors.push(String(e)));
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('.auth-overlay.open', { timeout: 10000 });
+    expect(`${v.ten}: hộp đăng nhập nói rõ đang ở chế độ xem thử`, await p.locator('#authDemoNote').isVisible(), true);
+    await p.fill('#loginPhone', v.so);
+    await p.fill('#loginPassword', 'matkhau123');
+    await p.click('[data-auth-form="login"] .btn-submit');
+    await p.waitForURL('**' + v.khu, { timeout: 10000 }).catch(() => {});
+    expect(`${v.ten}: đăng nhập xong vào đúng khu của mình`, new URL(p.url()).pathname, v.khu);
+    await p.waitForTimeout(800);
+    if (v.xemTenO) {
+      await p.goto(B + v.xemTenO, { waitUntil: 'domcontentloaded' });
+      await p.waitForSelector(v.cho, { timeout: 10000 }).catch(() => {});
+      await p.waitForTimeout(500);
+    }
+    if (v.cho) expect(`${v.ten}: khu riêng hiện đúng tên người đăng nhập`, (await p.locator(v.cho).first().textContent() || '').trim(), v.ten);
+    expect(`${v.ten}: không lỗi JavaScript sau khi đăng nhập`, errors, []);
+
+    // Quay lại trang chủ: vẫn nhớ phiên, và đăng xuất được
+    await p.goto(B + '/trang-chu.html', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(600);
+    expect(`${v.ten}: trang chủ nhớ phiên vừa đăng nhập`, (await p.locator('.nav-user .nav-hello b').first().textContent() || '').trim().length > 0, true);
+    await p.locator('.nav-cta [data-logout]').click();
+    await p.waitForTimeout(300);
+    expect(`${v.ten}: đăng xuất xong trở lại nút Đăng nhập`, await p.locator('.nav-user').count(), 0);
+    await ctx.close();
+  }
+
+  // Sai mật khẩu thì báo lỗi, không cho vào
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await khongSupabase(ctx);
+    const p = await ctx.newPage();
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('.auth-overlay.open', { timeout: 10000 });
+    await p.fill('#loginPhone', '0901234567');
+    await p.fill('#loginPassword', 'saimatkhau');
+    await p.click('[data-auth-form="login"] .btn-submit');
+    await p.waitForSelector('#loginPasswordErr:not(:empty)', { timeout: 5000 }).catch(() => {});
+    expect('sai mật khẩu: báo lỗi và vẫn ở trang chủ', [new URL(p.url()).pathname, /matkhau123/.test(await p.locator('#loginPasswordErr').textContent() || '')], ['/trang-chu.html', true]);
+    // Số không có trong bộ demo
+    await p.fill('#loginPhone', '0999999999');
+    await p.fill('#loginPassword', 'matkhau123');
+    await p.click('[data-auth-form="login"] .btn-submit');
+    await p.waitForSelector('#loginPhoneErr:not(:empty)', { timeout: 5000 }).catch(() => {});
+    expect('số lạ: nhắc dùng tài khoản demo', /tài khoản demo/.test(await p.locator('#loginPhoneErr').textContent() || ''), true);
+    await ctx.close();
+  }
+
+  // Đăng nhập người thuê rồi mở thẳng khu quản trị: phải bị chặn
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await khongSupabase(ctx);
+    const p = await ctx.newPage();
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('.auth-overlay.open', { timeout: 10000 });
+    await p.fill('#loginPhone', '0901234567');
+    await p.fill('#loginPassword', 'matkhau123');
+    await p.click('[data-auth-form="login"] .btn-submit');
+    await p.waitForURL('**/tai-khoan/tim-phong.html', { timeout: 10000 }).catch(() => {});
+    await p.goto(B + '/quan-tri/tong-quan.html', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(700);
+    expect('người thuê mở khu quản trị: bị chặn, không thấy dữ liệu', await p.locator('#gate').isVisible(), true);
+    await ctx.close();
+  }
 } catch (e) {
   failed = true;
   console.error('LỖI KỊCH BẢN:', e);
