@@ -1043,7 +1043,7 @@
     if (nut) nut.addEventListener('click', function(){
       if (window.PhienXemThu) window.PhienXemThu.dangXuat();
       var xong = function(){ location.href = '../trang-chu.html'; };
-      var sb = window.AnCuAuth && window.AnCuAuth.coCauHinh()
+      var sb = window.AnCuAuth && window.AnCuAuth.dungDuoc()
         ? window.AnCuAuth.dangXuat() : Promise.resolve();
       sb.catch(function(){}).then(function(){
         return fetch('/api/dang-xuat', { method:'POST', credentials:'same-origin' }).catch(function(){});

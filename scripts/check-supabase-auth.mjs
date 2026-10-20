@@ -1,6 +1,10 @@
-// Kiểm thử ĐĂNG KÝ / ĐĂNG NHẬP THẬT qua Supabase Auth, trên bản tĩnh (giống hệt khi chạy trên Vercel).
+// Kiểm thử ĐĂNG KÝ / ĐĂNG NHẬP THẬT qua Supabase Auth bằng SỐ ĐIỆN THOẠI, trên bản tĩnh
+// (giống hệt khi chạy trên Vercel).
 //
 // Chạy: node scripts/check-supabase-auth.mjs
+//
+// Chạy trên localhost nên phải kèm ?supabase=1 — mặc định máy mình dùng tài khoản demo
+// (xem AnCuAuth.dungDuoc trong components/supabase-auth.js).
 //
 // LƯU Ý: kịch bản này tạo tài khoản THẬT trong dự án Supabase khai ở components/cau-hinh-supabase.js.
 // Mỗi lần chạy sinh một email dạng kiem-thu-<thời gian>@ancu.test; xoá ở Supabase Dashboard >
@@ -62,14 +66,14 @@ try {
   // ---------- 1. Đăng ký thật ----------
   {
     const { ctx, p } = await trang();
-    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1&supabase=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open');
-    expect('có khai Supabase thì ô đăng nhập là email', (await p.locator('#loginIdLabel').textContent() || '').trim(), 'Email');
+    expect('ô đăng nhập là số điện thoại', (await p.locator('label[for="loginPhone"]').textContent() || '').trim(), 'Số điện thoại');
     expect('không còn dải "chế độ xem thử"', await p.locator('#authDemoNote').isHidden(), true);
 
     await p.click('[data-auth-go="register"]');
     await p.waitForSelector('[data-auth-form="register"]');
-    await p.check('input[name="role"][value="landlord"]');
+    await p.click('.role-pick .role:has(input[value="landlord"]) span');
     await p.fill('#regName', TEN);
     await p.fill('#regPhone', SO);
     await p.fill('#regEmail', EMAIL);
@@ -87,13 +91,13 @@ try {
   // ---------- 2. Trình duyệt khác: đăng nhập lại bằng tài khoản vừa tạo ----------
   {
     const { ctx, p } = await trang();
-    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1&supabase=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open');
-    await p.fill('#loginPhone', EMAIL);
+    await p.fill('#loginPhone', SO);
     await p.fill('#loginPassword', MAT_KHAU);
     await p.click('[data-auth-form="login"] .btn-submit');
     await p.waitForURL('**/quan-ly/tong-quan.html', { timeout: 20000 }).catch(() => {});
-    expect('tài khoản lưu thật: máy khác đăng nhập vào được', new URL(p.url()).pathname, '/quan-ly/tong-quan.html');
+    expect('tài khoản lưu thật: máy khác đăng nhập bằng SỐ vào được', new URL(p.url()).pathname, '/quan-ly/tong-quan.html');
     if (new URL(p.url()).pathname !== '/quan-ly/tong-quan.html') console.log('   lời báo trên form:', await loi(p));
 
     // Mở lại trang chủ: phiên còn, đăng xuất rồi thì hết
@@ -104,17 +108,15 @@ try {
     await p.waitForTimeout(1200);
     expect('đăng xuất xong trở lại nút Đăng nhập', await p.locator('.nav-user').count(), 0);
 
-    // Người thuê / chủ trọ không vào được khu quản trị
-    await p.fill('#loginPhone', EMAIL).catch(() => {});
     await ctx.close();
   }
 
   // ---------- 3. Sai mật khẩu, email trùng, chặn khu quản trị ----------
   {
     const { ctx, p } = await trang();
-    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1&supabase=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open');
-    await p.fill('#loginPhone', EMAIL);
+    await p.fill('#loginPhone', SO);
     await p.fill('#loginPassword', 'sai-mat-khau-roi');
     await p.click('[data-auth-form="login"] .btn-submit');
     await p.waitForTimeout(2500);
@@ -122,22 +124,22 @@ try {
 
     await p.click('[data-auth-go="register"]');
     await p.fill('#regName', TEN);
-    await p.fill('#regPhone', '0' + String(dau).slice(-9));
-    await p.fill('#regEmail', EMAIL);
+    await p.fill('#regPhone', SO);
+    await p.fill('#regEmail', 'khac-' + EMAIL);
     await p.fill('#regPassword', MAT_KHAU);
     await p.fill('#regConfirm', MAT_KHAU);
     await p.click('[data-auth-form="register"] .btn-submit');
     await p.waitForTimeout(2500);
-    expect('đăng ký trùng email: báo rõ ràng', /đã có tài khoản/.test(await loi(p)), true);
+    expect('đăng ký trùng số điện thoại: báo rõ ràng', /đã có tài khoản/.test(await loi(p)), true);
     await ctx.close();
   }
 
   // ---------- 4. Chủ trọ đã đăng nhập mở khu quản trị thì bị chặn ----------
   {
     const { ctx, p } = await trang();
-    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.goto(B + '/trang-chu.html?dang-nhap=1&supabase=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open');
-    await p.fill('#loginPhone', EMAIL);
+    await p.fill('#loginPhone', SO);
     await p.fill('#loginPassword', MAT_KHAU);
     await p.click('[data-auth-form="login"] .btn-submit');
     await p.waitForURL('**/quan-ly/tong-quan.html', { timeout: 20000 }).catch(() => {});
@@ -155,5 +157,5 @@ try {
 }
 
 console.log(failed ? '\nCÓ MỤC HỎNG' : '\nTẤT CẢ ĐỀU ĐẠT');
-console.log('Nhớ xoá tài khoản kiểm thử ' + EMAIL + ' ở Supabase > Authentication > Users nếu không cần nữa.');
+console.log('Nhớ xoá tài khoản kiểm thử (số ' + SO + ', lưu dưới email nội bộ ' + SO + '@sdt.ancu.vn) ở Supabase > Authentication > Users nếu không cần nữa.');
 process.exit(failed ? 1 : 0);

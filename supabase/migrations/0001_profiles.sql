@@ -5,13 +5,17 @@
 --
 -- Mô hình đúng theo CLAUDE.md: profiles.id là khoá ngoại tới auth.users, role chỉ nhận 'renter' |
 -- 'landlord' | 'admin', RLS bật. Người dùng tự sửa được tên và số điện thoại của mình nhưng KHÔNG đổi
--- được vai trò — quyền UPDATE chỉ cấp trên đúng ba cột, nên không ai tự nâng mình thành admin.
+-- được vai trò — quyền UPDATE chỉ cấp trên đúng bốn cột, nên không ai tự nâng mình thành admin.
+--
+-- Đăng nhập bằng SỐ ĐIỆN THOẠI: Supabase Auth lưu mỗi số dưới dạng email nội bộ <số>@sdt.ancu.vn
+-- (provider SMS chưa bật). Email THẬT người dùng khai nằm ở cột email dưới đây, không phải auth.users.
 
 create table if not exists public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   role        text not null default 'renter' check (role in ('renter', 'landlord', 'admin')),
   full_name   text not null default '',
   phone       text not null default '',
+  email       text not null default '',   -- email liên hệ người dùng tự khai, có thể để trống
   avatar_url  text,
   created_at  timestamptz not null default now()
 );
@@ -22,6 +26,9 @@ comment on table public.profiles is 'Hồ sơ người dùng An Cư, mỗi dòng
 -- (chưa khai) thì bỏ qua ràng buộc này.
 create unique index if not exists profiles_phone_khong_trung
   on public.profiles (phone) where phone <> '';
+
+-- Cho cơ sở dữ liệu đã chạy bản trước của file này
+alter table public.profiles add column if not exists email text not null default '';
 
 alter table public.profiles enable row level security;
 
@@ -43,7 +50,7 @@ create policy "tu tao ho so cua minh" on public.profiles
 
 -- Vai trò: chỉ sửa được trong Dashboard / bằng service key. Người dùng đã đăng nhập chỉ đụng được ba cột.
 revoke update on public.profiles from authenticated;
-grant update (full_name, phone, avatar_url) on public.profiles to authenticated;
+grant update (full_name, phone, email, avatar_url) on public.profiles to authenticated;
 
 -- Tạo hồ sơ ngay khi có tài khoản mới. Vai trò lấy từ dữ liệu kèm lúc đăng ký nhưng CHỈ nhận
 -- 'renter' | 'landlord' — form công khai không tạo được admin (đúng quy ước của khu quản trị).
@@ -60,12 +67,13 @@ begin
     vai_tro := 'renter';
   end if;
 
-  insert into public.profiles (id, role, full_name, phone)
+  insert into public.profiles (id, role, full_name, phone, email)
   values (
     new.id,
     vai_tro,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    coalesce(new.raw_user_meta_data ->> 'phone', '')
+    coalesce(new.raw_user_meta_data ->> 'phone', ''),
+    coalesce(new.raw_user_meta_data ->> 'email', '')
   )
   on conflict (id) do nothing;
 

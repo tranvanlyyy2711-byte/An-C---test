@@ -1445,20 +1445,21 @@
       </div>
 
       <p class="auth-demo" id="authDemoNote" hidden>
-        <b>Chế độ xem thử</b> — bản này không có máy chủ nên chỉ đăng nhập được bằng tài khoản demo,
-        mật khẩu <b>matkhau123</b>:<br />
+        <b>Chế độ xem thử</b> — trang đang mở không qua máy chủ An Cư, nên chỉ đăng nhập được bằng
+        tài khoản demo, mật khẩu <b>matkhau123</b>:<br />
         <span>0901234567 người thuê · 0988000999 chủ trọ · 0900000001 quản trị</span>
+        <span id="authDemoNoteMay" hidden>Muốn tài khoản thật: chạy <code>npm start</code> rồi mở
+          http://localhost:5500, hoặc dùng bản đã deploy.</span>
       </p>
 
       <form novalidate data-auth-form="login">
-        <!-- Đăng nhập thật qua Supabase thì ô này là email; chạy máy chủ prototype thì là số điện
-             thoại. Nhãn, kiểu và luật kiểm tra do capNhatOLogin() đặt lại theo chế độ đang chạy. -->
+        <!-- Đăng nhập bằng số điện thoại ở cả ba chế độ (máy chủ prototype, Supabase, xem thử).
+             Với Supabase, số này được quy thành email nội bộ — xem components/supabase-auth.js. -->
         <div class="field">
-          <label for="loginPhone" id="loginIdLabel">Email</label>
+          <label for="loginPhone">Số điện thoại</label>
           <div class="ctrl">
-            <input id="loginPhone" name="phone" type="email" inputmode="email" autocomplete="email" placeholder="ban@email.com" data-rule="email" aria-describedby="loginPhoneErr" />
-            <svg id="loginIconMail" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6 9-6"/></svg>
-            <svg id="loginIconPhone" viewBox="0 0 24 24" hidden><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+            <input id="loginPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912 345 678" data-rule="phone" aria-describedby="loginPhoneErr" />
+            <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
           </div>
           <p class="err" id="loginPhoneErr" role="alert"></p>
         </div>
@@ -1923,28 +1924,16 @@
     //   'supabase' — bản tĩnh (Vercel) có khai dự án Supabase: tài khoản thật, lưu trên Supabase
     //   'xem-thu'  — không có cả hai: tài khoản demo lưu trong máy người xem
     var XEM_THU = window.PhienXemThu || null;
-    var SB = window.AnCuAuth && window.AnCuAuth.coCauHinh() ? window.AnCuAuth : null;
+    var SB = window.AnCuAuth && window.AnCuAuth.dungDuoc() ? window.AnCuAuth : null;
     var CHE_DO = 'xem-thu';
 
+    // Cả ba chế độ đều đăng nhập bằng SỐ ĐIỆN THOẠI; chỉ dải nhắc tài khoản demo là đổi theo chế độ.
     function capNhatOLogin(){
-      var o = document.getElementById('loginPhone');
-      var nhan = document.getElementById('loginIdLabel');
-      // Supabase đăng nhập bằng email; máy chủ prototype và chế độ xem thử dùng số điện thoại
-      var laEmail = CHE_DO === 'supabase';
-      nhan.textContent = laEmail ? 'Email' : 'Số điện thoại';
-      o.type = laEmail ? 'email' : 'tel';
-      o.setAttribute('inputmode', laEmail ? 'email' : 'tel');
-      o.setAttribute('autocomplete', laEmail ? 'email' : 'tel');
-      o.setAttribute('data-rule', laEmail ? 'email' : 'phone');
-      o.placeholder = laEmail ? 'ban@email.com' : '0912 345 678';
-      document.getElementById('loginIconMail').hidden = !laEmail;
-      document.getElementById('loginIconPhone').hidden = laEmail;
       var note = document.getElementById('authDemoNote');
       if(note) note.hidden = CHE_DO !== 'xem-thu';
-      var head = document.querySelector('[data-pane="login"] .auth-head p');
-      if(head) head.textContent = laEmail
-        ? 'Nhập email và mật khẩu để tiếp tục.'
-        : 'Nhập số điện thoại và mật khẩu để tiếp tục.';
+      var themMay = document.getElementById('authDemoNoteMay');
+      // Đang ở máy mình mà có khai Supabase: nói rõ vì sao vẫn là tài khoản demo
+      if(themMay) themMay.hidden = !(CHE_DO === 'xem-thu' && window.AnCuAuth && window.AnCuAuth.coCauHinh());
     }
 
     // Xong khi đã biết chạy ở chế độ nào VÀ đã lấy lại phiên đăng nhập cũ (nếu có)
@@ -2004,6 +1993,13 @@
       done.querySelector('.btn').focus();
     }
 
+    function laSoDemo(v){
+      var so = String(v || '').replace(/[^0-9]/g, '');
+      var ds = (window.PhienXemThu && window.PhienXemThu.TAI_KHOAN) || [];
+      for(var i = 0; i < ds.length; i++){ if(ds[i].phone === so) return true; }
+      return false;
+    }
+
     // Tài khoản thật trên Supabase (bản tĩnh vẫn dùng được vì gọi thẳng REST API của Supabase)
     function supabaseSubmit(form, kind, busy){
       var f = form.elements;
@@ -2015,14 +2011,19 @@
             soDienThoai: f.phone.value,
             vaiTro: (form.querySelector('input[name="role"]:checked') || {}).value
           })
-        : SB.dangNhap({ email: f.phone.value, matKhau: f.password.value });
+        : SB.dangNhap({ dinhDanh: f.phone.value, matKhau: f.password.value });
 
       return viec.then(function(kq){
         if(!kq.user){
           busy(false);
+          var loi = kq.message;
+          if(kind === 'login' && kq.error === 'sai-dang-nhap' && laSoDemo(f.phone.value)){
+            loi = 'Đây là số của tài khoản demo, chỉ dùng được khi chạy máy chủ prototype (npm start). '
+                + 'Trên bản web này hãy tạo tài khoản mới.';
+          }
           var o = kq.field ? form.querySelector('[name="' + kq.field + '"][data-rule]') : null;
-          if(o){ failField(o, kq.message); o.focus(); }
-          else formError(form, kq.message);
+          if(o){ failField(o, loi); o.focus(); }
+          else formError(form, loi);
           return;
         }
         AUTH_API.me = kq.user;
@@ -2135,11 +2136,12 @@
     }
     function logout(){
       if(CHE_DO === 'supabase' && SB){
-        SB.dangXuat().then(function(){
-          AUTH_API.me = null;
-          document.body.classList.remove('menu-open');
-          renderHeader();
-        });
+        // Xoá phiên ở máy và vẽ lại header NGAY; lời gọi huỷ token trên Supabase chạy nền,
+        // người dùng không phải chờ mạng mới thấy mình đã đăng xuất.
+        SB.dangXuat();
+        AUTH_API.me = null;
+        document.body.classList.remove('menu-open');
+        renderHeader();
         return;
       }
       if(!AUTH_API.on){

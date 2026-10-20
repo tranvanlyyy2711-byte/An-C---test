@@ -289,7 +289,8 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 người xem, không chia sẻ. Các trang người thuê và chủ trọ đã có sẵn cách dự phòng tương tự.
 
 **Đăng nhập thật trên bản Vercel — Supabase Auth.** Bản tĩnh không có `/api/*`, nên trang gọi thẳng
-REST API của Supabase bằng khoá công khai, không thêm thư viện nào:
+REST API của Supabase bằng khoá công khai, không thêm thư viện nào. **Đăng nhập bằng số điện thoại ở cả
+ba chế độ** (máy chủ prototype, Supabase, xem thử) — giao diện không bao giờ hỏi email để đăng nhập:
 
 - `supabase/migrations/0001_profiles.sql` — bảng `profiles` (khoá ngoại tới `auth.users`), RLS bật, chỉ
   đọc/sửa hồ sơ của chính mình, quyền `UPDATE` chỉ cấp trên `full_name`/`phone`/`avatar_url` nên **không ai
@@ -300,13 +301,25 @@ REST API của Supabase bằng khoá công khai, không thêm thư viện nào:
 - `components/supabase-auth.js` (`window.AnCuAuth`) — `dangKy` / `dangNhap` / `toi` / `dangXuat`, phiên lưu
   ở `localStorage` khoá `an-cu-supabase-phien`, tự làm mới token khi hết hạn, lời báo lỗi dịch sang tiếng Việt.
   Vai trò **luôn đọc từ bảng `profiles`**, không tin dữ liệu người dùng tự khai.
+  **Số điện thoại là danh tính:** Supabase chưa bật provider SMS (bật thì phải mua dịch vụ nhắn tin), nên
+  mỗi số được quy thành email nội bộ `<số>@sdt.ancu.vn` cho `auth.users`; email thật người dùng khai nằm ở
+  cột `profiles.email`. Gõ chuỗi có `@` vào ô đăng nhập thì vẫn dùng nguyên chuỗi, nên tài khoản tạo bằng
+  email trước đó vẫn vào được.
 - `components/nguoi-dung.js` (`AnCuNguoiDung.hienTai()`) — một chỗ hỏi duy nhất cho cả ba khu, thứ tự ưu
   tiên: máy chủ prototype (`/api/toi`) → Supabase → phiên xem thử. Mọi trang `tai-khoan/*`, `quan-ly/*`,
   `quan-tri/*` đều nạp bốn file này trước `an-cu-store.js`.
-- Trang chủ tự chọn một trong ba chế độ: `may-chu` (đăng nhập bằng **số điện thoại**, như cũ), `supabase`
-  (đăng nhập bằng **email**), `xem-thu` (tài khoản demo). Ô đăng nhập đổi nhãn theo chế độ đang chạy.
+- Trang chủ tự chọn một trong ba chế độ: `may-chu` (đang chạy `npm start`), `supabase` (bản đã deploy),
+  `xem-thu` (tài khoản demo). Ô đăng nhập luôn là số điện thoại; chỉ dải nhắc tài khoản demo là hiện/ẩn
+  theo chế độ.
+- **Trên máy mình (localhost / `file://`) KHÔNG dùng Supabase dù đã khai dự án** (`AnCuAuth.dungDuoc()`):
+  mở trang tĩnh ở localhost mà hỏi tài khoản thật thì mọi tài khoản demo đều báo sai mật khẩu, rất khó
+  hiểu. Ở đó: có máy chủ prototype → đăng nhập thật bằng SQLite; không có → tài khoản demo. Muốn thử lối
+  Supabase ngay trên máy thì mở kèm `?supabase=1` (nhớ trong `sessionStorage`, tắt bằng `?supabase=0`) —
+  `scripts/check-supabase-auth.mjs` dùng đúng cờ này. Gõ số của tài khoản demo vào lối thật thì trang giải
+  thích rõ thay vì chỉ báo sai mật khẩu.
 - Hai việc phải làm tay một lần trên Supabase Dashboard: chạy file SQL ở trên, và **tắt "Confirm email"**
-  (Authentication > Providers > Email) — nếu không, tài khoản mới chưa xác nhận sẽ không đăng nhập được.
+  (Authentication > Providers > Email) — bắt buộc, vì email nội bộ `<số>@sdt.ancu.vn` không nhận được thư
+  xác nhận; không tắt thì tài khoản mới không đăng nhập được.
   Nâng quản trị: `update public.profiles set role = 'admin' where id = ...` (xem cuối file SQL).
 - Kiểm tra: `node scripts/check-supabase-auth.mjs` (**tạo tài khoản thật** `kiem-thu-…@ancu.test`, nhớ xoá
   sau; không nằm trong `npm test:*`). `npm run test:tinh` vẫn kiểm lối xem thử bằng cách chặn

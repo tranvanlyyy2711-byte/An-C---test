@@ -30,7 +30,7 @@
 
   function tuSupabase(){
     var SB = window.AnCuAuth;
-    if(!SB || !SB.coCauHinh()) return Promise.resolve(null);
+    if(!SB || !SB.dungDuoc()) return Promise.resolve(null);
     return SB.toi().then(function(u){
       return u ? { id:u.id, name:u.name, phone:u.phone, role:u.role, nguon:'supabase' } : null;
     }).catch(function(){ return null; });

@@ -1,4 +1,6 @@
-// Chụp màn hình lối đăng nhập của CHẾ ĐỘ XEM THỬ (giống bản tĩnh trên Vercel: không có /api/*).
+// Chụp màn hình lối đăng nhập trên bản tĩnh (giống bản trên Vercel: không có /api/*):
+//   dang-nhap-that-*       — có khai Supabase: đăng nhập thật bằng số điện thoại
+//   dang-nhap-xem-thu-*    — chưa khai Supabase: tài khoản demo lưu trong máy người xem
 // Chạy: node scripts/shot-dang-nhap-xem-thu.mjs   → docs/screenshots/dang-nhap-xem-thu-*.png
 import { chromium } from 'playwright';
 import { createServer } from 'http';
@@ -32,8 +34,16 @@ await new Promise((r) => sv.listen(PORT, r));
 const B = `http://localhost:${PORT}`;
 
 const browser = await chromium.launch({ channel: 'msedge' });
-async function moTrang(w, h) {
+// Có khai dự án Supabase thì trang chạy lối đăng nhập thật; muốn chụp chế độ xem thử thì trả về
+// cấu hình rỗng cho đúng một ngữ cảnh.
+async function moTrang(w, h, xemThu) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
+  if (xemThu) {
+    await ctx.route('**/components/cau-hinh-supabase.js', (r) => r.fulfill({
+      contentType: 'text/javascript; charset=utf-8',
+      body: 'window.CAU_HINH_SUPABASE = { url: "", khoaCongKhai: "" };',
+    }));
+  }
   const p = await ctx.newPage();
   return { ctx, p };
 }
@@ -46,9 +56,19 @@ async function dangNhap(p, so) {
 }
 
 try {
-  // 1. Hộp đăng nhập ở hai khổ màn hình
+  // 1a. Hộp đăng nhập THẬT (có khai Supabase) — đây là thứ người dùng thấy trên Vercel
   for (const [ten, w, h] of [['desktop', 1440, 900], ['mobile', 390, 844]]) {
-    const { ctx, p } = await moTrang(w, h);
+    const { ctx, p } = await moTrang(w, h, false);
+    await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('.auth-overlay.open');
+    await p.waitForTimeout(600);
+    await p.screenshot({ path: resolve(outDir, `dang-nhap-that-${ten}.png`) });
+    await ctx.close();
+  }
+
+  // 1b. Hộp đăng nhập ở chế độ xem thử (khi chưa khai Supabase)
+  for (const [ten, w, h] of [['desktop', 1440, 900], ['mobile', 390, 844]]) {
+    const { ctx, p } = await moTrang(w, h, true);
     await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('#authDemoNote:visible', { timeout: 10000 });
     await p.waitForTimeout(400);
@@ -58,7 +78,7 @@ try {
 
   // 2. Chủ trọ Lê Thu Mai: trang quản lý phải hiện đúng tên người vừa đăng nhập
   {
-    const { ctx, p } = await moTrang(1440, 900);
+    const { ctx, p } = await moTrang(1440, 900, true);
     await dangNhap(p, '0977111222');
     await p.waitForURL('**/quan-ly/tong-quan.html', { timeout: 10000 });
     await p.waitForTimeout(1200);
@@ -68,7 +88,7 @@ try {
 
   // 2b. Cùng trang đó ở 390px: dải báo và lời chào không làm vỡ bố cục
   {
-    const { ctx, p } = await moTrang(390, 844);
+    const { ctx, p } = await moTrang(390, 844, true);
     await dangNhap(p, '0977111222');
     await p.waitForURL('**/quan-ly/tong-quan.html', { timeout: 10000 });
     await p.waitForTimeout(1200);
@@ -80,7 +100,7 @@ try {
 
   // 3. Quản trị: vào thẳng khu quản trị ở chế độ xem thử
   {
-    const { ctx, p } = await moTrang(1440, 900);
+    const { ctx, p } = await moTrang(1440, 900, true);
     await dangNhap(p, '0900000001');
     await p.waitForURL('**/quan-tri/trang-chu.html', { timeout: 10000 });
     await p.waitForTimeout(1200);

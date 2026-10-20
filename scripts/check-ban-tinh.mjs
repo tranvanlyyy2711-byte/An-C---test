@@ -89,17 +89,11 @@ try {
     { so: '0977111222', ten: 'Lê Thu Mai', khu: '/quan-ly/tong-quan.html', cho: '#accTen' },
     { so: '0900000001', ten: 'Quản trị An Cư', khu: '/quan-tri/trang-chu.html', cho: null },
   ];
-  // Kịch bản này kiểm tra lối dự phòng khi KHÔNG khai Supabase (chế độ xem thử). Khai rỗng cấu hình
-  // ngay trước khi trang chạy để khỏi đụng tới dự án Supabase thật.
-  // Lối đăng nhập thật qua Supabase kiểm bằng: node scripts/check-supabase-auth.mjs
-  const khongSupabase = (ctx) => ctx.route('**/components/cau-hinh-supabase.js', (r) => r.fulfill({
-    contentType: 'text/javascript; charset=utf-8',
-    body: 'window.CAU_HINH_SUPABASE = { url: "", khoaCongKhai: "" };',
-  }));
-
+  // Máy mình (localhost/file://) thì LUÔN đăng nhập bằng tài khoản demo, kể cả khi đã khai dự án
+  // Supabase — nếu không, mở trang tĩnh ở localhost sẽ hỏi tài khoản thật và mọi tài khoản demo đều
+  // báo sai mật khẩu. Lối thật kiểm riêng bằng: node scripts/check-supabase-auth.mjs
   for (const v of VAI_TRO) {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await khongSupabase(ctx);
     const p = await ctx.newPage();
     const errors = [];
     p.on('pageerror', (e) => errors.push(String(e)));
@@ -107,6 +101,7 @@ try {
     await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open', { timeout: 10000 });
     expect(`${v.ten}: hộp đăng nhập nói rõ đang ở chế độ xem thử`, await p.locator('#authDemoNote').isVisible(), true);
+    expect(`${v.ten}: có khai Supabase vẫn dùng tài khoản demo trên máy mình`, await p.locator('#authDemoNoteMay').isVisible(), true);
     await p.fill('#loginPhone', v.so);
     await p.fill('#loginPassword', 'matkhau123');
     await p.click('[data-auth-form="login"] .btn-submit');
@@ -134,7 +129,6 @@ try {
   // Sai mật khẩu thì báo lỗi, không cho vào
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await khongSupabase(ctx);
     const p = await ctx.newPage();
     await p.emulateMedia({ reducedMotion: 'reduce' });
     await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
@@ -156,7 +150,6 @@ try {
   // Đăng nhập người thuê rồi mở thẳng khu quản trị: phải bị chặn
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await khongSupabase(ctx);
     const p = await ctx.newPage();
     await p.emulateMedia({ reducedMotion: 'reduce' });
     await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
