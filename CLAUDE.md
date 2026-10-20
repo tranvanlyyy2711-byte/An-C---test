@@ -287,6 +287,11 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 `/api/*`. Khi đó trang quản trị tự chuyển sang dữ liệu mẫu lưu trong `localStorage` (khoá
 `an-cu-quan-tri-demo`) và hiện dải báo "Chế độ xem thử"; mọi thao tác vẫn chạy nhưng chỉ lưu trên máy
 người xem, không chia sẻ. Các trang người thuê và chủ trọ đã có sẵn cách dự phòng tương tự.
+Trang `quan-ly/yeucauvalichhen.html` khi đó **không có dữ liệu bịa**: nó đọc đúng kho người thuê ghi
+(`an-cu-lich-xem-v1` cho lịch xem, `an-cu-yeu-cau-thue-v1` cho yêu cầu thuê), lọc theo phòng của chủ trọ
+(khớp `NHA_TRO` trong `server/phong.mjs`) và ghi ngược quyết định để tab người thuê cập nhật ngay; lịch chủ
+trọ tự tạo cho khách để riêng ở `an-cu-lich-khach-v1`. Chỉ dùng chung trong một trình duyệt — kiểm thử:
+`npm run test:xem-thu-lich`.
 
 **Đăng nhập thật trên bản Vercel — Supabase Auth.** Bản tĩnh không có `/api/*`, nên trang gọi thẳng
 REST API của Supabase bằng khoá công khai, không thêm thư viện nào. **Đăng nhập bằng số điện thoại ở cả

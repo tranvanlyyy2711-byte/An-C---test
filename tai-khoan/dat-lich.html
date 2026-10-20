@@ -1378,7 +1378,14 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
 
   // Đồng ý / từ chối giờ chủ trọ đề xuất
   function respondProposal(a, act){
-    if(!API.on){ showToast('Cần máy chủ', 'Đề xuất giờ khác chỉ có khi chạy máy chủ (npm start).'); return; }
+    if(!API.on){
+      // Chế độ xem thử: cùng kết quả với acceptProposalForRenter / cancelForRenter trong server/db.mjs
+      patchAppt(a.id, act === 'accept' ? { status:'confirmed' } : { status:'cancelled', cancelReason:'renter' });
+      AnCu.toast(act === 'accept' ? 'Đã đồng ý giờ mới' : 'Đã từ chối giờ đề xuất',
+        act === 'accept' ? 'Lịch xem ' + a.room + ' lúc ' + a.time + ' ngày ' + fmtDateNum(a.date) + ' đã được xác nhận.' : 'Chủ trọ sẽ thấy lịch này đã huỷ.', 'ok');
+      AnCu.invalidate('lich-hen');
+      return;
+    }
     apiCall('PATCH', '/api/lich-xem/' + a.id, { nguoi:MOCK_RENTER.id, action:act }).then(function(j){
       if(j.httpStatus !== 200){ AnCu.toast('Chưa cập nhật được', j.message || 'Hãy thử lại.', 'error'); return; }
       AnCu.toast(act === 'accept' ? 'Đã đồng ý giờ mới' : 'Đã từ chối giờ đề xuất',

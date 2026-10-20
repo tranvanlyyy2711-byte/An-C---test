@@ -160,7 +160,7 @@
     if(document.visibilityState === 'visible' && server.on && !isLive()) TOPICS.forEach(fire);
   });
   // Không có máy chủ: các tab cùng trình duyệt báo nhau qua localStorage
-  var STORAGE_TOPIC = { 'an-cu-lich-xem-v1':'lich-hen', 'an_cu_saved_rooms':'da-luu', 'an-cu-yeu-cau-thue-v1':'yeu-cau-thue',
+  var STORAGE_TOPIC = { 'an-cu-lich-xem-v1':'lich-hen', 'an-cu-lich-khach-v1':'lich-hen', 'an_cu_saved_rooms':'da-luu', 'an-cu-yeu-cau-thue-v1':'yeu-cau-thue',
     'an-cu-dat-coc-don':'thanh-toan', 'an-cu-thanh-toan-tien-nha':'thanh-toan' };
   window.addEventListener('storage', function(e){ if(STORAGE_TOPIC[e.key]) fire(STORAGE_TOPIC[e.key]); });
   // Mở kết nối sau khi trang tải xong, để kết nối luôn mở không giữ trang ở trạng thái 'đang tải'
