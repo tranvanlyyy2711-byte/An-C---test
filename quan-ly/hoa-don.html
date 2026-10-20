@@ -28,6 +28,7 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/chu-tro-pham-vi.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -58,14 +59,14 @@
       <main class="content">
         <div class="container">
           <div class="page-head reveal"><div><h1>Thanh toán & công nợ</h1><p>Theo dõi hóa đơn, giao dịch và thanh toán bằng QR ngân hàng</p></div><button class="btn btn-primary" id="createBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tạo hóa đơn</button></div>
-          <section class="stats reveal" id="stats"></section>
+          <section class="stats reveal" data-pham-vi id="stats"></section>
           <section class="toolbar reveal">
             <label class="search"><span class="sr-only">Tìm hóa đơn</span><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="field" id="search" placeholder="Tìm mã hóa đơn, phòng hoặc người thuê" /></label>
             <select class="field" id="status"><option value="all">Tất cả trạng thái</option><option value="paid">Đã thanh toán</option><option value="pending">Chờ thanh toán</option><option value="overdue">Quá hạn</option></select>
             <select class="field" id="period"><option>Tháng 09/2026</option><option>Tháng 08/2026</option></select>
             <button class="btn btn-ghost" id="exportBtn">Xuất Excel</button>
           </section>
-          <section class="card reveal">
+          <section class="card reveal" data-pham-vi>
             <div class="card-head"><div><h2>Danh sách hóa đơn</h2><p id="resultCount"></p></div><span class="status paid">VNPay/VietQR sẵn sàng</span></div>
             <div class="table-wrap"><table><thead><tr><th>Mã hóa đơn</th><th>Phòng</th><th>Người thuê</th><th>Nội dung</th><th>Tổng tiền</th><th>Hạn thanh toán</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="invoiceRows"></tbody></table></div>
           </section>
@@ -98,7 +99,7 @@
     function money(n){return new Intl.NumberFormat('vi-VN').format(n)+' ₫'}
     function icon(path){return '<svg viewBox="0 0 24 24">'+path+'</svg>'}
     function showToast(title,text){var t=document.getElementById('toast');document.getElementById('toastTitle').textContent=title;document.getElementById('toastText').textContent=text;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(function(){t.classList.remove('show')},2500)}
-    function renderStats(){var total=invoices.reduce(function(s,i){return s+i.amount},0),paid=invoices.filter(function(i){return i.status==='paid'}).reduce(function(s,i){return s+i.amount},0),debt=total-paid,over=invoices.filter(function(i){return i.status==='overdue'}).length;var data=[['Phải thu',money(total),'5 hóa đơn','<path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/>',''],['Đã nhận',money(paid),'Đã đối soát','<path d="m5 12 4 4L19 6"/>',''],['Còn phải thu',money(debt),'Chờ khách thanh toán','<path d="M12 2v20M17 6.5C17 4.6 14.8 3 12 3S7 4.6 7 6.5 9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/>',''],['Quá hạn',over+' hóa đơn','Cần gửi nhắc nợ','<circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/>','danger']];document.getElementById('stats').innerHTML=data.map(function(s){return '<article class="stat '+s[4]+'"><div class="stat-top"><span class="stat-label">'+s[0]+'</span><span class="stat-icon">'+icon(s[3])+'</span></div><p class="stat-value">'+s[1]+'</p><p class="stat-sub">'+s[2]+'</p></article>'}).join('')}
+    function renderStats(){var total=invoices.reduce(function(s,i){return s+i.amount},0),paid=invoices.filter(function(i){return i.status==='paid'}).reduce(function(s,i){return s+i.amount},0),debt=total-paid,over=invoices.filter(function(i){return i.status==='overdue'}).length;var data=[['Phải thu',money(total),(invoices.length+' hóa đơn'),'<path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/>',''],['Đã nhận',money(paid),'Đã đối soát','<path d="m5 12 4 4L19 6"/>',''],['Còn phải thu',money(debt),'Chờ khách thanh toán','<path d="M12 2v20M17 6.5C17 4.6 14.8 3 12 3S7 4.6 7 6.5 9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/>',''],['Quá hạn',over+' hóa đơn','Cần gửi nhắc nợ','<circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/>','danger']];document.getElementById('stats').innerHTML=data.map(function(s){return '<article class="stat '+s[4]+'"><div class="stat-top"><span class="stat-label">'+s[0]+'</span><span class="stat-icon">'+icon(s[3])+'</span></div><p class="stat-value">'+s[1]+'</p><p class="stat-sub">'+s[2]+'</p></article>'}).join('')}
     function filtered(){var q=document.getElementById('search').value.trim().toLowerCase(),st=document.getElementById('status').value;return invoices.filter(function(i){return(!q||[i.id,i.room,i.tenant].join(' ').toLowerCase().includes(q))&&(st==='all'||i.status===st)})}
     function render(){var rows=filtered();document.getElementById('resultCount').textContent=rows.length+' hóa đơn trong tháng 09/2026';document.getElementById('invoiceRows').innerHTML=rows.map(function(i){var action=i.status==='paid'?'<button class="btn btn-ghost btn-sm" data-receipt="'+i.id+'">Biên nhận</button>':'<button class="btn btn-primary btn-sm" data-pay="'+i.id+'">QR ngân hàng</button><button class="btn btn-ghost btn-sm" data-remind="'+i.id+'">Nhắc trả</button>';return '<tr><td><span class="code">'+i.id+'</span></td><td>'+i.room+'</td><td>'+i.tenant+'</td><td>'+i.content+'</td><td class="money">'+money(i.amount)+'</td><td>'+i.due+'</td><td><span class="status '+i.status+'">'+labels[i.status]+'</span></td><td><div class="row-actions">'+action+'</div></td></tr>'}).join('');bindRows()}
     function bindRows(){document.querySelectorAll('[data-pay]').forEach(function(b){b.onclick=function(){openPayment(b.dataset.pay)}});document.querySelectorAll('[data-remind]').forEach(function(b){b.onclick=function(){showToast('Đã gửi nhắc thanh toán','Thông báo cho hóa đơn '+b.dataset.remind+' đã được tạo.')}});document.querySelectorAll('[data-receipt]').forEach(function(b){b.onclick=function(){showToast('Biên nhận '+b.dataset.receipt,'Tính năng xuất biên nhận đang ở dạng minh họa.')}})}
@@ -111,6 +112,18 @@
     var menu=document.getElementById('menuBtn');menu.onclick=function(){document.body.classList.toggle('nav-open')};document.getElementById('navBackdrop').onclick=function(){document.body.classList.remove('nav-open')};
     if(matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.reveal').forEach(function(e){e.classList.add('in')})}else{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})});document.querySelectorAll('.reveal').forEach(function(e){io.observe(e)})}
     renderStats();render();
+
+    // Cô lập dữ liệu: hoá đơn ở trên là của Nhà trọ An Bình. Tài khoản chủ trọ chưa có phòng thì
+    // không thể có hoá đơn nào — giữ khung, đưa mọi con số về 0.
+    if (window.ChuTroPhamVi) ChuTroPhamVi.khiMoi(function(){
+      invoices.length = 0;
+      renderStats(); render();
+      document.getElementById('resultCount').textContent = 'Chưa có hoá đơn nào';
+      document.getElementById('invoiceRows').innerHTML =
+        '<tr><td colspan="8">' + ChuTroPhamVi.oTrong('Chưa có hoá đơn nào',
+          'Hoá đơn sẽ hiện ở đây sau khi bạn thêm phòng, ghi chỉ số điện nước và chốt tháng.',
+          { href: 'phong-dien-nuoc.html', chu: 'Thêm phòng' }) + '</td></tr>';
+    });
   </script>
 </body>
 </html>
