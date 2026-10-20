@@ -16,6 +16,7 @@ const PAGES = [
   { file: 'da-luu.html', active: 'Phòng đã lưu' },
   { file: 'dat-lich.html', active: 'Yêu cầu & Lịch hẹn' },
   { file: 'thanh-toan-tien-nha.html', active: 'Thanh toán' },
+  { file: 'thanh-toan.html', active: 'Thanh toán' },   // trang con của mục Thanh toán
   { file: 'phong-cua-toi.html', active: 'Phòng của tôi' },
   { file: 'ho-tro.html', active: 'Hỗ trợ & báo cáo' },
 ];
@@ -33,11 +34,13 @@ const ctx = await browser.newContext();
 await ctx.addInitScript(() => {
   // Kho lịch xem cố định (đã gieo) để mọi trang thấy cùng dữ liệu: 2 lịch sắp tới, 1 đã huỷ
   if (!localStorage.getItem('an-cu-lich-xem-v1')) {
+    // Ngày tính từ hôm nay để hai lịch "đã xác nhận" luôn còn ở tương lai
+    const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
     const base = { roomId: 'r09', room: 'Phòng khép kín, gần các trường Bách Kinh Xây', address: 'Phố Lạc Trung, P. Vĩnh Tuy, Hai Bà Trưng, Hà Nội', price: 3300000, image: '../assets/rooms/phong-lac-trung-vinh-tuy.jpg', landlordPhone: '0327882879', tenant: 'Phạm Thu Trang', phone: '0901234567', dur: 30, urgent: false, note: '', createdAt: '2026-09-17T20:10:00', source: 'seed' };
     localStorage.setItem('an-cu-lich-xem-v1', JSON.stringify({ v: 1, seq: 4, seeded: true, items: [
-      { ...base, id: 1, date: '2026-09-25', time: '09:00', status: 'confirmed' },
-      { ...base, id: 2, date: '2026-09-26', time: '10:00', status: 'confirmed' },
-      { ...base, id: 3, date: '2026-09-27', time: '11:00', status: 'cancelled' },
+      { ...base, id: 1, date: day(3), time: '09:00', status: 'confirmed' },
+      { ...base, id: 2, date: day(4), time: '10:00', status: 'confirmed' },
+      { ...base, id: 3, date: day(5), time: '11:00', status: 'cancelled' },
     ] }));
   }
 });

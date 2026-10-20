@@ -35,6 +35,7 @@ try {
   console.log('\n=== Sidebar khi isTenantActive = true ===');
   expect('"Phòng của tôi" ở đầu, trên "Tìm phòng"', (await menu(p)).slice(0, 2), ['Phòng của tôi', 'Tìm phòng & bản đồ']);
   expect('Mục đang mở', await p.locator('#sideNav .side-link.active .side-label').textContent(), 'Phòng của tôi');
+  expect('"Hỗ trợ & báo cáo" ở cuối', (await menu(p)).slice(-1), ['Hỗ trợ & báo cáo']);
 
   console.log('\n=== 4 thẻ thống kê ===');
   const stats = await p.locator('.stat').evaluateAll((els) => els.map((e) => [e.querySelector('.stat-label').textContent, e.querySelector('.stat-value').textContent]));
@@ -88,9 +89,24 @@ try {
   const q = await c2.newPage();
   await q.goto(url('tai-khoan/da-luu.html?nguoi=u-an'));
   await q.waitForSelector('#sideNav .side-link');
-  expect('Sidebar tìm trọ tiêu chuẩn', await menu(q), ['Tìm phòng & bản đồ', 'Phòng đã lưu', 'Yêu cầu & Lịch hẹn', 'Thanh toán', 'Hỗ trợ & báo cáo']);
-  await q.goto(url('tai-khoan/phong-cua-toi.html?nguoi=u-an'));
-  expect('Mở thẳng trang khi chưa thuê: báo rõ', await q.locator('.empty-state h3').textContent(), 'Bạn chưa có phòng đang thuê');
+  const BASIC = ['Tìm phòng & bản đồ', 'Phòng đã lưu', 'Yêu cầu & Lịch hẹn', 'Thanh toán'];
+  expect('Chưa thanh toán: đúng 4 mục chính', await menu(q), BASIC);
+  for (const f of ['phong-cua-toi.html', 'ho-tro.html']) {
+    await q.goto(url('tai-khoan/' + f + '?nguoi=u-an'));
+    await q.waitForURL(/tim-phong\.html\?nguoi=u-an$/, { timeout: 4000 }).catch(() => {});
+    expect(`Mở thẳng ${f} khi chưa thanh toán → về Tìm phòng`, q.url().split('/').pop(), 'tim-phong.html?nguoi=u-an');
+  }
+
+  // Thanh toán thành công ở tab khác (dat-coc.html ghi đơn đã xác nhận): sidebar đổi ngay, không tải lại
+  console.log('\n=== Thanh toán xong: sidebar cập nhật ngay ===');
+  await q.goto(url('tai-khoan/da-luu.html?nguoi=u-an'));
+  await q.waitForSelector('#sideNav .side-link');
+  const tab2 = await c2.newPage();
+  await tab2.goto(url('tai-khoan/dat-coc.html'));
+  await tab2.evaluate(() => localStorage.setItem('an-cu-dat-coc-don', JSON.stringify({ roomId: 'p01', phone: '0912000111', deposit: 3000000, confirmedAt: new Date().toISOString() })));
+  await q.waitForFunction(() => document.querySelectorAll('#sideNav .side-link').length === 6, null, { timeout: 4000 }).catch(() => {});
+  expect('Đã thanh toán: 6 mục, đúng thứ tự', await menu(q), ['Phòng của tôi', ...BASIC, 'Hỗ trợ & báo cáo']);
+  expect('Vẫn giữ mục đang mở', await q.locator('#sideNav .side-link.active .side-label').textContent(), 'Phòng đã lưu');
   await c2.close();
 
   // ---------- Đăng nhập: chuyển thẳng theo trạng thái thuê ----------

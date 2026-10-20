@@ -173,17 +173,24 @@ npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịc
 npm run test:goi       # gói đang dùng hiện đúng ở trang quản lý của chủ trọ
 npm run test:tinh      # bản tĩnh (như trên Vercel): mọi trang mở được, không lỗi JS
 npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và bản tĩnh
+npm run test:lien-thong # hai phía người thuê ↔ chủ trọ: lưu phòng, lịch hẹn, thông báo, thuê phòng (trình duyệt thật)
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```
 
 **Luôn tự chạy server xem trước trong terminal của mình, không nhờ AI khởi động hộ.** Nếu để AI chạy nền, tiến trình đó gắn với phiên làm việc của AI và sẽ tắt khi phiên kết thúc, khiến link `localhost:5500` báo lỗi dù trang không có vấn đề gì. Mở một cửa sổ terminal riêng, chạy lệnh ở trên, và **giữ cửa sổ đó mở** suốt lúc làm việc — mỗi lần AI sửa file xong chỉ cần reload trình duyệt.
 
-Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`. Tiền cọc khi xem và mục Thanh toán: xem `docs/coc-khi-xem.md` (chụp kiểm tra: `node scripts/shot-thanh-toan.mjs`). Phiếu sự cố người thuê gửi chủ trọ (trạng thái, API, chuông thông báo, hộp thoại chi tiết dùng chung 3 lối vào): xem `docs/su-co-nguoi-thue.md` (kiểm tra: `npm run test:su-co`).
+Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`. Liên thông hai phía (6 trạng thái lịch hẹn dùng chung, thông báo + SSE, quyền theo chủ phòng, khoản nhận phòng): xem `docs/lich-hen-hai-chieu.md`. Tiền cọc khi xem và mục Thanh toán: xem `docs/coc-khi-xem.md` (chụp kiểm tra: `node scripts/shot-thanh-toan.mjs`). Phiếu sự cố người thuê gửi chủ trọ (trạng thái, API, chuông thông báo, hộp thoại chi tiết dùng chung 3 lối vào): xem `docs/su-co-nguoi-thue.md` (kiểm tra: `npm run test:su-co`).
 
 Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999` (Trần Hoà — Nhà trọ An Bình), `0977111222` (Lê Thu Mai). Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
 
+**Một nguồn dữ liệu chung phía trình duyệt.** Mọi trang `tai-khoan/*` và `quan-ly/*` nạp `components/an-cu-store.js`
+(trước `sidebar.js`): gọi API kèm danh tính, nghe dữ liệu đổi theo topic (SSE từ máy chủ), toast, phòng đã lưu,
+chuông `<an-cu-bell>`, hộp thoại đặt lịch, màu trạng thái lịch hẹn. Thao tác ghi xong thì `AnCu.invalidate(topic)`,
+không tự viết fetch/polling riêng. Chủ trọ chưa đăng nhập đóng vai bằng `?chu=l-binh|l-mai` (mặc định `l-binh`) và
+chỉ thấy phòng của mình. Lưu phòng bắt buộc đăng nhập thật.
+
 **Một bộ phòng dùng chung.** 9 tin `p01`–`p09` chỉ khai một chỗ: `ROOMS` trong
-`tai-khoan/tim-phong.html` là **bộ chuẩn**; `trang-chu.html` và `PHONG` trong `server/phong.mjs` phải
+`tai-khoan/tim-phong.html` là **bộ chuẩn**; `trang-chu.html`, `PHONG` trong `server/phong.mjs` và `CATALOG` trong `tai-khoan/da-luu.html` (dùng khi không có máy chủ) phải
 khớp theo (tên, giá, diện tích, số người, tầng, ảnh, mô tả). Trang chủ ghi phường theo danh sách 126 đơn
 vị của Hà Nội sau sáp nhập để bộ lọc vị trí tìm được — Mỹ Đình và Nhật Tân không còn là phường riêng nên
 `p07` ghi Phường Từ Liêm, `p08` ghi Phường Tây Hồ.

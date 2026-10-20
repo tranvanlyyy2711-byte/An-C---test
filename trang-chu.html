@@ -1878,10 +1878,23 @@
           .then(function(j){ if(j && j.ok){ AUTH_API.on = true; AUTH_API.me = j.me || null; } return AUTH_API; })
           .catch(function(){ return AUTH_API; });
 
+    // ?dang-nhap=1&tiep=tai-khoan/tim-phong.html: trang khác đưa sang đăng nhập (vd bấm "Lưu phòng" khi
+    // chưa đăng nhập). Đăng nhập xong quay lại đúng trang đó; chỉ nhận đường dẫn trong khu của vai trò.
+    var NEXT_URL = (function(){
+      var t = null;
+      try{ t = new URLSearchParams(location.search).get('tiep'); }catch(e){}
+      return t && /^(tai-khoan|quan-ly)\/[\w.-]+\.html([?#][^\s]*)?$/.test(t) ? t : null;
+    })();
     function areaOf(user){
       if (user && user.role === 'admin') return 'quan-tri/trang-chu.html';
+      if (NEXT_URL && user && NEXT_URL.indexOf(user.role === 'landlord' ? 'quan-ly/' : 'tai-khoan/') === 0) return NEXT_URL;
       return user && user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html';
     }
+    AUTH_READY.then(function(){
+      var want = null;
+      try{ want = new URLSearchParams(location.search).get('dang-nhap'); }catch(e){}
+      if(want) openAuth('login', NEXT_URL && NEXT_URL.indexOf('quan-ly/') === 0 ? 'landlord' : 'renter');
+    });
     function shortName(user){
       if(!user) return '';
       if(user.name === user.phone) return user.phone;

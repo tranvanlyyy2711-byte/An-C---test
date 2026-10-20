@@ -56,13 +56,15 @@ if (process.argv[2] === 'worker') {
       if (mode === 'overlap') {
         store.createForLandlord({ roomId: 'P.102', tenant: 'Khách ' + i, phone: '0900000000', date: DATE, time: timeOf(i) });
       } else {
-        store.createForRenter({ nguoi: RENTERS[i % RENTERS.length], roomId: 'p01', date: DATE, time: '10:00' });
+        // p06: không người thuê mẫu nào có lịch p06 còn hiệu lực, nên chỉ còn luật "một khung giờ một người" quyết định
+        store.createForRenter({ nguoi: RENTERS[i % RENTERS.length], roomId: 'p06', date: DATE, time: '10:00' });
       }
       result = 'ok';
       store.close();
     }
   } catch (e) {
-    result = e.code === 'slot_taken' ? 'taken' : 'error:' + (e.code || e.message);
+    // duplicate: cùng một người thuê gửi lần hai (8 tiến trình, 4 người), máy chủ chặn đặt trùng phòng trước
+    result = e.code === 'slot_taken' || e.code === 'duplicate' ? 'taken' : 'error:' + (e.code || e.message);
   }
   process.stdout.write(result);
   process.exit(0);
@@ -113,8 +115,8 @@ try {
 
   const same = await race('same');
   expect(`Cùng khung giờ, ${N} tiến trình: đúng 1 thành công`, count(same, 'ok'), 1);
-  expect(`Cùng khung giờ: ${N - 1} bị từ chối slot_taken`, count(same, 'taken'), N - 1);
-  expect('Cùng khung giờ: DB chỉ có 1 lịch còn hiệu lực', activeRows('p01'), 1);
+  expect(`Cùng khung giờ: ${N - 1} bị từ chối (slot_taken / duplicate)`, count(same, 'taken'), N - 1);
+  expect('Cùng khung giờ: DB chỉ có 1 lịch còn hiệu lực', activeRows('p06'), 1);
 
   // Xác nhận nguyên tử
   const store = openDb({ file: DB, now: () => NOW });

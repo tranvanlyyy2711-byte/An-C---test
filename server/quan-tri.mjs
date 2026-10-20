@@ -130,7 +130,7 @@ export function createAdmin(db, ApiError, now) {
     sweep: db.prepare("UPDATE plan_invoices SET status = 'overdue' WHERE status = 'pending' AND due_date < ?"),
     cancelInvoices: db.prepare("DELETE FROM plan_invoices WHERE subscription_id = ? AND status = 'pending' AND due_date > ?"),
     // Nhà trọ: ai đang thuê (yêu cầu thuê đã duyệt) và ai đang hẹn xem phòng nào
-    tenants: db.prepare(`SELECT room_id, renter_id, tenant_name, tenant_phone, want_date, status, decided_at, created_at
+    tenants: db.prepare(`SELECT room_id, renter_id, tenant_name, tenant_phone, want_date, status, pay_status, decided_at, created_at
                          FROM rental_requests WHERE status IN ('approved','pending','reviewing')
                          ORDER BY CASE status WHEN 'approved' THEN 0 ELSE 1 END, want_date, id`),
     guests: db.prepare(`SELECT room_id, renter_id, tenant_name, tenant_phone, date, time, status
@@ -494,7 +494,8 @@ export function createAdmin(db, ApiError, now) {
   // ---------- Thông báo của chính người dùng (chuông trên trang quản lý) ----------
   function myNotifications(userId) {
     const ds = q.notisOfUser.all(userId).map((n) => {
-      const item = { id: n.id, type: n.type, title: n.title, body: n.body, createdAt: n.created_at, read: !!n.read_at };
+      const item = { id: n.id, type: n.type, title: n.title, body: n.body, createdAt: n.created_at, read: !!n.read_at,
+        link: n.link || null };   // trang mở khi bấm (lịch hẹn, thanh toán…), đường dẫn tính từ gốc site
       // Thông báo sự cố mang sẵn mã phiếu trong ref ('su-co:<ticketId>:<replyId>'), tách ra để
       // giao diện bấm vào là mở đúng phiếu, không cần thêm cột mới trên bảng dùng chung này.
       if (n.type === 'su-co' && n.ref) {
@@ -601,7 +602,7 @@ export function createAdmin(db, ApiError, now) {
 
   // ---------- Nhà trọ: chủ trọ nào quản lý phòng nào, ai đang thuê ở đó ----------
   // Quyền sở hữu phòng nằm ở NHA_TRO (server/phong.mjs) vì prototype chưa có bảng properties.
-  // Người đang thuê = yêu cầu thuê đã được DUYỆT; ngoài ra liệt kê người đang chờ duyệt và
+  // Người đang thuê = yêu cầu thuê đã được DUYỆT và ĐÃ THANH TOÁN; ngoài ra liệt kê người đang chờ duyệt và
   // người đang hẹn xem, để quản trị thấy đủ ai liên quan tới phòng khi có báo cáo.
   const fold = (v) => String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
 
@@ -630,8 +631,9 @@ export function createAdmin(db, ApiError, now) {
     for (const r of q.tenants.all()) {
       push(r.room_id, {
         ...nguoi(r.renter_id, r.tenant_name, r.tenant_phone),
-        kind: r.status === 'approved' ? 'tenant' : 'pending',
-        since: r.status === 'approved' ? r.want_date : null,
+        // Chỉ thành người đang thuê khi chủ trọ đã xác nhận nhận tiền nhận phòng (pay_status = 'paid')
+        kind: r.status === 'approved' && r.pay_status === 'paid' ? 'tenant' : 'pending',
+        since: r.status === 'approved' && r.pay_status === 'paid' ? r.want_date : null,
         at: r.want_date,
       });
     }

@@ -11,20 +11,30 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'fs';
 import { dirname } from 'path';
-import { PHONG, NGUOI_THUE, CHU_CUA_PHONG } from './phong.mjs';
+import { PHONG, NGUOI_THUE, CHU_CUA_PHONG, NHA_TRO } from './phong.mjs';
 import { AUTH_SCHEMA, seedDemoUsers, migrateAuth } from './auth.mjs';
+import { migrateNotifications, createNotifier } from './thong-bao.mjs';
 
 export const HOLD_HOURS = 24;
 // Người thuê chọn giờ tự do đến từng phút, trong khung nhận lịch [OPEN_FROM, LAST_START]
 export const OPEN_FROM = '07:00';
 export const LAST_START = '21:00';
-const ACTIVE = "('pending','confirmed')";
+// Lịch còn hiệu lực (chiếm khung giờ): chờ xác nhận, đã xác nhận, hoặc chủ trọ đề xuất giờ khác
+// đang chờ người thuê trả lời (giữ khung giờ MỚI đã đề xuất).
+const ACTIVE = "('pending','confirmed','proposed')";
 const RE_PHONE = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 const RE_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const RE_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-const SCHEMA = `
-CREATE TABLE IF NOT EXISTS viewing_appointments (
+// Trạng thái lịch hẹn, dùng chung cho hai phía (xem docs/lich-hen-hai-chieu.md):
+//   pending   Chờ xác nhận      người thuê vừa gửi
+//   confirmed Đã xác nhận       chủ trọ đồng ý
+//   proposed  Đề xuất giờ khác  chủ trọ đổi giờ, chờ người thuê đồng ý / từ chối
+//   rejected  Đã từ chối        chủ trọ từ chối, có lý do
+//   cancelled Đã huỷ            một trong hai bên huỷ, hoặc tự huỷ khi quá hạn ('expired')
+//   completed Đã hoàn thành     đã xác nhận và qua giờ hẹn (tự chuyển hoặc chủ trọ đánh dấu)
+const APPT_TABLE = (name) => `
+CREATE TABLE IF NOT EXISTS ${name} (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
   room_id         TEXT    NOT NULL,
   renter_id       TEXT,                 -- NULL: chủ trọ tự tạo cho khách không có tài khoản
@@ -33,23 +43,40 @@ CREATE TABLE IF NOT EXISTS viewing_appointments (
   date            TEXT    NOT NULL,     -- YYYY-MM-DD
   time            TEXT    NOT NULL,     -- HH:MM
   dur             INTEGER NOT NULL DEFAULT 30,
-  status          TEXT    NOT NULL CHECK (status IN ('pending','confirmed','completed','cancelled')),
+  status          TEXT    NOT NULL CHECK (status IN ('pending','confirmed','proposed','rejected','completed','cancelled')),
   hold_expires_at TEXT,                 -- hạn giữ chỗ của lịch chờ xác nhận (ISO UTC); NULL = không hết hạn
   cancel_reason   TEXT,                 -- 'renter' | 'landlord' | 'expired'
+  reject_reason   TEXT    NOT NULL DEFAULT '',  -- lý do chủ trọ từ chối / huỷ
+  prev_date       TEXT,                 -- giờ cũ trước khi chủ trọ đề xuất giờ khác
+  prev_time       TEXT,
   note            TEXT    NOT NULL DEFAULT '',
   renter_memo     TEXT    NOT NULL DEFAULT '',  -- ghi chú riêng của người thuê, chủ trọ không thấy
+  renter_unseen   INTEGER NOT NULL DEFAULT 0,   -- 1: chủ trọ vừa cập nhật mà người thuê chưa mở xem
   urgent          INTEGER NOT NULL DEFAULT 0,
   source          TEXT,
-  created_at      TEXT    NOT NULL
-);
-
+  created_at      TEXT    NOT NULL,
+  updated_at      TEXT
+);`;
+const APPT_INDEXES = `
 -- Trọng tài cuối cùng: chỉ một lịch CÒN HIỆU LỰC cho mỗi (phòng, ngày, giờ).
 -- Có điều kiện WHERE để lịch đã huỷ / đã xong không chặn người đặt sau.
 CREATE UNIQUE INDEX IF NOT EXISTS one_active_per_slot
   ON viewing_appointments (room_id, date, time)
-  WHERE status IN ('pending','confirmed');
-
+  WHERE status IN ${ACTIVE};
 CREATE INDEX IF NOT EXISTS idx_renter ON viewing_appointments (renter_id);
+`;
+
+const SCHEMA = `
+${APPT_TABLE('viewing_appointments')}
+${APPT_INDEXES}
+
+-- Phòng người thuê đã lưu. Mỗi cặp (người thuê, phòng) một dòng.
+CREATE TABLE IF NOT EXISTS favorites (
+  renter_id  TEXT NOT NULL,
+  room_id    TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (renter_id, room_id)
+);
 
 -- Tiền cọc khi xem phòng. Sinh ra khi chủ trọ xác nhận lịch, mỗi lịch tối đa MỘT khoản.
 -- Chưa có cổng thanh toán: người thuê chuyển khoản hoặc trả tiền mặt ngoài hệ thống,
@@ -80,7 +107,15 @@ CREATE TABLE IF NOT EXISTS rental_requests (
   reject_reason   TEXT    NOT NULL DEFAULT '',
   created_at      TEXT    NOT NULL,
   decided_at      TEXT,
-  seen_at         TEXT                  -- người thuê đã xem kết quả duyệt; NULL = chưa báo
+  seen_at         TEXT,                 -- người thuê đã xem kết quả duyệt; NULL = chưa báo
+  -- Khoản thanh toán để nhận phòng (tiền cọc + tiền phòng tháng đầu), sinh ra khi chủ trọ duyệt.
+  -- 'none' chưa có khoản · 'unpaid' chờ người thuê chuyển · 'submitted' người thuê báo đã chuyển
+  -- · 'paid' chủ trọ xác nhận đã nhận → người thuê chính thức đang thuê phòng này.
+  pay_status       TEXT    NOT NULL DEFAULT 'none' CHECK (pay_status IN ('none','unpaid','submitted','paid')),
+  pay_amount       INTEGER NOT NULL DEFAULT 0,
+  pay_submitted_at TEXT,
+  pay_note         TEXT    NOT NULL DEFAULT '',   -- chủ trọ báo chưa nhận được tiền
+  paid_at          TEXT
 );
 CREATE UNIQUE INDEX IF NOT EXISTS one_request_per_viewing ON rental_requests (appointment_id);
 
@@ -167,9 +202,46 @@ const overlaps = (t1, d1, t2, d2) => minutes(t1) < minutes(t2) + d2 && minutes(t
 const isUniqueViolation = (e) => /UNIQUE constraint failed/i.test(String(e && e.message));
 
 const MSG_TAKEN = 'Khung giờ này đã có người đặt. Hãy chọn giờ khác.';
+const MSG_DUP = 'Bạn đã có một lịch xem phòng này đang chờ hoặc đã xác nhận. Hãy đổi giờ lịch đó thay vì đặt thêm.';
+
+// CSDL tạo trước khi có trạng thái "Đề xuất giờ khác" / "Đã từ chối": CHECK cũ không nhận hai trạng
+// thái này. SQLite không sửa CHECK tại chỗ nên dựng lại bảng (cùng kỹ thuật migrateAuth), giữ nguyên id
+// để viewing_deposits / rental_requests vẫn trỏ đúng lịch.
+function migrateLichHen(db) {
+  const row = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'viewing_appointments'").get();
+  if (/'proposed'/.test(row.sql)) return;
+  const cols = db.prepare('PRAGMA table_info(viewing_appointments)').all().map((c) => c.name);
+  db.exec('PRAGMA foreign_keys = OFF');
+  db.exec('BEGIN');
+  try {
+    db.exec(APPT_TABLE('viewing_appointments_moi'));
+    db.exec(`INSERT INTO viewing_appointments_moi (${cols.join(', ')}) SELECT ${cols.join(', ')} FROM viewing_appointments`);
+    db.exec('DROP TABLE viewing_appointments');
+    db.exec('ALTER TABLE viewing_appointments_moi RENAME TO viewing_appointments');
+    db.exec(APPT_INDEXES);
+    db.exec('COMMIT');
+  } catch (e) { db.exec('ROLLBACK'); throw e; }
+  db.exec('PRAGMA foreign_keys = ON');
+}
+
+// Cột khoản thanh toán nhận phòng trên rental_requests (CSDL cũ). Yêu cầu đã duyệt từ trước khi có
+// khoản thanh toán là người đang ở thật (dữ liệu mẫu) nên coi như đã thanh toán.
+function migrateThuePhong(db) {
+  const cols = db.prepare('PRAGMA table_info(rental_requests)').all().map((c) => c.name);
+  const add = (name, ddl) => { if (!cols.includes(name)) db.exec(`ALTER TABLE rental_requests ADD COLUMN ${name} ${ddl}`); };
+  add('pay_status', "TEXT NOT NULL DEFAULT 'none' CHECK (pay_status IN ('none','unpaid','submitted','paid'))");
+  add('pay_amount', 'INTEGER NOT NULL DEFAULT 0');
+  add('pay_submitted_at', 'TEXT');
+  add('pay_note', "TEXT NOT NULL DEFAULT ''");
+  add('paid_at', 'TEXT');
+  db.exec(`UPDATE rental_requests SET pay_status = 'paid', paid_at = COALESCE(decided_at, created_at)
+           WHERE status = 'approved' AND pay_status = 'none'`);
+}
 
 // afterCheck: CHỈ cho kiểm thử, gọi giữa bước "kiểm tra chồng lấn" và bước ghi để nới rộng khe hở đua.
-export function openDb({ file, now, afterCheck = () => {} }) {
+// publish(userIds, topics): báo cho trình duyệt của những người liên quan rằng dữ liệu vừa đổi (SSE,
+// xem server/thong-bao.mjs). Chỉ gọi SAU khi giao dịch đã COMMIT.
+export function openDb({ file, now, afterCheck = () => {}, publish = () => {} }) {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;');
@@ -178,9 +250,19 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   if (!db.prepare('PRAGMA table_info(viewing_appointments)').all().some((c) => c.name === 'renter_memo')) {
     db.exec("ALTER TABLE viewing_appointments ADD COLUMN renter_memo TEXT NOT NULL DEFAULT ''");
   }
+  migrateLichHen(db);
+  migrateThuePhong(db);
+  migrateNotifications(db);
+  // Một người thuê không có hai lịch còn hiệu lực cho cùng một phòng. Kiểm ở code trong giao dịch;
+  // chỉ mục này là trọng tài cuối. CSDL cũ lỡ có dữ liệu trùng thì bỏ qua chỉ mục, code vẫn chặn.
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS one_active_per_renter_room ON viewing_appointments (renter_id, room_id)
+             WHERE renter_id IS NOT NULL AND status IN ${ACTIVE}`);
+  } catch { /* dữ liệu cũ trùng */ }
   db.exec(AUTH_SCHEMA);
   migrateAuth(db);
   seedDemoUsers(db);
+  const notify = createNotifier(db, now);
 
   const q = {
     get: db.prepare('SELECT * FROM viewing_appointments WHERE id = ?'),
@@ -192,8 +274,9 @@ export function openDb({ file, now, afterCheck = () => {} }) {
                        WHERE status = 'pending' AND hold_expires_at IS NOT NULL AND hold_expires_at <= ?`),
     // Tới giờ hẹn mà chủ trọ vẫn chưa xác nhận: lịch tự huỷ. Đã xác nhận và đã hết buổi: đã xem xong.
     // So theo giờ địa phương 'YYYY-MM-DD HH:MM:SS', cùng cách lưu date + time.
+    // Đề xuất giờ khác mà tới giờ người thuê vẫn chưa trả lời: cũng tự huỷ.
     sweepPastPending: db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'expired'
-                       WHERE status = 'pending' AND datetime(date || ' ' || time) <= ?`),
+                       WHERE status IN ('pending','proposed') AND datetime(date || ' ' || time) <= ?`),
     sweepPastConfirmed: db.prepare(`UPDATE viewing_appointments SET status = 'completed'
                        WHERE status = 'confirmed' AND datetime(date || ' ' || time, '+' || dur || ' minutes') <= ?`),
     // Xác nhận nguyên tử: chỉ ăn khi lịch còn 'pending' và chưa quá hạn giữ chỗ; không khớp -> không dòng nào
@@ -216,6 +299,15 @@ export function openDb({ file, now, afterCheck = () => {} }) {
       (appointment_id, amount, status, submitted_at, paid_at, created_at) VALUES (?, ?, ?, ?, ?, ?)`),
     depCancelOpen: db.prepare(`UPDATE viewing_deposits SET status = 'cancelled'
                                WHERE appointment_id = ? AND status IN ('unpaid','submitted')`),
+    // Người thuê đã có lịch còn hiệu lực cho phòng này chưa (chặn đặt trùng)
+    activeOfRenterRoom: db.prepare(`SELECT id FROM viewing_appointments WHERE renter_id = ? AND room_id = ? AND status IN ${ACTIVE} AND id != ?`),
+    acceptProposal: db.prepare(`UPDATE viewing_appointments SET status = 'confirmed', renter_unseen = 0, updated_at = ?
+                                WHERE id = ? AND status = 'proposed' RETURNING *`),
+    touch: db.prepare('UPDATE viewing_appointments SET updated_at = ?, renter_unseen = ? WHERE id = ?'),
+    markSeen: db.prepare('UPDATE viewing_appointments SET renter_unseen = 0 WHERE renter_id = ? AND renter_unseen = 1'),
+    favOf: db.prepare('SELECT room_id, created_at FROM favorites WHERE renter_id = ? ORDER BY created_at DESC'),
+    favAdd: db.prepare('INSERT OR IGNORE INTO favorites (renter_id, room_id, created_at) VALUES (?, ?, ?)'),
+    favDel: db.prepare('DELETE FROM favorites WHERE renter_id = ? AND room_id = ?'),
   };
 
   if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q, db);
@@ -227,11 +319,47 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   const nowIso = () => now().toISOString();
   const holdIso = () => new Date(now().getTime() + HOLD_HOURS * 3600000).toISOString();
 
-  // Chỉ một giao dịch ghi tại một thời điểm: kiểm tra và ghi không bị xen ngang
+  // Chỉ một giao dịch ghi tại một thời điểm: kiểm tra và ghi không bị xen ngang.
+  // Sự kiện SSE gom lại trong giao dịch, chỉ đẩy đi sau COMMIT: giao dịch lỗi thì không báo gì.
+  let outbox = null;
   function tx(fn) {
     db.exec('BEGIN IMMEDIATE');
-    try { const r = fn(); db.exec('COMMIT'); return r; }
-    catch (e) { try { db.exec('ROLLBACK'); } catch { /* đã rollback */ } throw e; }
+    outbox = [];
+    try {
+      const r = fn();
+      db.exec('COMMIT');
+      const sent = outbox; outbox = null;
+      for (const [ids, topics] of sent) publish(ids, topics);
+      return r;
+    } catch (e) { outbox = null; try { db.exec('ROLLBACK'); } catch { /* đã rollback */ } throw e; }
+  }
+  function emit(ids, topics) {
+    if (outbox) outbox.push([ids, topics]); else publish(ids, topics);
+  }
+
+  // ---------- Ai sở hữu phòng, ai cần được báo ----------
+  const landlordOf = (roomId) => (CHU_CUA_PHONG[roomId] || {}).landlordId || null;
+  const roomName = (roomId) => { const p = PHONG[roomId] || {}; return p.kind === 'landlord' ? 'phòng ' + (p.code || roomId) : (p.title || roomId); };
+  const whenText = (r) => `${r.time} ngày ${r.date.slice(8)}/${r.date.slice(5, 7)}`;
+  const LINK_RENTER = (id) => 'tai-khoan/dat-lich.html?lich=' + id;
+  const LINK_LANDLORD = (id) => 'quan-ly/yeucauvalichhen.html?lich=' + id;
+  // Báo bên còn lại + đẩy sự kiện cho cả hai bên (bên vừa thao tác cũng cần các tab khác của mình cập nhật)
+  function toLandlord(row, title, body) {
+    const ll = landlordOf(row.room_id);
+    notify(ll, 'lich-hen', title, body, LINK_LANDLORD(row.id));
+    emit([ll, row.renter_id], ['lich-hen', 'thong-bao']);
+  }
+  function toRenter(row, title, body) {
+    if (row.renter_id) {
+      q.touch.run(nowIso(), 1, row.id);
+      notify(row.renter_id, 'lich-hen', title, body, LINK_RENTER(row.id));
+    }
+    emit([row.renter_id, landlordOf(row.room_id)], ['lich-hen', 'thong-bao', 'thanh-toan']);
+  }
+  function mustOwn(row, landlordId) {
+    if (landlordId && landlordOf(row.room_id) !== landlordId) {
+      throw new ApiError(403, 'forbidden', 'Lịch hẹn này không thuộc phòng của bạn.');
+    }
   }
 
   // Lịch chờ quá hạn giữ chỗ -> tự huỷ, nhả khung giờ. Chạy trước mọi thao tác đọc/ghi,
@@ -252,7 +380,9 @@ export function openDb({ file, now, afterCheck = () => {} }) {
       address: p.address || '', price: p.price || 0, depositAmount: p.deposit || 0, image: p.image || '', landlordPhone: p.phone || '',
       renterId: r.renter_id, tenant: r.tenant_name, phone: r.tenant_phone,
       date: r.date, time: r.time, dur: r.dur, status: r.status, urgent: !!r.urgent, note: r.note,
-      createdAt: r.created_at, holdUntil: r.hold_expires_at, cancelReason: r.cancel_reason, source: r.source,
+      createdAt: r.created_at, updatedAt: r.updated_at || r.created_at, holdUntil: r.hold_expires_at, cancelReason: r.cancel_reason, source: r.source,
+      rejectReason: r.reject_reason || '', prevDate: r.prev_date || null, prevTime: r.prev_time || null,
+      unseen: !!r.renter_unseen, landlordId: landlordOf(r.room_id),
     };
   }
 
@@ -307,10 +437,15 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     return row;
   }
   function mustBeActive(row) {
-    if (row.status !== 'pending' && row.status !== 'confirmed') {
-      const why = row.cancel_reason === 'expired' ? 'đã tự huỷ vì quá hạn giữ chỗ' : 'đã kết thúc hoặc đã huỷ';
+    if (row.status !== 'pending' && row.status !== 'confirmed' && row.status !== 'proposed') {
+      const why = row.cancel_reason === 'expired' ? 'đã tự huỷ vì quá hạn'
+        : row.status === 'rejected' ? 'đã bị chủ trọ từ chối' : 'đã kết thúc hoặc đã huỷ';
       throw new ApiError(409, 'not_active', `Lịch này ${why}, không thay đổi được nữa.`);
     }
+  }
+  // Một người thuê không giữ hai lịch còn hiệu lực cho cùng một phòng
+  function mustNotDuplicate(renterId, roomId, excludeId) {
+    if (q.activeOfRenterRoom.get(renterId, roomId, excludeId || 0)) throw new ApiError(409, 'duplicate', MSG_DUP);
   }
   // Ghi; nếu chỉ mục duy nhất từ chối thì đổi thành lỗi "khung giờ đã có người"
   function guarded(fn, ownerOf) {
@@ -359,11 +494,14 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     const nt = String(note || '').slice(0, 500);
     return tx(() => {
       sweep();
+      mustNotDuplicate(u.id, roomId);
       const c = findConflict(roomId, date, time, 30, null);
       afterCheck();
       if (c) throw new ApiError(409, 'slot_taken', MSG_TAKEN, { owner: c.renter_id === u.id ? 'me' : 'other' });
       const info = guarded(() => q.insert.run(roomId, u.id, u.name, ph, date, time, 30, 'pending', holdIso(), null, nt, 0, source || 'api', nowIso()));
-      return toItem(q.get.get(info.lastInsertRowid));
+      const row = q.get.get(info.lastInsertRowid);
+      toLandlord(row, 'Lịch xem phòng mới', `${u.name} muốn xem ${roomName(roomId)} lúc ${whenText(row)}.`);
+      return toItem(row);
     });
   }
 
@@ -381,12 +519,16 @@ export function openDb({ file, now, afterCheck = () => {} }) {
       if (c) throw new ApiError(409, 'slot_taken', MSG_TAKEN, { owner: c.renter_id === u.id ? 'me' : 'other' });
       // Đổi giờ thì chủ trọ phải xác nhận lại, nên lịch quay về "chờ" với hạn giữ chỗ mới
       guarded(() => db.prepare(`UPDATE viewing_appointments SET date = ?, time = ?, tenant_phone = ?, note = ?,
-          status = 'pending', hold_expires_at = ?, cancel_reason = NULL WHERE id = ?`)
-        .run(date, time, ph, String(note == null ? row.note : note).slice(0, 500), holdIso(), row.id));
-      return toItem(q.get.get(row.id));
+          status = 'pending', hold_expires_at = ?, cancel_reason = NULL, prev_date = NULL, prev_time = NULL,
+          renter_unseen = 0, updated_at = ? WHERE id = ?`)
+        .run(date, time, ph, String(note == null ? row.note : note).slice(0, 500), holdIso(), nowIso(), row.id));
+      const r = q.get.get(row.id);
+      toLandlord(r, 'Người thuê đổi giờ xem', `${u.name} đổi lịch xem ${roomName(r.room_id)} sang ${whenText(r)}, chờ bạn xác nhận lại.`);
+      return toItem(r);
     });
   }
 
+  // Người thuê huỷ khi lịch đang chờ, đã xác nhận, hoặc từ chối giờ chủ trọ đề xuất.
   function cancelForRenter(id, { nguoi }) {
     const u = renterOf(nguoi);
     return tx(() => {
@@ -394,11 +536,63 @@ export function openDb({ file, now, afterCheck = () => {} }) {
       const row = loadRow(id);
       if (row.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền huỷ lịch này.');
       mustBeActive(row);
-      db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'renter' WHERE id = ?`).run(row.id);
+      db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'renter', renter_unseen = 0, updated_at = ? WHERE id = ?`)
+        .run(nowIso(), row.id);
       // Huỷ lịch thì khoản cọc chưa nhận cũng huỷ theo. Cọc đã nhận giữ nguyên để chủ trọ hoàn tay.
       q.depCancelOpen.run(row.id);
+      const declined = row.status === 'proposed';
+      toLandlord(row, declined ? 'Người thuê không nhận giờ đề xuất' : 'Người thuê huỷ lịch xem',
+        `${u.name} ${declined ? 'không nhận giờ bạn đề xuất cho' : 'đã huỷ lịch xem'} ${roomName(row.room_id)} lúc ${whenText(row)}.`);
       return toItem(q.get.get(row.id));
     });
+  }
+
+  // Người thuê đồng ý giờ chủ trọ đề xuất → lịch thành "Đã xác nhận" (sinh khoản cọc khi xem như xác nhận thường)
+  function acceptProposalForRenter(id, { nguoi }) {
+    const u = renterOf(nguoi);
+    return tx(() => {
+      sweep();
+      const row = loadRow(id);
+      if (row.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền với lịch này.');
+      const done = q.acceptProposal.get(nowIso(), row.id);
+      if (!done) throw new ApiError(409, 'not_proposed', 'Lịch này không còn ở trạng thái chờ bạn trả lời giờ đề xuất.');
+      const deposit = createDeposit(done);
+      toLandlord(done, 'Người thuê đồng ý giờ mới', `${u.name} đồng ý xem ${roomName(done.room_id)} lúc ${whenText(done)}.`);
+      return { ...toItem(done), deposit };
+    });
+  }
+
+  // Người thuê đã mở mục "Yêu cầu & Lịch hẹn": các cập nhật từ chủ trọ coi như đã xem
+  function markSeenForRenter({ nguoi }) {
+    const u = renterOf(nguoi);
+    const n = q.markSeen.run(u.id).changes;
+    if (n) emit([u.id], ['lich-hen']);
+    return { cleared: n };
+  }
+
+  // ================= Phòng đã lưu =================
+  function favoriteItem(f) {
+    const p = PHONG[f.room_id] || {};
+    return { roomId: f.room_id, title: p.title || f.room_id, address: p.address || '', price: p.price || 0,
+      deposit: p.deposit || 0, image: p.image || '', landlordPhone: p.phone || '', savedAt: f.created_at };
+  }
+  function listFavorites(renterId) {
+    renterOf(renterId);
+    return q.favOf.all(renterId).filter((f) => PHONG[f.room_id]).map(favoriteItem);
+  }
+  function addFavorite(renterId, roomId) {
+    renterOf(renterId);
+    const p = PHONG[roomId];
+    if (!p || p.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
+    q.favAdd.run(renterId, roomId, nowIso());
+    publish([renterId], ['da-luu']);
+    return listFavorites(renterId);
+  }
+  function removeFavorite(renterId, roomId) {
+    renterOf(renterId);
+    q.favDel.run(renterId, roomId);
+    publish([renterId], ['da-luu']);
+    return listFavorites(renterId);
   }
 
   // Ghi chú riêng sau buổi xem (ví dụ "giá ổn nhưng hơi xa trường"). Không đổi trạng thái lịch.
@@ -427,11 +621,22 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     const p = PHONG[r.room_id] || {};
     return {
       id: r.id, appointmentId: r.appointment_id, roomId: r.room_id, room: p.title || r.room_id, roomCode: p.code || r.room_id,
-      price: p.price || 0, renterId: r.renter_id, tenant: r.tenant_name, phone: r.tenant_phone,
+      price: p.price || 0, image: p.image || '', address: p.address || '', renterId: r.renter_id, tenant: r.tenant_name, phone: r.tenant_phone,
       wantDate: r.want_date, note: r.note, status: r.status, reason: r.reject_reason,
       createdAt: r.created_at, decidedAt: r.decided_at, seenAt: r.seen_at,
+      landlordId: landlordOf(r.room_id),
+      building: (NHA_TRO.find((nt) => nt.id === (CHU_CUA_PHONG[r.room_id] || {}).nhaTroId) || {}).name || '',
+      // Khoản thanh toán nhận phòng (tiền cọc + tiền phòng tháng đầu)
+      payStatus: r.pay_status || 'none', payAmount: r.pay_amount || 0, payRef: 'ANCU-THUE-' + r.id,
+      paySubmittedAt: r.pay_submitted_at || null, payNote: r.pay_note || '', paidAt: r.paid_at || null,
     };
   }
+  function loadRequest(id) {
+    const r = qr.get.get(Number(id));
+    if (!r) throw new ApiError(404, 'not_found', 'Không tìm thấy yêu cầu thuê.');
+    return r;
+  }
+  const LINK_PAY = 'tai-khoan/thanh-toan-tien-nha.html';
   function requestsForRenter(nguoi) {
     renterOf(nguoi);
     return qr.byRenter.all(nguoi).map(toRequest);
@@ -451,19 +656,46 @@ export function openDb({ file, now, afterCheck = () => {} }) {
         if (isUniqueViolation(e)) throw new ApiError(409, 'already_requested', 'Bạn đã gửi yêu cầu thuê cho buổi xem này rồi.');
         throw e;
       }
+      const ll = landlordOf(row.room_id);
+      notify(ll, 'thue-phong', 'Yêu cầu thuê mới', `${u.name} muốn thuê ${roomName(row.room_id)}, dọn vào từ ${wantDate.slice(8)}/${wantDate.slice(5, 7)}.`,
+        'quan-ly/yeucauvalichhen.html?tab=yeu-cau');
+      emit([ll, u.id], ['yeu-cau-thue', 'thong-bao']);
       return toRequest(qr.get.get(info.lastInsertRowid));
     });
   }
   // Người thuê đã được báo kết quả (đã duyệt / không duyệt): không báo lại lần nữa
   function markRequestSeen(id, { nguoi }) {
     const u = renterOf(nguoi);
-    const r = qr.get.get(Number(id));
-    if (!r) throw new ApiError(404, 'not_found', 'Không tìm thấy yêu cầu thuê.');
+    const r = loadRequest(id);
     if (r.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền với yêu cầu này.');
     db.prepare('UPDATE rental_requests SET seen_at = ? WHERE id = ? AND seen_at IS NULL').run(nowIso(), r.id);
     return toRequest(qr.get.get(r.id));
   }
-  function requestsForLandlord() { return qr.all.all().map(toRequest); }
+  // Người thuê báo "Tôi đã chuyển khoản" cho khoản nhận phòng. Chỉ chủ trọ mới chuyển được sang "đã nhận".
+  function submitRentPayment(id, { nguoi }) {
+    const u = renterOf(nguoi);
+    return tx(() => {
+      const r = loadRequest(id);
+      if (r.renter_id !== u.id) throw new ApiError(403, 'forbidden', 'Bạn không có quyền với khoản này.');
+      if (r.pay_status !== 'unpaid') {
+        throw new ApiError(409, 'not_unpaid', r.pay_status === 'paid' ? 'Chủ trọ đã xác nhận nhận tiền khoản này rồi.'
+          : r.pay_status === 'submitted' ? 'Bạn đã báo chuyển khoản, đang chờ chủ trọ xác nhận.' : 'Yêu cầu thuê chưa được duyệt.');
+      }
+      const done = db.prepare(`UPDATE rental_requests SET pay_status = 'submitted', pay_submitted_at = ?, pay_note = ''
+                               WHERE id = ? AND pay_status = 'unpaid' RETURNING *`).get(nowIso(), r.id);
+      const ll = landlordOf(r.room_id);
+      notify(ll, 'thue-phong', 'Người thuê báo đã chuyển tiền',
+        `${u.name} báo đã chuyển ${new Intl.NumberFormat('vi-VN').format(r.pay_amount)}₫ nhận ${roomName(r.room_id)}. Hãy đối chiếu và xác nhận.`,
+        'quan-ly/thanh-toan.html#nhan-phong');
+      emit([ll, u.id], ['yeu-cau-thue', 'thanh-toan', 'thong-bao']);
+      return toRequest(done);
+    });
+  }
+  function requestsForLandlord(landlordId) {
+    return qr.all.all().filter((r) => !landlordId || landlordOf(r.room_id) === landlordId).map(toRequest);
+  }
+  // Phòng đã có người thuê đã thanh toán qua An Cư thì không duyệt / nhận tiền cho người khác nữa
+  const paidOfRoom = db.prepare("SELECT id, tenant_name FROM rental_requests WHERE room_id = ? AND pay_status = 'paid' AND id != ?");
   // Chuyển trạng thái nguyên tử: chỉ ăn khi trạng thái hiện tại hợp lệ, không đọc rồi mới ghi
   const MOVES = {
     review:  { from: ['pending'], to: 'reviewing' },
@@ -471,22 +703,69 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     reject:  { from: ['pending', 'reviewing'], to: 'rejected' },
     reopen:  { from: ['rejected'], to: 'pending' },
   };
-  function decideRequest(id, { action, reason }) {
+  function decideRequest(id, { action, reason }, landlordId) {
+    if (action === 'paid' || action === 'unpaid') return decidePayment(id, { action, reason }, landlordId);
     const mv = MOVES[action];
     if (!mv) throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
-    const decided = mv.to === 'approved' || mv.to === 'rejected';
-    const r = db.prepare(`UPDATE rental_requests SET status = ?, reject_reason = ?, decided_at = ?, seen_at = NULL
-        WHERE id = ? AND status IN (${mv.from.map(() => '?').join(',')}) RETURNING *`)
-      .get(mv.to, mv.to === 'rejected' ? String(reason || '').slice(0, 500) : '', decided ? nowIso() : null, Number(id), ...mv.from);
-    if (r) return toRequest(r);
-    if (!qr.get.get(Number(id))) throw new ApiError(404, 'not_found', 'Không tìm thấy yêu cầu thuê.');
-    throw new ApiError(409, 'bad_state', 'Yêu cầu này đã được xử lý, hãy tải lại để xem trạng thái mới.');
+    return tx(() => {
+      const cur = loadRequest(id);
+      if (landlordId && landlordOf(cur.room_id) !== landlordId) throw new ApiError(403, 'forbidden', 'Yêu cầu này không thuộc phòng của bạn.');
+      if (mv.to === 'approved') {
+        const taken = paidOfRoom.get(cur.room_id, cur.id);
+        if (taken) throw new ApiError(409, 'room_rented', `Phòng này đã có ${taken.tenant_name} thuê và thanh toán, không duyệt thêm được.`);
+      }
+      const decided = mv.to === 'approved' || mv.to === 'rejected';
+      const p = PHONG[cur.room_id] || {};
+      // Duyệt → sinh khoản thanh toán nhận phòng: tiền cọc (1 tháng) + tiền phòng tháng đầu
+      const pay = mv.to === 'approved' ? ['unpaid', (p.deposit || p.price || 0) + (p.price || 0)] : ['none', 0];
+      const r = db.prepare(`UPDATE rental_requests SET status = ?, reject_reason = ?, decided_at = ?, seen_at = NULL,
+            pay_status = ?, pay_amount = ?, pay_submitted_at = NULL, pay_note = '', paid_at = NULL
+          WHERE id = ? AND status IN (${mv.from.map(() => '?').join(',')}) RETURNING *`)
+        .get(mv.to, mv.to === 'rejected' ? String(reason || '').slice(0, 500) : '', decided ? nowIso() : null,
+          pay[0], pay[1], cur.id, ...mv.from);
+      if (!r) throw new ApiError(409, 'bad_state', 'Yêu cầu này đã được xử lý, hãy tải lại để xem trạng thái mới.');
+      if (mv.to === 'approved') {
+        notify(r.renter_id, 'thue-phong', 'Yêu cầu thuê đã được duyệt',
+          `Chủ trọ đồng ý cho bạn thuê ${roomName(r.room_id)}. Hãy thanh toán ${new Intl.NumberFormat('vi-VN').format(r.pay_amount)}₫ (cọc + tháng đầu) để nhận phòng.`, LINK_PAY);
+      } else if (mv.to === 'rejected') {
+        notify(r.renter_id, 'thue-phong', 'Yêu cầu thuê không được duyệt',
+          `Chủ trọ chưa đồng ý cho thuê ${roomName(r.room_id)}.` + (r.reject_reason ? ' Lý do: ' + r.reject_reason : ''), LINK_PAY);
+      }
+      emit([r.renter_id, landlordOf(r.room_id)], ['yeu-cau-thue', 'thanh-toan', 'thong-bao']);
+      return toRequest(r);
+    });
+  }
+  // Chủ trọ xác nhận đã nhận tiền nhận phòng (→ người thuê chính thức đang thuê), hoặc báo chưa nhận được
+  function decidePayment(id, { action, reason }, landlordId) {
+    return tx(() => {
+      const r = loadRequest(id);
+      if (landlordId && landlordOf(r.room_id) !== landlordId) throw new ApiError(403, 'forbidden', 'Khoản này không thuộc phòng của bạn.');
+      let done;
+      if (action === 'paid') {
+        if (r.pay_status !== 'unpaid' && r.pay_status !== 'submitted') {
+          throw new ApiError(409, 'not_open', r.pay_status === 'paid' ? 'Khoản này đã được xác nhận rồi.' : 'Yêu cầu thuê chưa được duyệt.');
+        }
+        const taken = paidOfRoom.get(r.room_id, r.id);
+        if (taken) throw new ApiError(409, 'room_rented', `Phòng này đã có ${taken.tenant_name} thuê và thanh toán.`);
+        done = db.prepare(`UPDATE rental_requests SET pay_status = 'paid', paid_at = ?, pay_note = '' WHERE id = ? RETURNING *`).get(nowIso(), r.id);
+        notify(r.renter_id, 'thue-phong', 'Thanh toán thành công — chào mừng về phòng mới',
+          `Chủ trọ đã nhận tiền ${roomName(r.room_id)}. Mục "Phòng của tôi" và "Hỗ trợ & báo cáo" đã mở cho bạn.`, 'tai-khoan/phong-cua-toi.html');
+      } else {
+        if (r.pay_status !== 'submitted') throw new ApiError(409, 'not_submitted', 'Chỉ báo "chưa nhận được" với khoản người thuê đã báo chuyển.');
+        const note = String(reason || '').trim().slice(0, 300) || 'Chủ trọ chưa nhận được tiền. Hãy kiểm tra lại giao dịch.';
+        done = db.prepare(`UPDATE rental_requests SET pay_status = 'unpaid', pay_submitted_at = NULL, pay_note = ? WHERE id = ? RETURNING *`).get(note, r.id);
+        notify(r.renter_id, 'thue-phong', 'Chủ trọ chưa nhận được tiền', note, LINK_PAY);
+      }
+      emit([r.renter_id, landlordOf(r.room_id)], ['yeu-cau-thue', 'thanh-toan', 'thong-bao', 'phong']);
+      return toRequest(done);
+    });
   }
 
   // ================= Phía chủ trọ =================
-  function listAll() {
+  // landlordId: chủ trọ đang gọi. Chỉ trả / cho sửa lịch của phòng thuộc nhà trọ của người đó.
+  function listAll(landlordId) {
     sweep();
-    return q.all.all().map(toItem);
+    return q.all.all().filter((r) => !landlordId || landlordOf(r.room_id) === landlordId).map(toItem);
   }
 
   function landlordInput({ roomId, tenant, phone, date, time }) {
@@ -498,25 +777,41 @@ export function openDb({ file, now, afterCheck = () => {} }) {
     if (!name || !ph) throw new ApiError(400, 'missing', 'Vui lòng điền tên và số điện thoại khách.');
     return { name, ph };
   }
+  function mustOwnRoom(roomId, landlordId) {
+    if (landlordId && landlordOf(roomId) !== landlordId) throw new ApiError(403, 'forbidden', 'Phòng này không thuộc nhà trọ của bạn.');
+  }
+  function notPast(date, time) {
+    const n = now();
+    if (date === ymd(n) && minutes(time) <= n.getHours() * 60 + n.getMinutes()) {
+      throw new ApiError(400, 'past_time', 'Giờ này đã qua, hãy chọn giờ muộn hơn.');
+    }
+  }
 
   // Chủ trọ tự tạo lịch cho khách: cũng phải tuân đúng luật một khung giờ một người.
   // Chủ trọ tạo thì coi như đã chủ động sắp xếp, nên không đặt hạn giữ chỗ.
-  function createForLandlord({ roomId, tenant, phone, date, time, note }) {
+  function createForLandlord({ roomId, tenant, phone, date, time, note }, landlordId) {
     const { name, ph } = landlordInput({ roomId, tenant, phone, date, time });
+    mustOwnRoom(roomId, landlordId);
     return tx(() => {
       sweep();
       const c = findConflict(roomId, date, time, 30, null);
       afterCheck();
       if (c) throw new ApiError(409, 'slot_taken', `Phòng này đã có lịch lúc ${c.time} ngày ${date.slice(8)}/${date.slice(5, 7)}.`, { conflictTime: c.time });
       const info = guarded(() => q.insert.run(roomId, null, name, ph, date, time, 30, 'pending', null, null, String(note || '').slice(0, 500), 0, 'chu-tro', nowIso()));
+      emit([landlordOf(roomId)], ['lich-hen']);
       return toItem(q.get.get(info.lastInsertRowid));
     });
   }
 
-  function updateForLandlord(id, body) {
+  // Thao tác của chủ trọ: confirm · reject (bắt buộc lý do) · propose (đề xuất giờ khác) · cancel ·
+  // complete (đánh dấu đã xem xong) · reschedule (sửa lịch của khách không có tài khoản).
+  // Mỗi thao tác trên lịch của người thuê có tài khoản đều báo cho người đó.
+  function updateForLandlord(id, body, landlordId) {
     return tx(() => {
       sweep();
       const row = loadRow(id);
+      mustOwn(row, landlordId);
+      const room = roomName(row.room_id);
       if (body.action === 'confirm') {
         // Một câu lệnh nguyên tử: điều kiện "còn chờ và chưa hết hạn" được kiểm ngay lúc ghi,
         // không dựa vào trạng thái đã đọc trước đó. Đúng cả khi không có khoá ghi toàn DB
@@ -531,16 +826,65 @@ export function openDb({ file, now, afterCheck = () => {} }) {
           throw new ApiError(409, 'not_pending', msg);
         }
         // Khoản cọc sinh ra trong cùng giao dịch: không thể có lịch đã xác nhận mà thiếu khoản cọc.
-        return { ...toItem(done), deposit: createDeposit(row) };
+        const deposit = createDeposit(row);
+        toRenter(done, 'Lịch xem đã được xác nhận', `Chủ trọ đồng ý cho bạn xem ${room} lúc ${whenText(done)}.`);
+        return { ...toItem(q.get.get(row.id)), deposit };
+      }
+      if (body.action === 'reject') {
+        const reason = String(body.reason || '').trim().slice(0, 300);
+        if (reason.length < 3) throw new ApiError(400, 'reason_required', 'Hãy ghi lý do từ chối để người thuê biết.');
+        if (row.status !== 'pending' && row.status !== 'proposed') throw new ApiError(409, 'not_pending', 'Chỉ từ chối được lịch đang chờ xác nhận.');
+        db.prepare(`UPDATE viewing_appointments SET status = 'rejected', reject_reason = ?, hold_expires_at = NULL, updated_at = ? WHERE id = ?`)
+          .run(reason, nowIso(), row.id);
+        q.depCancelOpen.run(row.id);
+        toRenter(row, 'Lịch xem bị từ chối', `Chủ trọ từ chối lịch xem ${room} lúc ${whenText(row)}. Lý do: ${reason}`);
+        return toItem(q.get.get(row.id));
+      }
+      if (body.action === 'propose' || (body.action === 'reschedule' && row.renter_id)) {
+        // Lịch của người thuê có tài khoản: chủ trọ không tự đổi giờ, mà đề xuất để người thuê đồng ý
+        mustBeActive(row);
+        if (!row.renter_id) throw new ApiError(400, 'bad_action', 'Lịch của khách không có tài khoản thì đổi lịch trực tiếp.');
+        const { date, time } = body;
+        checkDate(date);
+        if (!RE_TIME.test(String(time || ''))) throw new ApiError(400, 'invalid_time', 'Giờ xem không hợp lệ.');
+        notPast(date, time);
+        if (date === row.date && time === row.time) throw new ApiError(400, 'same_time', 'Giờ đề xuất trùng giờ hiện tại.');
+        const c = findConflict(row.room_id, date, time, row.dur, row.id);
+        if (c) throw new ApiError(409, 'slot_taken', `Phòng này đã có lịch lúc ${c.time} ngày ${date.slice(8)}/${date.slice(5, 7)}.`, { conflictTime: c.time });
+        // Giờ gốc người thuê đã chọn được giữ lại (đề xuất lần hai không ghi đè giờ gốc)
+        guarded(() => db.prepare(`UPDATE viewing_appointments SET prev_date = COALESCE(prev_date, date), prev_time = COALESCE(prev_time, time),
+            date = ?, time = ?, status = 'proposed', hold_expires_at = NULL, reject_reason = ?, updated_at = ? WHERE id = ?`)
+          .run(date, time, String(body.reason || '').trim().slice(0, 300), nowIso(), row.id));
+        const r = q.get.get(row.id);
+        toRenter(r, 'Chủ trọ đề xuất giờ khác', `Chủ trọ đề xuất xem ${room} lúc ${whenText(r)} thay cho ${whenText(row)}. Hãy đồng ý hoặc từ chối.`);
+        return toItem(r);
       }
       if (body.action === 'reschedule') {
         mustBeActive(row);
         const roomId = body.roomId || row.room_id;
+        mustOwnRoom(roomId, landlordId);
         const { name, ph } = landlordInput({ roomId, tenant: body.tenant ?? row.tenant_name, phone: body.phone ?? row.tenant_phone, date: body.date, time: body.time });
         const c = findConflict(roomId, body.date, body.time, row.dur, row.id);
         if (c) throw new ApiError(409, 'slot_taken', `Phòng này đã có lịch lúc ${c.time} ngày ${body.date.slice(8)}/${body.date.slice(5, 7)}.`, { conflictTime: c.time });
-        guarded(() => db.prepare(`UPDATE viewing_appointments SET room_id = ?, tenant_name = ?, tenant_phone = ?, date = ?, time = ? WHERE id = ?`)
-          .run(roomId, name, ph, body.date, body.time, row.id));
+        guarded(() => db.prepare(`UPDATE viewing_appointments SET room_id = ?, tenant_name = ?, tenant_phone = ?, date = ?, time = ?, updated_at = ? WHERE id = ?`)
+          .run(roomId, name, ph, body.date, body.time, nowIso(), row.id));
+        emit([landlordId || landlordOf(roomId)], ['lich-hen']);
+        return toItem(q.get.get(row.id));
+      }
+      if (body.action === 'cancel') {
+        mustBeActive(row);
+        const reason = String(body.reason || '').trim().slice(0, 300);
+        db.prepare(`UPDATE viewing_appointments SET status = 'cancelled', cancel_reason = 'landlord', reject_reason = ?, updated_at = ? WHERE id = ?`)
+          .run(reason, nowIso(), row.id);
+        q.depCancelOpen.run(row.id);
+        toRenter(row, 'Chủ trọ huỷ lịch xem', `Lịch xem ${room} lúc ${whenText(row)} đã bị chủ trọ huỷ.` + (reason ? ' Lý do: ' + reason : ''));
+        return toItem(q.get.get(row.id));
+      }
+      if (body.action === 'complete') {
+        if (row.status !== 'confirmed') throw new ApiError(409, 'not_confirmed', 'Chỉ đánh dấu xem xong với lịch đã xác nhận.');
+        if (`${row.date} ${row.time}:00` > localStamp()) throw new ApiError(409, 'not_started', 'Chưa tới giờ hẹn, chưa đánh dấu xem xong được.');
+        db.prepare(`UPDATE viewing_appointments SET status = 'completed', updated_at = ? WHERE id = ?`).run(nowIso(), row.id);
+        toRenter(row, 'Buổi xem đã hoàn thành', `Bạn đã xem ${room}. Nếu ưng, hãy gửi yêu cầu thuê ngay trong mục Yêu cầu & Lịch hẹn.`);
         return toItem(q.get.get(row.id));
       }
       throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
@@ -573,30 +917,39 @@ export function openDb({ file, now, afterCheck = () => {} }) {
         throw new ApiError(409, 'not_unpaid', msg);
       }
       db.prepare(`UPDATE viewing_deposits SET status = 'submitted', submitted_at = ?, reject_note = NULL WHERE id = ?`).run(nowIso(), d.id);
+      const a = q.get.get(d.appointment_id), ll = landlordOf(a.room_id);
+      notify(ll, 'lich-hen', 'Người thuê báo đã chuyển cọc xem phòng',
+        `${u.name} báo đã chuyển cọc xem ${roomName(a.room_id)} (lịch ${whenText(a)}).`, 'quan-ly/thanh-toan.html');
+      emit([ll, u.id], ['thanh-toan', 'thong-bao']);
       return toDeposit(q.depGet.get(d.id));
     });
   }
 
-  function depositsAll() {
+  function depositsAll(landlordId) {
     sweep();
-    return q.depAll.all().map(toDeposit);
+    return q.depAll.all().map(toDeposit).filter((d) => !landlordId || landlordOf(d.roomId) === landlordId);
   }
 
-  function updateDepositForLandlord(id, body) {
+  function updateDepositForLandlord(id, body, landlordId) {
     return tx(() => {
       const d = loadDeposit(id);
+      const a = q.get.get(d.appointment_id);
+      mustOwn(a, landlordId);
+      emit([a.renter_id, landlordOf(a.room_id)], ['thanh-toan', 'thong-bao']);
       if (body.action === 'confirm') {
         // Nhận cả khi khách chưa bấm "đã chuyển": khách có thể trả tiền mặt lúc xem phòng
         if (d.status !== 'unpaid' && d.status !== 'submitted') {
           throw new ApiError(409, 'not_open', d.status === 'paid' ? 'Khoản cọc này đã được xác nhận rồi.' : 'Khoản cọc này đã huỷ.');
         }
         db.prepare(`UPDATE viewing_deposits SET status = 'paid', paid_at = ?, reject_note = NULL WHERE id = ?`).run(nowIso(), d.id);
+        notify(a.renter_id, 'lich-hen', 'Chủ trọ đã nhận cọc xem phòng', `Cọc xem ${roomName(a.room_id)} đã được xác nhận.`, 'tai-khoan/thanh-toan.html');
         return toDeposit(q.depGet.get(d.id));
       }
       if (body.action === 'reject') {
         if (d.status !== 'submitted') throw new ApiError(409, 'not_submitted', 'Chỉ báo "chưa nhận được" với khoản khách đã báo chuyển.');
         const note = String(body.note || '').trim().slice(0, 300) || 'Chủ trọ chưa nhận được tiền. Hãy kiểm tra lại giao dịch.';
         db.prepare(`UPDATE viewing_deposits SET status = 'unpaid', submitted_at = NULL, reject_note = ? WHERE id = ?`).run(note, d.id);
+        notify(a.renter_id, 'lich-hen', 'Chủ trọ chưa nhận được cọc xem phòng', note, 'tai-khoan/thanh-toan.html');
         return toDeposit(q.depGet.get(d.id));
       }
       throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
@@ -606,7 +959,8 @@ export function openDb({ file, now, afterCheck = () => {} }) {
   return {
     db, sweep, now,
     listForRenter, takenFor, createForRenter, rescheduleForRenter, cancelForRenter, memoForRenter,
-    requestsForRenter, createRequest, markRequestSeen, requestsForLandlord, decideRequest,
+    acceptProposalForRenter, markSeenForRenter, listFavorites, addFavorite, removeFavorite, landlordOf,
+    requestsForRenter, createRequest, markRequestSeen, submitRentPayment, requestsForLandlord, decideRequest,
     listAll, createForLandlord, updateForLandlord,
     depositsForRenter, submitDepositForRenter, depositsAll, updateDepositForLandlord,
     close: () => db.close(),
@@ -771,14 +1125,16 @@ function seed(q, db) {
   // Hai yêu cầu thuê ĐÃ ĐƯỢC DUYỆT: người thuê đang ở trong phòng. Khu quản trị đọc chỗ này
   // để biết ai đang thuê phòng nào (xem listProperties trong server/quan-tri.mjs).
   // seen_at đặt luôn: người thuê đã xem kết quả duyệt từ trước, nên trang của họ không bật
-  // hộp thông báo "yêu cầu được duyệt" khi mở lên.
+  // hộp thông báo "yêu cầu được duyệt" khi mở lên. Họ đã ở thật nên khoản nhận phòng là đã thanh toán.
   const insReq = db.prepare(`INSERT INTO rental_requests
-    (appointment_id, room_id, renter_id, tenant_name, tenant_phone, want_date, note, status, created_at, decided_at, seen_at)
-    VALUES (?, ?, ?, ?, ?, ?, '', 'approved', ?, ?, ?)`);
+    (appointment_id, room_id, renter_id, tenant_name, tenant_phone, want_date, note, status, created_at, decided_at, seen_at,
+     pay_status, pay_amount, paid_at)
+    VALUES (?, ?, ?, ?, ?, ?, '', 'approved', ?, ?, ?, 'paid', ?, ?)`);
   const dangThue = (roomId, u, xemNgay, donVao) => {
     const r = add(roomId, u.id, u.name, u.phone, xemNgay, '10:30', 'completed', `${xemNgay}T08:00:00`);
+    const gia = (PHONG[roomId] || {}).price || 0;
     insReq.run(Number(r.lastInsertRowid), roomId, u.id, u.name, u.phone, donVao,
-      iso(`${xemNgay}T12:00:00`), iso(`${xemNgay}T13:00:00`), iso(`${xemNgay}T14:00:00`));
+      iso(`${xemNgay}T12:00:00`), iso(`${xemNgay}T13:00:00`), iso(`${xemNgay}T14:00:00`), gia * 2, iso(`${donVao}T09:00:00`));
   };
   // Bốn người thuê có tài khoản đang ở trong nhà trọ An Bình — khớp danh sách người thuê và
   // hợp đồng ở quan-ly/nguoi-thue.html, quan-ly/hop-dong-dien-tu.html.

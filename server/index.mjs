@@ -14,6 +14,7 @@ import { createAuth, sessionCookie, clearCookie } from './auth.mjs';
 import { createAdmin, PLANS } from './quan-tri.mjs';
 import { createSuCo } from './su-co.mjs';
 import { NGUOI_THUE, NHA_TRO } from './phong.mjs';
+import { createBus } from './thong-bao.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -23,10 +24,13 @@ const FIXED_NOW = process.env.AN_CU_NOW ? new Date(process.env.AN_CU_NOW) : null
 if (FIXED_NOW && Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
 const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());
 
-const store = openDb({ file: dbFile, now });
+const bus = createBus();
+const store = openDb({ file: dbFile, now, publish: bus.publish });
 const auth = createAuth(store.db, ApiError);
 const admin = createAdmin(store.db, ApiError, now);
 const suCo = createSuCo(store.db, ApiError, now);
+const qLandlord = store.db.prepare("SELECT id FROM users WHERE id = ? AND role = 'landlord'");
+const LANDLORDS = { has: (id) => !!qLandlord.get(String(id)) };
 
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -94,16 +98,57 @@ async function api(req, res, url) {
     if (requested && NGUOI_THUE[requested]) return requested;
     throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập để tiếp tục.');
   };
+  // Chủ trọ đang thao tác. Đã đăng nhập: lấy từ phiên. Chưa đăng nhập (chế độ demo, trang quan-ly/* chưa
+  // bắt đăng nhập): ?chu=<id chủ trọ demo>, mặc định Trần Hoà (l-binh) — chủ của Nhà trọ An Bình mà các
+  // trang quản lý đang hiển thị. Dù cách nào, mỗi chủ trọ CHỈ thấy và sửa lịch của phòng mình.
+  const landlordId = () => {
+    if (me) return me.role === 'landlord' ? me.id : null;
+    const chu = qs.get('chu');
+    return chu && LANDLORDS.has(chu) ? chu : 'l-binh';
+  };
+  // Người đang xem (cho thông báo và kênh sự kiện): phiên đăng nhập, hoặc người demo theo ?chu= / ?nguoi=
+  const viewerId = () => {
+    if (me) return me.id;
+    if (qs.get('vai') === 'chu-tro' || qs.get('chu')) return landlordId();
+    const n = qs.get('nguoi');
+    if (n && NGUOI_THUE[n]) return n;
+    throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+  };
+
+  // ----- Thời gian thực: mỗi trình duyệt mở một kết nối SSE, máy chủ báo phần dữ liệu nào vừa đổi -----
+  if (p === '/api/su-kien' && m === 'GET') { bus.subscribe(viewerId(), req, res); return; }
+
+  // ----- Phòng đã lưu: bắt buộc đăng nhập thật (chưa đăng nhập thì trang chuyển sang Đăng nhập) -----
+  const mustRenterLogin = () => {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập để lưu phòng.');
+    if (me.role !== 'renter') throw new ApiError(403, 'not_renter', 'Chỉ tài khoản người thuê mới lưu được phòng.');
+    return me.id;
+  };
+  if (p === '/api/da-luu' && m === 'GET') return send(res, 200, { items: store.listFavorites(mustRenterLogin()) });
+  if (p === '/api/da-luu' && m === 'POST') {
+    const body = await readJson(req);
+    return send(res, 201, { items: store.addFavorite(mustRenterLogin(), String(body.roomId || '')) });
+  }
+  if ((id = p.match(/^\/api\/da-luu\/([A-Za-z0-9.]+)$/)) && m === 'DELETE') {
+    return send(res, 200, { items: store.removeFavorite(mustRenterLogin(), id[1]) });
+  }
+
   if (p === '/api/lich-xem' && m === 'GET') return send(res, 200, { items: store.listForRenter(renterId(qs.get('nguoi'))) });
   if (p === '/api/lich-xem' && m === 'POST') {
     const body = await readJson(req);
     return send(res, 201, { item: store.createForRenter({ ...body, nguoi: renterId(body.nguoi) }) });
   }
+  // Người thuê đã mở mục "Yêu cầu & Lịch hẹn": xoá huy hiệu "có cập nhật chưa xem"
+  if (p === '/api/lich-xem/da-xem' && m === 'POST') {
+    const body = await readJson(req);
+    return send(res, 200, store.markSeenForRenter({ nguoi: renterId(body.nguoi) }));
+  }
   if ((id = p.match(/^\/api\/lich-xem\/(\d+)$/)) && m === 'PATCH') {
     const body = await readJson(req);
     const b = { ...body, nguoi: renterId(body.nguoi) };
     if (body.action === 'reschedule') return send(res, 200, { item: store.rescheduleForRenter(id[1], b) });
-    if (body.action === 'cancel') return send(res, 200, { item: store.cancelForRenter(id[1], b) });
+    if (body.action === 'cancel' || body.action === 'decline') return send(res, 200, { item: store.cancelForRenter(id[1], b) });
+    if (body.action === 'accept') return send(res, 200, { item: store.acceptProposalForRenter(id[1], b) });
     if (body.action === 'memo') return send(res, 200, { item: store.memoForRenter(id[1], b) });
     throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
   }
@@ -115,6 +160,8 @@ async function api(req, res, url) {
   if ((id = p.match(/^\/api\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
     const body = await readJson(req);
     if (body.action === 'seen') return send(res, 200, { item: store.markRequestSeen(id[1], { nguoi: renterId(body.nguoi) }) });
+    // Người thuê báo "Tôi đã chuyển khoản" cho khoản nhận phòng
+    if (body.action === 'pay') return send(res, 200, { item: store.submitRentPayment(id[1], { nguoi: renterId(body.nguoi) }) });
     throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
   }
   if (p === '/api/khung-gio' && m === 'GET') {
@@ -152,13 +199,13 @@ async function api(req, res, url) {
     if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập để gửi yêu cầu hỗ trợ.');
     return send(res, 201, { item: admin.createTicket(me.id, await readJson(req)) });
   }
-  if (p === '/api/thong-bao' && m === 'GET') {
-    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
-    return send(res, 200, admin.myNotifications(me.id));
-  }
+  // Thông báo của người đang xem: phiên đăng nhập, hoặc người demo (?nguoi= / ?chu=) như các API lịch hẹn
+  if (p === '/api/thong-bao' && m === 'GET') return send(res, 200, admin.myNotifications(viewerId()));
   if ((id = sub('/api/thong-bao/')) && m === 'PATCH') {
-    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
-    return send(res, 200, admin.readNotification(me.id, id));
+    const who = viewerId();
+    const out = admin.readNotification(who, id);
+    bus.publish([who], ['thong-bao']);   // các tab khác của cùng người cập nhật số chưa đọc
+    return send(res, 200, out);
   }
 
   // Chủ trọ xem số liệu phòng của chính mình (trang quản lý dùng chung nguồn với khu quản trị)
@@ -228,14 +275,18 @@ async function api(req, res, url) {
   if (p.startsWith('/api/chu-tro/') && me && me.role !== 'landlord') {
     throw new ApiError(403, 'not_landlord', 'Chỉ tài khoản chủ trọ mới dùng được chức năng này.');
   }
-  if (p === '/api/chu-tro/lich-xem' && m === 'GET') return send(res, 200, { items: store.listAll() });
-  if (p === '/api/chu-tro/lich-xem' && m === 'POST') return send(res, 201, { item: store.createForLandlord(await readJson(req)) });
+  if (p === '/api/chu-tro/lich-xem' && m === 'GET') return send(res, 200, { items: store.listAll(landlordId()) });
+  if (p === '/api/chu-tro/lich-xem' && m === 'POST') return send(res, 201, { item: store.createForLandlord(await readJson(req), landlordId()) });
   if ((id = p.match(/^\/api\/chu-tro\/lich-xem\/(\d+)$/)) && m === 'PATCH') {
-    return send(res, 200, { item: store.updateForLandlord(id[1], await readJson(req)) });
+    return send(res, 200, { item: store.updateForLandlord(id[1], await readJson(req), landlordId()) });
   }
-  if (p === '/api/chu-tro/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForLandlord() });
+  if (p === '/api/chu-tro/yeu-cau-thue' && m === 'GET') return send(res, 200, { items: store.requestsForLandlord(landlordId()) });
   if ((id = p.match(/^\/api\/chu-tro\/yeu-cau-thue\/(\d+)$/)) && m === 'PATCH') {
-    return send(res, 200, { item: store.decideRequest(id[1], await readJson(req)) });
+    return send(res, 200, { item: store.decideRequest(id[1], await readJson(req), landlordId()) });
+  }
+  // Người thuê đã thanh toán nhận phòng qua An Cư (trang Người thuê của chủ trọ)
+  if (p === '/api/chu-tro/nguoi-thue' && m === 'GET') {
+    return send(res, 200, { items: store.requestsForLandlord(landlordId()).filter((r) => r.status === 'approved' && r.payStatus === 'paid') });
   }
 
   // Sự cố & báo cáo: khác các route /api/chu-tro/* khác, bắt buộc đăng nhập thật (không có
@@ -271,9 +322,9 @@ async function api(req, res, url) {
     if (body.action === 'submit') return send(res, 200, { item: store.submitDepositForRenter(id[1], { ...body, nguoi: renterId(body.nguoi) }) });
     throw new ApiError(400, 'bad_action', 'Thao tác không hợp lệ.');
   }
-  if (p === '/api/chu-tro/thanh-toan' && m === 'GET') return send(res, 200, { items: store.depositsAll() });
+  if (p === '/api/chu-tro/thanh-toan' && m === 'GET') return send(res, 200, { items: store.depositsAll(landlordId()) });
   if ((id = p.match(/^\/api\/chu-tro\/thanh-toan\/(\d+)$/)) && m === 'PATCH') {
-    return send(res, 200, { item: store.updateDepositForLandlord(id[1], await readJson(req)) });
+    return send(res, 200, { item: store.updateDepositForLandlord(id[1], await readJson(req), landlordId()) });
   }
 
   throw new ApiError(404, 'not_found', 'Không có API này.');
@@ -343,6 +394,6 @@ server.listen(port, () => {
   Máy khác cùng mạng: ${lan.join('  ')}` : ''));
 });
 
-const stop = () => { server.close(); store.close(); process.exit(0); };
+const stop = () => { bus.closeAll(); server.close(); store.close(); process.exit(0); };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);

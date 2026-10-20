@@ -72,7 +72,9 @@ await page.waitForTimeout(200);
 const lichMoi = page.locator('#calView .cal-ev[data-status="pending"]', { hasText: tenPhong });
 expect('lịch vừa đặt xuất hiện trên lịch tháng (màu cam)', await lichMoi.count() > 0, true);
 expect('tháng 9 có 6 lịch', await page.locator('#calView .cal-ev').count(), 6);
-expect('huy hiệu sidebar bằng 4', (await page.locator('#navCount').textContent()).trim(), '4');
+// Huy hiệu 'Yêu cầu & Lịch hẹn' = số lịch chủ trọ vừa cập nhật mà chưa xem. Bản xem thử (file://) không có
+// phía chủ trọ dùng chung dữ liệu nên không có cập nhật nào: huy hiệu ẩn.
+expect('huy hiệu sidebar ẩn khi không có cập nhật chưa xem', await page.locator('#navCount').isHidden(), true);
 
 const khoSau = await page.evaluate(() => {
   try { return JSON.parse(window.localStorage.getItem('an-cu-lich-xem-v1')); } catch (e) { return null; }

@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="../components/sidebar.css" />
 <script src="../components/hop-dong.js"></script>
+<script src="../components/an-cu-store.js"></script>
 <script src="../components/sidebar.js"></script>
 <style>
 :root{
@@ -261,7 +262,26 @@ body.modal-open{overflow:hidden}
     '</div></section>';
   }
 
+  // Thuê qua An Cư (máy chủ): yêu cầu thuê đã duyệt và chủ trọ đã nhận tiền nhận phòng. Hợp đồng và hoá
+  // đơn hằng tháng chưa có trên máy chủ (bảng contracts của v1), nên hiện thông tin phòng + khoản đã trả.
+  var paidRent = null;
+  function paidView(r){
+    var landlordPhone = r.landlordPhone || '';
+    return '<section class="card reveal" aria-labelledby="paidTitle"><div class="card-head"><div><h2 id="paidTitle">Phòng đang thuê</h2><p>Mã ' + U.esc(r.payRef) + '</p></div>' +
+      '<span class="status is-paid">Đã thanh toán</span></div><div class="card-body">' +
+      '<div class="room-mini">' + (r.image ? '<img src="' + U.esc(r.image) + '" alt="Ảnh ' + U.esc(r.room) + '" width="96" height="72" />' : '') +
+        '<div><h3>' + U.esc(r.room) + '</h3><p>' + U.esc(r.address || r.building || '') + '</p></div></div>' +
+      '<dl class="kv">' +
+        '<div><dt>Tiền phòng</dt><dd>' + U.vnd(r.price) + '/tháng</dd></div>' +
+        '<div><dt>Ngày dọn vào</dt><dd>' + U.fmtDate(r.wantDate) + '</dd></div>' +
+        '<div><dt>Đã thanh toán</dt><dd>' + U.vnd(r.payAmount) + ' (cọc + tháng đầu)</dd></div>' +
+        '<div><dt>Chủ trọ xác nhận lúc</dt><dd>' + (r.paidAt ? U.fmtTime(r.paidAt) : '—') + '</dd></div>' +
+      '</dl>' +
+      '<p class="notice info" style="margin-top:14px">' + U.svg(U.ICON.info) + '<span>Hợp đồng điện tử và hoá đơn điện nước hằng tháng sẽ hiện ở đây khi chủ trọ tạo trên An Cư. Gặp sự cố trong phòng, dùng mục <a href="ho-tro.html"><b>Hỗ trợ &amp; báo cáo</b></a>.</span></p>' +
+    '</div></section>';
+  }
   function render(){
+    if(!active && paidRent){ document.getElementById('historyLink').hidden = true; content.innerHTML = paidView(paidRent); reveal(); return; }
     if(!active){ content.innerHTML = emptyView(); reveal(); return; }
     var cur = invoices[0];
     document.getElementById('pageSub').textContent = contract.title + ' · ' + contract.address;
@@ -271,7 +291,7 @@ body.modal-open{overflow:hidden}
         '<div class="col">' + HD.html.contractCard(contract) +
           HD.html.accountCard(contract, { qr:true, invoice:cur }) + '</div>' +
       '</div>';
-    AnCuSidebar.setBadge('thanh-toan', invoices.filter(HD.isOpen).length);
+    AnCuSidebar.refreshPayment();
     reveal();
   }
 
@@ -361,6 +381,19 @@ body.modal-open{overflow:hidden}
   }
 
   render();
+  // Đã đăng nhập tài khoản thật: hợp đồng mẫu trên máy không phải của người này, lấy phòng đã thuê từ máy chủ
+  function loadPaid(){
+    AnCu.ready.then(function(sv){
+      if(!sv.on) return;
+      if(sv.me && sv.me.role === 'renter' && sv.me.id !== who){ active = false; invoices = []; }
+      return AnCu.api('GET', '/api/yeu-cau-thue').then(function(j){
+        paidRent = ((j && j.items) || []).filter(function(r){ return r.status === 'approved' && r.payStatus === 'paid'; })[0] || null;
+        render();
+      });
+    }).catch(function(){});
+  }
+  loadPaid();
+  AnCu.on('yeu-cau-thue', loadPaid);
 })();
 </script>
 </body>

@@ -519,6 +519,7 @@
     .drawer-imgs{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
 </style>
+<script src="../components/an-cu-store.js"></script>
 </head>
 <body>
 
@@ -1105,6 +1106,29 @@
 
     render();
     window.renderTenantRows = render; // để script sự cố gọi lại khi dữ liệu phiếu tải xong (thêm chỉ báo)
+
+    // Người thuê đã thanh toán nhận phòng qua An Cư (máy chủ): thêm vào đầu danh sách nếu chưa có.
+    // Chủ trọ bấm "Đã nhận tiền" ở mục Thanh toán thì người đó hiện ở đây ngay (SSE), không cần tải lại.
+    function addPaidTenants(){
+      AnCu.ready.then(function(sv){
+        if (!sv.on) return;
+        AnCu.api('GET', '/api/chu-tro/nguoi-thue').then(function(j){
+          if (!j.ok) return;
+          var changed = false;
+          (j.items || []).forEach(function(r){
+            var phone = String(r.phone || '').replace(/\D/g, '');
+            if (TENANTS.some(function(t){ return t.phone === phone || (t.room === r.roomCode && t.name === r.tenant); })) return;
+            var start = r.wantDate, end = new Date(start); end.setFullYear(end.getFullYear() + 1); end.setDate(end.getDate() - 1);
+            TENANTS.unshift({ name:r.tenant, phone:phone, cccd:false, room:r.roomCode, building:r.building || 'Qua An Cư',
+              start:start, end:end.toISOString().slice(0, 10), debt:0, status:'renting', viaAnCu:true });
+            changed = true;
+          });
+          if (changed) render();
+        }).catch(function(){});
+      });
+    }
+    addPaidTenants();
+    AnCu.on('yeu-cau-thue', addPaidTenants);
   })();
 
   // ---------- Popover: khu trọ / thông báo / tài khoản ----------
@@ -1534,7 +1558,7 @@
       if (!items.length){ box.innerHTML = '<p style="padding:14px 12px;font-size:13.5px;color:var(--text-dim)">Chưa có thông báo nào.</p>'; return; }
       box.innerHTML = items.slice(0, 8).map(function(n){
         var ic = NOTI_ICON[n.type] || NOTI_ICON['bao-tri'];
-        var nav = n.ticketId ? ' data-goto-ticket="' + esc(n.ticketId) + '"' : '';
+        var nav = n.ticketId ? ' data-goto-ticket="' + esc(n.ticketId) + '"' : n.link ? ' data-link="' + esc(n.link) + '"' : '';
         var unreadStyle = n.read ? '' : ' style="background:rgba(34,139,34,.045)"';
         return '<button type="button" class="pop-item" data-noti-id="' + n.id + '"' + nav + unreadStyle + '>' +
           svgIcon(ic) +
@@ -1543,7 +1567,7 @@
       }).join('');
     }
     function loadNoti(){
-      return fetch('/api/thong-bao', { credentials:'same-origin', cache:'no-store' })
+      return fetch(AnCu.url('/api/thong-bao'), { credentials:'same-origin', cache:'no-store' })
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(j){ if (j) renderNoti(j); })
         .catch(function(){});
@@ -1553,9 +1577,10 @@
       if (!btn) return;
       var id = btn.dataset.notiId;
       var ticketId = btn.dataset.gotoTicket;
-      fetch('/api/thong-bao/' + encodeURIComponent(id), { method:'PATCH', credentials:'same-origin' })
+      var link = btn.dataset.link;
+      fetch(AnCu.url('/api/thong-bao/' + encodeURIComponent(id)), { method:'PATCH', credentials:'same-origin' })
         .then(function(r){ return r.ok ? r.json() : null; })
-        .then(function(j){ if (j) renderNoti(j); });
+        .then(function(j){ if (link) location.href = '../' + link; else if (j) renderNoti(j); });
       if (ticketId){
         document.getElementById('notiPop').classList.remove('open');
         document.getElementById('notiBtn').setAttribute('aria-expanded', 'false');
@@ -1576,6 +1601,7 @@
 
     syncFromUrl();
     loadNoti();
+    AnCu.on('thong-bao', loadNoti);   // thông báo mới tới (SSE) thì số chưa đọc đổi ngay
     loadTickets();
   })();
 </script>

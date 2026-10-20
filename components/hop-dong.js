@@ -6,6 +6,9 @@
  *
  *   AnCuHopDong.renterId()            người thuê hiện tại (?nguoi= / localStorage / mặc định u-trang)
  *   AnCuHopDong.isTenantActive(id)    có hợp đồng 'active' và hôm nay nằm trong thời hạn hợp đồng
+ *   AnCuHopDong.hasActiveRental(id)   đã thanh toán thành công một phòng: hợp đồng còn hiệu lực HOẶC đơn
+ *                                     đặt cọc đã được chủ trọ xác nhận (dat-coc.html, bước "thanh-cong").
+ *                                     Sidebar dựa vào đây để hiện "Phòng của tôi" và "Hỗ trợ & báo cáo".
  *   AnCuHopDong.contractFor(id)       hợp đồng của người thuê (hoặc null)
  *   AnCuHopDong.home(id)              trang mặc định sau đăng nhập: phong-cua-toi.html | tim-phong.html
  *   AnCuHopDong.invoices(contract)    hoá đơn, mới nhất trước, đã tính tiền + trạng thái
@@ -21,6 +24,7 @@
 
   var STORE_KEY = 'an-cu-thanh-toan-tien-nha';
   var RENTER_KEY = 'an-cu-nguoi-thue';
+  var DEPOSIT_ORDER_KEY = 'an-cu-dat-coc-don';   // đơn đặt cọc của dat-coc.html
   var DEMO_PHONES = { 'u-trang':'0901234567', 'u-an':'0912000111', 'u-linh':'0987000222', 'u-huy':'0933000333' };
 
   // ---------- Dữ liệu mẫu ----------
@@ -102,6 +106,15 @@
     var c = contractFor(id), t = today();
     return !!c && c.status === 'active' && c.start <= t && t <= c.end;
   }
+  // Đơn đặt cọc đã "Thanh toán thành công" (chủ trọ xác nhận giữ phòng). Đơn mang số điện thoại người
+  // đặt: số của người thuê mẫu khác thì không tính; số ngoài danh sách mẫu là tài khoản thật đang dùng.
+  function depositPaid(id){
+    var o = readJson(DEPOSIT_ORDER_KEY);
+    if(!o || !o.confirmedAt) return false;
+    var who = renterIdByPhone(o.phone);
+    return !who || who === id;
+  }
+  function hasActiveRental(id){ return isTenantActive(id) || depositPaid(id); }
   function home(id){ return isTenantActive(id) ? 'phong-cua-toi.html' : 'tim-phong.html'; }
 
   // ---------- Hoá đơn ----------
@@ -278,9 +291,9 @@
   }
 
   window.AnCuHopDong = {
-    STORE_KEY:STORE_KEY, STATUS:STATUS,
+    STORE_KEY:STORE_KEY, DEPOSIT_ORDER_KEY:DEPOSIT_ORDER_KEY, STATUS:STATUS,
     renterId:renterId, renterIdByPhone:renterIdByPhone,
-    contractFor:contractFor, isTenantActive:isTenantActive, home:home,
+    contractFor:contractFor, isTenantActive:isTenantActive, hasActiveRental:hasActiveRental, home:home,
     invoices:invoices, isOpen:isOpen, markSubmitted:markSubmitted, transferNote:transferNote,
     html:{ badge:badge, lines:lines, stats:stats, currentCard:currentCard, contractCard:contractCard, accountCard:accountCard, payBody:payBody },
     util:{ vnd:vnd, esc:esc, svg:svg, ICON:ICON, today:today, fmtDate:fmtDate, fmtPeriod:fmtPeriod, fmtTime:fmtTime, daysBetween:daysBetween, qrSvg:qrSvg }

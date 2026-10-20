@@ -427,6 +427,7 @@
     .tbl td.act::before{display:none}
   }
 </style>
+<script src="../components/an-cu-store.js"></script>
 </head>
 <body>
 
@@ -963,7 +964,7 @@
       pop.innerHTML = '<p class="pop-title">Thông báo</p>' +
         (j.items.length
           ? j.items.slice(0, 8).map(function(n){
-              return '<button type="button" class="pop-item" data-noti="' + n.id + '">' + (ICON[n.type] || ICON['ho-tro']) +
+              return '<button type="button" class="pop-item" data-noti="' + n.id + '"' + (n.link ? ' data-link="' + esc(n.link) + '"' : '') + '>' + (ICON[n.type] || ICON['ho-tro']) +
                 '<span class="gr"><b>' + esc(n.title) + '</b><span>' + esc(n.body).slice(0, 110) + '</span>' +
                 '<time>' + khiNao(n.createdAt) + (n.read ? '' : ' · chưa đọc') + '</time></span></button>';
             }).join('')
@@ -972,7 +973,7 @@
           '<button type="button" class="pop-item" data-noti="tat-ca"><span class="gr"><b>Đánh dấu đã đọc hết</b></span></button>' : '');
     }
     function nap(){
-      return fetch('/api/thong-bao', { cache: 'no-store', credentials: 'same-origin' })
+      return fetch(AnCu.url('/api/thong-bao'), { cache: 'no-store', credentials: 'same-origin' })
         .then(function(r){ return r.ok ? r.json() : null; })
         .catch(function(){ return null; })
         .then(function(j){ if (j) ve(j); });
@@ -980,11 +981,13 @@
     pop.addEventListener('click', function(e){
       var b = e.target.closest('[data-noti]');
       if (!b) return;
-      fetch('/api/thong-bao/' + b.dataset.noti, { method: 'PATCH', credentials: 'same-origin' })
+      var link = b.dataset.link;
+      fetch(AnCu.url('/api/thong-bao/' + b.dataset.noti), { method: 'PATCH', credentials: 'same-origin' })
         .then(function(r){ return r.ok ? r.json() : null; })
-        .then(function(j){ if (j) ve(j); });
+        .then(function(j){ if (link) location.href = '../' + link; else if (j) ve(j); });
     });
     nap();
+    AnCu.on('thong-bao', nap);   // thông báo mới tới (SSE) thì số chưa đọc đổi ngay
   })();
 
   // ---------- Gửi yêu cầu hỗ trợ ----------

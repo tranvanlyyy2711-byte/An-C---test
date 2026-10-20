@@ -186,6 +186,12 @@
     "ok": true
   },
   {
+    "name": "chủ trọ khác không tạo được lịch cho phòng không phải của mình",
+    "got": 403,
+    "want": 403,
+    "ok": true
+  },
+  {
     "name": "modal vẫn mở để chọn lại",
     "got": true,
     "want": true,
@@ -217,8 +223,8 @@
   },
   {
     "name": "người thuê thấy mọi lịch chờ xác nhận ở mục Lịch xem phòng",
-    "got": 3,
-    "want": 3,
+    "got": 2,
+    "want": 2,
     "ok": true
   },
   {
@@ -258,6 +264,12 @@
     "ok": true
   },
   {
+    "name": "chủ trọ khác không sửa được khoản cọc phòng không phải của mình",
+    "got": 403,
+    "want": 403,
+    "ok": true
+  },
+  {
     "name": "chủ trọ xác nhận lịch từ trang Thanh toán",
     "got": "Đã xác nhận lịch",
     "want": "Đã xác nhận lịch",
@@ -288,7 +300,13 @@
     "ok": true
   },
   {
-    "name": "Trang giữ chỗ p05 và p08",
+    "name": "Trang đặt thêm p05 khi đang có lịch p05 bị chặn",
+    "got": "409/duplicate",
+    "want": "409/duplicate",
+    "ok": true
+  },
+  {
+    "name": "Trang giữ chỗ p02 và p08",
     "got": [
       201,
       201
@@ -300,7 +318,7 @@
     "ok": true
   },
   {
-    "name": "An chưa đặt được p05 lúc này",
+    "name": "An chưa đặt được p02 lúc này",
     "got": 409,
     "want": 409,
     "ok": true
@@ -342,7 +360,7 @@
     "ok": true
   },
   {
-    "name": "An đặt p02 10:00 hôm nay, giữ chỗ tới mai",
+    "name": "An đặt p03 10:00 hôm nay, giữ chỗ tới mai",
     "got": 201,
     "want": 201,
     "ok": true
@@ -422,9 +440,9 @@
     "ok": true
   },
   {
-    "name": "chủ trọ thấy 3 yêu cầu thuê của Trang",
-    "got": 3,
-    "want": 3,
+    "name": "chủ trọ thấy 2 yêu cầu thuê của Trang ở phòng mình",
+    "got": 2,
+    "want": 2,
     "ok": true
   },
   {

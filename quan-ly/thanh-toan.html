@@ -177,6 +177,7 @@ body.modal-open{overflow:hidden}
   .modal-foot .btn{flex:1}
 }
 </style>
+<script src="../components/an-cu-store.js"></script>
 </head>
 <body class="is-loading">
 <div class="dash-shell">
@@ -203,7 +204,7 @@ body.modal-open{overflow:hidden}
       <button class="menu-toggle" id="menuBtn" aria-label="Mở menu" aria-expanded="false" aria-controls="sideNav"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <button class="prop-switch" type="button"><span class="prop-ico"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M10 21v-5h4v5"/></svg></span><span class="prop-tx"><b>Nhà trọ An Bình</b><span>Cầu Giấy, Hà Nội · 24 phòng</span></span></button>
       <div class="header-actions">
-        <button class="icon-btn" aria-label="Thông báo"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+        <an-cu-bell></an-cu-bell>
         <button class="acc-btn"><span class="av">TH</span><span class="nm">Trần Hoà</span></button>
       </div>
     </header>
@@ -215,7 +216,7 @@ body.modal-open{overflow:hidden}
           <div>
             <nav class="crumbs" aria-label="Vị trí trang"><a href="yeucauvalichhen.html">Lịch xem phòng</a><span aria-hidden="true">/</span><span aria-current="page">Thanh toán</span></nav>
             <h1>Thanh toán</h1>
-            <p>Lịch xem đang chờ bạn xác nhận và tiền cọc khi xem cần đối chiếu.</p>
+            <p>Lịch xem đang chờ bạn xác nhận, tiền cọc khi xem và tiền nhận phòng cần đối chiếu.</p>
           </div>
         </div>
 
@@ -269,6 +270,15 @@ body.modal-open{overflow:hidden}
               </div>
               <div class="list-rows" id="payRows"></div>
               <div class="empty-state" id="payEmpty" hidden></div>
+            </div>
+          </section>
+
+          <!-- ===== Tiền nhận phòng: cọc + tháng đầu của yêu cầu thuê đã duyệt ===== -->
+          <section class="card reveal" id="nhan-phong" aria-labelledby="npTitle" style="margin-top:20px">
+            <div class="card-head"><div><h2 id="npTitle">Tiền nhận phòng</h2><p>Cọc + tiền phòng tháng đầu của yêu cầu thuê bạn đã duyệt. Xác nhận đã nhận tiền thì người đó chính thức thuê phòng.</p></div></div>
+            <div class="card-body">
+              <div class="list-rows" id="npRows"></div>
+              <div class="empty-state" id="npEmpty" hidden></div>
             </div>
           </section>
         </div>
@@ -325,6 +335,7 @@ body.modal-open{overflow:hidden}
       .catch(function(){ return false; });
   })();
   function apiCall(method, url, body){
+    if(url.indexOf('/api/chu-tro/') === 0) url = AnCu.url(url);   // chủ trọ nào: chỉ thấy phòng của mình
     return fetch(url, { method:method, cache:'no-store',
       headers: body ? { 'Content-Type':'application/json' } : {},
       body: body ? JSON.stringify(body) : undefined
@@ -511,8 +522,50 @@ body.modal-open{overflow:hidden}
   function renderAll(){
     return khoLoad().then(function(r){ S.loadError=false; S.appts=r.appts; S.deps=r.deps; })
       .catch(function(){ S.loadError=true; showToast('Mất kết nối','Không tải được dữ liệu thanh toán từ máy chủ.'); })
-      .then(function(){ renderStats(); renderLists(); });
+      .then(loadRent)
+      .then(function(){ renderStats(); renderLists(); renderRent(); });
   }
+
+  /* ================= Tiền nhận phòng ================= */
+  var RENT_STATUS = { unpaid:{ label:'Chờ chuyển tiền', cls:'is-pending' }, submitted:{ label:'Chờ xác nhận tiền', cls:'is-proposed' }, paid:{ label:'Đã nhận · đang thuê', cls:'is-confirmed' } };
+  S.rent = [];
+  function loadRent(){
+    if(!API.on){ S.rent = []; return Promise.resolve(); }
+    return apiCall('GET', '/api/chu-tro/yeu-cau-thue').then(function(j){
+      S.rent = (j.items || []).filter(function(r){ return r.status === 'approved' && r.payStatus && r.payStatus !== 'none'; })
+        .sort(function(a, b){ var o = { submitted:0, unpaid:1, paid:2 }; return o[a.payStatus] - o[b.payStatus]; });
+    }).catch(function(){ S.rent = []; });
+  }
+  function rentRow(r){
+    var st = RENT_STATUS[r.payStatus], acts = '';
+    if(r.payStatus === 'submitted') acts = '<button type="button" class="btn btn-danger-ghost btn-sm" data-np="'+r.id+'" data-to="unpaid">Chưa nhận được</button><button type="button" class="btn btn-primary btn-sm" data-np="'+r.id+'" data-to="paid">Đã nhận tiền</button>';
+    else if(r.payStatus === 'unpaid') acts = '<button type="button" class="btn btn-ghost btn-sm" data-np="'+r.id+'" data-to="paid">Đã nhận tiền mặt</button>';
+    var line = r.payStatus === 'submitted' ? 'Người thuê báo đã chuyển lúc ' + esc(fmtStamp(r.paySubmittedAt))
+      : r.payStatus === 'paid' ? 'Đã nhận lúc ' + esc(fmtStamp(r.paidAt)) : (r.payNote ? 'Đã báo: ' + esc(r.payNote) : 'Chờ người thuê chuyển khoản');
+    return '<div class="list-row" data-np-row="'+r.id+'">'+ dateCell(r.wantDate) +
+      '<div class="lr-info"><span class="lr-amount">'+vnd(r.payAmount)+'</span><b>'+esc(r.roomCode)+' — '+esc(r.tenant)+'</b><span>Mã '+esc(r.payRef)+' · '+esc(r.phone)+' · dọn vào '+esc(r.wantDate.split('-').reverse().join('/'))+'</span><span>'+line+'</span><span class="apt-status '+st.cls+' lr-badge">'+st.label+'</span></div>'+
+      '<div class="lr-actions"><span class="apt-status '+st.cls+'">'+st.label+'</span>'+acts+callBtn(r.phone)+'</div></div>';
+  }
+  function renderRent(){
+    var list = document.getElementById('npRows'), em = document.getElementById('npEmpty');
+    if(!API.on){ list.innerHTML = ''; em.innerHTML = emptyHtml('Cần chạy máy chủ', 'Tiền nhận phòng lấy từ yêu cầu thuê thật, chỉ có khi chạy npm start.', null); em.hidden = false; return; }
+    if(!S.rent.length){ list.innerHTML = ''; em.innerHTML = emptyHtml('Chưa có khoản nhận phòng nào', 'Duyệt một yêu cầu thuê ở mục Yêu cầu & lịch hẹn thì khoản cọc + tháng đầu sẽ hiện ở đây.', null); em.hidden = false; return; }
+    em.hidden = true;
+    list.innerHTML = S.rent.map(rentRow).join('');
+  }
+  document.getElementById('npRows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-np]'); if(!b) return;
+    var id = Number(b.getAttribute('data-np')), to = b.getAttribute('data-to');
+    var r = S.rent.filter(function(x){ return x.id === id; })[0]; if(!r) return;
+    var paid = to === 'paid';
+    ask({ title: paid ? 'Đã nhận tiền nhận phòng?' : 'Chưa nhận được tiền?', ok: paid ? 'Đã nhận tiền' : 'Báo chưa nhận được', danger:!paid,
+      html: paid
+        ? 'Xác nhận đã nhận <b>'+vnd(r.payAmount)+'</b> từ <b>'+esc(r.tenant)+'</b> (mã <b>'+esc(r.payRef)+'</b>). <b>'+esc(r.roomCode)+'</b> chuyển sang “Đã thuê”, người thuê được mở mục Phòng của tôi.'
+        : 'Khoản <b>'+vnd(r.payAmount)+'</b> của <b>'+esc(r.tenant)+'</b> quay về “Chờ chuyển tiền” và người thuê được báo kiểm tra lại giao dịch.',
+      run:function(){ return apiCall('PATCH', '/api/chu-tro/yeu-cau-thue/' + id, { action:to }).then(function(j){ return j.httpStatus === 200 ? { ok:true, item:j.item } : { ok:false, error:j.message || 'Máy chủ từ chối yêu cầu.' }; }); },
+      doneTitle: paid ? 'Đã nhận tiền nhận phòng' : 'Đã báo người thuê',
+      doneText:function(){ return paid ? r.tenant + ' chính thức thuê ' + r.roomCode + '.' : r.tenant + ' sẽ kiểm tra lại giao dịch.'; } });
+  });
 
   /* ================= Toast ================= */
   function showToast(title,text){
@@ -660,8 +713,13 @@ body.modal-open{overflow:hidden}
 
   /* ================= Khởi động ================= */
   if(location.hash==='#thanh-toan') setTab('pay');
+  // Nguồn dữ liệu chung (SSE): người thuê đặt lịch, báo đã chuyển cọc / tiền nhận phòng → tải lại ngay
+  ['lich-hen', 'thanh-toan', 'yeu-cau-thue'].forEach(function(t){ AnCu.on(t, function(){ renderAll(); }); });
   renderAll().then(function(){
-    setTimeout(function(){ document.body.classList.remove('is-loading'); initReveal(); }, 400);
+    setTimeout(function(){
+      document.body.classList.remove('is-loading'); initReveal();
+      if(location.hash === '#nhan-phong'){ var np = document.getElementById('nhan-phong'); if(np){ np.classList.add('in'); np.scrollIntoView({ block:'start' }); } }
+    }, 400);
   });
   window.addEventListener('focus', function(){ if(API.on) renderAll(); });
 })();

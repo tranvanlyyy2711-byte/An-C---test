@@ -264,6 +264,7 @@
     .pay-opts{grid-template-columns:1fr}
   }
 </style>
+<script src="../components/an-cu-store.js"></script>
 </head>
 <body>
 
@@ -337,6 +338,42 @@
         .catch(function(){})
     : Promise.resolve();
 
+  // Có máy chủ (npm start): chỉ thanh toán được khi chủ trọ đã DUYỆT yêu cầu thuê phòng này. Số tiền do máy
+  // chủ tính (cọc 1 tháng + tiền phòng tháng đầu), "Tôi đã thanh toán" báo máy chủ, và chỉ khi chủ trọ bấm
+  // "Đã nhận tiền" thì mới thành công (không tự xác nhận như bản xem thử). Xem docs/lich-hen-hai-chieu.md.
+  var SV = { on:false, req:null, checked:false };
+  function syncServer(){
+    return AnCu.ready.then(function(s){
+      SV.on = !!s.on;
+      if(!SV.on || !room) return;
+      return AnCu.api('GET', '/api/yeu-cau-thue').then(function(j){
+        var mine = (j.items || []).filter(function(r){ return r.roomId === room.id && r.status === 'approved'; });
+        SV.req = mine[0] || null;
+        SV.checked = true;
+        if(!SV.req) return;
+        // Đơn trên máy khớp với trạng thái máy chủ
+        order = order || { code:'ANCU-THUE-' + SV.req.id, roomId:room.id, createdAt:new Date().toISOString(), method:'bank', phone:renter.phone };
+        order.deposit = SV.req.payAmount; order.code = SV.req.payRef;
+        if(SV.req.payStatus === 'submitted' && STEPS.indexOf(order.reached || 'thong-tin') < STEPS.indexOf('cho-xac-nhan')){
+          order.reached = 'cho-xac-nhan'; order.paidAt = order.paidAt || SV.req.paySubmittedAt;
+        }
+        if(SV.req.payStatus === 'paid'){ order.reached = 'thanh-cong'; order.paidAt = order.paidAt || SV.req.paySubmittedAt || SV.req.paidAt; order.confirmedAt = SV.req.paidAt; }
+        if(SV.req.payStatus === 'unpaid'){ delete order.confirmedAt; if(STEPS.indexOf(order.reached || 'thong-tin') > STEPS.indexOf('thanh-toan')) order.reached = 'thanh-toan'; }
+        writeJson(ORDER_KEY, order);
+      });
+    }).catch(function(){});
+  }
+  function viewNeedApproval(){
+    return backLink('Quay lại', 'phong') +
+      '<div class="result"><div class="illus warn reveal">' + ICON.clipAlert + '</div>' +
+      '<h1 tabindex="-1" class="reveal">Cần chủ trọ duyệt trước khi đặt cọc</h1>' +
+      '<p class="reveal">Để tránh mất tiền oan, An Cư chỉ cho thanh toán sau khi bạn đã xem phòng và chủ trọ đồng ý cho thuê. ' +
+      'Hãy đặt lịch xem <b>' + esc(room.title) + '</b>; xem xong, bấm "Gửi yêu cầu thuê" trong mục Yêu cầu &amp; Lịch hẹn.</p>' +
+      roomBlock() +
+      '<div class="actions"><a class="btn btn-ghost" href="dat-lich.html">Yêu cầu &amp; Lịch hẹn</a>' +
+      '<a class="btn btn-primary" href="dat-lich.html?phong=' + encodeURIComponent(room.id) + '">Đặt lịch xem phòng này</a></div></div>';
+  }
+
   // Tài khoản nhận cọc: dữ liệu mẫu cho prototype
   var BANK = { name:'Vietcombank', number:'1224 5478 0089', holder:'NGUYEN VAN A' };
 
@@ -401,7 +438,7 @@
   // ---------- Bước: Thông tin đặt cọc ----------
   function viewInfo(){
     var o = order || {};
-    var dep = o.deposit || room.deposit || room.price;
+    var dep = SV.req ? SV.req.payAmount : (o.deposit || room.deposit || room.price);
     return backLink('Quay lại', 'phong') + stepper(1) +
       '<button type="button" class="chip-back" data-go="phong">' + ICON.back + (FROM_PAY ? 'Xác nhận thuê' : 'Thông tin phòng') + '</button>' +
       '<div class="step-head reveal"><h1 tabindex="-1">Thông tin đặt cọc</h1>' +
@@ -409,8 +446,8 @@
       roomCard(false) +
       '<form class="form" id="infoForm" novalidate>' +
         '<div class="field reveal"><label for="fDeposit">Số tiền cọc <span class="req">*</span></label>' +
-          '<div class="money"><input id="fDeposit" name="deposit" inputmode="numeric" autocomplete="off" value="' + nf.format(dep) + '" aria-describedby="fDepositHint fDepositErr" /></div>' +
-          '<p class="hint" id="fDepositHint">Tối thiểu ' + vnd(room.price) + ', tối đa ' + vnd(room.price * 3) + '.</p>' +
+          '<div class="money"><input id="fDeposit" name="deposit" inputmode="numeric" autocomplete="off" value="' + nf.format(dep) + '"' + (SV.req ? ' readonly' : '') + ' aria-describedby="fDepositHint fDepositErr" /></div>' +
+          '<p class="hint" id="fDepositHint">' + (SV.req ? 'Cọc 1 tháng + tiền phòng tháng đầu, theo yêu cầu thuê chủ trọ đã duyệt.' : 'Tối thiểu ' + vnd(room.price) + ', tối đa ' + vnd(room.price * 3) + '.') + '</p>' +
           '<p class="err" id="fDepositErr" hidden></p></div>' +
         '<div class="field reveal"><label for="fPhone">Số điện thoại <span class="req">*</span></label>' +
           '<input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0901 234 567" value="' + esc(o.phone || renter.phone) + '" aria-describedby="fPhoneErr" />' +
@@ -451,7 +488,7 @@
       var email = emEl.value.trim();
       var ok = true, first = null;
       function check(input, errId, msg){ if(!setErr(input, errId, msg)){ ok = false; first = first || input; } }
-      check(dep, 'fDepositErr',
+      check(dep, 'fDepositErr', SV.req ? '' :
         !amount ? 'Vui lòng nhập số tiền cọc.' :
         amount < room.price ? 'Tiền cọc tối thiểu bằng 1 tháng tiền phòng (' + vnd(room.price) + ').' :
         amount > room.price * 3 ? 'Tiền cọc không vượt quá 3 tháng tiền phòng (' + vnd(room.price * 3) + ').' : '');
@@ -461,8 +498,8 @@
       check(emEl, 'fEmailErr', email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Email chưa đúng định dạng.' : '');
       if(!ok){ first.focus(); return; }
 
-      order = order || { code:newCode(), roomId:room.id, createdAt:new Date().toISOString(), method:'bank' };
-      order.deposit = amount; order.phone = phone; order.email = email;
+      order = order || { code:SV.req ? SV.req.payRef : newCode(), roomId:room.id, createdAt:new Date().toISOString(), method:'bank' };
+      order.deposit = SV.req ? SV.req.payAmount : amount; order.phone = phone; order.email = email;
       order.name = renter.name;
       writeJson(ORDER_KEY, order);
       go('thanh-toan');
@@ -508,9 +545,19 @@
       });
     });
     document.getElementById('paidBtn').addEventListener('click', function(){
-      order.paidAt = new Date().toISOString();
-      writeJson(ORDER_KEY, order);
-      go('da-gui');
+      var btn = this;
+      function next(){ order.paidAt = new Date().toISOString(); writeJson(ORDER_KEY, order); go('da-gui'); }
+      if(!SV.req){ next(); return; }
+      btn.disabled = true; btn.textContent = 'Đang gửi…';
+      AnCu.api('PATCH', '/api/yeu-cau-thue/' + SV.req.id, { action:'pay' }).then(function(j){
+        btn.disabled = false;
+        if(j.ok || j.error === 'not_unpaid'){
+          if(j.item) SV.req = j.item;
+          AnCu.invalidate(['yeu-cau-thue', 'thanh-toan']);
+          AnCu.toast('Đã báo chủ trọ', 'Chủ trọ sẽ đối chiếu giao dịch và xác nhận.', 'ok');
+          next();
+        } else { btn.textContent = 'Tôi đã thanh toán'; AnCu.toast('Chưa gửi được', j.message || 'Hãy thử lại.', 'error'); }
+      }, function(){ btn.disabled = false; btn.textContent = 'Tôi đã thanh toán'; AnCu.toast('Mất kết nối', 'Không gửi được tới máy chủ. Hãy thử lại.', 'error'); });
     });
   }
 
@@ -589,7 +636,7 @@
       '</div>' + roomBlock() +
       '<div class="actions">' +
         '<a class="btn btn-ghost" href="../trang-chu.html">' + ICON.home + 'Về trang chủ</a>' +
-        '<a class="btn btn-primary" href="thanh-toan-tien-nha.html">Về trang thanh toán</a>' +
+        (SV.req ? '<a class="btn btn-primary" href="phong-cua-toi.html">Vào Phòng của tôi</a>' : '<a class="btn btn-primary" href="thanh-toan-tien-nha.html">Về trang thanh toán</a>') +
       '</div></div>';
   }
 
@@ -602,6 +649,7 @@
   // ---------- Hiển thị ----------
   function render(moveFocus){
     if(!room){ app.innerHTML = '<div class="view">' + viewEmpty() + '</div>'; document.title = 'Đặt cọc phòng — An Cư'; return; }
+    if(SV.on && SV.checked && !SV.req){ app.innerHTML = '<div class="view">' + viewNeedApproval() + '</div>'; document.title = 'Cần chủ trọ duyệt — An Cư'; reveal(); return; }
     var step = currentStep();
     if(!allowed(step)){ history.replaceState(null, '', location.pathname + location.search); step = 'thong-tin'; }
     var html = step === 'thanh-toan' ? viewPay() :
@@ -617,8 +665,18 @@
     if(step === 'thanh-toan') bindPay();
     var next = document.getElementById('nextBtn');
     if(next) next.addEventListener('click', function(){
-      if(step === 'da-gui') go('cho-xac-nhan');
-      else { order.confirmedAt = new Date().toISOString(); writeJson(ORDER_KEY, order); go('thanh-cong'); }
+      if(step === 'da-gui'){ go('cho-xac-nhan'); return; }
+      if(SV.req){
+        next.disabled = true;
+        syncServer().then(function(){
+          next.disabled = false;
+          if(SV.req && SV.req.payStatus === 'paid') go('thanh-cong');
+          else if(SV.req && SV.req.payStatus === 'unpaid') { AnCu.toast('Chủ trọ chưa nhận được tiền', SV.req.payNote || 'Hãy kiểm tra lại giao dịch rồi báo lại.', 'error'); go('thanh-toan'); }
+          else AnCu.toast('Chủ trọ chưa xác nhận', 'Bạn sẽ nhận thông báo ngay khi chủ trọ xác nhận, không cần tải lại trang.', 'info');
+        });
+        return;
+      }
+      order.confirmedAt = new Date().toISOString(); writeJson(ORDER_KEY, order); go('thanh-cong');
     });
     reveal();
     var h1 = app.querySelector('h1');
@@ -669,7 +727,16 @@
     });
   }
 
-  render();
+  syncServer().then(function(){ render(); });
+  AnCu.on('yeu-cau-thue', function(){
+    if(!SV.req) return;
+    var before = SV.req.payStatus;
+    syncServer().then(function(){
+      if(!SV.req || SV.req.payStatus === before) return;
+      if(SV.req.payStatus === 'paid'){ AnCu.toast('Thanh toán thành công', 'Chủ trọ đã xác nhận nhận tiền. Phòng đã là của bạn!', 'ok'); go('thanh-cong'); }
+      else if(SV.req.payStatus === 'unpaid'){ AnCu.toast('Chủ trọ chưa nhận được tiền', SV.req.payNote || '', 'error'); go('thanh-toan'); }
+    });
+  });
 })();
 </script>
 </body>

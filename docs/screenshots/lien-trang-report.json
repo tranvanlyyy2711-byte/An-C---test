@@ -78,9 +78,9 @@
     "ok": true
   },
   {
-    "name": "huy hiệu sidebar bằng 4",
-    "got": "4",
-    "want": "4",
+    "name": "huy hiệu sidebar ẩn khi không có cập nhật chưa xem",
+    "got": true,
+    "want": true,
     "ok": true
   },
   {

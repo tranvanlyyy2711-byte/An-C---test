@@ -1,6 +1,12 @@
 /* Layout khu vực Người thuê — đi cùng components/sidebar.js.
    Dùng token màu của trang (--bg, --surface, --surface-2, --border, --text, --accent…). */
 :root{--sidebar-w:264px;--header-h:72px}
+/* Giá trị mặc định cho trang chưa khai đủ token — trang nạp file này TRƯỚC <style> riêng nên token
+   của trang (nếu có) vẫn thắng. Lấy theo bộ token chuẩn trong CLAUDE.md. */
+:root{--surface-2:#F1F8F1;--border-strong:rgba(34,139,34,.2);--text-dim:#5E6E5E;--radius-sm:8px;--warning-ink:#8A5A11;
+  --ease:cubic-bezier(.2,.7,.2,1);--grad:linear-gradient(135deg,#228B22,#2FA84F)}
+/* Đang hỏi máy chủ xem có được vào trang "Phòng của tôi" / "Hỗ trợ" không: ẩn tạm để không loé nội dung */
+html[data-sidebar-guard] body{visibility:hidden}
 
 .dash-shell{display:flex;min-height:100vh}
 an-cu-sidebar,an-cu-header{display:contents}
@@ -10,6 +16,7 @@ an-cu-sidebar,an-cu-header{display:contents}
 .side-nav{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;display:flex;flex-direction:column;padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto}
 .side-nav .brand,.app-header .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;color:var(--text)}
 .side-nav .brand .mark,.app-header .brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;color:#fff;font-weight:800;flex-shrink:0}
+.side-nav .brand .brand-logo,.app-header .brand .brand-logo{width:38px;height:38px;object-fit:contain;flex-shrink:0}
 .side-logo{padding:6px 10px 20px}
 .side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);line-height:1.5}
 .side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}

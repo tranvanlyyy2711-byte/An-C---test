@@ -8,6 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../components/sidebar.css" />
+<script src="../components/hop-dong.js"></script>
+<script src="../components/an-cu-store.js"></script>
+<script src="../components/sidebar.js"></script>
 <style>
 :root{
   --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
@@ -26,6 +30,8 @@
   --ev-done:#E1E7E1;--ev-done-fg:#3F4D3F;
   --ev-cancelled:#ECF0EC;--ev-cancelled-fg:#5C6A5C;
   --ev-done-swatch:#8C998C;--ev-cancelled-swatch:#AEB8AE;
+  --ev-proposed:#DCE6FB;--ev-proposed-fg:#1D4FBE;
+  --ev-rejected:#FBE3E1;--ev-rejected-fg:#B4291F;
   --now-line:#B4291F;
   --hh:56px; /* chiều cao một giờ trong chế độ tuần */
 }
@@ -43,23 +49,9 @@ fieldset{border:0;min-width:0}
 
 /* ===== Sidebar + Header ===== */
 .dash-shell{display:flex;min-height:100vh}
-.side-backdrop{display:none;position:fixed;inset:0;z-index:115;background:rgba(16,32,16,.4);backdrop-filter:blur(4px)}
-.side-nav{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);z-index:120;display:flex;flex-direction:column;padding:20px 16px 24px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px}
 .brand .brand-logo{width:38px;height:38px;object-fit:contain;flex-shrink:0}
-.side-logo{padding:6px 10px 20px}
-.side-role{margin:0 10px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
-.side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
-.side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px}
-.side-menu{display:flex;flex-direction:column;gap:4px}
-.side-link{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:500;color:var(--text-muted);transition:.18s var(--ease)}
-.side-link svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}
-.side-link.active{color:var(--text);background:rgba(34,139,34,.1);font-weight:600}
-.side-link.active svg{stroke:var(--accent)}
 .side-count{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--accent);background:rgba(34,139,34,.1);border:1px solid var(--border-strong);padding:2px 8px;border-radius:999px}
-.side-link-main{display:flex;align-items:center;gap:12px}
-.side-link.is-disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
 .badge-soon{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--warning-ink);background:rgba(245,177,76,.16);border:1px solid rgba(245,177,76,.35);padding:2px 8px;border-radius:999px}
 
 .dash-main{flex:1;min-width:0;margin-left:var(--sidebar-w)}
@@ -125,6 +117,8 @@ fieldset{border:0;min-width:0}
 .cf-confirmed{--sw:var(--ev-confirmed);--sw-fg:var(--ev-confirmed-fg)}
 .cf-completed{--sw:var(--ev-done-swatch);--sw-fg:var(--accent-fg)}
 .cf-cancelled{--sw:var(--ev-cancelled-swatch);--sw-fg:var(--accent-fg)}
+.cf-proposed{--sw:var(--ev-proposed-fg);--sw-fg:var(--accent-fg)}
+.cf-rejected{--sw:var(--ev-rejected-fg);--sw-fg:var(--accent-fg)}
 .cal-empty{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--text-muted)}
 .cal-empty[hidden]{display:none}
 
@@ -141,6 +135,13 @@ fieldset{border:0;min-width:0}
 .ev-completed{background:var(--ev-done);color:var(--ev-done-fg)}
 .ev-cancelled{background:var(--ev-cancelled);color:var(--ev-cancelled-fg)}
 .ev-cancelled .ev-title{text-decoration:line-through}
+.ev-proposed{background:var(--ev-proposed);color:var(--ev-proposed-fg);box-shadow:inset 0 0 0 1px rgba(29,79,190,.35)}
+.ev-rejected{background:var(--ev-rejected);color:var(--ev-rejected-fg)}
+.ev-rejected .ev-title{text-decoration:line-through}
+.cal-ev.is-new::after{content:'';flex-shrink:0;width:8px;height:8px;margin:3px 0 0 auto;border-radius:50%;background:var(--now-line);box-shadow:0 0 0 2px var(--surface)}
+.pop-alert{margin:10px 0 0;padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;line-height:1.5;background:rgba(29,79,190,.07);color:var(--text)}
+.pop-alert.is-danger{background:rgba(225,91,91,.09)}
+.pop-alert b{font-weight:700}
 
 /* ----- Chế độ tuần ----- */
 .wk-head{display:grid;grid-template-columns:56px repeat(7,minmax(0,1fr));border-bottom:1px solid var(--border)}
@@ -298,9 +299,6 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
 
 @media(max-width:960px){
   .menu-toggle{display:flex}
-  .side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);transition:transform .26s var(--ease)}
-  body.nav-open .side-nav{transform:none}
-  body.nav-open .side-backdrop{display:block;top:var(--header-h)}
   .dash-main{margin-left:0}
   .app-header{padding:0 20px}
   .dash-body{padding:24px 20px 48px}
@@ -366,25 +364,13 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
 </head>
 <body class="is-loading">
 <div class="dash-shell">
-  <div class="side-backdrop" id="sideBackdrop"></div>
-  <aside class="side-nav" id="sideNav">
-    <a href="../trang-chu.html" class="brand side-logo"><img class="brand-logo" src="../assets/logo-ancu.png" alt=""> An Cư</a>
-    <div class="side-role"><span>Khu vực</span><b>Người thuê</b></div>
-    <nav class="side-menu" aria-label="Điều hướng khu vực người thuê">
-      <a href="tim-phong.html" class="side-link"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Tìm phòng</a>
-      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>Khám phá bản đồ</a>
-      <a href="#" class="side-link"><svg viewBox="0 0 24 24"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>Phòng đã lưu</a>
-      <a href="dat-lich.html" class="side-link active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>Lịch xem phòng<span class="side-count" id="navCount">0</span></a>
-      <a href="thanh-toan.html" class="side-link"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Thanh toán</a>
-      <a href="ho-tro.html" class="side-link"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>Hỗ trợ &amp; báo cáo</a>
-    </nav>
-  </aside>
+  <an-cu-sidebar></an-cu-sidebar>
 
   <div class="dash-main">
     <header class="app-header">
       <button class="menu-toggle" id="menuBtn" aria-label="Mở menu" aria-expanded="false" aria-controls="sideNav"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <div class="header-actions">
-        <button class="icon-btn" id="notiBtn" type="button" aria-label="Thông báo"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+        <an-cu-bell></an-cu-bell>
         <button class="acc-btn" type="button"><span class="av">PT</span><span class="nm">Phạm Thu Trang</span></button>
       </div>
     </header>
@@ -420,6 +406,8 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
               <label class="cf cf-pending"><input type="checkbox" value="pending" checked />Chờ xác nhận <span class="cf-n" data-count="pending"></span></label>
               <label class="cf cf-confirmed"><input type="checkbox" value="confirmed" checked />Đã xác nhận <span class="cf-n" data-count="confirmed"></span></label>
               <label class="cf cf-completed"><input type="checkbox" value="completed" checked />Đã hoàn thành <span class="cf-n" data-count="completed"></span></label>
+              <label class="cf cf-proposed"><input type="checkbox" value="proposed" checked />Đề xuất giờ khác <span class="cf-n" data-count="proposed"></span></label>
+              <label class="cf cf-rejected"><input type="checkbox" value="rejected" checked />Đã từ chối <span class="cf-n" data-count="rejected"></span></label>
               <label class="cf cf-cancelled"><input type="checkbox" value="cancelled" checked />Đã hủy <span class="cf-n" data-count="cancelled"></span></label>
             </fieldset>
             <div class="cal-empty" id="calEmpty" hidden></div>
@@ -606,7 +594,7 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     return it.status === 'pending' && holdEnd(it).getTime() > NOW.getTime() && appointmentDueTime(it).getTime() > NOW.getTime();
   }
   // Lịch đã qua (đã xem xong, đã huỷ, hoặc đã hết buổi) chỉ còn là lịch sử: không đổi, không huỷ, chỉ ghi chú
-  function isPastAppt(a){ return a.status === 'completed' || a.status === 'cancelled' || appointmentEnd(a) <= NOW.getTime(); }
+  function isPastAppt(a){ return a.status === 'completed' || a.status === 'cancelled' || a.status === 'rejected' || appointmentEnd(a) <= NOW.getTime(); }
   function chongLan(t1, d1, t2, d2){ return toMin(t1) < toMin(t2) + d2 && toMin(t2) < toMin(t1) + d1; }
   // Ai đang giữ khung [time, time+30): 'me', 'other' hoặc null
   function chuKhung(taken, time){
@@ -666,12 +654,8 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
   }
   var MOCK_RENTER = nguoiHienTai();
 
-  var APT_STATUS = {
-    confirmed:{label:'Đã xác nhận',cls:'is-confirmed'},
-    pending:{label:'Chờ xác nhận',cls:'is-pending'},
-    completed:{label:'Đã hoàn thành',cls:'is-completed'},
-    cancelled:{label:'Đã hủy',cls:'is-cancelled'}
-  };
+  // Nhãn + màu trạng thái dùng chung với trang chủ trọ (components/an-cu-store.js)
+  var APT_STATUS = AnCu.STATUS;
 
   /* ================= Danh mục phòng ================= */
   // Nguồn sự thật: ROOMS trong tai-khoan/tim-phong.html, khớp trang-chu.html và PHONG trong server/phong.mjs.
@@ -769,6 +753,10 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
   // Kiểm tra và ghi trong cùng một lượt trên dữ liệu mới nhất, giống ràng buộc ở cơ sở dữ liệu
   function addAppt(rec){
     sweepExpired();
+    // Một người không giữ hai lịch còn hiệu lực cho cùng một phòng (cùng luật với máy chủ)
+    if(listAppts().some(function(a){ return a.roomId === rec.roomId && isActive(a); })){
+      return { ok:false, error:'Bạn đã có một lịch xem phòng này đang chờ hoặc đã xác nhận. Hãy đổi giờ lịch đó thay vì đặt thêm.' };
+    }
     var owner = slotOwner(rec.roomId, rec.date, rec.time, null);
     if(owner) return { ok:false, owner:owner };
     var obj = readStore() || MEM || seedOnce();
@@ -907,13 +895,14 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
   function savedView(){ try{ var v = localStorage.getItem(VIEW_KEY); return v === 'month' ? 'month' : 'week'; }catch(e){ return 'week'; } }
   var S = {
     view: savedView(), cursor: null, appts: [], loadError: null, lastFocus: null,
-    filters: { pending:true, confirmed:true, completed:true, cancelled:true },
+    filters: { pending:true, confirmed:true, proposed:true, rejected:true, completed:true, cancelled:true },
+    fresh: {},   // id lịch chủ trọ vừa cập nhật mà bạn chưa xem, đánh dấu chấm đỏ trong lần mở trang này
     scrollPending: true,
     editId: null, cancelId: null, saving: false,
     taken: [], takenState: 'idle', timeAuto: false, timeTouched: false,
     reqs: []
   };
-  function isUpcoming(a){ return !isPastAppt(a) && (a.status==='pending' || a.status==='confirmed'); }
+  function isUpcoming(a){ return !isPastAppt(a) && (a.status==='pending' || a.status==='confirmed' || a.status==='proposed'); }
   function visibleAppts(){ return S.appts.filter(function(a){ return S.filters[a.status]; }); }
   function byTime(a,b){ return a.date === b.date ? toMin(a.time) - toMin(b.time) : (a.date < b.date ? -1 : 1); }
 
@@ -958,6 +947,7 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     return APT_STATUS[a.status].label + ': ' + a.room + ', ' + fmtRange(a.time, a.dur) + ', ' + DAY_NAMES[parseYmd(a.date).getDay()] + ' ' + fmtDateNum(a.date) + (a.memo ? ', có ghi chú của bạn' : '');
   }
   function evAttrs(a, extraCls){
+    extraCls = (extraCls || '') + (S.fresh[a.id] ? ' is-new' : '');
     return 'type="button" class="cal-ev '+extraCls+' ev-'+a.status+'" data-id="'+a.id+'" data-status="'+a.status+'" data-room="'+esc(a.roomId)+'" aria-haspopup="dialog" aria-expanded="false" aria-label="'+esc(evLabel(a))+'"';
   }
   // Xếp các buổi chồng nhau trong một ngày thành cột cạnh nhau (như Google Calendar)
@@ -1101,10 +1091,9 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     box.hidden = false;
   }
   function renderCounts(){
-    var c = { pending:0, confirmed:0, completed:0, cancelled:0 };
+    var c = { pending:0, confirmed:0, proposed:0, rejected:0, completed:0, cancelled:0 };
     S.appts.forEach(function(a){ if(c[a.status] !== undefined) c[a.status]++; });
     document.querySelectorAll('[data-count]').forEach(function(el){ el.textContent = '(' + c[el.getAttribute('data-count')] + ')'; });
-    document.getElementById('navCount').textContent = c.pending + c.confirmed;
   }
 
   /* ================= Thông báo rỗng / lỗi ================= */
@@ -1137,7 +1126,11 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
   function renderAll(){
     return khoList().then(function(items){
       S.loadError = null;
+      var unseen = items.filter(function(a){ return a.unseen; });
+      unseen.forEach(function(a){ S.fresh[a.id] = true; });
       S.appts = items;
+      // Đã mở mục này là đã xem các cập nhật của chủ trọ: máy chủ xoá huy hiệu, sidebar tự cập nhật
+      if(unseen.length && API.on) apiCall('POST', '/api/lich-xem/da-xem', { nguoi:MOCK_RENTER.id }).then(function(){ AnCu.invalidate('lich-hen'); }, function(){});
     }).catch(function(err){
       S.loadError = err || {};
       S.appts = [];
@@ -1197,21 +1190,36 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     var past = isPastAppt(a);
     var info = '';
     if(past && a.status === 'completed') info = 'Lịch sử: bạn đã xem phòng này. Lịch đã qua nên không đổi hay huỷ được.';
+    else if(a.status === 'rejected') info = 'Chủ trọ đã từ chối lịch này. Bạn có thể đặt giờ khác hoặc tìm phòng khác.';
     else if(past && a.status === 'cancelled') info = (a.cancelReason === 'expired' ? 'Lịch tự huỷ vì chủ trọ chưa xác nhận kịp.' : (a.cancelReason === 'landlord' ? 'Chủ trọ đã huỷ lịch này.' : 'Bạn đã huỷ lịch này.')) + ' Lịch được giữ lại làm lịch sử.';
     else if(past) info = 'Buổi xem đã qua giờ hẹn. Lịch được giữ lại làm lịch sử.';
     else if(a.status === 'pending') info = 'Giữ chỗ đến ' + fmtHold(holdEnd(a)) + '. Quá hạn mà chủ trọ chưa xác nhận thì lịch tự huỷ.';
+    else if(a.status === 'proposed') info = 'Chủ trọ đề xuất giờ mới. Hãy đồng ý hoặc từ chối trước giờ hẹn, quá giờ lịch tự huỷ.';
     else if(a.status === 'confirmed') info = 'Chủ trọ đã đồng ý. Hãy đến đúng giờ.';
     else if(a.status === 'completed') info = 'Đã xem xong. Nếu ưng phòng, bạn có thể xác nhận thuê.';
     else info = a.cancelReason === 'expired' ? 'Tự huỷ vì chủ trọ chưa xác nhận trong ' + HOLD_HOURS + ' giờ.' : (a.cancelReason === 'landlord' ? 'Chủ trọ đã huỷ lịch này.' : 'Bạn đã huỷ lịch này.');
     document.getElementById('popInfo').textContent = info;
+    // Lý do từ chối / huỷ, và giờ cũ khi chủ trọ đề xuất giờ khác
+    var extra = '';
+    if(a.status === 'proposed' && a.prevDate) extra = '<p class="pop-alert"><b>Giờ mới:</b> ' + esc(a.time) + ' ngày ' + fmtDateNum(a.date) +
+      '<br><b>Giờ bạn chọn:</b> ' + esc(a.prevTime) + ' ngày ' + fmtDateNum(a.prevDate) + (a.rejectReason ? '<br>' + esc(a.rejectReason) : '') + '</p>';
+    else if((a.status === 'rejected' || (a.status === 'cancelled' && a.cancelReason === 'landlord')) && a.rejectReason) extra = '<p class="pop-alert is-danger"><b>Lý do:</b> ' + esc(a.rejectReason) + '</p>';
+    var infoEl = document.getElementById('popInfo');
+    var oldExtra = infoEl.parentNode.querySelector('.pop-alert'); if(oldExtra) oldExtra.parentNode.removeChild(oldExtra);
+    if(extra) infoEl.insertAdjacentHTML('afterend', extra);
     document.getElementById('popNoteRow').hidden = !a.note;
     document.getElementById('popNote').textContent = a.note ? 'Lời nhắn khi đặt: ' + a.note : '';
 
     var call = a.landlordPhone ? '<a class="btn btn-ghost" href="'+phoneHref(a.landlordPhone)+'">'+SVG_PHONE+'Liên hệ chủ trọ</a>' : '';
     var html;
-    if(isUpcoming(a)){
+    if(isUpcoming(a) && a.status === 'proposed'){
+      html = '<button type="button" class="btn btn-primary" data-act="accept">Đồng ý giờ mới</button>'+
+             '<button type="button" class="btn btn-danger-ghost" data-act="decline">Từ chối</button>' + call;
+    } else if(isUpcoming(a)){
       html = '<button type="button" class="btn btn-ghost" data-act="reschedule">Đổi lịch</button>'+
              '<button type="button" class="btn btn-danger-ghost" data-act="cancel">Huỷ lịch</button>' + call;
+    } else if(a.status === 'rejected'){
+      html = '<button type="button" class="btn btn-primary" data-act="rebook">Đặt giờ khác</button>' + call;
     } else {
       html = (a.status === 'completed' ? rentBoxHtml(a) : '') + '<form class="memo" id="memoForm">'+
         '<label class="memo-lbl" for="memoText">Ghi chú của bạn <span>(chỉ mình bạn thấy)</span></label>'+
@@ -1360,7 +1368,20 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     var act = btn.getAttribute('data-act');
     if(act === 'reschedule') openRescheduleModal(id);
     else if(act === 'cancel') openCancelModal(id);
+    else if(act === 'rebook') openCreateModal({ roomId:a.roomId });
+    else if(act === 'accept' || act === 'decline') respondProposal(a, act);
   });
+
+  // Đồng ý / từ chối giờ chủ trọ đề xuất
+  function respondProposal(a, act){
+    if(!API.on){ showToast('Cần máy chủ', 'Đề xuất giờ khác chỉ có khi chạy máy chủ (npm start).'); return; }
+    apiCall('PATCH', '/api/lich-xem/' + a.id, { nguoi:MOCK_RENTER.id, action:act }).then(function(j){
+      if(j.httpStatus !== 200){ AnCu.toast('Chưa cập nhật được', j.message || 'Hãy thử lại.', 'error'); return; }
+      AnCu.toast(act === 'accept' ? 'Đã đồng ý giờ mới' : 'Đã từ chối giờ đề xuất',
+        act === 'accept' ? 'Lịch xem ' + a.room + ' lúc ' + j.item.time + ' ngày ' + fmtDateNum(j.item.date) + ' đã được xác nhận.' : 'Chủ trọ sẽ nhận được thông báo.', 'ok');
+      AnCu.invalidate(['lich-hen', 'thanh-toan']);
+    }, function(){ AnCu.toast('Mất kết nối', 'Không gửi được tới máy chủ. Hãy thử lại.', 'error'); });
+  }
 
   function saveMemo(id, text){
     var btn = document.getElementById('memoSave'), state = document.getElementById('memoState');
@@ -1499,7 +1520,7 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
   function checkDecisions(){
     if(!decideOv.hidden || document.querySelector('.modal-overlay.open') || !document.getElementById('bookedOverlay').hidden) return;
     // Báo 'không duyệt' trước: báo 'đã duyệt' sẽ tự chuyển trang nên phải để sau cùng
-    var r = S.reqs.filter(function(x){ return (x.status === 'approved' || x.status === 'rejected') && !x.seenAt; })
+    var r = S.reqs.filter(function(x){ return (x.status === 'approved' || x.status === 'rejected') && !x.seenAt && !SEEN_LOCAL[x.id]; })
       .sort(function(x, y){ return (x.status === 'rejected' ? 0 : 1) - (y.status === 'rejected' ? 0 : 1); })[0];
     if(r) showDecision(r);
   }
@@ -1543,7 +1564,11 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     if(!document.querySelector('.modal-overlay.open')) document.body.classList.remove('modal-open');
     if(DEC.ret && document.body.contains(DEC.ret) && DEC.ret.focus) DEC.ret.focus();
   }
+  // Đã báo trên trang này: nhớ lại để lần tải danh sách kế tiếp (có thể đã gửi đi trước khi máy chủ ghi
+  // nhận 'đã xem') không bật lại đúng hộp báo đó
+  var SEEN_LOCAL = {};
   function markSeen(r){
+    SEEN_LOCAL[r.id] = true;
     r.seenAt = isoNow();
     return khoReqSeen(r.id).catch(function(){});
   }
@@ -2025,17 +2050,6 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
     });
   });
 
-  /* ================= Sidebar di động ================= */
-  var menuBtn = document.getElementById('menuBtn');
-  var sideBackdrop = document.getElementById('sideBackdrop');
-  function closeNav(){ document.body.classList.remove('nav-open'); menuBtn.setAttribute('aria-expanded','false'); }
-  function openNav(){ document.body.classList.add('nav-open'); menuBtn.setAttribute('aria-expanded','true'); }
-  menuBtn.addEventListener('click', function(){
-    if(document.body.classList.contains('nav-open')) closeNav(); else openNav();
-  });
-  sideBackdrop.addEventListener('click', closeNav);
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('nav-open')) closeNav(); });
-  document.getElementById('notiBtn').addEventListener('click', function(){ showToast('Thông báo','Bạn chưa có thông báo mới.'); });
 
   /* ================= Reveal khi cuộn ================= */
   function initReveal(){
@@ -2071,10 +2085,33 @@ textarea.field{height:auto;min-height:76px;padding:12px 14px;resize:vertical;lin
       return renderAll();
     }).then(function(){
       initReveal();
+      openDeepLink();
       if(wasCorrupt) showToast('Dữ liệu lịch bị lỗi','Đã khôi phục lịch xem mẫu.');
     });
   }
   boot();
+
+  // Liên kết sâu: dat-lich.html?lich=12 (từ thông báo) mở đúng lịch; ?phong=p03 mở form đặt lịch phòng đó
+  var DEEP_DONE = false;
+  function openDeepLink(){
+    if(DEEP_DONE) return;
+    var q = new URLSearchParams(location.search), lich = Number(q.get('lich')), phong = q.get('phong');
+    if(lich){
+      var a = findAppt(lich);
+      if(!a) return;
+      DEEP_DONE = true;
+      S.filters[a.status] = true;
+      var cb = document.querySelector('#calFilters input[value="' + a.status + '"]'); if(cb) cb.checked = true;
+      goToDate(a.date, 'week');
+      setTimeout(function(){ var ev = calView.querySelector('.cal-ev[data-id="' + lich + '"]'); if(ev){ ev.scrollIntoView({ block:'center' }); openPop(lich, ev); } }, 120);
+    } else if(phong){
+      DEEP_DONE = true;
+      openCreateModal({ roomId:phong });
+    }
+  }
+  // Nguồn dữ liệu chung: chủ trọ xác nhận / từ chối / đề xuất (SSE) hoặc tab khác đặt lịch → tải lại ngay
+  AnCu.on('lich-hen', function(){ renderAll().then(openDeepLink); });
+  AnCu.on('yeu-cau-thue', function(){ refreshReqs(); });
 
   setInterval(tick, 15000);
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') tick(); });

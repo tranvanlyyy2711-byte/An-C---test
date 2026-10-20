@@ -102,7 +102,7 @@ export function createSuCo(db, ApiError, now) {
     repliesOf: db.prepare('SELECT * FROM incident_replies WHERE ticket_id = ? ORDER BY created_at, id'),
     insertReply: db.prepare('INSERT INTO incident_replies (ticket_id, from_role, body, created_at) VALUES (?, ?, ?, ?)'),
     userById: db.prepare('SELECT id, role, full_name, phone FROM users WHERE id = ?'),
-    activeRoomOf: db.prepare("SELECT room_id FROM rental_requests WHERE renter_id = ? AND status = 'approved' ORDER BY decided_at DESC LIMIT 1"),
+    activeRoomOf: db.prepare("SELECT room_id FROM rental_requests WHERE renter_id = ? AND status = 'approved' AND pay_status = 'paid' ORDER BY decided_at DESC LIMIT 1"),
     insertNoti: db.prepare(`INSERT INTO notifications (user_id, type, title, body, channel, batch_id, ref, created_at, read_at)
                             VALUES (?, 'su-co', ?, ?, 'in-app', NULL, ?, ?, NULL)`),
   };
