@@ -15,6 +15,7 @@
  *   AnCuAuth.dangNhap({ dinhDanh, matKhau }) → đăng nhập, trả { user } hoặc { error, message, field }
  *   AnCuAuth.toi()                       → Promise<user|null>, tự làm mới phiên khi hết hạn
  *   AnCuAuth.dangXuat()                  → Promise, xoá phiên ở máy và huỷ token trên Supabase
+ *   AnCuAuth.token()                     → Promise<access_token|null> để gọi API máy chủ của mình
  *
  * user = { id, email, name, phone, role } — role lấy từ bảng profiles (xem
  * supabase/migrations/0001_profiles.sql), KHÔNG lấy từ dữ liệu người dùng tự khai.
@@ -204,6 +205,12 @@
   var AnCuAuth = {
     coCauHinh: coCauHinh,
     dungDuoc: dungDuoc,
+
+    // Token còn hạn để gọi API của chính mình (vd /api/payment/*). Hết hạn thì tự làm mới.
+    token: function(){
+      if(!dungDuoc()) return Promise.resolve(null);
+      return phienConHan().then(function(p){ return p ? p.access_token : null; }).catch(function(){ return null; });
+    },
 
     toi: function(){
       if(!coCauHinh()) return Promise.resolve(null);

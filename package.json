@@ -16,7 +16,9 @@
     "test:tin-dang": "node scripts/check-tin-dang.mjs",
     "test:su-co": "node scripts/check-su-co.mjs",
     "test:lien-thong": "node scripts/check-lien-thong.mjs",
-    "test:xem-thu-lich": "node scripts/check-xem-thu-lich.mjs"
+    "test:xem-thu-lich": "node scripts/check-xem-thu-lich.mjs",
+    "test:thanh-toan": "node scripts/check-thanh-toan.mjs",
+    "test:co-lap": "node scripts/check-co-lap.mjs"
   },
   "keywords": [],
   "author": "",

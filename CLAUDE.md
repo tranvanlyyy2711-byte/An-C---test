@@ -173,6 +173,8 @@ npm run test:quan-tri  # kiểm thử khu quản trị: tài khoản, gói dịc
 npm run test:goi       # gói đang dùng hiện đúng ở trang quản lý của chủ trọ
 npm run test:tinh      # bản tĩnh (như trên Vercel): mọi trang mở được, không lỗi JS
 npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và bản tĩnh
+npm run test:thanh-toan # mua gói bằng VietQR qua payOS (dựng payOS giả, không đụng payOS thật)
+npm run test:co-lap    # cô lập dữ liệu + thêm phòng: chủ trọ mới thấy trang trống, An Bình còn nguyên
 npm run test:lien-thong # hai phía người thuê ↔ chủ trọ: lưu phòng, lịch hẹn, thông báo, thuê phòng (trình duyệt thật)
 node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```
@@ -332,6 +334,83 @@ ba chế độ** (máy chủ prototype, Supabase, xem thử) — giao diện kh�
 - **Mới chỉ tài khoản là thật.** Phòng, lịch xem, hợp đồng, hoá đơn… trên bản tĩnh vẫn là dữ liệu mẫu dùng
   chung; trang quản lý của chủ trọ có dải báo rõ điều đó. Đưa nốt dữ liệu lên Supabase là đợt làm riêng.
 
+**Thanh toán gói dịch vụ bằng VietQR (payOS).** Chủ trọ bấm "Mua gói Plus" ở bảng giá hoặc ở dải
+"Chưa kích hoạt gói" trong trang quản lý → hiện ngay hộp mã VietQR, không rời trang; tiền về là gói tự bật.
+Chưa có tài khoản thì bấm nút đó mở luôn form đăng ký chủ trọ, đăng ký xong **ở lại trang** và hiện mã QR.
+
+- **CHẾ ĐỘ MÔ PHỎNG — đang là đường chạy mặc định của bản demo.** Chưa khai đủ ba khoá payOS thì mọi bước
+  vẫn chạy như thật: vẫn tạo đơn trong CSDL, vẫn hiện hộp mã QR (hoa văn dựng từ mã đơn + tên người mua,
+  **ghi rõ "MÃ QR MÔ PHỎNG — không quét được tiền thật"**, kèm tên gói và tên người mua), đếm ngược rồi tự
+  coi như đã nhận tiền sau `AN_CU_MO_PHONG_GIAY` giây (mặc định **20**) → **kích hoạt gói thật trong CSDL**
+  (kỳ đầu ghi nhận đã thu luôn, vì tiền vừa nhận chính là kỳ đó)
+  → tự chuyển sang `quan-ly/tong-quan.html`. Đơn ghi `mode = 'mo-phong'` để phân biệt với tiền thật. Khai
+  đủ `PAYOS_CLIENT_ID` + `PAYOS_API_KEY` + `PAYOS_CHECKSUM_KEY` là tự chuyển sang lối thật, không phải sửa
+  code. Việc tự xác nhận nằm ở MÁY CHỦ (`trangThai` trong `server/thanh-toan.mjs`, `api/payment/order.mjs`),
+  không phải ở trình duyệt — bấm F12 sửa biến không bật được gói. **Chưa thanh toán thì chưa coi là đăng ký
+  xong**: hộp QR không cho đi tiếp, lời văn cũng nói đúng như vậy ("Còn một bước cuối: thanh toán gói để
+  hoàn tất đăng ký").
+- **Chủ trọ mới thì MỌI trang quản lý đều TRỐNG — cô lập dữ liệu (multi-tenancy).**
+  `components/chu-tro-pham-vi.js` (`ChuTroPhamVi`) trả lời đúng một câu: *tài khoản này có phải chủ của bộ
+  dữ liệu mẫu không?* — chỉ `l-binh` (Trần Hoà), `l-mai` (Lê Thu Mai) và chế độ xem thử mới giữ dữ liệu mẫu;
+  mọi tài khoản chủ trọ khác, kể cả tài khoản Supabase, đều được dọn sạch.
+  **Đừng lấy "chưa có phòng nào" làm điều kiện** — đã sai một lần: chủ trọ mới vừa thêm một phòng là dữ
+  liệu mẫu của An Bình quay lại. Chủ của dữ liệu mẫu mới là thứ quyết định.
+  Trang nào cũng nạp file này (trước `an-cu-store.js`). Nó tự dọn phần chung: tên nhà trọ và số phòng ở
+  thanh tiêu đề, huy hiệu đếm việc, chấm thông báo, hộp chọn khu trọ (`data-du-lieu-mau`), và **vẽ tên người
+  đang đăng nhập** thay cho "Trần Hoà / TH" gõ cứng (phần tên chạy cho mọi chủ trọ, không riêng tài khoản mới).
+  Phần riêng của từng trang gọi `ChuTroPhamVi.khiMoi(fn)`: tong-quan, phong-dien-nuoc, nguoi-thue,
+  hop-dong-dien-tu, hoa-don, thanh-toan, bao-cao — mỗi trang đưa số liệu về 0 và thay bảng bằng
+  `ChuTroPhamVi.oTrong(...)` kèm nút "Thêm phòng". Khung giao diện và cột công cụ giữ nguyên.
+  **Huy hiệu đếm thì ẩn chứ không xoá** — vài trang vẫn ghi số vào đúng ô đó, xoá đi là trang vỡ.
+  Chống nháy: khối có `data-pham-vi` bị ẩn trong lúc chờ trả lời, không ai kịp thấy dữ liệu của người khác.
+- **Máy chủ đã lọc sẵn:** `landlordId()` trong `server/index.mjs` lấy id từ phiên đăng nhập và **bỏ qua
+  `?chu=`**, nên mọi `/api/chu-tro/*` chỉ trả dữ liệu của chính chủ trọ đang đăng nhập. `?chu=` chỉ còn
+  tác dụng khi CHƯA đăng nhập (chế độ demo). `npm run test:co-lap` kiểm cả ba mặt: trang của tài khoản mới
+  phải trống, dữ liệu Nhà trọ An Bình phải còn nguyên, và mạo danh `?chu=l-binh` khi đã đăng nhập không lọt.
+
+- **Khoá bí mật chỉ ở máy chủ.** `PAYOS_CLIENT_ID` / `PAYOS_API_KEY` / `PAYOS_CHECKSUM_KEY` nằm trong
+  `.env.local` (máy chủ prototype) hoặc Environment Variables của Vercel. Trình duyệt **chỉ** gọi
+  `/api/payment/*` của chính mình, không bao giờ gọi payOS trực tiếp. `npm run test:thanh-toan` có một mục
+  quét toàn bộ file client để chắc chắn không khoá nào lọt ra.
+- **Một lõi, hai nơi chạy.** `api/_lib/payos.mjs` giữ toàn bộ phần ký và gọi payOS (không thêm dependency —
+  `@payos/node` chỉ bọc lại đúng mấy lời gọi này). Chữ ký lấy đúng theo SDK chính thức:
+  đơn hàng ký `amount&cancelUrl&description&orderCode&returnUrl`; khối `data` (webhook và câu trả lời) sắp
+  khoá tăng dần rồi `key=value&…`, đều HMAC-SHA256 bằng checksum key.
+  - localhost: `server/thanh-toan.mjs` + bảng `plan_orders` trong SQLite, kích hoạt gói qua `createPlan`.
+  - Vercel: `api/payment/create-plus-order.mjs`, `webhook.mjs`, `order.mjs`, `health.mjs` — Serverless
+    Function, lưu đơn ở Supabase (`supabase/migrations/0002_thanh_toan_payos.sql`) và bật gói bằng
+    `service_role` key. `vercel.json` khai `functions` cho `api/payment/*.mjs` để Vercel chạy chúng như hàm
+    chứ không phục vụ như file tĩnh — deploy xong mở `/api/payment/health` kiểm lại (trả JSON là đúng).
+- **Webhook là nguồn sự thật**, `POST /api/payment/webhook`: không cookie, không đăng nhập — thứ xác thực
+  duy nhất là chữ ký HMAC. Sai chữ ký → 400, không ghi gì. payOS gửi lại nhiều lần nên mọi bước ghi phải
+  chịu được gọi lại: đơn đã `paid` thì thôi, không kích hoạt gói lần hai. Tiền ít hơn số phải trả cũng
+  không bật gói. Webhook thử lúc đăng ký URL (mã đơn không có thật) vẫn trả 200.
+- **Đường phụ:** `GET /api/payment/order?ma=<mã>` hỏi thẳng payOS khi webhook chưa về — cần thiết vì chạy
+  localhost thì payOS không gọi ngược vào máy được. Hộp QR tự hỏi mỗi 4 giây, tab ẩn thì ngưng.
+- **RLS:** `plan_orders` chỉ cho người dùng ĐỌC đơn của chính mình; không có policy ghi nào cho client,
+  mọi thao tác ghi đi qua service_role ở Serverless Function. Nếu không, ai cũng tự bật gói Plus cho mình.
+- Giá lấy ở `PLANS` (`server/quan-tri.mjs`) và lặp lại trong `api/payment/create-plus-order.mjs` — sửa giá
+  thì sửa cả hai chỗ cộng bảng giá `#bang-gia`. Kỳ đầu thu tiền một tháng, các kỳ sau vẫn theo lịch cũ.
+- Mã QR vẽ bằng ảnh VietQR dựng từ `bin` + số tài khoản payOS trả về; ảnh hỏng thì hộp vẫn hiện đủ thông
+  tin chuyển khoản tay và nút mở trang thanh toán của payOS.
+
+**Thêm phòng (chủ trọ tự tạo dữ liệu của mình).** Nút "+ Thêm phòng" ở `quan-ly/phong-dien-nuoc.html` mở
+hộp thoại nhập mã phòng (bắt buộc), tầng, giá thuê (bắt buộc), tiền cọc, chỉ số điện/nước đầu kỳ, trạng
+thái (mặc định "Còn trống"). Lưu xong: đóng hộp thoại, nạp lại danh sách, ô số liệu +1, toast
+"Thêm phòng P.XXX thành công!".
+
+- `components/phong-cua-toi.js` (`PhongCuaToi`) là cửa duy nhất, hai nơi lưu phía sau:
+  máy chủ prototype → `POST/GET/DELETE /api/chu-tro/phong`, bảng `landlord_rooms`
+  (`server/phong-chu-tro.mjs`); bản deploy → ghi thẳng bảng `rooms` của Supabase bằng token người dùng
+  (`supabase/migrations/0003_rooms.sql`). Không có cả hai (xem thử) thì **báo rõ là không lưu được**,
+  không giả vờ thành công.
+- **Chủ của phòng không bao giờ do trình duyệt khai:** máy chủ lấy `landlord_id` từ phiên đăng nhập;
+  Supabase lấy `auth.uid()` làm mặc định cho cột `landlord_id` và RLS chặn ghi hộ người khác.
+- Mã phòng duy nhất **trong phạm vi một chủ trọ** (`one_code_per_landlord`), hai chủ trọ khác nhau vẫn
+  được cùng đặt `P.501`. Trùng mã thì báo ngay dưới ô nhập.
+- `GET /api/chu-tro/phong` trả số liệu gộp: phòng mẫu (nếu là chủ trọ demo) + phòng tự thêm, nên trang
+  Tổng quan và khu quản trị vẫn đếm chung một nguồn.
+
 **Đăng nhập ở chế độ xem thử** — `components/phien-xem-thu.js` (`window.PhienXemThu`). Không có máy chủ
 thì hộp đăng nhập ở `trang-chu.html` nhận đúng bộ tài khoản demo (mật khẩu `matkhau123`) và lưu phiên
 trong `localStorage` khoá `an-cu-phien-xem-thu`; đăng nhập xong ghi luôn `an-cu-nguoi-thue` /
@@ -377,4 +456,9 @@ Có `.env.example` phản ánh đúng danh sách này (không kèm giá trị th
 
 ## Ngoài phạm vi v1 (chưa làm)
 
-Thanh toán trực tuyến, app mobile, đa ngôn ngữ, đánh giá/xếp hạng chủ trọ, xác minh giấy tờ, gợi ý bằng AI. Không thêm khung cho các mục này khi chưa được yêu cầu.
+App mobile, đa ngôn ngữ, đánh giá/xếp hạng chủ trọ, xác minh giấy tờ, gợi ý bằng AI. Không thêm khung cho
+các mục này khi chưa được yêu cầu.
+
+Thanh toán trực tuyến **đã làm** cho một việc duy nhất: mua gói dịch vụ bằng VietQR qua payOS (xem mục
+"Thanh toán gói dịch vụ"). Tiền thuê phòng, điện nước, tiền cọc khi xem phòng **vẫn ngoài phạm vi** —
+chủ trọ tự thu, hệ thống chỉ ghi nhận.

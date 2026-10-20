@@ -254,6 +254,10 @@
   .ht-cu .tl{margin-top:6px;padding:8px 10px;border-radius:var(--radius-sm);background:rgba(34,139,34,.07);font-size:12.5px}
 
   /* Dải gói dịch vụ đang dùng */
+  .trong-rong{padding:30px 16px;text-align:center;color:var(--text-muted)}
+  .trong-rong b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:var(--text);margin-bottom:6px}
+  .trong-rong p{font-size:13.5px;max-width:44ch;margin:0 auto;line-height:1.6}
+  .trong-rong .btn{margin-top:14px}
   .xem-thu-dai{
     margin-bottom:18px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);
     background:var(--surface-2);color:var(--text-muted);font-size:13.5px;line-height:1.6
@@ -437,6 +441,8 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/chu-tro-pham-vi.js"></script>
+<script src="../components/mua-goi.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -547,7 +553,7 @@
           <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </button>
 
-        <div class="pop left" id="propPop" role="menu" aria-labelledby="propBtn">
+        <div class="pop left" id="propPop" data-du-lieu-mau role="menu" aria-labelledby="propBtn">
           <p class="pop-title">Chọn khu trọ</p>
           <button type="button" class="pop-item on" role="menuitem" data-prop="Nhà trọ An Bình" data-addr="Cầu Giấy, Hà Nội · 24 phòng">
             <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
@@ -824,17 +830,66 @@
     if (bar) requestAnimationFrame(function(){ bar.style.width = occ.toFixed(1) + '%'; });
   }
 
-  fetch('/api/chu-tro/phong', { cache: 'no-store', credentials: 'same-origin' })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .catch(function(){ return null; })
-    .then(function(j){
-      if (!j || !j.rooms) return;
-      veSoPhong(j.rooms, j.rented);
-      var sub = document.getElementById('roomsSub');
-      if (sub) sub.textContent = nf.format(j.rooms) + ' phòng · ' + nf.format(j.rented) + ' đang thuê · ' + nf.format(j.vacant) + ' trống';
+  // ---------- Tài khoản mới: chỉ có thanh công cụ, không số liệu ----------
+  // Chủ trọ vừa đăng ký thì chưa có nhà trọ, phòng, hợp đồng hay hoá đơn nào. Thà để trạng thái rỗng
+  // còn hơn hiện số liệu mẫu của chủ trọ demo — người dùng sẽ tưởng đó là dữ liệu của mình.
+  function veTaiKhoanMoi(){
+    document.body.classList.add('tai-khoan-moi');
+    var dat = function(id, v){ var o = document.getElementById(id); if (o) o.textContent = v; };
+    dat('periodLine', 'Chưa có dữ liệu vận hành');
+    dat('sTotal', '0');      dat('sTotalSub', 'Chưa có phòng nào');
+    dat('sOcc', '—');        dat('sOccSub', 'Chưa có dữ liệu');
+    dat('sRev', '—');        dat('sRevSub', 'Chưa có doanh thu');
+    dat('sDue', '—');        dat('sDueSub', 'Chưa có hoá đơn');
+    var bar = document.getElementById('sOccBar');
+    if (bar) bar.style.width = '0%';
+    dat('roomsSub', 'Chưa có phòng nào');
+    dat('propName', 'Chưa có nhà trọ');
+
+    var rows = document.getElementById('roomRows');
+    if (rows) rows.innerHTML = '<tr><td colspan="5">' +
+      '<div class="trong-rong"><b>Chưa có phòng nào</b>' +
+      '<p>Thêm nhà trọ và phòng đầu tiên để bắt đầu quản lý. Số liệu ở trang này sẽ hiện ngay khi có dữ liệu.</p>' +
+      '<a class="btn btn-primary btn-sm" href="phong-dien-nuoc.html">Thêm nhà trọ đầu tiên</a></div></td></tr>';
+
+    var tasks = document.getElementById('taskList');
+    if (tasks) tasks.innerHTML = '<div class="trong-rong"><b>Chưa có việc nào cần xử lý</b>' +
+      '<p>Khi có yêu cầu thuê, lịch xem phòng hay hoá đơn tới hạn, chúng sẽ hiện ở đây.</p></div>';
+
+    // Huy hiệu đếm việc và chấm thông báo của dữ liệu mẫu: tài khoản mới thì không có gì để đếm
+    document.querySelectorAll('.side-nav .side-count').forEach(function(o){
+      o.textContent = '0'; o.style.display = 'none';
     });
+    var dot = document.getElementById('notiCount');
+    if (dot) dot.remove();
+    var noti = document.getElementById('notiBtn');
+    if (noti) noti.setAttribute('aria-label', 'Thông báo, không có mục chưa đọc');
+    dat('propAddr', 'Chưa có phòng nào');
+    var pop = document.getElementById('propPop');
+    if (pop) pop.innerHTML = '<p class="pop-title">Nhà trọ của bạn</p>' +
+      '<div class="trong-rong" style="padding:16px 12px"><p>Chưa có nhà trọ nào.</p></div>';
+  }
+
+  // Ai đang đăng nhập quyết định trang này hiện gì:
+  //   - máy chủ prototype: hỏi /api/chu-tro/phong, không có phòng nào thì để trống
+  //   - Supabase (bản đã deploy): tài khoản thật mới đăng ký, chắc chắn chưa có dữ liệu → để trống
+  //   - xem thử: giữ dữ liệu mẫu của chủ trọ demo
+  window.AnCuNguoiDung.hienTai().then(function(me){
+    if (me && me.nguon === 'supabase') return veTaiKhoanMoi();
+    return fetch('/api/chu-tro/phong', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        if (!j) return;
+        if (!j.rooms) return veTaiKhoanMoi();
+        veSoPhong(j.rooms, j.rented);
+        var sub = document.getElementById('roomsSub');
+        if (sub) sub.textContent = nf.format(j.rooms) + ' phòng · ' + nf.format(j.rented) + ' đang thuê · ' + nf.format(j.vacant) + ' trống';
+      });
+  });
 
   (function(){
+    if (document.body.classList.contains('tai-khoan-moi')) return;
     var vacant = DATA.totalRooms - DATA.rentedRooms;
     var occ = DATA.totalRooms ? (DATA.rentedRooms / DATA.totalRooms) * 100 : 0;
 
@@ -855,6 +910,7 @@
 
   // ---------- Vẽ danh sách phòng ----------
   (function(){
+    if (document.body.classList.contains('tai-khoan-moi')) return;
     var tbody = document.getElementById('roomRows');
     tbody.innerHTML = DATA.rooms.map(function(r){
       var st = STATUS[r.status];
@@ -879,6 +935,7 @@
 
   // ---------- Vẽ việc cần xử lý ----------
   (function(){
+    if (document.body.classList.contains('tai-khoan-moi')) return;
     var box = document.getElementById('taskList');
     box.innerHTML = DATA.tasks.map(function(t){
       var tone = t.tone ? ' is-' + t.tone : '';
@@ -1135,7 +1192,12 @@
       bar.innerHTML = '<div><p class="ten">Chưa kích hoạt gói dịch vụ</p>' +
         '<p class="mo">Cần mua gói Plus (' + gia + '/tháng, 15 phòng) hoặc Pro để đăng tin và quản lý phòng.</p></div>' +
         '<div class="phai"><span class="chip wait">Chưa mua gói</span>' +
-        '<a class="btn btn-primary btn-sm" href="../trang-chu.html#bang-gia">Xem bảng giá</a></div>';
+        '<button type="button" class="btn btn-primary btn-sm" id="muaGoiPlus">Mua gói Plus</button>' +
+        '<a class="btn btn-ghost btn-sm" href="../trang-chu.html#bang-gia">Xem bảng giá</a></div>';
+      var nutMua = bar.querySelector('#muaGoiPlus');
+      if (nutMua) nutMua.addEventListener('click', function(){
+        if (window.MuaGoi) window.MuaGoi.mo({ plan: 'plus' });
+      });
       bar.hidden = false;
     }
 

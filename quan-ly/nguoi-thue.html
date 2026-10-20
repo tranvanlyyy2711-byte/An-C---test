@@ -523,6 +523,7 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/chu-tro-pham-vi.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -608,7 +609,7 @@
           <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </button>
 
-        <div class="pop left" id="propPop" role="menu" aria-labelledby="propBtn">
+        <div class="pop left" id="propPop" data-du-lieu-mau role="menu" aria-labelledby="propBtn">
           <p class="pop-title">Chọn khu trọ</p>
           <button type="button" class="pop-item on" role="menuitem" data-prop="Nhà trọ An Bình" data-addr="Cầu Giấy, Hà Nội · 24 phòng">
             <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
@@ -706,7 +707,7 @@
         </div>
 
         <!-- 4 ô số liệu -->
-        <section class="stat-grid" data-stagger aria-label="Số liệu người thuê và hợp đồng">
+        <section class="stat-grid" data-pham-vi data-stagger aria-label="Số liệu người thuê và hợp đồng">
           <article class="stat reveal">
             <div class="top">
               <span class="lbl">Tổng số phòng</span>
@@ -788,7 +789,7 @@
             </div>
             <div class="field">
               <label class="sr-only" for="bdFilter">Toà nhà</label>
-              <select id="bdFilter">
+              <select id="bdFilter" data-du-lieu-mau>
                 <option value="">Toà nhà: tất cả</option>
                 <option value="Nhà trọ An Bình">Nhà trọ An Bình</option>
                 <option value="Nhà trọ Thanh Xuân 2">Nhà trọ Thanh Xuân 2</option>
@@ -1076,6 +1077,28 @@
     }
 
     function resetPage(){ shown = PAGE_SIZE; render(); }
+
+    // Cô lập dữ liệu: danh sách người thuê mẫu là của Nhà trọ An Bình (chủ trọ demo).
+    // Tài khoản chủ trọ chưa có phòng nào thì không thể có người thuê nào.
+    if (window.ChuTroPhamVi) ChuTroPhamVi.khiMoi(function(){
+      TENANTS.length = 0;
+      resetPage();
+      resultTx.textContent = 'Chưa có người thuê nào';
+      emptyBox.innerHTML = ChuTroPhamVi.oTrong('Chưa có người thuê nào',
+        'Người thuê sẽ hiện ở đây sau khi bạn thêm phòng và duyệt yêu cầu thuê đầu tiên.',
+        { href: 'phong-dien-nuoc.html', chu: 'Thêm phòng' });
+      emptyBox.hidden = false;
+      table.hidden = true;
+      moreWrap.hidden = true;
+      var dat = function(id, v){ var o = document.getElementById(id); if (o) o.textContent = v; };
+      dat('sTotal', '0');  dat('sTotalSub', 'Chưa có phòng nào');
+      dat('sOcc', '—');    dat('sOccSub', 'Chưa có dữ liệu');
+      dat('sRev', '—');    dat('sRevSub', 'Chưa có doanh thu');
+      dat('sDue', '—');    dat('sDueSub', 'Chưa có hoá đơn');
+      var bar = document.getElementById('sOccBar');
+      if (bar) bar.style.width = '0%';
+      document.querySelectorAll('.side-nav .side-count').forEach(function(o){ o.remove(); });
+    });
 
     qInput.addEventListener('input', resetPage);
     stFilter.addEventListener('change', resetPage);

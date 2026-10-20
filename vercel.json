@@ -4,5 +4,10 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "cleanUrls": false,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "functions": {
+    "api/payment/*.mjs": {
+      "maxDuration": 15
+    }
+  }
 }

@@ -1,4 +1,5 @@
 # Không cần đẩy lên bản tĩnh trên Vercel
+# (thư mục api/ thì PHẢI giữ: đó là Serverless Function xử lý thanh toán payOS)
 node_modules
 server
 scripts

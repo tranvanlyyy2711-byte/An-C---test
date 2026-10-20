@@ -408,6 +408,7 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/chu-tro-pham-vi.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -493,7 +494,7 @@
           <svg class="caret" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </button>
 
-        <div class="pop left" id="propPop" role="menu" aria-labelledby="propBtn">
+        <div class="pop left" id="propPop" data-du-lieu-mau role="menu" aria-labelledby="propBtn">
           <p class="pop-title">Chọn khu trọ</p>
           <button type="button" class="pop-item on" role="menuitem" data-prop="Nhà trọ An Bình" data-addr="Cầu Giấy, Hà Nội · 24 phòng">
             <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
@@ -757,6 +758,25 @@
     document.getElementById('cEnded').textContent    = nf.format(SUMMARY.ended);
     document.getElementById('navPending').textContent = nf.format(SUMMARY.pending);
   })();
+
+  // Cô lập dữ liệu: tài khoản chủ trọ mới chưa có hợp đồng nào
+  if (window.ChuTroPhamVi) ChuTroPhamVi.khiMoi(function(){
+    SUMMARY.active = SUMMARY.pending = SUMMARY.expiring = SUMMARY.ended = 0;
+    CONTRACTS.length = 0;
+    ['cActive', 'cPending', 'cExpiring', 'cEnded', 'navPending'].forEach(function(id){
+      var o = document.getElementById(id);
+      if (o) o.textContent = '0';
+    });
+    var body = document.getElementById('contractRows');
+    if (body) body.innerHTML = '';
+    var empty = document.getElementById('emptyState');
+    if (empty) {
+      empty.innerHTML = ChuTroPhamVi.oTrong('Chưa có hợp đồng nào',
+        'Hợp đồng sẽ hiện ở đây sau khi bạn thêm phòng và tạo hợp đồng cho người thuê đầu tiên.',
+        { href: 'phong-dien-nuoc.html', chu: 'Thêm phòng' });
+      empty.hidden = false;
+    }
+  });
 
   // ---------- Danh sách hợp đồng ----------
   (function(){

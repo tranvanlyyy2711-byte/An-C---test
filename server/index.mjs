@@ -13,6 +13,8 @@ import { openDb, ApiError } from './db.mjs';
 import { createAuth, sessionCookie, clearCookie } from './auth.mjs';
 import { createAdmin, PLANS } from './quan-tri.mjs';
 import { createSuCo } from './su-co.mjs';
+import { createThanhToan } from './thanh-toan.mjs';
+import { createPhongChuTro } from './phong-chu-tro.mjs';
 import { NGUOI_THUE, NHA_TRO } from './phong.mjs';
 import { createBus } from './thong-bao.mjs';
 
@@ -29,6 +31,12 @@ const store = openDb({ file: dbFile, now, publish: bus.publish });
 const auth = createAuth(store.db, ApiError);
 const admin = createAdmin(store.db, ApiError, now);
 const suCo = createSuCo(store.db, ApiError, now);
+// Mua gói bằng VietQR qua payOS. Khoá nằm trong .env.local (server/env.mjs nạp), không bao giờ xuống client.
+const siteUrl = (process.env.AN_CU_ORIGIN || `http://localhost:${port}`).replace(/\/+$/, '');
+const thanhToan = createThanhToan(store.db, ApiError, now, { admin, PLANS, siteUrl });
+// Phòng do chính chủ trọ tự thêm (bảng landlord_rooms). Dữ liệu mẫu của Nhà trọ An Bình vẫn nằm
+// trong server/phong.mjs và không bị đụng tới.
+const phongChuTro = createPhongChuTro(store.db, ApiError, now);
 const qLandlord = store.db.prepare("SELECT id FROM users WHERE id = ? AND role = 'landlord'");
 const LANDLORDS = { has: (id) => !!qLandlord.get(String(id)) };
 
@@ -209,13 +217,58 @@ async function api(req, res, url) {
   }
 
   // Chủ trọ xem số liệu phòng của chính mình (trang quản lý dùng chung nguồn với khu quản trị)
+  // Số liệu phòng của chính chủ trọ: phòng mẫu (nếu là chủ trọ demo) + phòng tự thêm.
+  // landlord_id luôn lấy từ phiên đăng nhập, không nhận từ tham số.
   if (p === '/api/chu-tro/phong' && m === 'GET') {
     if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
     if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ mới xem được mục này.');
-    return send(res, 200, admin.roomsOf(me.id));
+    const goc = admin.roomsOf(me.id);
+    const tu = phongChuTro.dem(me.id);
+    const rooms = goc.rooms + tu.rooms;
+    const rented = goc.rented + tu.rented;
+    return send(res, 200, {
+      ...goc,
+      rooms, rented,
+      vacant: rooms - rented,
+      occupancy: rooms ? Math.round((rented / rooms) * 1000) / 10 : 0,
+      items: tu.items,            // phòng do chủ trọ tự thêm
+    });
+  }
+  if (p === '/api/chu-tro/phong' && m === 'POST') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản chủ trọ.');
+    if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ mới thêm được phòng.');
+    return send(res, 201, { item: phongChuTro.them(me.id, await readJson(req)) });
+  }
+  if ((id = p.match(/^\/api\/chu-tro\/phong\/(\d+)$/)) && m === 'DELETE') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ mới xoá được phòng.');
+    return send(res, 200, phongChuTro.xoa(me.id, id[1]));
   }
 
   // Chủ trọ xem gói của chính mình (trang quản lý)
+  // ----- Thanh toán gói dịch vụ bằng VietQR (payOS) -----
+  // Webhook phải đứng TRƯỚC mọi kiểm tra đăng nhập: payOS gọi vào đây không có cookie, và bản thân
+  // chữ ký HMAC đã là thứ xác thực. Trả 200 kể cả khi đơn không có thật để payOS không gửi lại mãi.
+  if (p === '/api/payment/webhook' && m === 'POST') {
+    return send(res, 200, thanhToan.nhanWebhook(await readJson(req)));
+  }
+  if (p === '/api/payment/create-plus-order' && m === 'POST') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản chủ trọ.');
+    const body = await readJson(req);
+    return send(res, 201, { item: await thanhToan.taoDon(me.id, { plan: body.plan || 'plus', months: body.months }) });
+  }
+  // Một đường duy nhất cho cả hai nơi chạy: /api/payment/order?ma=123 (Vercel không có route động)
+  if (p === '/api/payment/order' && m === 'GET') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    const ma = url.searchParams.get('ma');
+    if (!ma) throw new ApiError(400, 'thieu_ma', 'Thiếu mã đơn.');
+    return send(res, 200, { item: await thanhToan.trangThai(me.id, ma) });
+  }
+  if (p === '/api/payment/orders' && m === 'GET') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
+    return send(res, 200, { items: thanhToan.donCuaToi(me.id) });
+  }
+
   if (p === '/api/goi-cua-toi' && m === 'GET') {
     if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập.');
     if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ mới có gói dịch vụ.');

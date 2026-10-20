@@ -44,6 +44,27 @@
     .meter-input{width:86px;height:38px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);padding:0 9px;font-size:14px}.usage{display:block;margin-top:3px;font-size:11.5px;color:var(--text-dim)}.usage.changed{color:var(--accent);font-weight:600}.row-actions{display:flex;gap:6px}.action-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:8px;background:var(--surface);display:grid;place-items:center;color:var(--text-muted)}.action-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(34,139,34,.04)}.action-btn svg{width:17px;stroke:currentColor;fill:none;stroke-width:1.7}
     .bulk-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px;background:var(--surface-2);border-top:1px solid var(--border)}.bulk-bar p{font-size:13px;color:var(--text-muted)}
     .empty{padding:48px 20px;text-align:center;color:var(--text-muted)}.empty svg{width:34px;height:34px;stroke:var(--text-dim);fill:none;stroke-width:1.5;margin-bottom:10px}
+    .tp-lop{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(16,32,16,.5)}
+    .tp-lop.mo{display:flex}
+    .tp-hop{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg,16px);padding:22px}
+    .tp-dau{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+    .tp-dau h2{font-family:'Be Vietnam Pro',sans-serif;font-size:1.2rem;margin-bottom:4px}
+    .tp-dau p{font-size:13.5px;color:var(--text-muted);line-height:1.6}
+    .tp-x{margin-left:auto;width:40px;height:40px;min-width:40px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:20px;line-height:1;color:var(--text-muted);cursor:pointer}
+    .tp-luoi{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .tp-o{display:flex;flex-direction:column;gap:6px}
+    .tp-o.rong{grid-column:1/-1}
+    .tp-o label{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600}
+    .tp-o .goi-y{font-size:12px;color:var(--text-dim)}
+    .tp-o input,.tp-o select{min-height:46px;padding:0 12px;font-size:16px;border:1px solid var(--border-strong);border-radius:var(--radius-sm,8px);background:var(--surface);color:var(--text);width:100%}
+    .tp-o input:focus-visible,.tp-o select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+    .tp-o .loi{font-size:12.5px;color:var(--danger-ink,#B4291F);min-height:0}
+    .tp-o.hong input{border-color:var(--danger-ink,#B4291F)}
+    .tp-bao{margin-top:14px;padding:11px 13px;border-radius:var(--radius-sm,8px);background:rgba(180,41,31,.08);color:var(--danger-ink,#B4291F);font-size:13px;line-height:1.55;display:none}
+    .tp-bao.hien{display:block}
+    .tp-chan{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+    .tp-chan .btn{min-height:46px}
+    @media(max-width:560px){.tp-luoi{grid-template-columns:1fr}.tp-chan .btn{width:100%}}
     .toast{position:fixed;right:24px;bottom:24px;z-index:200;max-width:340px;padding:14px 16px;border-radius:var(--radius);background:#102010;color:#fff;box-shadow:0 20px 50px rgba(16,32,16,.25);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s var(--ease);font-size:14px}.toast.show{transform:none;opacity:1}.toast b{display:block;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:2px}.toast span{color:rgba(255,255,255,.78);font-size:12.5px}
     .reveal{opacity:0;transform:translateY(20px);transition:opacity .45s var(--ease),transform .45s var(--ease)}.reveal.in{opacity:1;transform:none}
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
@@ -55,6 +76,8 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/chu-tro-pham-vi.js"></script>
+<script src="../components/phong-cua-toi.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -96,7 +119,7 @@
             <button class="btn btn-primary" id="addRoomBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Thêm phòng</button>
           </div>
 
-          <section class="stat-grid" aria-label="Thống kê phòng" id="stats"></section>
+          <section class="stat-grid" data-pham-vi aria-label="Thống kê phòng" id="stats"></section>
 
           <section class="toolbar reveal" aria-label="Bộ lọc phòng">
             <label class="search-wrap"><span class="sr-only">Tìm phòng</span><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="field" id="searchInput" type="search" placeholder="Tìm mã phòng hoặc người thuê" /></label>
@@ -105,7 +128,7 @@
             <button class="btn btn-ghost btn-sm" id="resetBtn">Đặt lại</button>
           </section>
 
-          <section class="card reveal" aria-labelledby="roomsTitle">
+          <section class="card reveal" data-pham-vi aria-labelledby="roomsTitle">
             <div class="card-head"><div><h2 id="roomsTitle">Danh sách phòng</h2><p id="resultText">24 phòng · cập nhật chỉ số theo từng phòng</p></div><button class="btn btn-ghost btn-sm" id="saveAllBtn"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Lưu tất cả</button></div>
             <div class="table-wrap">
               <table class="rooms-table">
@@ -119,6 +142,78 @@
         </div>
       </main>
     </div>
+  </div>
+
+  <!-- Thêm phòng mới. Phòng lưu vào tài khoản chủ trọ đang đăng nhập (components/phong-cua-toi.js). -->
+  <div class="tp-lop" id="tpLop" role="dialog" aria-modal="true" aria-labelledby="tpTieuDe">
+    <form class="tp-hop" id="tpForm" novalidate>
+      <div class="tp-dau">
+        <div>
+          <h2 id="tpTieuDe">Thêm phòng mới</h2>
+          <p>Phòng được lưu vào tài khoản chủ trọ của bạn. Chỉ số điện nước nhập ở đây là chỉ số đầu kỳ.</p>
+        </div>
+        <button type="button" class="tp-x" id="tpDong" aria-label="Đóng">×</button>
+      </div>
+
+      <div class="tp-luoi">
+        <div class="tp-o" id="tpOMa">
+          <label for="tpMa">Mã / tên phòng *</label>
+          <input id="tpMa" name="code" type="text" placeholder="P.101" maxlength="20" autocomplete="off" required />
+          <p class="loi" id="tpLoiMa"></p>
+        </div>
+
+        <div class="tp-o">
+          <label for="tpTang">Tầng</label>
+          <select id="tpTang" name="floor">
+            <option value="1">Tầng 1</option>
+            <option value="2">Tầng 2</option>
+            <option value="3">Tầng 3</option>
+            <option value="4">Tầng 4</option>
+            <option value="5">Tầng 5</option>
+            <option value="6">Tầng 6</option>
+          </select>
+        </div>
+
+        <div class="tp-o" id="tpOGia">
+          <label for="tpGia">Giá thuê (₫ / tháng) *</label>
+          <input id="tpGia" name="price" type="number" inputmode="numeric" min="1" step="1000" placeholder="3500000" required />
+          <p class="loi" id="tpLoiGia"></p>
+        </div>
+
+        <div class="tp-o">
+          <label for="tpCoc">Tiền cọc (₫)</label>
+          <input id="tpCoc" name="deposit" type="number" inputmode="numeric" min="0" step="1000" placeholder="3500000" />
+          <span class="goi-y">Để trống nếu chưa thu cọc.</span>
+        </div>
+
+        <div class="tp-o">
+          <label for="tpDien">Chỉ số điện ban đầu (kWh)</label>
+          <input id="tpDien" name="electricStart" type="number" inputmode="numeric" min="0" step="1" placeholder="0" />
+        </div>
+
+        <div class="tp-o">
+          <label for="tpNuoc">Chỉ số nước ban đầu (m³)</label>
+          <input id="tpNuoc" name="waterStart" type="number" inputmode="numeric" min="0" step="1" placeholder="0" />
+        </div>
+
+        <div class="tp-o rong">
+          <label for="tpTrangThai">Trạng thái phòng</label>
+          <select id="tpTrangThai" name="status">
+            <option value="vacant" selected>Còn trống</option>
+            <option value="deposit">Đã nhận cọc</option>
+            <option value="rented">Đang thuê</option>
+            <option value="leaving">Sắp trống</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="tp-bao" id="tpBao" role="alert"></p>
+
+      <div class="tp-chan">
+        <button type="button" class="btn btn-ghost" id="tpHuy">Hủy</button>
+        <button type="submit" class="btn btn-primary" id="tpGui">Thêm phòng</button>
+      </div>
+    </form>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle">Đã lưu chỉ số</b><span id="toastText">Dữ liệu mẫu đã được cập nhật trên trình duyệt.</span></div>
@@ -140,7 +235,12 @@
     function showToast(title,text){var t=document.getElementById('toast');document.getElementById('toastTitle').textContent=title;document.getElementById('toastText').textContent=text;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(function(){t.classList.remove('show')},2600)}
     function filteredRooms(){var q=document.getElementById('searchInput').value.trim().toLowerCase();var status=document.getElementById('statusFilter').value;var floor=document.getElementById('floorFilter').value;return ROOMS.filter(function(r){return(!q||r.code.toLowerCase().includes(q)||(r.tenant||'').toLowerCase().includes(q))&&(status==='all'||r.status===status)&&(floor==='all'||String(r.floor)===floor)})}
     function changedRoomIds(){return ROOMS.filter(function(r){var old=original.find(function(o){return o.id===r.id});return r.electricNew!==old.electricNew||r.waterNew!==old.waterNew}).map(function(r){return r.id})}
-    function renderStats(){var rented=ROOMS.filter(function(r){return r.status==='rented'}).length;var vacant=ROOMS.filter(function(r){return r.status==='vacant'}).length;var deposit=ROOMS.filter(function(r){return r.status==='deposit'}).length;document.getElementById('stats').innerHTML=[['Tổng số phòng',ROOMS.length,'3 tầng','<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M10 7h4M10 11h4M10 15h4"/>'],['Đang thuê',rented,'Tỷ lệ lấp đầy '+Math.round(rented/ROOMS.length*100)+'%','<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'],['Đã nhận cọc',deposit,'Chuẩn bị nhận phòng','<path d="M20 7h-9M14 17H5M17 3l4 4-4 4M8 13l-4 4 4 4"/>'],['Còn trống',vacant,'Có thể tạo tin đăng','<path d="M3 21h18M5 21V8l7-5 7 5v13"/>']].map(function(s){return '<article class="stat reveal in"><div class="stat-top"><span class="stat-label">'+s[0]+'</span><span class="stat-icon">'+icon(s[3])+'</span></div><p class="stat-value">'+s[1]+'</p><p class="stat-sub">'+s[2]+'</p></article>'}).join('')}
+    function soTang(){
+      var t = {};
+      ROOMS.forEach(function(r){ t[r.floor] = 1; });
+      return Object.keys(t).length;
+    }
+    function renderStats(){var rented=ROOMS.filter(function(r){return r.status==='rented'}).length;var vacant=ROOMS.filter(function(r){return r.status==='vacant'}).length;var deposit=ROOMS.filter(function(r){return r.status==='deposit'}).length;document.getElementById('stats').innerHTML=[['Tổng số phòng',ROOMS.length,(ROOMS.length?soTang()+' tầng':'Chưa có phòng nào'),'<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M10 7h4M10 11h4M10 15h4"/>'],['Đang thuê',rented,(ROOMS.length?'Tỷ lệ lấp đầy '+Math.round(rented/ROOMS.length*100)+'%':'Chưa có phòng nào'),'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'],['Đã nhận cọc',deposit,'Chuẩn bị nhận phòng','<path d="M20 7h-9M14 17H5M17 3l4 4-4 4M8 13l-4 4 4 4"/>'],['Còn trống',vacant,'Có thể tạo tin đăng','<path d="M3 21h18M5 21V8l7-5 7 5v13"/>']].map(function(s){return '<article class="stat reveal in"><div class="stat-top"><span class="stat-label">'+s[0]+'</span><span class="stat-icon">'+icon(s[3])+'</span></div><p class="stat-value">'+s[1]+'</p><p class="stat-sub">'+s[2]+'</p></article>'}).join('')}
     function renderRooms(){var rows=filteredRooms();var body=document.getElementById('roomRows');var empty=document.getElementById('emptyState');document.getElementById('resultText').textContent=rows.length+' phòng phù hợp · cập nhật chỉ số theo từng phòng';empty.hidden=rows.length>0;body.innerHTML=rows.map(function(r){var st=statusMap[r.status];var eu=Math.max(0,r.electricNew-r.electricOld);var wu=Math.max(0,r.waterNew-r.waterOld);return '<tr><td data-label="Phòng"><span><span class="room-code">'+r.code+'</span><span class="room-meta">Tầng '+r.floor+'</span></span></td><td data-label="Người thuê">'+(r.tenant||'<span class="room-meta">Chưa có người thuê</span>')+'</td><td data-label="Trạng thái"><span class="status '+st.cls+'">'+st.label+'</span></td><td data-label="Điện cũ">'+r.electricOld+' kWh</td><td data-label="Điện mới"><span><input class="meter-input" type="number" min="'+r.electricOld+'" value="'+r.electricNew+'" data-id="'+r.id+'" data-meter="electric" aria-label="Điện mới phòng '+r.code+'"><small class="usage '+(eu?'changed':'')+'">Tiêu thụ '+eu+' kWh</small></span></td><td data-label="Nước cũ">'+r.waterOld+' m³</td><td data-label="Nước mới"><span><input class="meter-input" type="number" min="'+r.waterOld+'" value="'+r.waterNew+'" data-id="'+r.id+'" data-meter="water" aria-label="Nước mới phòng '+r.code+'"><small class="usage '+(wu?'changed':'')+'">Tiêu thụ '+wu+' m³</small></span></td><td data-label="Thao tác"><div class="row-actions"><button class="action-btn" data-save="'+r.id+'" aria-label="Lưu phòng '+r.code+'">'+icon('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/>')+'</button><button class="action-btn" aria-label="Xem chi tiết phòng '+r.code+'">'+icon('<path d="M9 18l6-6-6-6"/>')+'</button></div></td></tr>'}).join('');bindInputs();updateChanged()}
     function bindInputs(){document.querySelectorAll('.meter-input').forEach(function(input){input.addEventListener('change',function(){var room=ROOMS.find(function(r){return r.id===Number(input.dataset.id)});var value=Number(input.value);var old=input.dataset.meter==='electric'?room.electricOld:room.waterOld;if(value<old){input.value=old;showToast('Chỉ số không hợp lệ','Chỉ số mới không thể nhỏ hơn chỉ số cũ.');value=old}if(input.dataset.meter==='electric')room.electricNew=value;else room.waterNew=value;renderRooms()})});document.querySelectorAll('[data-save]').forEach(function(btn){btn.addEventListener('click',function(){var id=Number(btn.dataset.save);var room=ROOMS.find(function(r){return r.id===id});var idx=original.findIndex(function(r){return r.id===id});original[idx]=JSON.parse(JSON.stringify(room));updateChanged();showToast('Đã lưu '+room.code,'Chỉ số điện nước của phòng đã được cập nhật.')})})}
     function updateChanged(){document.getElementById('changedCount').textContent=changedRoomIds().length}
@@ -148,11 +248,132 @@
     document.getElementById('resetBtn').addEventListener('click',function(){document.getElementById('searchInput').value='';document.getElementById('statusFilter').value='all';document.getElementById('floorFilter').value='all';renderRooms()});
     document.getElementById('saveAllBtn').addEventListener('click',function(){original=JSON.parse(JSON.stringify(ROOMS));updateChanged();showToast('Đã lưu tất cả','Toàn bộ chỉ số điện nước đã được cập nhật.')});
     document.getElementById('closeMetersBtn').addEventListener('click',function(){if(changedRoomIds().length){showToast('Cần lưu dữ liệu','Hãy lưu các chỉ số vừa thay đổi trước khi chốt tháng.');return}showToast('Đã chốt tháng 09','Số liệu đã sẵn sàng để tạo hóa đơn.')});
-    document.getElementById('addRoomBtn').addEventListener('click',function(){showToast('Thêm phòng mới','Nút đã sẵn sàng để nối với biểu mẫu thêm phòng.')});
+    // ---------- Hộp thoại Thêm phòng ----------
+    (function(){
+      var lop = document.getElementById('tpLop');
+      var form = document.getElementById('tpForm');
+      var nutGui = document.getElementById('tpGui');
+      var bao = document.getElementById('tpBao');
+      var moTu = null;              // nút đã mở hộp thoại, để trả lại tiêu điểm khi đóng
+
+      function datLoi(oId, loiId, chu){
+        document.getElementById(oId).classList.toggle('hong', !!chu);
+        document.getElementById(loiId).textContent = chu || '';
+      }
+      function xoaLoi(){
+        datLoi('tpOMa', 'tpLoiMa', '');
+        datLoi('tpOGia', 'tpLoiGia', '');
+        bao.textContent = ''; bao.classList.remove('hien');
+      }
+      function baoLoi(chu){ bao.textContent = chu; bao.classList.add('hien'); }
+
+      function mo(){
+        moTu = document.activeElement;
+        xoaLoi();
+        form.reset();
+        document.getElementById('tpTrangThai').value = 'vacant';
+        lop.classList.add('mo');
+        setTimeout(function(){ document.getElementById('tpMa').focus(); }, 30);
+      }
+      function dong(){
+        lop.classList.remove('mo');
+        if (moTu && moTu.focus) moTu.focus();
+      }
+
+      document.getElementById('addRoomBtn').addEventListener('click', mo);
+      document.getElementById('tpDong').addEventListener('click', dong);
+      document.getElementById('tpHuy').addEventListener('click', dong);
+      lop.addEventListener('click', function(e){ if (e.target === lop) dong(); });
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape' && lop.classList.contains('mo')) dong();
+      });
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        xoaLoi();
+
+        var ma = document.getElementById('tpMa').value.trim();
+        var gia = document.getElementById('tpGia').value;
+        var ok = true;
+        if (!ma) { datLoi('tpOMa', 'tpLoiMa', 'Vui lòng nhập mã phòng, ví dụ P.101.'); ok = false; }
+        if (!gia || Number(gia) <= 0) { datLoi('tpOGia', 'tpLoiGia', 'Vui lòng nhập giá thuê lớn hơn 0.'); ok = false; }
+        if (!ok) { (ma ? document.getElementById('tpGia') : document.getElementById('tpMa')).focus(); return; }
+
+        var duLieu = {
+          code: ma,
+          floor: Number(document.getElementById('tpTang').value) || 1,
+          price: Number(gia),
+          deposit: Number(document.getElementById('tpCoc').value) || 0,
+          electricStart: Number(document.getElementById('tpDien').value) || 0,
+          waterStart: Number(document.getElementById('tpNuoc').value) || 0,
+          status: document.getElementById('tpTrangThai').value || 'vacant'
+        };
+
+        nutGui.disabled = true;
+        nutGui.textContent = 'Đang lưu…';
+        PhongCuaToi.them(duLieu).then(function(kq){
+          nutGui.disabled = false; nutGui.textContent = 'Thêm phòng';
+          dong();
+          return napPhongCuaToi().then(function(){
+            showToast('Thêm phòng ' + kq.item.code + ' thành công!',
+              'Phòng đã lưu vào tài khoản của bạn. Các ô số liệu phía trên đã cập nhật.');
+          });
+        }).catch(function(err){
+          nutGui.disabled = false; nutGui.textContent = 'Thêm phòng';
+          if (err && err.field === 'code') { datLoi('tpOMa', 'tpLoiMa', err.message); document.getElementById('tpMa').focus(); }
+          else if (err && err.field === 'price') { datLoi('tpOGia', 'tpLoiGia', err.message); document.getElementById('tpGia').focus(); }
+          else baoLoi((err && err.message) || 'Không lưu được phòng, hãy thử lại.');
+        });
+      });
+    })();
     var menuBtn=document.getElementById('menuBtn');document.getElementById('sideBackdrop').addEventListener('click',closeNav);menuBtn.addEventListener('click',function(){var open=document.body.classList.toggle('nav-open');menuBtn.setAttribute('aria-expanded',String(open))});function closeNav(){document.body.classList.remove('nav-open');menuBtn.setAttribute('aria-expanded','false')}
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav()});
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')})}else{var io=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('in');io.unobserve(entry.target)}})},{threshold:.1});document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)})}
+    // ---------- Phòng do chính chủ trọ thêm ----------
+    // Dữ liệu mẫu ở trên là của chủ trọ demo. Phòng tự thêm nằm ở bảng riêng, gắn landlord_id của
+    // người đang đăng nhập (server/phong-chu-tro.mjs hoặc bảng rooms của Supabase).
+    var PHONG_TU_THEM = [];
+    function hopNhat(ds){
+      PHONG_TU_THEM = ds.map(function(r, i){
+        return {
+          id: 'tu-' + (r.id != null ? r.id : i), code: r.code, floor: Number(r.floor) || 1,
+          tenant: r.tenant || null, status: r.status || 'vacant',
+          electricOld: Number(r.electricStart) || 0, electricNew: Number(r.electricStart) || 0,
+          waterOld: Number(r.waterStart) || 0, waterNew: Number(r.waterStart) || 0,
+          price: Number(r.price) || 0, tuThem: true
+        };
+      });
+      // Phòng mới lên đầu danh sách để người vừa thêm thấy ngay
+      ROOMS = PHONG_TU_THEM.concat(ROOMS.filter(function(r){ return !r.tuThem; }));
+      original = JSON.parse(JSON.stringify(ROOMS));
+      renderStats(); renderRooms();
+    }
+    function napPhongCuaToi(){
+      if (!window.PhongCuaToi) return Promise.resolve();
+      return PhongCuaToi.danhSach().then(function(kq){ hopNhat(kq.items || []); }).catch(function(){});
+    }
+
     renderStats();renderRooms();
+    napPhongCuaToi();
+
+    // Cô lập dữ liệu: dữ liệu mẫu ở trên là của Nhà trọ An Bình (chủ trọ demo). Tài khoản chủ trọ
+    // chưa có phòng nào thì bỏ hết đi, chỉ giữ khung giao diện và trạng thái rỗng.
+    if (window.ChuTroPhamVi) ChuTroPhamVi.khiMoi(function(){
+      ROOMS.length = 0; original.length = 0;
+      renderStats(); renderRooms();
+      document.getElementById('resultText').textContent = 'Chưa có phòng nào';
+      document.getElementById('changedCount').textContent = '0';
+      var empty = document.getElementById('emptyState');
+      empty.innerHTML = ChuTroPhamVi.oTrong('Chưa có phòng nào',
+        'Thêm nhà trọ và phòng đầu tiên để ghi chỉ số điện nước. Các ô số liệu phía trên sẽ tự cập nhật.',
+        null) + '<button class="btn btn-primary btn-sm" id="themPhongTrong">Thêm phòng</button>';
+      empty.hidden = false;
+      var nut = document.getElementById('themPhongTrong');
+      if (nut) nut.addEventListener('click', function(){
+        document.getElementById('addRoomBtn').click();
+      });
+      napPhongCuaToi();          // tài khoản mới vẫn phải thấy phòng do chính mình đã thêm
+    });
   </script>
 </body>
 </html>

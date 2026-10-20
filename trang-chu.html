@@ -1145,7 +1145,7 @@
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hợp đồng điện tử, nhắc thanh toán tự động</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Báo cáo doanh thu hằng tháng</span></li>
         </ul>
-        <a href="#" class="btn btn-primary" data-auth="register" data-auth-role="landlord">Mua gói Plus</a>
+        <a href="#" class="btn btn-primary" data-mua-goi="plus">Mua gói Plus</a>
       </article>
       <article class="plan reveal" id="plan-pro">
         <h3>Pro</h3>
@@ -1160,7 +1160,7 @@
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Tin đăng nổi bật trong mục Tìm phòng</span></li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Hỗ trợ ưu tiên 1–1</span></li>
         </ul>
-        <a href="#" class="btn btn-ghost" data-auth="register" data-auth-role="landlord">Chọn gói Pro</a>
+        <a href="#" class="btn btn-ghost" data-mua-goi="pro">Chọn gói Pro</a>
       </article>
     </div>
     <p class="plans-note reveal">Giá chưa gồm VAT, tính theo tháng. <b>Không có gói miễn phí và không có dùng thử</b> — chủ trọ cần mua gói Plus hoặc Pro mới đăng tin và quản lý phòng được. Kỳ đầu đến hạn ngay khi đăng ký; chưa thanh toán thì tài khoản chưa kích hoạt. Quá 60 phòng, liên hệ để báo giá riêng.</p>
@@ -1692,6 +1692,7 @@
 <script src="components/cau-hinh-supabase.js"></script>
 <script src="components/supabase-auth.js"></script>
 <script src="components/phien-xem-thu.js"></script>
+<script src="components/mua-goi.js"></script>
 <script>
   // Header scroll state
   var hdr = document.getElementById('hdr');
@@ -1956,6 +1957,43 @@
       if(want) openAuth('login', NEXT_URL && NEXT_URL.indexOf('quan-ly/') === 0 ? 'landlord' : 'renter');
     });
     function areaTuVaiTro(user){ return areaOf(user); }
+
+    // ---------- Mua gói: đăng ký xong là hiện mã VietQR ngay, không rời trang ----------
+    var goiDangMua = null;
+    function muaGoiNgay(plan){
+      goiDangMua = null;
+      if(CHE_DO === 'xem-thu'){
+        alert('Chế độ xem thử không thanh toán được vì không có máy chủ. '
+          + 'Chạy npm start rồi mở http://localhost:5500, hoặc dùng bản đã deploy để mua gói.');
+        return;
+      }
+      if(window.MuaGoi) window.MuaGoi.mo({ plan: plan });
+    }
+    // Bấm "Mua gói Plus": đã đăng nhập đúng chủ trọ thì mua luôn, chưa thì đăng ký rồi mua tiếp
+    document.addEventListener('click', function(e){
+      var nut = e.target.closest('[data-mua-goi]');
+      if(!nut) return;
+      e.preventDefault();
+      var plan = nut.getAttribute('data-mua-goi');
+      SAN_SANG.then(function(){
+        if(AUTH_API.me && AUTH_API.me.role === 'landlord') return muaGoiNgay(plan);
+        if(AUTH_API.me){
+          alert('Tài khoản đang đăng nhập không phải chủ trọ nên chưa mua gói được.');
+          return;
+        }
+        goiDangMua = plan;
+        openAuth('register', 'landlord');
+      });
+    });
+    // Đăng ký xong mà đang mua gói thì ở lại trang và mở mã QR
+    function sauDangKy(user, form){
+      if(!goiDangMua || !user || user.role !== 'landlord') return false;
+      var plan = goiDangMua;
+      goiDangMua = null;
+      showDone(form, 'Còn một bước cuối: thanh toán gói để hoàn tất đăng ký. Mã QR hiện ngay bên dưới.');
+      setTimeout(function(){ closeAuth(); muaGoiNgay(plan); }, 700);
+      return true;
+    }
     function shortName(user){
       if(!user) return '';
       if(user.name === user.phone) return user.phone;
@@ -2029,6 +2067,7 @@
         AUTH_API.me = kq.user;
         if(kq.user.role !== 'admin') resolveAuthRole(kq.user.role);
         renderHeader();
+        if(kind === 'register' && sauDangKy(kq.user, form)) return;
         showDone(form, kind === 'register'
           ? 'Tài khoản đã được lưu trên Supabase. Lần sau đăng nhập bằng email và mật khẩu này.'
           : 'Đang chuyển tới ' + (kq.user.role === 'landlord' ? 'trang quản lý của chủ trọ'
@@ -2101,6 +2140,7 @@
             AUTH_API.me = j.user;
             resolveAuthRole(j.user.role);
             renderHeader();
+            if(kind === 'register' && sauDangKy(j.user, form)) return;
             showDone(form, 'Đang chuyển tới ' + (j.user.role === 'landlord' ? 'trang quản lý của chủ trọ' : 'trang tìm phòng của bạn') + '…');
             setTimeout(function(){ window.location.href = areaOf(j.user); }, 900);
           });

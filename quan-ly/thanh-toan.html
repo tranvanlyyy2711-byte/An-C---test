@@ -181,6 +181,7 @@ body.modal-open{overflow:hidden}
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/chu-tro-pham-vi.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body class="is-loading">
@@ -718,6 +719,15 @@ body.modal-open{overflow:hidden}
   /* ================= Khởi động ================= */
   if(location.hash==='#thanh-toan') setTab('pay');
   // Nguồn dữ liệu chung (SSE): người thuê đặt lịch, báo đã chuyển cọc / tiền nhận phòng → tải lại ngay
+  // Cô lập dữ liệu: tài khoản chủ trọ chưa có phòng nào thì không có lịch xem, không có tiền cọc.
+  if (window.ChuTroPhamVi) ChuTroPhamVi.khiMoi(function(){
+    MOCK_APPTS.length = 0;
+    MOCK_DEPS.length = 0;
+    S.appts = [];
+    S.deps = [];
+    renderStats(); renderLists();
+  });
+
   ['lich-hen', 'thanh-toan', 'yeu-cau-thue'].forEach(function(t){ AnCu.on(t, function(){ renderAll(); }); });
   renderAll().then(function(){
     setTimeout(function(){
