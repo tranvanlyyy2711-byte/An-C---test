@@ -110,7 +110,7 @@ try {
         await p.waitForTimeout(150);
         expect(`${nguon}: lọc theo chủ trọ`, await p.locator('#userRows tr').count(), 2);
         await p.selectOption('#fRole', '');
-        await p.fill('#fSearch', '0912');
+        await p.fill('#fSearch', '0912000');
         await p.waitForTimeout(400);
         expect(`${nguon}: tìm theo số điện thoại`, await p.locator('#userRows tr').count(), 1);
         await p.fill('#fSearch', '');

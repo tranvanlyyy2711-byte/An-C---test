@@ -84,7 +84,7 @@ try {
   // ---------- Đăng nhập trên bản tĩnh (Vercel): tài khoản demo, phiên lưu trong trình duyệt ----------
   // Mỗi vai trò vào đúng khu của mình, tên hiện đúng người vừa đăng nhập.
   const VAI_TRO = [
-    { so: '0901234567', ten: 'Phạm Thu Trang', khu: '/tai-khoan/tim-phong.html', cho: '#accName', xemTenO: '/tai-khoan/da-luu.html' },
+    { so: '0912345678', ten: 'Phạm Thu Trang', khu: '/tai-khoan/tim-phong.html', cho: '#accName', xemTenO: '/tai-khoan/da-luu.html' },
     { so: '0988000999', ten: 'Trần Hoà', khu: '/quan-ly/tong-quan.html', cho: '#accTen' },
     { so: '0977111222', ten: 'Lê Thu Mai', khu: '/quan-ly/tong-quan.html', cho: '#accTen' },
     { so: '0900000001', ten: 'Quản trị An Cư', khu: '/quan-tri/trang-chu.html', cho: null },
@@ -133,7 +133,7 @@ try {
     await p.emulateMedia({ reducedMotion: 'reduce' });
     await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open', { timeout: 10000 });
-    await p.fill('#loginPhone', '0901234567');
+    await p.fill('#loginPhone', '0912345678');
     await p.fill('#loginPassword', 'saimatkhau');
     await p.click('[data-auth-form="login"] .btn-submit');
     await p.waitForSelector('#loginPasswordErr:not(:empty)', { timeout: 5000 }).catch(() => {});
@@ -154,7 +154,7 @@ try {
     await p.emulateMedia({ reducedMotion: 'reduce' });
     await p.goto(B + '/trang-chu.html?dang-nhap=1', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('.auth-overlay.open', { timeout: 10000 });
-    await p.fill('#loginPhone', '0901234567');
+    await p.fill('#loginPhone', '0912345678');
     await p.fill('#loginPassword', 'matkhau123');
     await p.click('[data-auth-form="login"] .btn-submit');
     await p.waitForURL('**/tai-khoan/tim-phong.html', { timeout: 10000 }).catch(() => {});

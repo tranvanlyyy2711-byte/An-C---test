@@ -151,7 +151,7 @@ try {
   expect('chủ trọ vẫn xem được lịch của mình', (await l('GET', '/api/chu-tro/lich-xem')).status, 200);
 
   const t = client();
-  await t('POST', '/api/dang-nhap', { phone: '0901234567', password: 'matkhau123' });
+  await t('POST', '/api/dang-nhap', { phone: '0912345678', password: 'matkhau123' });
   expect('đăng nhập Trang demo thấy đủ 6 lịch mẫu', (await t('GET', '/api/lich-xem')).body.items.length, 6);
 
   // ================= 2. Giao diện =================
@@ -226,7 +226,7 @@ try {
   const u3 = await newPage();
   await gotoHome(u3.p);
   await u3.p.click('.nav-cta [data-auth="login"]');
-  await u3.p.fill('#loginPhone', '0901234567');
+  await u3.p.fill('#loginPhone', '0912345678');
   await u3.p.fill('#loginPassword', 'matkhau123');
   await u3.p.click('[data-auth-form="login"] .btn-submit');
   await u3.p.waitForURL('**/tai-khoan/tim-phong.html', { timeout: 8000 });

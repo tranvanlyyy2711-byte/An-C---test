@@ -49,7 +49,7 @@ window.XemThu = (function(){
           cccd:'001189012345', address:'Số 14, ngõ 72 Nguyễn Khánh Toàn, Phường Nghĩa Đô, Hà Nội' },
         { id:'l-mai',   role:'landlord', name:'Lê Thu Mai',      phone:'0977111222', email:'mai@ancu.test',    status:'active', createdAt:congNgay(t,-20), bookings:null,
           cccd:'', address:'' },
-        { id:'u-trang', role:'renter',   name:'Phạm Thu Trang',  phone:'0901234567', email:'trang@ancu.test',  status:'active', createdAt:congNgay(t,-50), bookings:3 },
+        { id:'u-trang', role:'renter',   name:'Phạm Thu Trang',  phone:'0912345678', email:'trang@ancu.test',  status:'active', createdAt:congNgay(t,-50), bookings:3 },
         { id:'u-an',    role:'renter',   name:'Nguyễn Văn An',   phone:'0912000111', email:'an@ancu.test',     status:'active', createdAt:congNgay(t,-30), bookings:1 },
         { id:'u-linh',  role:'renter',   name:'Trần Mỹ Linh',    phone:'0987000222', email:'linh@ancu.test',   status:'locked', createdAt:congNgay(t,-12), bookings:0 },
         { id:'u-huy',   role:'renter',   name:'Lê Quang Huy',    phone:'0933000333', email:'huy@ancu.test',    status:'active', createdAt:congNgay(t,-5),  bookings:2 }
@@ -103,7 +103,7 @@ window.XemThu = (function(){
         P('P.201', 'P.201', 'Phòng P.201', 4100000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
           [ng('u-linh', 'Trần Mỹ Linh', '0987000222', 'tenant', congNgay(t, -45))], 'leaving', 'Trần Mỹ Linh'),
         P('P.301', 'P.301', 'Phòng P.301', 3500000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
-          [ng('u-trang', 'Phạm Thu Trang', '0901234567', 'tenant', congNgay(t, -35))], 'rented', 'Phạm Thu Trang'),
+          [ng('u-trang', 'Phạm Thu Trang', '0912345678', 'tenant', congNgay(t, -35))], 'rented', 'Phạm Thu Trang'),
         P('P.302', 'P.302', 'Phòng P.302', 3000000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội',
           [ng('u-huy', 'Lê Quang Huy', '0933000333', 'tenant', congNgay(t, -20))], 'rented', 'Lê Quang Huy'),
         P('P.202', 'P.202', 'Phòng P.202', 3800000, 'Nhà trọ An Bình, Cầu Giấy, Hà Nội', [], 'rented', 'Lê Minh Tú')
@@ -116,7 +116,7 @@ window.XemThu = (function(){
         P('p06', 'P06', 'Phòng rộng, phù hợp gia đình', 4600000, '203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội',
           [ng('u-linh', 'Trần Mỹ Linh', '0987000222', 'viewing', congNgay(t, 3))]),
         P('p09', 'P09', 'Căn hộ dịch vụ 2 phòng ngủ', 6500000, '15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội',
-          [ng('u-trang', 'Phạm Thu Trang', '0901234567', 'viewing', congNgay(t, 4))])
+          [ng('u-trang', 'Phạm Thu Trang', '0912345678', 'viewing', congNgay(t, 4))])
       ] }
     ];
   }

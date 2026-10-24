@@ -183,7 +183,7 @@ node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API —
 
 Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`. Liên thông hai phía (6 trạng thái lịch hẹn dùng chung, thông báo + SSE, quyền theo chủ phòng, khoản nhận phòng): xem `docs/lich-hen-hai-chieu.md`. Tiền cọc khi xem và mục Thanh toán: xem `docs/coc-khi-xem.md` (chụp kiểm tra: `node scripts/shot-thanh-toan.mjs`). Phiếu sự cố người thuê gửi chủ trọ (trạng thái, API, chuông thông báo, hộp thoại chi tiết dùng chung 3 lối vào): xem `docs/su-co-nguoi-thue.md` (kiểm tra: `npm run test:su-co`).
 
-Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0901234567` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999` (Trần Hoà — Nhà trọ An Bình), `0977111222` (Lê Thu Mai). Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
+Đăng ký / đăng nhập của prototype nằm ở `server/auth.mjs`: bảng `users` + `sessions` trong cùng SQLite, mật khẩu băm scrypt, cookie `ancu_sid` HttpOnly. Tài khoản demo (mật khẩu `matkhau123`): người thuê `0912345678` (Trang), `0912000111` (An), `0987000222` (Linh), `0933000333` (Huy); chủ trọ `0988000999` (Trần Hoà — Nhà trọ An Bình), `0977111222` (Lê Thu Mai). Khi lên Next.js, thay toàn bộ bằng Supabase Auth như mục Xác thực ở trên.
 
 **Một nguồn dữ liệu chung phía trình duyệt.** Mọi trang `tai-khoan/*` và `quan-ly/*` nạp `components/an-cu-store.js`
 (trước `sidebar.js`): gọi API kèm danh tính, nghe dữ liệu đổi theo topic (SSE từ máy chủ), toast, phòng đã lưu,

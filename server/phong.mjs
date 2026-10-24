@@ -93,7 +93,7 @@ for (const nt of NHA_TRO) {
 // Người thuê mô phỏng. Chưa có đăng nhập thật nên trình duyệt tự khai mình là ai qua
 // tham số ?nguoi=. Khi có Supabase Auth, id này lấy từ auth.uid() ở phía máy chủ.
 export const NGUOI_THUE = {
-  'u-trang': { id: 'u-trang', name: 'Phạm Thu Trang', phone: '0901234567' },
+  'u-trang': { id: 'u-trang', name: 'Phạm Thu Trang', phone: '0912345678' },
   'u-an':    { id: 'u-an',    name: 'Nguyễn Văn An',  phone: '0912000111' },
   'u-linh':  { id: 'u-linh',  name: 'Trần Mỹ Linh',   phone: '0987000222' },
   'u-huy':   { id: 'u-huy',   name: 'Lê Quang Huy',   phone: '0933000333' },

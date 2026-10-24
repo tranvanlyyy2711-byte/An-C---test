@@ -131,7 +131,7 @@ export function clearCookie() {
 
 // Tài khoản demo: cùng id với lịch mẫu trong db.mjs, nên đăng nhập là thấy lịch có sẵn.
 export const DEMO_USERS = [
-  { id: 'u-trang', role: 'renter',   full_name: 'Phạm Thu Trang', phone: '0901234567', email: 'trang@ancu.test' },
+  { id: 'u-trang', role: 'renter',   full_name: 'Phạm Thu Trang', phone: '0912345678', email: 'trang@ancu.test' },
   { id: 'u-an',    role: 'renter',   full_name: 'Nguyễn Văn An',  phone: '0912000111', email: 'an@ancu.test' },
   { id: 'u-linh',  role: 'renter',   full_name: 'Trần Mỹ Linh',   phone: '0987000222', email: 'linh@ancu.test' },
   { id: 'u-huy',   role: 'renter',   full_name: 'Lê Quang Huy',   phone: '0933000333', email: 'huy@ancu.test' },

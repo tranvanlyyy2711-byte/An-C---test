@@ -18,7 +18,7 @@
 
   // Khớp DEMO_USERS trong server/auth.mjs — sửa một bên thì sửa cả bên kia.
   var TAI_KHOAN = [
-    { id:'u-trang', role:'renter',   name:'Phạm Thu Trang', phone:'0901234567' },
+    { id:'u-trang', role:'renter',   name:'Phạm Thu Trang', phone:'0912345678' },
     { id:'u-an',    role:'renter',   name:'Nguyễn Văn An',  phone:'0912000111' },
     { id:'u-linh',  role:'renter',   name:'Trần Mỹ Linh',   phone:'0987000222' },
     { id:'u-huy',   role:'renter',   name:'Lê Quang Huy',   phone:'0933000333' },
@@ -63,7 +63,7 @@
     dangNhap: function(phone, password){
       var u = theoSo(phone);
       if(!u) return { error:'user_not_found', field:'phone',
-        message:'Bản xem thử chỉ nhận tài khoản demo. Thử 0901234567 (người thuê), 0988000999 (chủ trọ) hoặc 0900000001 (quản trị).' };
+        message:'Bản xem thử chỉ nhận tài khoản demo. Thử 0912345678 (người thuê), 0988000999 (chủ trọ) hoặc 0900000001 (quản trị).' };
       if(String(password) !== MAT_KHAU) return { error:'wrong_password', field:'password',
         message:'Mật khẩu của mọi tài khoản demo là ' + MAT_KHAU + '.' };
       nhoDanhTinh(u);
