@@ -1,0 +1,262 @@
+/* Generated from server/tin-dang.seed.json. */
+window.ANCU_LISTING_PREVIEW = [
+  {
+    "id": "pt01",
+    "title": "Phòng khép kín, gần các trường Bách Khoa - Kinh tế - Xây dựng",
+    "price": 4500000,
+    "area": 20,
+    "maxPeople": 2,
+    "address": "36 Đường Đại Cồ Việt, Phường Bạch Mai, Quận Hai Bà Trưng, Hà Nội",
+    "phone": "0967960926",
+    "postedAt": "2026-08-05",
+    "description": "26 Đại Cồ Việt. Xung quanh là các trường Đại học Bách Khoa, Kinh tế Quốc dân, Đại học Xây dựng...\nPhòng mới 100%\nPhòng full nội thất, điều hòa nóng lạnh, giường tủ, kệ bếp. Camera an ninh đầy đủ.\nMặt tiền thông thoáng. Các phòng đều có ban công, lối thoát hiểm độc lập.\nKhông chung chủ\nKhông qua trung gian, không nhận cọc trước qua mọi hình thức. Đến xem trực tiếp phù hợp mới ở.",
+    "images": [
+      "/assets/rooms/phongtrobachkinhxaygiare1.webp",
+      "/assets/rooms/phongtrobachkinhxaygiare2.webp",
+      "/assets/rooms/phongtrobachkinhxaygiare3.webp",
+      "/assets/rooms/phongtrobachkinhxaygiare4.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "Địa chỉ trong mô tả là 26, địa chỉ chính là 36 Đại Cồ Việt. Cần xác nhận trước khi đăng thực tế.",
+    "ward": "Phường Bạch Mai",
+    "district": "Hai Bà Trưng",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Ban công riêng",
+      "Camera an ninh",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt02",
+    "title": "Phòng trọ khép kín trong ngõ 210 Hoàng Quốc Việt (Quận Cầu Giấy)",
+    "price": 3300000,
+    "area": 25,
+    "maxPeople": 2,
+    "address": "Ngõ 210 Đường Hoàng Quốc Việt, Phường Nghĩa Đô, Quận Cầu Giấy, Hà Nội",
+    "phone": "0916667679",
+    "postedAt": "2026-08-05",
+    "description": "Phòng trọ khép kín 25 m² bao gồm nhà vs, bếp, giường, tủ, điều hòa, bình nóng lạnh\nCó công tơ riêng, có chỗ để xe máy chung tầng 1\nCó máy giặt và sân phơi chung ở tầng 5\nVị trí gần các trường: HV quân sự, ĐH điện lực, CĐ du lịch, ĐH quốc gia, ĐH KHCN, ĐH sư phạm, CĐ sư phạm, ĐH thương mại\nGần chợ (chợ Nghĩa Tân, chợ Trần Cung), gần nhiều trạm xe buýt\nNhà trong khu dân trí cao, an ninh, yên tĩnh, sạch sẽ, văn minh\nGiá thuê từ 3,3tr/tháng tùy theo loại phòng",
+    "images": [
+      "/assets/rooms/210hqv1.webp",
+      "/assets/rooms/210hqv2.webp",
+      "/assets/rooms/210hqv3.webp",
+      "/assets/rooms/210hqv4.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "",
+    "ward": "Phường Nghĩa Đô",
+    "district": "Cầu Giấy",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt03",
+    "title": "Phòng mới xây, đầy đủ tiện nghi",
+    "price": 3500000,
+    "area": 30,
+    "maxPeople": 2,
+    "address": "Số nhà 20, ngách 79, ngõ Cẩm Văn, phường Hàng Bột, Quận Đống Đa, Hà Nội",
+    "phone": "0838528543",
+    "postedAt": "2026-08-05",
+    "description": "Nhà mới xây, đầy đủ tiện nghi\nCó nóng lạnh, điều hòa, tủ quần áo, tủ phấn, đệm, giá bếp\nGần chợ, gần các bệnh viện, trường học các cấp 1, 2, 3\nGần Đại học Nhạc viện, Mỹ thuật, Cao đẳng Y tế, Đại học Công đoàn, Thủy lợi, Bách Khoa, Đại học Y tế",
+    "images": [
+      "/assets/rooms/moixay1.webp",
+      "/assets/rooms/moixay2.webp",
+      "/assets/rooms/moixay3.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "",
+    "ward": "Phường Hàng Bột",
+    "district": "Đống Đa",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt04",
+    "title": "Phòng trọ khép kín Trần Thái Tông",
+    "price": 3500000,
+    "area": 28,
+    "maxPeople": 2,
+    "address": "Nhà 11A, Ngõ 35/17c Trần Thái Tông, Quận Cầu Giấy, Hà Nội",
+    "phone": "0904525414",
+    "postedAt": "2026-08-05",
+    "description": "Gần ngã tư Trần Thái Tông - Xuân Thủy\nCách HV Báo Chí 200m, gần ĐH Quốc Gia, Sư Phạm, Ngoại Ngữ, Thương Mại\nTiện ích: giường, tủ, đệm, điều hòa, nóng lạnh, bàn bếp, máy giặt chung, khóa vân tay\nThang bộ, để xe free\nPhí dịch vụ: Điện 4.000đ/số, Nước 100k/người, DV chung 150k/người (wifi, máy giặt...)",
+    "images": [
+      "/assets/rooms/ttt1.webp",
+      "/assets/rooms/ttt2.webp",
+      "/assets/rooms/ttt3.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "",
+    "ward": "",
+    "district": "Cầu Giấy",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt05",
+    "title": "Phòng trọ sinh viên tại Hòa Lạc, gần ĐH FPT, ĐHQGHN (Huyện Thạch Thất)",
+    "price": 1800000,
+    "area": 20,
+    "maxPeople": 2,
+    "address": "Đường Đại lộ Thăng Long, Xã Hòa Lạc, Huyện Thạch Thất, Hà Nội",
+    "phone": "0342150995",
+    "postedAt": "2026-08-05",
+    "description": "Ngay cổng sau trường ĐH FPT, gần ĐHQGHN Hòa Lạc, gần HVTC\nThiết bị đầy đủ: điều hòa, nóng lạnh, tủ lạnh, wifi, giường tủ, bàn học, bàn bếp, máy giặt (có khu sạc xe điện)\nĐiện 3.400đ/số, nước sạch, dịch vụ 150.000đ/người/tháng (máy giặt, internet, vệ sinh, rác)\nGần điểm xe Bus 117, siêu thị, quán ăn, nhà hàng, phòng Gym, chợ\nAn ninh đảm bảo, nội quy đầy đủ, thoáng mát, an toàn",
+    "images": [
+      "/assets/rooms/hoalac1.webp",
+      "/assets/rooms/hoalac2.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "",
+    "ward": "Xã Hòa Lạc",
+    "district": "Thạch Thất",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt06",
+    "title": "Phòng trọ giá rẻ gần chân ga cầu diễn (Quận Nam Từ Liêm)",
+    "price": 4250000,
+    "area": 25,
+    "maxPeople": 2,
+    "address": "Ngõ 90 Đường Phúc Diễn, Quận Nam Từ Liêm, Hà Nội",
+    "phone": "0974942507",
+    "postedAt": "2026-08-05",
+    "description": "Ngõ 90 Phúc Diễn - 281 Hồ Tùng Mậu (gần chân ga Cầu Diễn)\nTrống phòng 501\nĐiện 3,8k/số, Nước 35k/khối, Dịch vụ chung 150k/người, mạng 100k/phòng, thang máy 50k/người\nKhông nhận thú cưng, không nhận khách nước ngoài\nHợp đồng 13 tháng",
+    "images": [
+      "/assets/rooms/ga1.webp",
+      "/assets/rooms/ga2.webp",
+      "/assets/rooms/ga3.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "",
+    "ward": "",
+    "district": "Nam Từ Liêm",
+    "amenities": [],
+    "visible": true
+  },
+  {
+    "id": "pt07",
+    "title": "Phòng trọ tiện nghi giá tốt, trung tâm, gần chợ, trường học, bệnh viện (Quận Đống Đa)",
+    "price": 3000000,
+    "area": 30,
+    "maxPeople": 2,
+    "address": "2/54/16 Đường Tôn Thất Tùng, Phường Kim Liên, Quận Đống Đa, Hà Nội",
+    "phone": "0982165646",
+    "postedAt": "2026-08-05",
+    "description": "Có phòng cho nữ thuê, diện tích 30 m² (có ban công)\nTiện nghi đầy đủ: tắm nóng lạnh, điều hòa, máy giặt, quạt, giường tủ\nKhép kín, đi khóa về mở, dân trí cao, an ninh tốt",
+    "images": [
+      "/assets/rooms/dd1.webp",
+      "/assets/rooms/dd2.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "",
+    "ward": "Phường Kim Liên",
+    "district": "Đống Đa",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Ban công riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt08",
+    "title": "Trọ có 1 phòng ngủ 1 phòng khách (Quận Nam Từ Liêm)",
+    "price": 4000000,
+    "area": 25,
+    "maxPeople": 2,
+    "address": "Đường Tu Hoàng, Phường Xuân Phương, Quận Nam Từ Liêm, Hà Nội",
+    "phone": "0912415901",
+    "postedAt": "2026-08-05",
+    "description": "Địa chỉ: 37 phố Nhổn, giá phòng chỉ từ 3xxx (đóng 1 cọc 1), loại 1N1K: 4m5\nPhòng khép kín, nội thất: điều hòa, tủ lạnh, ban công thoáng mát, nóng lạnh, tủ quần áo, bếp, sân phơi, máy giặt tầng thượng\nPhí dịch vụ: Điện 3,8k/số, Nước 30k/khối, Internet 100k/phòng, Dịch vụ chung 180k/người\nCách mặt đường Nhổn 30m, cách ĐH Công Nghiệp 150m, gần tàu điện trên cao, gần bến xe buýt\nNhà mới xây, không chung chủ, giờ giấc thoải mái, khóa vân tay, không nhận xe điện",
+    "images": [
+      "/assets/rooms/1n1k1.webp",
+      "/assets/rooms/1n1k2.webp",
+      "/assets/rooms/1n1k3.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "Giá chính 4 triệu, mô tả 1N1K 4,5 triệu. Địa chỉ chính Tu Hoàng, mô tả 37 phố Nhổn. Cần xác nhận.",
+    "ward": "Phường Xuân Phương",
+    "district": "Nam Từ Liêm",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Ban công riêng",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  },
+  {
+    "id": "pt09",
+    "title": "Phòng đầy đủ tiện nghi (Quận Hoàng Mai)",
+    "price": 2700000,
+    "area": 25,
+    "maxPeople": 2,
+    "address": "Số nhà 26A, ngõ 220 Định Công Thượng, Phường Định Công, Quận Hoàng Mai, Hà Nội",
+    "phone": "0972137955",
+    "postedAt": "2026-08-05",
+    "description": "Giá 2.700.000đ/tháng nếu ở 1 người; ở 2 người giá 3tr - phòng tầng 2\nTầng 1: có chỗ để xe rộng rãi, khu vực bếp ăn, full đồ (bếp nấu, tủ lạnh, bàn ăn, đồ dùng nhà bếp)\nMáy giặt, sân phơi ở tầng 4 rộng, thoáng, sạch sẽ, nhiều cây xanh\nPhòng tầng 2 còn 1 phòng trống, có cửa sổ rộng thoáng, full điều hòa, nóng lạnh, giường, tủ, bàn học\nMỗi tầng 2 phòng, vệ sinh chung sạch sẽ\nPhí dịch vụ: internet, nước, điện tính theo hóa đơn nhà cung cấp",
+    "images": [
+      "/assets/rooms/hmai1.webp",
+      "/assets/rooms/hmai2.webp",
+      "/assets/rooms/hmai3.webp",
+      "/assets/rooms/hmai4.webp",
+      "/assets/rooms/hmai5.webp"
+    ],
+    "latitude": null,
+    "longitude": null,
+    "status": "approved",
+    "sourceNote": "Giá 2,7 triệu cho 1 người; 3 triệu cho 2 người. Vệ sinh chung.",
+    "ward": "Phường Định Công",
+    "district": "Hoàng Mai",
+    "amenities": [
+      "Máy lạnh",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Có bếp riêng"
+    ],
+    "visible": true
+  }
+];
