@@ -1,0 +1,23 @@
+KIỂM TRA RIÊNG TẠO TIN VÀ LƯU DỮ LIỆU — 26/10/2026
+
+1. Nút Tạo tin đăng: PASS trong bộ mô phỏng DOM.
+Tài khoản chưa có tin -> bấm nút -> mở form -> nhập đủ thông tin -> submit
+-> POST /api/chu-tro/tin-dang -> hiện 1 tin Chờ duyệt -> nút chuyển sang Chỉnh sửa tin.
+Chế độ cloud không phải demo. HTTP Supabase trong kiểm tra này được mô phỏng.
+
+2. Lưu thật local: PASS trên máy chủ Node + SQLite tạm.
+Đăng ký chủ trọ mới -> POST trả 201 -> tắt máy chủ -> mở lại
+-> đăng nhập/phiên cũ đọc lại đúng mã tin, tiêu đề Phòng mới và trạng thái pending.
+Không dựa vào localStorage để xác nhận lưu local.
+
+3. Cloud API: PASS với Supabase HTTP mô phỏng.
+Phân quyền, một tin/chủ, kiểm tra dữ liệu, duyệt, ẩn/hiện, thiếu cấu hình,
+thiếu migration và không tự chuyển sang demo khi chạy trên domain online.
+
+4. Bản vá dùng chung: git apply --check và áp dụng thử PASS trên đúng ZIP gốc
+người dùng gửi. Sau khi áp dụng, 7 file dùng chung khớp bản đã kiểm tra.
+
+CHƯA XÁC NHẬN: database Supabase thật, migration PostgreSQL thực, Vercel sau deploy,
+click trên trình duyệt thật. Không đủ cấu hình/quyền cloud; Chromium tải thất bại.
+Để xác nhận online, người quản trị phải áp dụng migration 0004 và cấu hình Vercel,
+rồi thử tạo tin bằng tài khoản Supabase thật và đọc lại từ máy/cửa sổ khác.
