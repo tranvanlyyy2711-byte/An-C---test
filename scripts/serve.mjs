@@ -6,7 +6,7 @@ import { dirname } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
-const port = process.argv[2] ? Number(process.argv[2]) : 5500;
+const port = process.argv[2] ? Number(process.argv[2]) : 5600;
 
 const types = {
   '.html': 'text/html; charset=utf-8',

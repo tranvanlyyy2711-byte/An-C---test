@@ -44,7 +44,7 @@ async function load(){
    const preview=window.ANCU_LISTING_PREVIEW?.[0];
    if(!preview){$('#roomCard').innerHTML='<div class="empty"><h2>Mở toàn bộ thư mục đã giải nén</h2><p>Bấm đúp MO-WEB.cmd trong thư mục gốc để sử dụng web.</p></div>';return;}
    room=preview;me=null;draw();$('#editTop').hidden=true;$('#editCard').disabled=true;$('#toggleVisibility').disabled=true;
-   $('#staticNotice').hidden=false;$('#staticNotice').innerHTML='Bản xem trước của phòng Đại Cồ Việt. Để đăng nhập, sửa tin và đồng bộ với khách thuê, giải nén toàn bộ gói rồi bấm đúp <b>MO-WEB.cmd</b>. <a href="http://localhost:5500/quan-ly/tin-dang.html">Mở web đang chạy ↗</a>';return;
+   $('#staticNotice').hidden=false;$('#staticNotice').innerHTML='Bản xem trước của phòng Đại Cồ Việt. Để đăng nhập, sửa tin và đồng bộ với khách thuê, giải nén toàn bộ gói rồi bấm đúp <b>MO-WEB.cmd</b>. <a href="http://localhost:5600/quan-ly/tin-dang.html">Mở web đang chạy ↗</a>';return;
  }
  if(busy||editor.open||document.hidden)return;
  try{me=(await api('/api/toi')).user;if(!me||me.role!=='landlord'){

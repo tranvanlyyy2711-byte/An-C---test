@@ -1,6 +1,6 @@
 // Máy chủ prototype An Cư: phục vụ các trang tĩnh + API lịch xem phòng trên SQLite.
-//   npm start                 -> http://localhost:5500
-//   PORT=5600 npm start       -> đổi cổng
+//   npm start                 -> http://localhost:5600
+//   PORT=5700 npm start       -> đổi cổng
 //   AN_CU_DB=đường/dẫn.sqlite -> đổi file dữ liệu (mặc định 'Trang admin/an-cu.sqlite')
 //   AN_CU_NOW=2026-09-19T09:00:00 -> đóng băng "bây giờ" ở một mốc (mặc định: giờ thật của máy),
 //                                    dùng cho kiểm thử và để thử hết hạn giữ chỗ.
@@ -20,7 +20,7 @@ import { createBus } from './thong-bao.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
-const port = Number(process.argv[2] || process.env.PORT || 5500);
+const port = Number(process.argv[2] || process.env.PORT || 5600);
 const dbFile = process.env.AN_CU_DB || join(root, 'Trang admin', 'an-cu.sqlite');
 const FIXED_NOW = process.env.AN_CU_NOW ? new Date(process.env.AN_CU_NOW) : null;
 if (FIXED_NOW && Number.isNaN(FIXED_NOW.getTime())) throw new Error('AN_CU_NOW không hợp lệ: ' + process.env.AN_CU_NOW);
@@ -429,10 +429,10 @@ Cổng ${port} đang bị chương trình khác giữ nên không khởi động
 Hai nguyên nhân thường gặp:
   1. Một máy chủ An Cư cũ còn chạy. Tắt nó trong PowerShell rồi chạy lại 'npm start':
      Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*server/index.mjs*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }
-  2. Live Server của VS Code cũng mặc định cổng 5500. Bấm nút "Port : 5500" ở thanh dưới VS Code để tắt,
-     hoặc đổi cổng của nó trong cài đặt 'liveServer.settings.port'.
+  2. Một chương trình khác (vd. Live Server của VS Code) đang dùng cổng này. Tắt nó đi,
+     hoặc đổi cổng của nó sang số khác.
 
-Hoặc chạy An Cư ở cổng khác:  $env:PORT=5600; npm start
+Hoặc chạy An Cư ở cổng khác:  $env:PORT=5700; npm start
 `);
   process.exit(1);
 });

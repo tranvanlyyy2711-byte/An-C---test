@@ -5,7 +5,7 @@
 1. Giải nén, mở terminal trong thư mục có `package.json`.
 2. Dùng Node.js 24 hoặc mới hơn có `node:sqlite`.
 3. Chạy `npm start`. Không cần cài thư viện để chạy server.
-4. Mở http://localhost:5500/quan-ly/tin-dang.html.
+4. Mở http://localhost:5600/quan-ly/tin-dang.html.
 5. Bấm Đăng nhập chủ trọ. Dùng SĐT phòng muốn kiểm tra, mật khẩu demo chung `matkhau123`.
 
 | Phòng | Tài khoản demo (SĐT) |

@@ -2,7 +2,7 @@ AN CƯ — TIN ĐĂNG / TÌM PHÒNG / KHÁM PHÁ BẢN ĐỒ
 
 1. Chuột phải file ZIP > Extract All / Giải nén tất cả.
 2. Mở thư mục giải nén, bấm đúp MO-WEB.cmd (để cửa sổ đen mở).
-3. Trình duyệt tự mở http://localhost:5500/quan-ly/tin-dang.html.
+3. Trình duyệt tự mở http://localhost:5600/quan-ly/tin-dang.html.
 4. Đăng nhập thử: 0967960926 / matkhau123.
 5. Xem ảnh, thông tin mô tả, nút Chỉnh sửa / Ẩn-Hiện / Xem phía khách thuê / Xem trên bản đồ.
 
