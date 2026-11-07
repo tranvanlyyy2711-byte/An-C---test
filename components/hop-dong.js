@@ -25,7 +25,7 @@
   var STORE_KEY = 'an-cu-thanh-toan-tien-nha';
   var RENTER_KEY = 'an-cu-nguoi-thue';
   var DEPOSIT_ORDER_KEY = 'an-cu-dat-coc-don';   // đơn đặt cọc của dat-coc.html
-  var DEMO_PHONES = { 'u-trang':'0901234567', 'u-an':'0912000111', 'u-linh':'0987000222', 'u-huy':'0933000333' };
+  var DEMO_PHONES = { 'u-trang':'0912345678', 'u-an':'0912000111', 'u-linh':'0987000222', 'u-huy':'0933000333' };
 
   // ---------- Dữ liệu mẫu ----------
   // Chỉ số công tơ theo tháng; tiền tính từ chỉ số × đơn giá, không nhập tay tổng.

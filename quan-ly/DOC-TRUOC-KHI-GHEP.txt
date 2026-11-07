@@ -1,0 +1,44 @@
+TIN ĐĂNG ĐÃ SỬA — GÓI RIÊNG (26/10/2026)
+
+Chỉ chứa phần Tin đăng, dữ liệu/ảnh phòng, API Vercel và migration Supabase.
+Không chứa bản thay thế toàn bộ trang chủ, Tìm phòng, khu quản trị hoặc các chức năng khác.
+Các thay đổi cần thiết trong file dùng chung nằm trong patches/ket-noi-tin-dang.patch.
+
+DÀNH CHO BẠN GHÉP CODE:
+1. Chép các thư mục/file trong gói vào thư mục gốc dự án, giữ đúng cấu trúc.
+   KHÔNG tạo đường dẫn /quan-ly/Tin-Dang-Da-Sua/... trên website.
+2. Ở thư mục gốc dự án, chạy:
+   git apply --check --ignore-space-change --ignore-whitespace patches/ket-noi-tin-dang.patch
+   Chỉ khi lệnh trên thành công mới chạy:
+   git apply --ignore-space-change --ignore-whitespace patches/ket-noi-tin-dang.patch
+   Bản vá dựa trên ZIP GitHub An-C---test-main(1).zip người dùng gửi ngày 26/10.
+   Nếu báo lỗi do file đã sửa/đã ghép, dừng và đối chiếu từng hunk; không ép ghi đè toàn file.
+3. Vercel cần áp dụng migration supabase/migrations/0004_tin_dang.sql vào Supabase,
+   kiểm tra SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY trên Vercel,
+   rồi deploy lại. Không đưa service-role key vào code frontend hoặc chat.
+   Xem HUONG-DAN-TIN-DANG-VERCEL.md.
+
+CÁC LỖI TRONG ẢNH ĐÃ SỬA TRONG CODE:
+- Bổ sung server/tin-dang.mjs và server/tin-dang.seed.json.
+- Bổ sung assets/tin-dang-preview.js, script kiểm tra bootstrap và MO-WEB.cmd.
+- Có API cloud /api/tin-dang, /api/chu-tro/tin-dang và API quản trị duyệt tin.
+- Có bản vá ghép các route local vào server/index.mjs, không đụng bảng tiền cọc.
+- Vercel lưu bằng Supabase; không dùng file SQLite làm lưu trữ online.
+- Trên domain online không tự chuyển sang bản chạy thử khi API lỗi.
+- /tin-dang.html ở gốc tự chuyển tới /quan-ly/tin-dang.html.
+- Chủ trọ không có hai nút Tìm phòng/Bản đồ; dữ liệu được người thuê đọc qua API chung.
+
+PHỤ THUỘC DÙNG CHUNG CẦN GIỮ TỪ REPO:
+api/_lib/supabase.mjs, components/cau-hinh-supabase.js, components/supabase-auth.js,
+các component giao diện/phiên đăng nhập sẵn có; backend local dùng auth.mjs,
+phong.mjs và cơ sở dữ liệu hiện có. Đây là gói ghép vào An Cư, không phải web độc lập.
+
+KIỂM TRA:
+node scripts/check-tin-dang.mjs
+node scripts/check-tin-dang-lien-thong.mjs
+node scripts/check-tin-dang-cloud.mjs
+node scripts/check-tin-dang-bootstrap.mjs
+
+SQLite local đã kiểm tra lưu sau restart. API cloud kiểm tra với Supabase HTTP mô phỏng.
+CHƯA xác nhận lưu trên Supabase thật hoặc bản Vercel của nhóm; cần bước triển khai ở trên.
+Không có tài khoản mẫu Supabase tự tạo. 9 tin nguồn chưa tự gán cho tài khoản thật.

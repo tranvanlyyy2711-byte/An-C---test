@@ -89,7 +89,7 @@ try {
   expect('Chủ trọ: "Chờ xác nhận lịch" = 1, không tải lại', await until(ll, () => document.querySelectorAll('#statGrid .stat-value')[1].textContent.trim() === '1'), true);
   const row1 = ll.locator(`#listRows [data-appt="${a1.id}"]`);
   expect('Chủ trọ: dòng lịch có phòng + tên người thuê', (await row1.locator('.lr-info b').textContent()).trim(), 'P01 — Phạm Thu Trang');
-  expect('Chủ trọ: có số điện thoại người thuê', (await row1.locator('.lr-info span').first().textContent()).trim(), '0901234567');
+  expect('Chủ trọ: có số điện thoại người thuê', (await row1.locator('.lr-info span').first().textContent()).trim(), '0912345678');
   expect('Chủ trọ: thấy lời nhắn của người thuê', (await row1.textContent()).includes('Mình đi cùng 1 người bạn'), true);
   expect('Chủ trọ: báo "Yêu cầu lịch xem mới"', (await ll.textContent('#toastTitle')).trim(), 'Yêu cầu lịch xem mới');
   await row1.locator('[data-confirm]').click();
@@ -137,7 +137,7 @@ try {
   const card = ll.locator('.kcol.moi .rcard').first();
   expect('Thẻ yêu cầu: tên + phòng + ngày muốn vào', [(await card.locator('.rc-name').textContent()).trim(), (await card.locator('.rc-room').textContent()).trim()],
     ['Phạm Thu Trang', 'Muốn thuê P05 · từ 01/11/2026']);
-  expect('Thẻ yêu cầu: có số điện thoại để gọi', await card.locator('a[href="tel:0901234567"]').count(), 1);
+  expect('Thẻ yêu cầu: có số điện thoại để gọi', await card.locator('a[href="tel:0912345678"]').count(), 1);
   await card.locator('[data-to="xem_xet"]').click();
   expect('Kho người thuê: yêu cầu "Đang xem xét"', await rt.evaluate(() => JSON.parse(localStorage.getItem('an-cu-yeu-cau-thue-v1')).items[0].status), 'reviewing');
   await ll.click('#tabBtnCal');

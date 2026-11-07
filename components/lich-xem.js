@@ -26,7 +26,7 @@
   // ---------- Máy chủ ----------
   var API = { on:false, now:null };
   var NGUOI_THUE_MAU = {
-    'u-trang': { id:'u-trang', name:'Phạm Thu Trang', phone:'0901234567' },
+    'u-trang': { id:'u-trang', name:'Phạm Thu Trang', phone:'0912345678' },
     'u-an':    { id:'u-an',    name:'Nguyễn Văn An',  phone:'0912000111' },
     'u-linh':  { id:'u-linh',  name:'Trần Mỹ Linh',   phone:'0987000222' },
     'u-huy':   { id:'u-huy',   name:'Lê Quang Huy',   phone:'0933000333' }

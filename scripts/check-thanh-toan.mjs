@@ -152,7 +152,7 @@ try {
   expect('chưa đăng nhập thì không tạo được đơn',
     (await client()('POST', '/api/payment/create-plus-order', { plan: 'plus' })).status, 401);
   const nt = client();
-  await nt('POST', '/api/dang-nhap', { phone: '0901234567', password: 'matkhau123' });
+  await nt('POST', '/api/dang-nhap', { phone: '0912345678', password: 'matkhau123' });
   expect('người thuê không mua được gói', (await nt('POST', '/api/payment/create-plus-order', { plan: 'plus' })).status, 403);
   expect('người khác không xem được đơn của mình', (await nt('GET', '/api/payment/order?ma=' + don.orderCode)).status, 403);
 

@@ -111,7 +111,7 @@ try {
 
   // ---------- Đăng nhập: chuyển thẳng theo trạng thái thuê ----------
   console.log('\n=== Chuyển hướng sau đăng nhập ===');
-  for (const [phone, want] of [['0901234567', 'tai-khoan/phong-cua-toi.html'], ['0912000111', 'tai-khoan/tim-phong.html']]) {
+  for (const [phone, want] of [['0912345678', 'tai-khoan/phong-cua-toi.html'], ['0912000111', 'tai-khoan/tim-phong.html']]) {
     const c3 = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     await fresh(c3);
     const l = await c3.newPage();

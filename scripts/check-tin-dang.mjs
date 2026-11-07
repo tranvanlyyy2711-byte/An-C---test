@@ -19,10 +19,10 @@ try{
  let list=(await req('/api/tin-dang')).json.items;assert.equal(list.length,9);assert.equal(list[0].price,4500000);
  const seed=JSON.parse(readFileSync('server/tin-dang.seed.json','utf8'));
  for(const r of list){const original=seed.find(x=>x.id===r.id);assert.ok(original);for(const k of ['title','address','price','area','phone'])assert.equal(r[k],original[k],k);assert.equal(r.desc,original.description);assert.equal(r.people,2);for(const img of r.images)assert.ok(existsSync('.'+img),img);}
- const mapPage=await(await fetch(base+'/tai-khoan/tim-phong.html?view=map&phong=pt01')).text();assert.ok(mapPage.includes('mapViewRequested'));assert.ok(mapPage.includes("fetch('/api/tin-dang'"));
- const ownerPage=await(await fetch(base+'/quan-ly/tin-dang.html')).text();assert.ok(ownerPage.includes('listing-stats'));assert.ok(ownerPage.includes('exploreMapLink'));assert.ok(ownerPage.includes('<style>'));
+ const mapPage=await(await fetch(base+'/tai-khoan/tim-phong.html?view=map&phong=pt01')).text();assert.ok(mapPage.includes('mapViewRequested'));assert.ok(mapPage.includes("AnCuListings.publicRooms"));
+ const ownerPage=await(await fetch(base+'/quan-ly/tin-dang.html')).text();assert.ok(ownerPage.includes('listing-stats'));assert.ok(!ownerPage.includes('id="exploreMapLink"'));assert.ok(!ownerPage.includes('id="findRoomLink"'));assert.ok(ownerPage.includes('<style>'));
  assert.equal((await req('/api/chu-tro/tin-dang')).status,401);
- const owner=await login('0967960926'), other=await login('0916667679'), renter=await login('0901234567'), admin=await login('0900000001');
+ const owner=await login('0967960926'), other=await login('0916667679'), renter=await login('0912345678'), admin=await login('0900000001');
  assert.equal((await req('/api/chu-tro/tin-dang',{cookie:renter})).status,403);
  const mine=(await req('/api/chu-tro/tin-dang',{cookie:owner})).json.item;assert.equal(mine.id,'pt01');
  assert.equal((await req('/api/chu-tro/tin-dang',{cookie:other})).json.item.id,'pt02');
@@ -45,7 +45,10 @@ try{
  const fresh=r.cookie;
  assert.equal((await req('/api/chu-tro/tin-dang',{cookie:fresh})).json.item,null);
  r=await req('/api/chu-tro/tin-dang',{method:'POST',cookie:fresh,body:{...mine,title:'Phòng mới',visible:true}});assert.equal(r.status,201,JSON.stringify(r.json));assert.equal(r.json.item.status,'pending');assert.notEqual(r.json.item.id,mine.id);
+ const newListingId=r.json.item.id;
  await stop();await start();
+ const restored=(await req('/api/chu-tro/tin-dang',{cookie:fresh})).json.item;assert.equal(restored.id,newListingId);assert.equal(restored.title,'Phòng mới');assert.equal(restored.status,'pending');
+ console.log('PASS: tài khoản chủ trọ mới tạo tin bằng POST 201; sau khi khởi động lại, đọc lại đúng mã tin, tiêu đề và trạng thái chờ duyệt từ SQLite.');
  published=(await req('/api/tin-dang')).json.items.find(x=>x.id==='pt01');assert.equal(published.price,4300000);
  assert.equal((await req('/api/tin-dang')).json.items.length,9);
  for(const path of ['/quan-ly/tin-dang.html','/quan-ly/tin-dang.js','/quan-ly/tin-dang.css','/tai-khoan/tim-phong.html','/trang-chu.html'])assert.equal((await fetch(base+path)).status,200);
