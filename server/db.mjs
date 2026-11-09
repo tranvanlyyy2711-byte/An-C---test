@@ -259,6 +259,13 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
     db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS one_active_per_renter_room ON viewing_appointments (renter_id, room_id)
              WHERE renter_id IS NOT NULL AND status IN ${ACTIVE}`);
   } catch { /* dữ liệu cũ trùng */ }
+  db.exec(`CREATE TABLE IF NOT EXISTS listing_details (
+    listing_id INTEGER PRIMARY KEY REFERENCES listings(id),
+    owner_id TEXT NOT NULL UNIQUE REFERENCES users(id),
+    data_json TEXT NOT NULL,
+    visible INTEGER NOT NULL DEFAULT 1 CHECK(visible IN (0,1)),
+    updated_at TEXT NOT NULL
+  )`);
   db.exec(AUTH_SCHEMA);
   migrateAuth(db);
   seedDemoUsers(db);
@@ -284,7 +291,7 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
                          WHERE id = ? AND status = 'pending' AND (hold_expires_at IS NULL OR hold_expires_at > ?)
                          RETURNING *`),
     // Trạng thái tin đăng của phòng, dùng để chặn đặt lịch với tin chưa qua kiểm duyệt
-    tinDang: db.prepare('SELECT status FROM listings WHERE room_id = ?'),
+    tinDang: db.prepare('SELECT l.status, COALESCE(d.visible, 1) AS visible FROM listings l LEFT JOIN listing_details d ON d.listing_id = l.id WHERE l.room_id = ?'),
     insert: db.prepare(`INSERT INTO viewing_appointments
       (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, hold_expires_at, cancel_reason, note, urgent, source, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
@@ -482,6 +489,7 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
     if (!room || room.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
     // Tin đăng bị quản trị từ chối thì không nhận đặt lịch xem nữa
     const tin = q.tinDang.get(roomId);
+    if (tin && !tin.visible) throw new ApiError(409, 'listing_hidden', 'Tin đăng đã được chủ trọ ẩn, vui lòng chọn phòng khác.');
     if (tin && tin.status !== 'approved') {
       throw new ApiError(409, 'listing_not_approved',
         tin.status === 'rejected'

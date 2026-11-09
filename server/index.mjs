@@ -17,6 +17,7 @@ import { createThanhToan } from './thanh-toan.mjs';
 import { createPhongChuTro } from './phong-chu-tro.mjs';
 import { NGUOI_THUE, NHA_TRO } from './phong.mjs';
 import { createBus } from './thong-bao.mjs';
+import { createListings } from './tin-dang.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -28,6 +29,7 @@ const now = () => (FIXED_NOW ? new Date(FIXED_NOW.getTime()) : new Date());
 
 const bus = createBus();
 const store = openDb({ file: dbFile, now, publish: bus.publish });
+const listings = createListings(store.db, ApiError, now);
 const auth = createAuth(store.db, ApiError);
 const admin = createAdmin(store.db, ApiError, now);
 const suCo = createSuCo(store.db, ApiError, now);
@@ -45,6 +47,11 @@ const types = {
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png',
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
 };
+
+function announceListings() {
+  const users = store.db.prepare("SELECT id FROM users WHERE status = 'active'").all().map(u => u.id);
+  bus.publish(users, ['tin-dang', 'phong']);
+}
 
 function send(res, status, body, headers = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers });
@@ -76,6 +83,18 @@ async function api(req, res, url) {
   let id;
 
   const me = auth.userFromReq(req);
+
+  if (p === '/api/tin-dang' && m === 'GET') return send(res, 200, { items: listings.publicRooms() });
+  if (p === '/api/chu-tro/tin-dang') {
+    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản chủ trọ.');
+    if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ được quản lý tin đăng.');
+    if (m === 'GET') return send(res, 200, { item: listings.mine(me.id) });
+    if (m === 'PATCH' || m === 'POST') {
+      const item = listings.save(me.id, await readJson(req), m === 'POST');
+      announceListings();
+      return send(res, m === 'POST' ? 201 : 200, { item });
+    }
+  }
 
   if (p === '/api/suc-khoe' && m === 'GET') return send(res, 200, { ok: true, now: now().toISOString(), me });
 
@@ -137,7 +156,7 @@ async function api(req, res, url) {
     const body = await readJson(req);
     return send(res, 201, { items: store.addFavorite(mustRenterLogin(), String(body.roomId || '')) });
   }
-  if ((id = p.match(/^\/api\/da-luu\/([A-Za-z0-9.]+)$/)) && m === 'DELETE') {
+  if ((id = p.match(/^\/api\/da-luu\/([A-Za-z0-9._-]+)$/)) && m === 'DELETE') {
     return send(res, 200, { items: store.removeFavorite(mustRenterLogin(), id[1]) });
   }
 
@@ -308,7 +327,9 @@ async function api(req, res, url) {
     return send(res, 200, { items: admin.listListings({ status: qs.get('trangThai'), q: qs.get('tim') }) });
   }
   if ((id = sub('/api/quan-tri/tin-dang/')) && m === 'PATCH') {
-    return send(res, 200, { item: admin.decideListing(id, await readJson(req), me.id) });
+    const item = admin.decideListing(id, await readJson(req), me.id);
+    announceListings();
+    return send(res, 200, { item });
   }
   if (p === '/api/quan-tri/nha-tro' && m === 'GET') return send(res, 200, admin.listProperties({ q: qs.get('tim') }));
   if (p === '/api/quan-tri/goi' && m === 'GET') return send(res, 200, { items: admin.listPlans() });
@@ -439,7 +460,9 @@ Hoặc chạy An Cư ở cổng khác:  $env:PORT=5600; npm start
 
 server.listen(port, () => {
   // Địa chỉ cho điện thoại / máy khác cùng mạng Wi-Fi (máy chủ lắng nghe trên mọi địa chỉ)
-  const lan = Object.values(networkInterfaces()).flat()
+  let interfaces = {};
+  try { interfaces = networkInterfaces(); } catch {}
+  const lan = Object.values(interfaces).flat()
     .filter((a) => a && a.family === 'IPv4' && !a.internal && !a.address.startsWith('169.254.'))
     .map((a) => `http://${a.address}:${port}`);
   console.log(`An Cư: http://localhost:${port}  (dữ liệu: ${dbFile}, bây giờ = ${now().toLocaleString('vi-VN')}${FIXED_NOW ? ' (đóng băng)' : ''})` +
