@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Đăng nhập — An Cư</title>
+<meta name="description" content="Đăng nhập An Cư cho người thuê trọ, chủ trọ, môi giới và quản trị viên." />
+<link rel="icon" href="assets/logo-ancu.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* Bộ token chung của dự án — lấy đúng khối :root của quan-ly/yeucauvalichhen.html */
+:root{
+  --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
+  --border:rgba(34,139,34,.12);--border-strong:rgba(34,139,34,.2);
+  --text:#102010;--text-muted:#4B5C4B;--text-dim:#667565;
+  --accent:#228B22;--accent-hover:#1D7C1D;--accent-fg:#FFFFFF;
+  --success-ink:#1B7A1B;--warning-ink:#8A5A11;--danger:#FF6B6B;--danger-ink:#B4291F;--info-ink:#1D4FBE;
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;-webkit-text-size-adjust:100%}
+body{min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  font-family:'Inter','Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:clip}
+h1,h2,h3{font-family:'Be Vietnam Pro','Inter',sans-serif;line-height:1.15;letter-spacing:-.02em}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* ---------- Thanh trên ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  max-width:1200px;width:100%;margin:0 auto;padding:16px}
+.brand{display:flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;
+  font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:19px}
+.brand img{width:38px;height:38px;object-fit:contain}
+.back{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 4px;text-decoration:none;
+  font-size:15px;color:var(--text-muted);transition:color .18s var(--ease)}
+.back:hover{color:var(--text)}
+.back svg{width:18px;height:18px}
+
+/* ---------- Bố cục ---------- */
+main{flex:1;width:100%;max-width:1200px;margin:0 auto;padding:8px 16px 48px;
+  display:grid;gap:20px;align-content:start}
+.intro{max-width:560px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--success-ink)}
+.intro h1{margin-top:8px;font-size:32px;font-weight:700;text-wrap:balance}
+.intro p{margin-top:10px;color:var(--text-muted)}
+.grid{display:grid;gap:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 20px}
+.card h2{font-size:20px;font-weight:700}
+.card .sub{margin-top:4px;font-size:15px;color:var(--text-dim)}
+
+@media (min-width:768px){
+  main{padding:24px 24px 64px}
+  .topbar{padding:20px 24px}
+  .card{padding:32px}
+  .intro h1{font-size:40px}
+}
+@media (min-width:1024px){
+  main{padding-top:56px;gap:32px}
+  .grid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+  .intro h1{font-size:48px}
+}
+
+/* ---------- Form ---------- */
+form{margin-top:24px;display:grid;gap:18px}
+.field label{display:block;margin-bottom:6px;font-size:15px;font-weight:600}
+.field .hint{font-weight:400;color:var(--text-dim)}
+.control{position:relative}
+.control input{width:100%;min-height:48px;padding:0 14px;font-size:16px;background:var(--surface);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);transition:border-color .18s var(--ease),box-shadow .18s var(--ease)}
+.control input::placeholder{color:var(--text-dim)}
+.control input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.16)}
+.control input[aria-invalid="true"]{border-color:var(--danger-ink)}
+.control.has-toggle input{padding-right:52px}
+.toggle{position:absolute;top:2px;right:2px;width:44px;height:44px;display:grid;place-items:center;
+  background:none;border:0;border-radius:6px;color:var(--text-dim)}
+.toggle:hover{color:var(--text)}
+.toggle svg{width:20px;height:20px}
+.err{margin-top:6px;font-size:14px;color:var(--danger-ink)}
+.err:empty{display:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;
+  border-radius:var(--radius-sm);border:1px solid transparent;font-family:'Be Vietnam Pro',sans-serif;
+  font-size:16px;font-weight:600;text-decoration:none;transition:background .18s var(--ease),border-color .18s var(--ease),transform .18s var(--ease)}
+.btn-primary{width:100%;background:var(--accent);color:var(--accent-fg);box-shadow:0 6px 18px rgba(34,139,34,.18)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:active{transform:translateY(1px)}
+.btn-ghost{background:var(--surface);border-color:var(--border-strong)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.form-foot{font-size:14px;color:var(--text-dim);text-align:center}
+.form-foot a{display:inline-flex;align-items:center;min-height:44px;color:var(--success-ink);font-weight:600}
+
+/* ---------- Demo nhanh ---------- */
+.demo{background:var(--surface-2)}
+.demo-list{margin-top:20px;display:grid;gap:10px;list-style:none}
+.demo-btn{width:100%;display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 14px;text-align:left;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  transition:border-color .18s var(--ease),transform .18s var(--ease),box-shadow .18s var(--ease)}
+.demo-btn:hover{border-color:var(--border-strong);transform:translateY(-1px);box-shadow:0 6px 16px rgba(16,32,16,.05)}
+.demo-btn[disabled]{opacity:.6;cursor:progress;transform:none}
+.demo-ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(34,139,34,.08);border:1px solid var(--border-strong);color:var(--accent)}
+.demo-ico svg{width:20px;height:20px}
+.demo-tx{flex:1;min-width:0}
+.demo-tx b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15.5px;font-weight:600}
+.demo-tx span{display:block;font-size:14px;color:var(--text-dim);overflow-wrap:anywhere}
+.demo-btn .go{width:18px;height:18px;color:var(--text-dim)}
+.demo-note{margin-top:16px;font-size:14px;color:var(--text-dim)}
+.demo-note code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13.5px;color:var(--text);
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1px 6px}
+
+/* ---------- Thông báo trạng thái ---------- */
+.notice{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--radius);
+  border:1px solid var(--border-strong);background:var(--surface)}
+.notice[hidden]{display:none}
+.notice svg{width:20px;height:20px;margin-top:2px;color:var(--info-ink)}
+.notice.is-ok svg{color:var(--success-ink)}
+.notice-body{flex:1;min-width:0;font-size:15px}
+.notice-body b{font-weight:600}
+.notice-actions{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
+.notice-actions .btn{min-height:44px;font-size:15px;padding:0 16px}
+.notice-actions .btn-primary{width:auto}
+
+/* ---------- Hiện dần khi cuộn (tắt hẳn khi giảm chuyển động) ---------- */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .45s ease-out,transform .45s ease-out}
+.reveal.in{opacity:1;transform:none}
+.reveal[data-d="1"]{transition-delay:.06s}.reveal[data-d="2"]{transition-delay:.12s}
+.demo-list .reveal:nth-child(2){transition-delay:.05s}.demo-list .reveal:nth-child(3){transition-delay:.1s}.demo-list .reveal:nth-child(4){transition-delay:.15s}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ">
+    <img src="assets/logo-ancu.png" alt="" width="38" height="38" /> An Cư
+  </a>
+  <a class="back" href="trang-chu.html">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    Trang chủ
+  </a>
+</header>
+
+<main>
+  <section class="intro reveal" aria-labelledby="tieu-de">
+    <p class="eyebrow">Đăng nhập</p>
+    <h1 id="tieu-de">Chào mừng trở lại An Cư</h1>
+    <p>Một tài khoản cho mọi việc: tìm và giữ phòng, quản lý nhà trọ, theo dõi khách giới thiệu.</p>
+  </section>
+
+  <div id="dangNhapRoi" class="notice" role="status" aria-live="polite" hidden></div>
+
+  <div class="grid">
+    <section class="card reveal" data-d="1" aria-labelledby="form-title">
+      <h2 id="form-title">Đăng nhập tài khoản</h2>
+      <p class="sub">Dùng email hoặc số điện thoại đã đăng ký.</p>
+
+      <form id="formDangNhap" novalidate>
+        <div class="field">
+          <label for="email">Email <span class="hint">hoặc số điện thoại</span></label>
+          <div class="control">
+            <input id="email" name="email" type="text" inputmode="email" autocomplete="username"
+                   placeholder="ten@email.com" required aria-describedby="loiEmail" />
+          </div>
+          <p class="err" id="loiEmail"></p>
+        </div>
+
+        <div class="field">
+          <label for="matKhau">Mật khẩu</label>
+          <div class="control has-toggle">
+            <input id="matKhau" name="password" type="password" autocomplete="current-password"
+                   placeholder="Nhập mật khẩu" required aria-describedby="loiMatKhau" />
+            <button type="button" class="toggle" id="hienMatKhau" aria-label="Hiện mật khẩu" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="err" id="loiMatKhau"></p>
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="nutDangNhap">Đăng nhập</button>
+        <p class="form-foot">Chưa có tài khoản? <a href="trang-chu.html">Đăng ký ở trang chủ</a> · <a href="dang-ky-moi-gioi.html">Làm môi giới</a></p>
+      </form>
+    </section>
+
+    <section class="card demo reveal" data-d="2" aria-labelledby="demo-title">
+      <h2 id="demo-title">Demo nhanh tài khoản</h2>
+      <p class="sub">Bấm một vai trò để tự điền và đăng nhập ngay.</p>
+
+      <ul class="demo-list" id="demoList">
+        <li class="reveal">
+          <button type="button" class="demo-btn" data-email="trang@ancu.test">
+            <span class="demo-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></span>
+            <span class="demo-tx"><b>Đăng nhập nhanh Người thuê</b><span>Phạm Thu Trang · trang@ancu.test</span></span>
+            <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </li>
+        <li class="reveal">
+          <button type="button" class="demo-btn" data-email="chutro@ancu.test">
+            <span class="demo-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
+            <span class="demo-tx"><b>Đăng nhập nhanh Chủ trọ</b><span>Trần Hoà · chutro@ancu.test</span></span>
+            <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </li>
+        <li class="reveal">
+          <button type="button" class="demo-btn" data-email="khoa@ancu.test">
+            <span class="demo-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+            <span class="demo-tx"><b>Đăng nhập nhanh Môi giới</b><span>Đỗ Minh Khoa · khoa@ancu.test</span></span>
+            <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </li>
+        <li class="reveal">
+          <button type="button" class="demo-btn" data-email="admin@ancu.test">
+            <span class="demo-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <span class="demo-tx"><b>Đăng nhập nhanh Admin</b><span>Quản trị An Cư · admin@ancu.test</span></span>
+            <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </li>
+      </ul>
+      <p class="demo-note">Mọi tài khoản demo dùng mật khẩu <code>matkhau123</code>.</p>
+    </section>
+  </div>
+</main>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<!-- Phiên xem thử mà các trang tai-khoan/*, quan-ly/*, quan-tri/* đang đọc khi không có máy chủ -->
+<script src="components/phien-xem-thu.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  // Trang làm việc của từng vai trò. Vai trò nào để null thì ở lại trang này và báo rõ là chưa có khu riêng.
+  var DASHBOARD = {
+    renter:   'tai-khoan/tim-phong.html',
+    landlord: 'quan-ly/tong-quan.html',
+    admin:    'quan-tri/trang-chu.html',
+    broker:   'broker-dashboard.html'
+  };
+  var TEN_VAI_TRO = { renter:'Người thuê', landlord:'Chủ trọ', broker:'Môi giới', admin:'Quản trị viên' };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var form = $('formDangNhap'), inEmail = $('email'), inMatKhau = $('matKhau');
+  var nutDangNhap = $('nutDangNhap'), notice = $('dangNhapRoi');
+  var demoBtns = [].slice.call(document.querySelectorAll('.demo-btn'));
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+
+  function baoLoi(input, loiId, text){
+    $(loiId).textContent = text || '';
+    if(text) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+  }
+  function xoaLoi(){ baoLoi(inEmail, 'loiEmail', ''); baoLoi(inMatKhau, 'loiMatKhau', ''); }
+
+  function dangBan(on){
+    nutDangNhap.disabled = on;
+    nutDangNhap.textContent = on ? 'Đang đăng nhập…' : 'Đăng nhập';
+    demoBtns.forEach(function(b){ b.disabled = on; });
+  }
+
+  /* Các trang hiện có không đọc `currentUser` mà hỏi AnCuNguoiDung (máy chủ → Supabase → phiên xem
+   * thử). Nên sau khi auth.js đăng nhập xong, mở luôn phiên tương ứng để trang đích nhận đúng người:
+   *  - đang chạy npm start → POST /api/dang-nhap (cookie phiên thật);
+   *  - không có máy chủ (file://, bản tĩnh) → PhienXemThu.dangNhap.
+   * Môi giới chưa có trong hai hệ đó nên bỏ qua. */
+  function moPhienChung(user, matKhau){
+    if(!user || user.role === 'broker') return Promise.resolve();
+    var xemThu = function(){ if(window.PhienXemThu) window.PhienXemThu.dangNhap(user.phone, matKhau); };
+    if(!/^https?:$/.test(location.protocol) || !window.fetch){ xemThu(); return Promise.resolve(); }
+    return fetch('/api/dang-nhap', {
+      method:'POST', credentials:'same-origin',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ phone:user.phone, password:matKhau })
+    }).then(function(r){ if(!r.ok) xemThu(); })
+      .catch(xemThu);
+  }
+
+  function hienDaDangNhap(user, vuaXong){
+    var dich = DASHBOARD[user.role];
+    var ten = '<b>' + esc(user.name) + '</b> (' + esc(TEN_VAI_TRO[user.role] || user.role) + ')';
+    var html;
+    if(dich){
+      html = (vuaXong ? 'Đã đăng nhập: ' : 'Bạn đang đăng nhập là ') + ten + '.' +
+        '<div class="notice-actions"><a class="btn btn-primary" href="' + dich + '">Vào trang của tôi</a>' +
+        '<button type="button" class="btn btn-ghost" data-dang-xuat>Đăng xuất</button></div>';
+    } else {
+      html = (vuaXong ? 'Đã đăng nhập: ' : 'Bạn đang đăng nhập là ') + ten +
+        (user.ref_code ? ' · mã giới thiệu <b>' + esc(user.ref_code) + '</b>' : '') + '. ' +
+        'Khu làm việc cho môi giới chưa làm, nên chưa có trang để chuyển tới.' +
+        '<div class="notice-actions"><a class="btn btn-ghost" href="tai-khoan/tim-phong.html">Xem danh sách phòng</a>' +
+        '<button type="button" class="btn btn-ghost" data-dang-xuat>Đăng xuất</button></div>';
+    }
+    notice.className = 'notice' + (vuaXong ? ' is-ok' : '');
+    notice.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/>' +
+      (vuaXong ? '<path d="M8 12l3 3 5-6"/>' : '<path d="M12 8h.01M11 12h1v4h1"/>') +
+      '</svg><div class="notice-body">' + html + '</div>';
+    notice.hidden = false;
+  }
+
+  notice.addEventListener('click', function(e){
+    if(e.target.closest('[data-dang-xuat]')) logout();
+  });
+
+  function dangNhap(email, matKhau){
+    xoaLoi();
+    if(!email.trim()){ baoLoi(inEmail, 'loiEmail', 'Vui lòng nhập email hoặc số điện thoại.'); inEmail.focus(); return; }
+    if(!matKhau){ baoLoi(inMatKhau, 'loiMatKhau', 'Vui lòng nhập mật khẩu.'); inMatKhau.focus(); return; }
+
+    var role = login(email, matKhau);
+    if(!role){
+      baoLoi(inMatKhau, 'loiMatKhau', 'Email/số điện thoại hoặc mật khẩu không đúng.');
+      inMatKhau.focus(); inMatKhau.select();
+      return;
+    }
+
+    var user = getCurrentUser();
+    dangBan(true);
+    moPhienChung(user, matKhau).then(function(){
+      // Được gửi tới từ trang khác (?next=) thì quay lại đúng trang đó; chỉ nhận trang nội bộ
+      var next = '';
+      try { next = window.AnCuAuthLocal.safeNext(new URLSearchParams(location.search).get('next')); } catch(e){}
+      var dich = next || DASHBOARD[role];
+      if(dich){ location.href = dich; return; }
+      dangBan(false);
+      hienDaDangNhap(user, true);
+      notice.scrollIntoView({ block:'nearest' });
+    });
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    dangNhap(inEmail.value, inMatKhau.value);
+  });
+
+  // Demo nhanh: tự điền rồi đăng nhập
+  demoBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      inEmail.value = b.dataset.email;
+      inMatKhau.value = window.AnCuData.DEMO_PASSWORD;
+      dangNhap(inEmail.value, inMatKhau.value);
+    });
+  });
+
+  $('hienMatKhau').addEventListener('click', function(){
+    var hien = inMatKhau.type === 'password';
+    inMatKhau.type = hien ? 'text' : 'password';
+    this.setAttribute('aria-pressed', String(hien));
+    this.setAttribute('aria-label', hien ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+  });
+
+  // Đã đăng nhập từ trước → nói rõ thay vì bắt nhập lại
+  var hienTai = getCurrentUser();
+  if(hienTai && hienTai.role) hienDaDangNhap(hienTai, false);
+
+  // Hiện dần khi cuộn
+  var items = [].slice.call(document.querySelectorAll('.reveal'));
+  var giamChuyenDong = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(giamChuyenDong || !('IntersectionObserver' in window)){
+    items.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { rootMargin:'0px 0px -10% 0px' });
+    items.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

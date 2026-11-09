@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chi tiết phòng — An Cư</title>
+<meta name="description" content="Xem ảnh, giá thuê, tiện ích và đặt lịch xem phòng trọ trên An Cư." />
+<link rel="icon" href="assets/logo-ancu.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<style>
+/* ---------- Dải mã giới thiệu ---------- */
+.ref-bar{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface);font-size:15px}
+.ref-bar svg{width:20px;height:20px;margin-top:2px;color:var(--success-ink)}
+.ref-bar.is-warn svg{color:var(--warning-ink)}
+.ref-bar[hidden]{display:none}
+
+/* ---------- Bố cục chi tiết ---------- */
+.crumb{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:14px;color:var(--text-dim)}
+.crumb a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;color:var(--text-muted)}
+.crumb a:hover{color:var(--text)}
+.detail{display:grid;gap:24px}
+@media (min-width:1024px){.detail{grid-template-columns:minmax(0,1fr) 380px;gap:40px;align-items:start}}
+.col-main{display:grid;gap:28px;min-width:0}
+
+/* ---------- Gallery ---------- */
+.gallery{display:grid;gap:10px}
+.g-main{position:relative;display:block;width:100%;padding:0;border:0;border-radius:var(--radius);overflow:hidden;background:var(--surface-2);aspect-ratio:4/3}
+@media (min-width:768px){.g-main{aspect-ratio:16/10}}
+.g-main img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease)}
+.g-main:hover img{transform:scale(1.02)}
+.g-count{position:absolute;right:12px;bottom:12px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;
+  background:rgba(16,32,16,.72);color:#fff;font-size:13.5px;font-weight:600}
+.g-count svg{width:16px;height:16px}
+.thumbs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.thumbs::-webkit-scrollbar{display:none}
+.thumb{flex:0 0 auto;width:84px;aspect-ratio:4/3;padding:0;border:2px solid transparent;border-radius:var(--radius-sm);overflow:hidden;background:var(--surface-2);opacity:.7;transition:opacity .18s var(--ease),border-color .18s var(--ease)}
+@media (min-width:768px){.thumb{width:112px}}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb:hover{opacity:1}
+.thumb[aria-current="true"]{opacity:1;border-color:var(--accent)}
+
+/* ---------- Thông tin ---------- */
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.info h1{margin-top:10px;font-size:28px;font-weight:700;text-wrap:balance}
+@media (min-width:768px){.info h1{font-size:36px}}
+.addr{margin-top:8px;display:flex;gap:6px;align-items:flex-start;color:var(--text-muted)}
+.addr svg{width:18px;height:18px;margin-top:4px}
+.price{margin-top:16px;font-family:'Be Vietnam Pro',sans-serif;font-size:30px;font-weight:700;color:var(--success-ink)}
+.price small{font-family:'Inter',sans-serif;font-size:16px;font-weight:500;color:var(--text-dim)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+@media (min-width:768px){.facts{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.facts div{background:var(--surface);padding:14px 16px}
+.facts dt{font-size:13.5px;color:var(--text-dim)}
+.facts dd{margin-top:2px;font-family:'Be Vietnam Pro',sans-serif;font-size:17px;font-weight:600}
+.block h2{font-size:19px;font-weight:700;margin-bottom:12px}
+.amen{display:flex;flex-wrap:wrap;gap:8px;list-style:none}
+.amen li{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:14.5px}
+.amen svg{width:16px;height:16px;color:var(--accent)}
+.desc{color:var(--text-muted);max-width:68ch}
+.owner{display:flex;align-items:center;gap:12px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.owner b{display:block;font-family:'Be Vietnam Pro',sans-serif}
+.owner span{font-size:14px;color:var(--text-dim)}
+
+/* ---------- Khung đặt lịch ---------- */
+.book{padding:20px;display:grid;gap:16px;scroll-margin-top:80px}
+@media (min-width:1024px){.book{position:sticky;top:88px;padding:24px}}
+.book h2{font-size:20px;font-weight:700}
+.book .sub{margin-top:2px;font-size:14.5px;color:var(--text-dim)}
+.book form{display:grid;gap:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.taken{font-size:14px;color:var(--text-muted);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.taken:empty{display:none}
+.book-note{font-size:13.5px;color:var(--text-dim)}
+.booked{display:grid;gap:10px;padding:16px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border)}
+.booked b{font-family:'Be Vietnam Pro',sans-serif;font-size:16px}
+.booked p{font-size:14.5px;color:var(--text-muted)}
+
+/* ---------- Thẻ phòng (ảnh 4:3, bo 12px, giá đè góc dưới) ---------- */
+.grid-rooms{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));list-style:none}
+.rcard{display:block;text-decoration:none;color:inherit}
+.rcard-img{position:relative;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--surface-2)}
+.rcard-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease)}
+.rcard:hover .rcard-img img{transform:scale(1.04)}
+.rcard-price{position:absolute;left:10px;bottom:10px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.94);
+  font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;font-weight:700;color:var(--success-ink)}
+.rcard h3{margin-top:10px;font-size:16.5px;font-weight:600}
+.rcard p{font-size:14px;color:var(--text-dim)}
+
+/* ---------- Lightbox ---------- */
+.lb{width:100%;max-width:100%;height:100%;max-height:100%;margin:0;padding:0;border:0;background:rgba(10,20,10,.94);color:#fff}
+.lb[open]{display:grid;grid-template-rows:auto 1fr auto}
+.lb::backdrop{background:rgba(10,20,10,.94)}
+.lb-top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px}
+.lb-top span{font-size:15px;font-weight:600}
+.lb-img{display:grid;place-items:center;min-height:0;padding:0 8px}
+.lb-img img{max-width:100%;max-height:100%;object-fit:contain;border-radius:var(--radius-sm)}
+.lb-nav{display:flex;justify-content:center;gap:12px;padding:12px}
+.lb-btn{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff}
+.lb-btn:hover{background:rgba(255,255,255,.18)}
+.lb-btn svg{width:22px;height:22px}
+
+/* ---------- Thanh đặt lịch dưới đáy (điện thoại) ---------- */
+.mbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--border)}
+.mbar b{font-family:'Be Vietnam Pro',sans-serif;font-size:18px;color:var(--success-ink)}
+.mbar small{display:block;font-size:13px;color:var(--text-dim)}
+.mbar[hidden]{display:none}
+body.has-mbar{padding-bottom:76px}
+@media (min-width:1024px){.mbar{display:none!important} body.has-mbar{padding-bottom:0}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /> An Cư</a>
+    <div class="topbar-end" id="topbarEnd"></div>
+  </div>
+</header>
+
+<main class="page" id="main">
+  <div class="ref-bar" id="refBar" role="status" hidden></div>
+
+  <!-- Chi tiết phòng -->
+  <div id="chiTiet" hidden>
+    <nav class="crumb reveal" aria-label="Đường dẫn">
+      <a href="tai-khoan/tim-phong.html">Tìm phòng</a><span aria-hidden="true">/</span>
+      <span id="crumbKhu"></span>
+    </nav>
+
+    <div class="detail">
+      <div class="col-main">
+        <section class="gallery reveal" aria-label="Ảnh phòng">
+          <button type="button" class="g-main" id="gMain" aria-label="Mở ảnh lớn">
+            <img id="gMainImg" src="" alt="" width="1200" height="900" decoding="async" fetchpriority="high" />
+            <span class="g-count"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 7"/></svg><span id="gCount"></span></span>
+          </button>
+          <div class="thumbs" id="thumbs" role="group" aria-label="Chọn ảnh"></div>
+        </section>
+
+        <section class="info reveal" aria-labelledby="tenPhong">
+          <div class="tags" id="tags"></div>
+          <h1 id="tenPhong"></h1>
+          <p class="addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-12a7 7 0 0114 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span id="diaChi"></span></p>
+          <p class="price num" id="gia"></p>
+        </section>
+
+        <dl class="facts reveal" id="facts"></dl>
+
+        <section class="block reveal" aria-labelledby="h-tien-ich">
+          <h2 id="h-tien-ich">Tiện ích</h2>
+          <ul class="amen" id="tienIch"></ul>
+        </section>
+
+        <section class="block reveal" aria-labelledby="h-mo-ta">
+          <h2 id="h-mo-ta">Mô tả</h2>
+          <p class="desc" id="moTa"></p>
+        </section>
+
+        <section class="block reveal" aria-labelledby="h-chu">
+          <h2 id="h-chu">Chủ trọ</h2>
+          <div class="owner"><span class="av" id="chuAv" aria-hidden="true"></span><div><b id="chuTen"></b><span>Liên hệ qua lịch xem phòng trên An Cư</span></div></div>
+        </section>
+      </div>
+
+      <aside class="card book reveal" id="datLich" aria-labelledby="h-dat-lich">
+        <div>
+          <h2 id="h-dat-lich">Đặt lịch xem phòng</h2>
+          <p class="sub">Buổi xem 30 phút, trong khung 07:00–21:00. Chủ trọ xác nhận trong 24 giờ.</p>
+        </div>
+        <div id="bookBody"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Phòng khác / chọn phòng -->
+  <section class="reveal" aria-labelledby="h-khac" id="khacWrap">
+    <div class="sec-head"><div><h2 id="h-khac">Phòng khác</h2><p id="khacSub"></p></div></div>
+    <ul class="grid-rooms stagger" id="khac"></ul>
+  </section>
+</main>
+
+<div class="mbar" id="mbar" hidden>
+  <div><b class="num" id="mbarGia"></b><small>mỗi tháng</small></div>
+  <a class="btn btn-primary" href="#datLich">Đặt lịch xem</a>
+</div>
+
+<dialog class="lb" id="lb" aria-label="Ảnh phòng cỡ lớn">
+  <div class="lb-top"><span id="lbCount"></span><button type="button" class="lb-btn" id="lbClose" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="lb-img"><img id="lbImg" src="" alt="" /></div>
+  <div class="lb-nav">
+    <button type="button" class="lb-btn" id="lbPrev" aria-label="Ảnh trước"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button type="button" class="lb-btn" id="lbNext" aria-label="Ảnh sau"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/bookings.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+(function(){
+  'use strict';
+  var D = window.AnCuData, B = window.AnCuBookings, UI = window.AnCuUI, esc = UI.esc, vnd = D.formatVnd;
+  var $ = function(id){ return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var room = D.findRoom(params.get('id'));
+  if (room && !room.is_listing) room = null;
+  var me = getCurrentUser();
+
+  /* ---------- 1. Mã giới thiệu trên URL → localStorage 'refCode' ---------- */
+  var refUrl = B.captureRef();
+  var ref = B.currentRef();
+  var bar = $('refBar');
+  if (refUrl && !refUrl.broker) {
+    bar.className = 'ref-bar is-warn';
+    bar.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>' +
+      '<div>Mã giới thiệu <span class="ref">' + esc(refUrl.code) + '</span> không tồn tại nên không được ghi nhận.' +
+      (ref ? ' Vẫn dùng mã trước đó: <span class="ref">' + esc(ref.code) + '</span>.' : '') + '</div>';
+    bar.hidden = false;
+  } else if (ref) {
+    bar.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>' +
+      '<div>Bạn được môi giới <b>' + esc(ref.broker.name) + '</b> (<span class="ref">' + esc(ref.code) + '</span>) giới thiệu. ' +
+      'Mã này sẽ được gắn vào lịch xem phòng bạn đặt.</div>';
+    bar.hidden = false;
+  }
+
+  /* ---------- Thanh trên ---------- */
+  var here = 'phong-chi-tiet.html' + (room ? '?id=' + encodeURIComponent(room.id) : '');
+  var loginHref = window.AnCuAuthLocal.loginUrlFor(here);
+  if (me) {
+    var ten = me.name || '';
+    $('topbarEnd').innerHTML =
+      (me.role === 'renter' ? '<a class="btn btn-ghost" href="tenant-dashboard.html">Lịch hẹn của tôi</a>' : '') +
+      '<span class="who"><span class="av" aria-hidden="true">' + esc(ten.split(/\s+/).slice(-1)[0].charAt(0)) + '</span>' +
+      '<span class="who-tx"><b>' + esc(ten) + '</b><span>' + ({ renter:'Người thuê', landlord:'Chủ trọ', broker:'Môi giới', admin:'Quản trị' }[me.role] || '') + '</span></span></span>';
+  } else {
+    $('topbarEnd').innerHTML = '<a class="btn btn-ghost" href="' + esc(loginHref) + '">Đăng nhập</a>';
+  }
+
+  /* ---------- Thẻ phòng ---------- */
+  function card(r){
+    return '<li class="reveal"><a class="rcard" href="phong-chi-tiet.html?id=' + encodeURIComponent(r.id) + '">' +
+      '<div class="rcard-img"><img src="' + esc(r.images[0]) + '" alt="' + esc(r.alt) + '" width="640" height="480" loading="lazy" decoding="async" />' +
+      '<span class="rcard-price num">' + vnd(r.price) + '/tháng</span></div>' +
+      '<h3>' + esc(r.title) + '</h3><p>' + esc(r.area + ' m² · ' + r.address.split(', ').slice(-2).join(', ')) + '</p></a></li>';
+  }
+  var listings = D.rooms.filter(function(r){ return r.is_listing; });
+
+  if (!room) {
+    // Không có ?id= hoặc id sai → cho chọn phòng
+    document.title = 'Chọn phòng — An Cư';
+    $('h-khac').textContent = params.get('id') ? 'Không tìm thấy phòng này' : 'Chọn phòng để xem chi tiết';
+    $('khacSub').textContent = (params.get('id') ? 'Có thể tin đã gỡ hoặc đường dẫn bị sai. ' : '') + listings.length + ' phòng đang cho thuê';
+    $('khac').innerHTML = listings.map(card).join('');
+    UI.reveal();
+    return;
+  }
+
+  /* ---------- 2. Chi tiết phòng ---------- */
+  document.title = room.title + ' — An Cư';
+  $('chiTiet').hidden = false;
+  var khu = room.address.split(', ');
+  $('crumbKhu').textContent = khu[khu.length - 2] || '';
+  $('tags').innerHTML = '<span class="badge b-mute">' + esc(room.type) + '</span>' +
+    (room.status === 'available' ? '<span class="badge b-ok">Còn trống</span>' : '<span class="badge b-warn">Đã có người thuê</span>');
+  $('tenPhong').textContent = room.title;
+  $('diaChi').textContent = room.address;
+  $('gia').innerHTML = vnd(room.price) + ' <small>/tháng</small>';
+  $('facts').innerHTML = [
+    ['Diện tích', room.area + ' m²'], ['Tối đa', room.people + ' người'], ['Tầng', String(room.floor)], ['Tiền cọc', vnd(room.price)]
+  ].map(function(f){ return '<div><dt>' + f[0] + '</dt><dd class="num">' + esc(f[1]) + '</dd></div>'; }).join('');
+  $('tienIch').innerHTML = room.amenities.map(function(a){
+    return '<li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>' + esc(a) + '</li>';
+  }).join('');
+  $('moTa').textContent = room.desc;
+  var chu = D.findUser(room.landlord_id);
+  $('chuTen').textContent = chu ? chu.name : 'Chủ trọ';
+  $('chuAv').textContent = chu ? chu.name.split(/\s+/).slice(-1)[0].charAt(0) : '?';
+  $('mbarGia').textContent = vnd(room.price);
+  $('mbar').hidden = false;
+  document.body.classList.add('has-mbar');
+
+  /* Gallery + lightbox */
+  var anh = 0, imgs = room.images;
+  function altOf(i){ return room.alt + ' — ảnh ' + (i + 1) + '/' + imgs.length; }
+  function chonAnh(i){
+    anh = (i + imgs.length) % imgs.length;
+    $('gMainImg').src = imgs[anh];
+    $('gMainImg').alt = altOf(anh);
+    $('gCount').textContent = (anh + 1) + '/' + imgs.length;
+    [].forEach.call($('thumbs').children, function(t, k){ t.setAttribute('aria-current', String(k === anh)); });
+    if ($('lb').open){ $('lbImg').src = imgs[anh]; $('lbImg').alt = altOf(anh); $('lbCount').textContent = (anh + 1) + ' / ' + imgs.length; }
+  }
+  $('thumbs').innerHTML = imgs.map(function(src, i){
+    return '<button type="button" class="thumb" data-i="' + i + '" aria-label="Ảnh ' + (i + 1) + '"><img src="' + esc(src) + '" alt="" width="112" height="84" loading="lazy" decoding="async" /></button>';
+  }).join('');
+  $('thumbs').addEventListener('click', function(e){ var t = e.target.closest('[data-i]'); if (t) chonAnh(Number(t.dataset.i)); });
+  $('gMain').addEventListener('click', function(){ $('lb').showModal(); chonAnh(anh); });
+  $('lbClose').addEventListener('click', function(){ $('lb').close(); });
+  $('lbPrev').addEventListener('click', function(){ chonAnh(anh - 1); });
+  $('lbNext').addEventListener('click', function(){ chonAnh(anh + 1); });
+  $('lb').addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft') chonAnh(anh - 1);
+    if (e.key === 'ArrowRight') chonAnh(anh + 1);
+  });
+  chonAnh(0);
+
+  /* ---------- 3. Đặt lịch xem phòng ---------- */
+  function lichCuaToi(){
+    if (!me || me.role !== 'renter') return null;
+    return B.forRenter(me.id).filter(function(b){ return b.room_id === room.id && B.isActive(b); })[0] || null;
+  }
+  function ngayCong(n){ var d = new Date(Date.now() + n * 86400000); return B.vnParts(d.toISOString()).date; }
+
+  function veKhungDatLich(){
+    var body = $('bookBody');
+    if (room.status !== 'available') {
+      body.innerHTML = '<p class="booked"><b>Phòng đã có người thuê</b><span>Xem các phòng khác bên dưới.</span></p>';
+      return;
+    }
+    if (!me) {
+      body.innerHTML = '<p class="book-note">Đăng nhập bằng tài khoản người thuê để đặt lịch. Đăng nhập xong bạn sẽ quay lại đúng trang này.</p>' +
+        '<a class="btn btn-primary btn-block" href="' + esc(loginHref) + '">Đăng nhập để đặt lịch</a>';
+      return;
+    }
+    if (me.role !== 'renter') {
+      body.innerHTML = '<p class="book-note">Bạn đang đăng nhập bằng tài khoản ' + esc(me.name) + '. Chỉ tài khoản <b>người thuê</b> mới đặt lịch xem phòng được.</p>';
+      return;
+    }
+    var cuaToi = lichCuaToi();
+    if (cuaToi) {
+      var st = B.STATUS[cuaToi.status];
+      body.innerHTML = '<div class="booked"><span class="badge b-' + st.tone + '">' + st.label + '</span>' +
+        '<b>' + esc(UI.vnDateTime(cuaToi.scheduled_at)) + '</b>' +
+        '<p>' + (cuaToi.status === 'pending' && cuaToi.hold_until ? 'Giữ chỗ đến ' + esc(UI.vnDateTime(cuaToi.hold_until)) + ' chờ chủ trọ xác nhận.' : 'Bạn đã có lịch xem phòng này.') +
+        (cuaToi.ref_code ? ' Mã giới thiệu: <span class="ref">' + esc(cuaToi.ref_code) + '</span>.' : '') + '</p></div>' +
+        '<a class="btn btn-ghost btn-block" href="tenant-dashboard.html">Xem lịch hẹn của tôi</a>';
+      return;
+    }
+    var homNay = B.todayVn();
+    body.innerHTML =
+      '<form id="formLich" novalidate>' +
+        '<div class="row2">' +
+          '<div class="field"><label for="ngay">Ngày</label><input class="input" type="date" id="ngay" min="' + homNay + '" max="' + ngayCong(60) + '" value="' + ngayCong(1) + '" required aria-describedby="loiNgay" /><p class="err" id="loiNgay"></p></div>' +
+          '<div class="field"><label for="gio">Giờ</label><input class="input" type="time" id="gio" min="' + B.OPEN + '" max="' + B.LAST_START + '" value="09:00" required aria-describedby="loiGio" /><p class="err" id="loiGio"></p></div>' +
+        '</div>' +
+        '<p class="taken" id="daDat" aria-live="polite"></p>' +
+        '<div class="field"><label for="ghiChu">Ghi chú <span class="hint">(không bắt buộc)</span></label><textarea class="input" id="ghiChu" maxlength="300" placeholder="Ví dụ: đi cùng một người bạn"></textarea></div>' +
+        '<p class="err" id="loiChung" role="alert"></p>' +
+        '<button type="submit" class="btn btn-primary btn-block" id="nutDat">Đặt lịch xem phòng</button>' +
+        (ref ? '<p class="book-note">Lịch sẽ gắn mã giới thiệu <span class="ref">' + esc(ref.code) + '</span>.</p>' : '') +
+      '</form>';
+
+    function veGioDaDat(){
+      var ds = B.takenSlots(room.id, $('ngay').value);
+      $('daDat').textContent = ds.length ? 'Giờ đã có người đặt hôm đó: ' + ds.join(', ') : '';
+    }
+    function xoaLoi(){
+      ['ngay', 'gio'].forEach(function(k){ $(k).removeAttribute('aria-invalid'); });
+      $('loiNgay').textContent = ''; $('loiGio').textContent = ''; $('loiChung').textContent = '';
+    }
+    $('ngay').addEventListener('change', function(){ xoaLoi(); veGioDaDat(); });
+    $('gio').addEventListener('input', xoaLoi);
+    veGioDaDat();
+
+    $('formLich').addEventListener('submit', function(e){
+      e.preventDefault();
+      xoaLoi();
+      var kq = B.create({ roomId: room.id, date: $('ngay').value, time: $('gio').value, note: $('ghiChu').value }, getCurrentUser());
+      if (!kq.ok) {
+        var o = kq.field === 'date' ? ['ngay', 'loiNgay'] : kq.field === 'time' ? ['gio', 'loiGio'] : [null, 'loiChung'];
+        $(o[1]).textContent = kq.message;
+        if (o[0]) { $(o[0]).setAttribute('aria-invalid', 'true'); $(o[0]).focus(); }
+        veGioDaDat();
+        return;
+      }
+      veKhungDatLich();
+      UI.toast('Đặt lịch xem phòng thành công! Chủ trọ sẽ xác nhận trong 24 giờ.', '<a href="tenant-dashboard.html">Xem lịch hẹn</a>');
+    });
+  }
+  veKhungDatLich();
+
+  // Tab khác vừa đặt / đăng nhập → vẽ lại khung đặt lịch
+  window.addEventListener('storage', function(e){
+    if (e.key === B.STORAGE_KEY || e.key === 'currentUser') { me = getCurrentUser(); veKhungDatLich(); }
+  });
+
+  /* ---------- Phòng khác ---------- */
+  var khac = listings.filter(function(r){ return r.id !== room.id && r.status === 'available'; })
+    .sort(function(a, b){ return Math.abs(a.price - room.price) - Math.abs(b.price - room.price); })
+    .slice(0, 3);
+  $('khacSub').textContent = 'Mức giá gần với phòng này';
+  $('khac').innerHTML = khac.map(card).join('');
+
+  UI.reveal();
+})();
+</script>
+</body>
+</html>

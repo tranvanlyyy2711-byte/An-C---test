@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="vi" class="dang-kiem-tra">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Môi giới — An Cư</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="assets/logo-ancu.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/base.css" />
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+  // Chặn trước khi vẽ: chưa đăng nhập hoặc không phải môi giới thì về login.html (đăng nhập xong quay lại đây)
+  window.ME = checkRole('broker');
+  if (window.ME) document.documentElement.classList.remove('dang-kiem-tra');
+</script>
+
+<style>
+/* ---------- Ví ---------- */
+.wallets{display:grid;gap:16px}
+@media (min-width:768px){.wallets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.wallet{padding:20px;display:grid;gap:6px;align-content:start}
+@media (min-width:768px){.wallet{padding:24px}}
+.wallet-lb{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text-muted)}
+.wallet-lb svg{width:20px;height:20px}
+.wallet-v{font-family:'Be Vietnam Pro',sans-serif;font-size:clamp(28px,8vw,40px);font-weight:700;line-height:1.15;white-space:nowrap}
+.wallet.is-main .wallet-v{color:var(--success-ink)}
+.wallet-s{font-size:14px;color:var(--text-dim)}
+.wallet .btn{margin-top:12px;justify-self:start}
+.wallet-foot{margin-top:10px;padding-top:12px;border-top:1px solid var(--border);display:grid;gap:4px;font-size:14px;color:var(--text-muted)}
+.wallet-foot div{display:flex;justify-content:space-between;gap:12px}
+.wallet-foot b{font-weight:600;color:var(--text)}
+
+/* ---------- Bậc hiệu suất ---------- */
+.perf{padding:20px;display:grid;gap:18px}
+@media (min-width:768px){.perf{padding:24px}}
+.perf-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.perf-tier{font-family:'Be Vietnam Pro',sans-serif;font-size:26px;font-weight:700}
+.perf-tier span{color:var(--success-ink)}
+.perf-sales{text-align:right}
+.perf-sales b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:20px}
+.perf-sales span{font-size:14px;color:var(--text-dim)}
+.bar{position:relative;height:12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
+.bar-fill{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--accent);box-shadow:0 0 12px rgba(34,139,34,.35);transition:width .6s var(--ease)}
+.bar-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--border-strong)}
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none}
+.tiers li{padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface)}
+.tiers li b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15px}
+.tiers li span{display:block;font-size:13px;color:var(--text-dim)}
+.tiers li.is-on{border-color:var(--accent);background:rgba(34,139,34,.06)}
+.tiers li.is-on b{color:var(--success-ink)}
+.perf-note{font-size:14px;color:var(--text-muted)}
+
+/* ---------- Công cụ ---------- */
+.tools{display:grid;gap:16px}
+@media (min-width:1024px){.tools{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
+.tool{padding:20px;display:grid;gap:14px}
+@media (min-width:768px){.tool{padding:24px}}
+.tool h3{font-size:18px;font-weight:700}
+.tool .desc{font-size:14.5px;color:var(--text-muted)}
+select.input{appearance:none;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23667565' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.copy-row{display:flex;gap:8px}
+.copy-row .input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:16px;color:var(--text-muted);background:var(--surface-2)}
+.copy-row .btn{flex-shrink:0}
+.row-btns{display:flex;flex-wrap:wrap;gap:8px}
+.down{list-style:none;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.down li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 12px;font-size:14.5px}
+.down li + li{border-top:1px solid var(--border)}
+.down span{color:var(--text-dim)}
+
+/* ---------- Lịch sử: danh sách gọn trên điện thoại, bảng trên màn hình rộng ---------- */
+.hist{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.hist li{padding:12px 16px;display:grid;gap:4px}
+.hist li + li{border-top:1px solid var(--border)}
+.hist .h-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.hist p,.hist .h-top > span:not(.badge){font-size:13.5px;color:var(--text-dim)}
+.hist-table{display:none}
+@media (min-width:900px){.hist{display:none}.hist-table{display:block}}
+
+/* ---------- Rút tiền ---------- */
+.wd-list{list-style:none;margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.wd-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:12px 16px;font-size:15px}
+.wd-list li + li{border-top:1px solid var(--border)}
+.wd-list span{color:var(--text-dim);font-size:14px}
+.sub-h{margin:28px 0 0;font-size:16px;font-weight:600;color:var(--text-muted)}
+.amount{position:relative}
+.amount .input{padding-right:40px;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.amount span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-weight:600}
+.dlg-note{font-size:13.5px;color:var(--text-dim);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.link-inline{background:none;border:0;padding:0;min-height:44px;color:var(--success-ink);font-weight:600;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /> An Cư</a>
+    <div class="topbar-end">
+      <span class="who"><span class="av" id="avatar" aria-hidden="true"></span><span class="who-tx"><b id="tenToi"></b><span id="vaiTro">Môi giới</span></span></span>
+      <button type="button" class="btn btn-ghost" id="dangXuat" aria-label="Đăng xuất">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 01-2-2V5a2 2 0 012-2h7"/></svg>
+        <span class="sr-only">Đăng xuất</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="page-head reveal">
+    <p class="eyebrow">Môi giới · Affiliate</p>
+    <h1 id="loiChao">Chào bạn</h1>
+    <p class="lead" id="maCuaToi"></p>
+  </section>
+
+  <!-- Thẻ tài chính -->
+  <section aria-labelledby="h-vi">
+    <h2 id="h-vi" class="sr-only">Ví hoa hồng</h2>
+    <div class="wallets stagger">
+      <article class="card wallet is-main reveal">
+        <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20M6 6V4h12v2"/></svg>Ví khả dụng</p>
+        <p class="wallet-v num" id="viKhaDung"></p>
+        <p class="wallet-s">Hoa hồng từ các kỳ thanh toán đã kết thúc, rút được ngay.</p>
+        <button type="button" class="btn btn-primary" id="nutRut">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M19 10v8M9 10v8M15 10v8M3 21h18"/></svg>
+          Rút tiền về Ngân hàng
+        </button>
+        <div class="wallet-foot" id="viPhu"></div>
+      </article>
+      <article class="card wallet reveal">
+        <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Ví chờ xử lý</p>
+        <p class="wallet-v num" id="viCho"></p>
+        <p class="wallet-s" id="viChoNote"></p>
+        <div class="wallet-foot" id="viTong"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Bậc hiệu suất -->
+  <section class="reveal" aria-labelledby="h-bac">
+    <div class="sec-head"><div><h2 id="h-bac">Bậc hiệu suất</h2><p id="bacSub"></p></div></div>
+    <div class="card perf">
+      <div class="perf-top">
+        <p class="perf-tier" id="bacHienTai"></p>
+        <p class="perf-sales"><b class="num" id="doanhSo"></b><span>doanh số tháng này</span></p>
+      </div>
+      <div class="bar" id="bar" role="progressbar" aria-labelledby="h-bac"><div class="bar-fill" id="barFill"></div></div>
+      <ul class="tiers" id="cacBac"></ul>
+      <p class="perf-note" id="bacNote"></p>
+    </div>
+  </section>
+
+  <!-- Công cụ -->
+  <section class="reveal" aria-labelledby="h-cong-cu">
+    <div class="sec-head"><div><h2 id="h-cong-cu">Công cụ môi giới</h2><p>Chia sẻ link để khách và đồng nghiệp đến từ bạn được ghi nhận.</p></div></div>
+    <div class="tools stagger">
+      <div class="card tool reveal">
+        <div><h3>Tạo link affiliate</h3>
+          <p class="desc">Khách mở link, mã của bạn được lưu trên máy họ và gắn vào lịch xem phòng họ đặt. Bạn hưởng hoa hồng khi khách ký hợp đồng và đóng tiền phòng.</p></div>
+        <div class="field"><label for="chonPhong">Chọn phòng</label><select class="input" id="chonPhong"></select></div>
+        <button type="button" class="btn btn-primary" id="nutTaoLink">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>
+          Tạo link affiliate
+        </button>
+        <div id="ketQuaLink" hidden>
+          <label class="sr-only" for="linkAff">Link affiliate</label>
+          <div class="copy-row">
+            <input class="input" id="linkAff" readonly />
+            <button type="button" class="btn btn-ghost" data-copy="linkAff">Sao chép</button>
+          </div>
+          <div class="row-btns" style="margin-top:8px"><a class="btn btn-text" id="moThu" target="_blank" rel="noopener">Mở thử link ↗</a></div>
+        </div>
+      </div>
+
+      <div class="card tool reveal">
+        <div><h3>Mời đồng nghiệp (tuyến dưới F2)</h3>
+          <p class="desc" id="f2Desc"></p></div>
+        <div>
+          <label class="sr-only" for="linkF2">Link mời F2</label>
+          <div class="copy-row">
+            <input class="input" id="linkF2" readonly />
+            <button type="button" class="btn btn-ghost" data-copy="linkF2">Sao chép</button>
+          </div>
+        </div>
+        <div id="tuyenDuoi"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lịch sử hoa hồng -->
+  <section class="reveal" aria-labelledby="h-ls">
+    <div class="sec-head"><div><h2 id="h-ls">Lịch sử hoa hồng</h2><p>Mỗi dòng là một kỳ tiền phòng khách đã đóng và chủ trọ đã xác nhận.</p></div></div>
+    <div id="lichSu"></div>
+    <div id="rutTien"></div>
+  </section>
+</main>
+
+<dialog class="dlg-box" id="dlgRut" aria-labelledby="dlgRutTitle">
+  <form method="dialog" class="dlg-in" id="formRut" novalidate>
+    <div><h2 id="dlgRutTitle">Rút tiền về ngân hàng</h2><p class="wallet-s" id="dlgRutSub"></p></div>
+    <div class="field">
+      <label for="soTienRut">Số tiền rút</label>
+      <div class="amount"><input class="input" id="soTienRut" inputmode="numeric" autocomplete="off" aria-describedby="loi-amount" /><span aria-hidden="true">₫</span></div>
+      <button type="button" class="link-inline" id="rutHet">Rút toàn bộ</button>
+      <p class="err" id="loi-amount"></p>
+    </div>
+    <div class="field">
+      <label for="nganHang">Ngân hàng</label>
+      <select class="input" id="nganHang" aria-describedby="loi-bank"></select>
+      <p class="err" id="loi-bank"></p>
+    </div>
+    <div class="field">
+      <label for="soTk">Số tài khoản</label>
+      <input class="input" id="soTk" inputmode="numeric" autocomplete="off" aria-describedby="loi-accountNo" />
+      <p class="err" id="loi-accountNo"></p>
+    </div>
+    <div class="field">
+      <label for="chuTk">Tên chủ tài khoản</label>
+      <input class="input" id="chuTk" autocomplete="name" style="text-transform:uppercase" aria-describedby="loi-accountName" />
+      <p class="err" id="loi-accountName"></p>
+    </div>
+    <p class="dlg-note">Bản demo chỉ ghi nhận yêu cầu, không chuyển tiền thật. An Cư duyệt và chuyển khoản thủ công; trong lúc chờ, số tiền này tạm trừ khỏi ví khả dụng.</p>
+    <div class="dlg-act">
+      <button type="button" class="btn btn-ghost" id="huyRut">Huỷ</button>
+      <button type="submit" class="btn btn-primary">Gửi yêu cầu rút tiền</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/finance.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+(function(){
+  'use strict';
+  var ME = window.ME;
+  if (!ME) return; // đang chuyển về login.html
+
+  var D = window.AnCuData, F = window.AnCuFinance, UI = window.AnCuUI;
+  var esc = UI.esc, vnd = D.formatVnd;
+  var $ = function(id){ return document.getElementById(id); };
+  var toi = D.findUser(ME.id) || ME;
+  var REF = toi.ref_code;
+  function pct(r){ return Math.round(r * 100) + '%'; }
+  function kyLabel(p){ var a = String(p).split('-'); return a[1] + '/' + a[0]; }
+  function trieu(n){ return n >= 1000000 ? (n / 1000000).toLocaleString('vi-VN') + ' triệu' : vnd(n); }
+  function absUrl(path){ return new URL(path, location.href).href; }
+
+  /* ---------- Đầu trang ---------- */
+  var ten = toi.name || 'bạn';
+  $('tenToi').textContent = ten;
+  $('vaiTro').textContent = 'Môi giới · ' + REF;
+  $('avatar').textContent = ten.split(/\s+/).slice(-1)[0].charAt(0).toUpperCase();
+  $('loiChao').textContent = 'Chào ' + ten;
+  var len = toi.upline_id && D.findUser(toi.upline_id);
+  $('maCuaToi').innerHTML = 'Mã giới thiệu của bạn: <span class="ref">' + esc(REF) + '</span>' +
+    (len ? ' · tuyến trên: ' + esc(len.name) + ' (<span class="ref">' + esc(len.ref_code) + '</span>)' : '');
+  $('dangXuat').addEventListener('click', function(){ logout(); });
+
+  /* ---------- Ví ---------- */
+  function veVi(){
+    var w = F.wallet(ME.id), ky = F.currentPeriod();
+    $('viKhaDung').textContent = vnd(w.available);
+    $('nutRut').disabled = w.available < F.MIN_WITHDRAW;
+    $('nutRut').title = w.available < F.MIN_WITHDRAW ? 'Cần tối thiểu ' + vnd(F.MIN_WITHDRAW) + ' để rút' : '';
+    $('viPhu').innerHTML =
+      '<div><span>Đang chờ An Cư chuyển khoản</span><b class="num">' + vnd(w.processing) + '</b></div>' +
+      '<div><span>Đã rút về ngân hàng</span><b class="num">' + vnd(w.withdrawn) + '</b></div>';
+    $('viCho').textContent = vnd(w.pending);
+    $('viChoNote').textContent = 'Hoa hồng kỳ ' + kyLabel(ky) + ' đang chạy. Chuyển sang ví khả dụng từ ' +
+      UI.vnDate(w.availableFrom + 'T00:00:00+07:00') + ', khi kỳ kết thúc.';
+    $('viTong').innerHTML = '<div><span>Tổng hoa hồng đã nhận từ trước tới nay</span><b class="num">' + vnd(w.earned) + '</b></div>';
+    return w;
+  }
+
+  /* ---------- Bậc hiệu suất ---------- */
+  function veBac(){
+    var p = F.performance(ME.id), T = F.TIERS, max = T[T.length - 1].minSales * 1.25;
+    $('bacSub').textContent = 'Tính theo doanh số tháng ' + kyLabel(p.period) + ': tổng tiền phòng khách bạn giới thiệu đã đóng.';
+    $('bacHienTai').innerHTML = esc(p.tier.name) + ' – <span>' + pct(p.tier.share) + '</span>';
+    $('doanhSo').textContent = vnd(p.sales);
+    var w = Math.min(100, p.sales / max * 100);
+    $('bar').innerHTML = '<div class="bar-fill" id="barFill" style="width:' + (p.sales > 0 ? Math.max(w, 1.5) : 0) + '%"></div>' +
+      T.slice(1).map(function(t){ return '<span class="bar-mark" style="left:' + (t.minSales / max * 100) + '%" aria-hidden="true"></span>'; }).join('');
+    $('bar').setAttribute('aria-valuemin', '0');
+    $('bar').setAttribute('aria-valuemax', String(T[T.length - 1].minSales));
+    $('bar').setAttribute('aria-valuenow', String(Math.min(p.sales, T[T.length - 1].minSales)));
+    $('bar').setAttribute('aria-valuetext', p.tier.name + ', doanh số ' + vnd(p.sales));
+    $('cacBac').innerHTML = T.map(function(t){
+      return '<li class="' + (t.level === p.tier.level ? 'is-on' : '') + '"' + (t.level === p.tier.level ? ' aria-current="true"' : '') + '>' +
+        '<b>' + esc(t.name) + '</b><span>' + pct(t.share) + ' quỹ · ' + (t.minSales ? 'từ ' + trieu(t.minSales) : 'mặc định') + '</span></li>';
+    }).join('');
+    $('bacNote').textContent = (p.next
+      ? 'Còn ' + vnd(p.toNext) + ' doanh số nữa để lên ' + p.next.name + ' (hưởng ' + pct(p.next.share) + ' quỹ hoa hồng). '
+      : 'Bạn đang ở bậc cao nhất. ') +
+      'Tỷ lệ là phần bạn hưởng từ quỹ hoa hồng của mỗi kỳ tiền phòng; bậc tính lại từ đầu mỗi tháng, khoản đã chia không đổi.';
+  }
+
+  /* ---------- Link affiliate ---------- */
+  var phong = D.rooms.filter(function(r){ return r.is_listing && r.status === 'available'; });
+  $('chonPhong').innerHTML = phong.map(function(r){
+    return '<option value="' + esc(r.id) + '">' + esc(r.code + ' · ' + r.title + ' · ' + vnd(r.price)) + '</option>';
+  }).join('');
+  $('nutTaoLink').addEventListener('click', function(){
+    var url = absUrl('phong-chi-tiet.html?id=' + encodeURIComponent($('chonPhong').value) + '&ref=' + encodeURIComponent(REF));
+    $('linkAff').value = url;
+    $('moThu').href = url;
+    $('ketQuaLink').hidden = false;
+    $('linkAff').focus(); $('linkAff').select();
+  });
+
+  /* ---------- Link F2 + tuyến dưới ---------- */
+  $('linkF2').value = absUrl('dang-ky-moi-gioi.html?moi=' + encodeURIComponent(REF));
+  $('f2Desc').textContent = 'Đồng nghiệp đăng ký làm môi giới qua link này sẽ thành tuyến dưới của bạn. Bạn hưởng ' +
+    pct(F.UPLINE_SHARE) + ' quỹ hoa hồng từ mỗi kỳ tiền phòng do họ mang về — không trừ vào phần của họ.';
+  function veTuyenDuoi(){
+    var ds = F.downlines(ME.id);
+    var tuHo = F.ledger(ME.id).filter(function(e){ return e.kind === 'upline'; });
+    if (!ds.length) { $('tuyenDuoi').innerHTML = '<p class="wallet-s">Chưa có ai đăng ký qua link của bạn.</p>'; return; }
+    $('tuyenDuoi').innerHTML = '<p class="wallet-s" style="margin-bottom:8px">Tuyến dưới của bạn (' + ds.length + ')</p><ul class="down">' + ds.map(function(u){
+      var nhan = tuHo.filter(function(e){ return e.from_broker_id === u.id; }).reduce(function(s, e){ return s + e.amount; }, 0);
+      return '<li><b>' + esc(u.name) + ' <span class="ref">' + esc(u.ref_code) + '</span></b>' +
+        '<span class="num">Doanh số tháng: ' + vnd(F.performance(u.id).sales) + ' · bạn đã nhận ' + vnd(nhan) + '</span></li>';
+    }).join('') + '</ul>';
+  }
+
+  /* ---------- Sao chép ---------- */
+  function chep(input, btn){
+    var xong = function(){
+      var cu = btn.textContent; btn.textContent = 'Đã chép';
+      setTimeout(function(){ btn.textContent = cu; }, 1800);
+      UI.toast('Đã sao chép link vào bộ nhớ tạm.');
+    };
+    var cach2 = function(){
+      input.focus(); input.select();
+      try { if (document.execCommand('copy')) { xong(); return; } } catch (e) {}
+      UI.toast('Trình duyệt chặn sao chép tự động — link đã được bôi đen, bấm Ctrl+C để chép.');
+    };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(input.value).then(xong, cach2);
+    else cach2();
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-copy]');
+    if (b) chep($(b.dataset.copy), b);
+  });
+
+  /* ---------- Lịch sử hoa hồng ---------- */
+  var hienHet = false, SO_DONG = 8;
+  function veLichSu(){
+    var tatCa = F.ledger(ME.id);
+    var ds = hienHet ? tatCa : tatCa.slice(0, SO_DONG);
+    if (!tatCa.length) {
+      $('lichSu').innerHTML = '<p class="empty">Chưa có hoa hồng nào. Tạo link affiliate ở trên và gửi cho khách để bắt đầu.</p>';
+    } else {
+      // Điện thoại: danh sách gọn (mỗi khoản 3 dòng). Màn hình rộng: bảng đủ cột. CSS chỉ hiện một trong hai.
+      var gon = '<ul class="hist">' + ds.map(function(e){
+        var r = D.findRoom(e.room_id), from = e.from_broker_id && D.findUser(e.from_broker_id);
+        var loai = e.kind === 'upline' ? 'Tuyến dưới ' + (from ? from.name : '') + ' · ' + pct(e.share) + ' quỹ' : 'Trực tiếp · Bậc ' + e.tier + ' · ' + pct(e.share) + ' quỹ';
+        return '<li><div class="h-top"><b>' + esc((r ? r.code : e.room_id) + ' · kỳ ' + kyLabel(e.period)) + '</b><b class="num">+' + vnd(e.amount) + '</b></div>' +
+          '<p>' + esc(loai) + ' ' + vnd(e.fund) + ' · khách đóng ' + vnd(e.payment_amount) + '</p>' +
+          '<div class="h-top"><span>' + esc(UI.vnDate(e.created_at)) + '</span>' +
+          (e.state === 'available' ? '<span class="badge b-ok">Khả dụng</span>' : '<span class="badge b-warn">Chờ xử lý</span>') + '</div></li>';
+      }).join('') + '</ul>';
+      $('lichSu').innerHTML = gon + '<div class="table-wrap hist-table"><table class="tbl"><thead><tr>' +
+        '<th>Ngày xác nhận</th><th>Kỳ</th><th>Phòng</th><th class="r">Khách đóng</th><th class="r">Quỹ hoa hồng</th><th>Loại</th><th class="r">Bạn nhận</th><th>Trạng thái</th>' +
+        '</tr></thead><tbody>' + ds.map(function(e){
+          var r = D.findRoom(e.room_id), from = e.from_broker_id && D.findUser(e.from_broker_id);
+          var loai = e.kind === 'upline'
+            ? '<span class="main">Tuyến dưới</span><span class="sub">' + esc(from ? from.name : '') + ' · ' + pct(e.share) + ' quỹ</span>'
+            : '<span class="main">Trực tiếp</span><span class="sub">Bậc ' + e.tier + ' · ' + pct(e.share) + ' quỹ</span>';
+          var st = e.state === 'available' ? '<span class="badge b-ok">Khả dụng</span>' : '<span class="badge b-warn">Chờ xử lý</span>';
+          return '<tr><td data-label="Ngày xác nhận">' + esc(UI.vnDate(e.created_at)) + '</td>' +
+            '<td data-label="Kỳ">' + kyLabel(e.period) + '</td>' +
+            '<td data-label="Phòng"><span class="main">' + esc(r ? r.code : e.room_id) + '</span><span class="sub">' + esc(r ? r.title : '') + '</span></td>' +
+            '<td data-label="Khách đóng" class="r num">' + vnd(e.payment_amount) + '</td>' +
+            '<td data-label="Quỹ hoa hồng" class="r num">' + vnd(e.fund) + '</td>' +
+            '<td data-label="Loại">' + loai + '</td>' +
+            '<td data-label="Bạn nhận" class="r num"><span class="main">+' + vnd(e.amount) + '</span></td>' +
+            '<td data-label="Trạng thái">' + st + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        (tatCa.length > SO_DONG ? '<button type="button" class="btn btn-ghost" id="xemThem" style="margin-top:12px">' +
+          (hienHet ? 'Thu gọn' : 'Xem thêm ' + (tatCa.length - SO_DONG) + ' khoản') + '</button>' : '');
+      var xt = $('xemThem');
+      if (xt) xt.addEventListener('click', function(){ hienHet = !hienHet; veLichSu(); });
+    }
+    var rut = F.withdrawals(ME.id);
+    $('rutTien').innerHTML = rut.length ? '<h3 class="sub-h">Yêu cầu rút tiền</h3><ul class="wd-list">' + rut.map(function(w){
+      var st = { processing: ['Đang xử lý', 'b-warn'], paid: ['Đã chuyển', 'b-ok'], rejected: ['Bị từ chối', 'b-danger'] }[w.status] || ['Đang xử lý', 'b-warn'];
+      return '<li><b class="num">−' + vnd(w.amount) + '</b><span>' + esc(w.bank + ' ••••' + w.account_last4 + ' · ' + w.account_name + ' · ' + UI.vnDateTime(w.created_at)) + '</span>' +
+        '<span class="badge ' + st[1] + '">' + st[0] + '</span></li>';
+    }).join('') + '</ul>' : '';
+  }
+
+  /* ---------- Rút tiền ---------- */
+  var dlg = $('dlgRut'), inTien = $('soTienRut');
+  function docSo(s){ var d = String(s).replace(/[^0-9]/g, ''); return d ? Number(d) : 0; }
+  function vietSo(n){ return n ? new Intl.NumberFormat('vi-VN').format(n) : ''; }
+  $('nganHang').innerHTML = '<option value="">Chọn ngân hàng</option>' + F.BANKS.map(function(b){ return '<option>' + esc(b) + '</option>'; }).join('');
+  function xoaLoiRut(){
+    ['amount', 'bank', 'accountNo', 'accountName'].forEach(function(k){ $('loi-' + k).textContent = ''; });
+    [inTien, $('nganHang'), $('soTk'), $('chuTk')].forEach(function(el){ el.removeAttribute('aria-invalid'); });
+  }
+  $('nutRut').addEventListener('click', function(){
+    var w = F.wallet(ME.id);
+    xoaLoiRut();
+    $('dlgRutSub').textContent = 'Ví khả dụng: ' + vnd(w.available) + ' · tối thiểu ' + vnd(F.MIN_WITHDRAW) + ' mỗi lần.';
+    inTien.value = vietSo(w.available);
+    if (!$('chuTk').value) $('chuTk').value = ten;
+    dlg.showModal();
+    inTien.focus(); inTien.select();
+  });
+  inTien.addEventListener('input', function(){ inTien.value = vietSo(docSo(inTien.value)); });
+  $('rutHet').addEventListener('click', function(){ inTien.value = vietSo(F.wallet(ME.id).available); });
+  $('huyRut').addEventListener('click', function(){ dlg.close(); });
+  $('formRut').addEventListener('submit', function(e){
+    e.preventDefault();
+    xoaLoiRut();
+    var kq = F.requestWithdrawal(ME.id, { amount: docSo(inTien.value), bank: $('nganHang').value, accountNo: $('soTk').value, accountName: $('chuTk').value });
+    if (!kq.ok) {
+      var o = { amount: inTien, bank: $('nganHang'), accountNo: $('soTk'), accountName: $('chuTk') }[kq.field];
+      $('loi-' + (kq.field || 'amount')).textContent = kq.message;
+      if (o) { o.setAttribute('aria-invalid', 'true'); o.focus(); }
+      return;
+    }
+    dlg.close();
+    veTatCa();
+    UI.toast('Đã gửi yêu cầu rút ' + vnd(kq.withdrawal.amount) + ' về ' + kq.withdrawal.bank + ' ••••' + kq.withdrawal.account_last4 + '.');
+  });
+
+  function veTatCa(){ veVi(); veBac(); veTuyenDuoi(); veLichSu(); UI.reveal(); }
+  veTatCa();
+
+  // Chủ trọ xác nhận tiền ở tab khác → hoa hồng mới hiện ngay
+  window.addEventListener('storage', function(e){ if (e.key === F.STORAGE_KEY) veTatCa(); });
+})();
+</script>
+</body>
+</html>

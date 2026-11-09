@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="vi" class="dang-kiem-tra">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trang của tôi — An Cư</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="assets/logo-ancu.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/base.css" />
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+  // Chặn trước khi vẽ: chưa đăng nhập hoặc không phải người thuê thì về login.html (đăng nhập xong quay lại đây)
+  window.ME = checkRole('tenant');
+  if (window.ME) document.documentElement.classList.remove('dang-kiem-tra');
+</script>
+
+<style>
+@media (min-width:1024px){.stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
+
+/* ---------- Lịch hẹn ---------- */
+.appts{display:grid;gap:12px;list-style:none}
+@media (min-width:900px){.appts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.appt{display:flex;gap:14px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);min-width:0}
+.appt-img{flex:0 0 96px;aspect-ratio:4/3;border-radius:var(--radius-sm);overflow:hidden;background:var(--surface-2)}
+@media (min-width:600px){.appt-img{flex-basis:128px}}
+.appt-img img{width:100%;height:100%;object-fit:cover}
+.appt-body{flex:1;min-width:0;display:grid;gap:4px;align-content:start}
+.appt-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.appt h3{font-size:16px;font-weight:600;line-height:1.35}
+.appt h3 a{text-decoration:none}
+.appt h3 a:hover{text-decoration:underline}
+.appt .when{font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px}
+.appt .meta{font-size:13.5px;color:var(--text-dim)}
+.appt.is-past{background:var(--surface-2)}
+.appt.is-past .appt-img{opacity:.7}
+details.past{margin-top:16px}
+details.past summary{display:inline-flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font-weight:600;color:var(--text-muted)}
+details.past summary::-webkit-details-marker{display:none}
+details.past summary svg{width:18px;height:18px;transition:transform .2s var(--ease)}
+details.past[open] summary svg{transform:rotate(90deg)}
+details.past .appts{margin-top:8px}
+
+/* ---------- Hoá đơn ---------- */
+.invs{display:grid;gap:16px;list-style:none}
+@media (min-width:900px){.invs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.inv{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:grid;gap:14px}
+.inv.is-overdue{border-color:rgba(180,41,31,.28)}
+.inv-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px}
+.inv-head h3{font-size:17px;font-weight:700}
+.inv-head p{font-size:14px;color:var(--text-dim)}
+.inv-total{font-family:'Be Vietnam Pro',sans-serif;font-size:28px;font-weight:700}
+.inv-due{font-size:14.5px;color:var(--text-muted)}
+.inv-due.is-late{color:var(--danger-ink);font-weight:600}
+.inv-lines{border-top:1px solid var(--border)}
+.inv-lines div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;font-size:15px}
+.inv-lines div + div{border-top:1px solid var(--border)}
+.inv-lines dt{color:var(--text-muted)}
+.inv-lines dd{font-weight:500}
+.inv-how{font-size:13.5px;color:var(--text-dim);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.paid-list{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.paid-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;padding:12px 16px;font-size:15px}
+.paid-list li + li{border-top:1px solid var(--border)}
+.paid-list span{color:var(--text-dim);font-size:14px}
+.sub-h{margin:24px 0 10px;font-size:16px;font-weight:600;color:var(--text-muted)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /> An Cư</a>
+    <div class="topbar-end">
+      <a class="btn btn-text" href="phong-chi-tiet.html">Tìm phòng</a>
+      <span class="who"><span class="av" id="avatar" aria-hidden="true"></span><span class="who-tx"><b id="tenToi"></b><span>Người thuê</span></span></span>
+      <button type="button" class="btn btn-ghost" id="dangXuat" aria-label="Đăng xuất">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 01-2-2V5a2 2 0 012-2h7"/></svg>
+        <span class="sr-only">Đăng xuất</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="page-head reveal">
+    <p class="eyebrow">Trang của tôi</p>
+    <h1 id="loiChao">Chào bạn</h1>
+    <p class="lead" id="phongDangO"></p>
+  </section>
+
+  <section aria-labelledby="h-so-lieu">
+    <h2 id="h-so-lieu" class="sr-only">Tóm tắt</h2>
+    <ul class="stats stagger" id="stats"></ul>
+  </section>
+
+  <section class="reveal" aria-labelledby="h-lich">
+    <div class="sec-head">
+      <div><h2 id="h-lich">Lịch hẹn xem phòng của tôi</h2><p>Lịch chờ xác nhận được giữ chỗ 24 giờ.</p></div>
+      <a class="btn btn-ghost" href="phong-chi-tiet.html">Đặt lịch xem phòng khác</a>
+    </div>
+    <div id="lich"></div>
+  </section>
+
+  <section class="reveal" aria-labelledby="h-hoa-don">
+    <div class="sec-head">
+      <div><h2 id="h-hoa-don">Hoá đơn tiền nhà cần đóng</h2><p id="hoaDonSub"></p></div>
+    </div>
+    <div id="hoaDon"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/finance.js"></script>
+<script src="assets/js/bookings.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+(function(){
+  'use strict';
+  var ME = window.ME;
+  if (!ME) return; // đang chuyển về login.html
+
+  var D = window.AnCuData, F = window.AnCuFinance, B = window.AnCuBookings, UI = window.AnCuUI;
+  var esc = UI.esc, vnd = D.formatVnd;
+  var $ = function(id){ return document.getElementById(id); };
+  function kyLabel(p){ var a = String(p).split('-'); return a[1] + '/' + a[0]; }
+
+  var ten = ME.name || 'bạn';
+  $('tenToi').textContent = ten;
+  $('avatar').textContent = ten.split(/\s+/).slice(-1)[0].charAt(0).toUpperCase();
+  $('loiChao').textContent = 'Chào ' + ten;
+  $('dangXuat').addEventListener('click', function(){ logout(); });
+
+  var hopDong = D.contracts.filter(function(c){ return c.tenant_id === ME.id && c.status === 'active'; });
+  if (hopDong.length) {
+    $('phongDangO').textContent = hopDong.map(function(c){
+      var r = D.findRoom(c.room_id), chu = D.findUser(c.landlord_id);
+      return 'Đang thuê ' + (r ? r.code + ' · ' + r.title : c.room_id) + (chu ? ' · chủ trọ ' + chu.name : '') + ' · hợp đồng ' + c.id;
+    }).join(' — ');
+  } else {
+    $('phongDangO').textContent = 'Bạn chưa có hợp đồng thuê nào trên An Cư.';
+  }
+
+  /* ---------- Hoá đơn: trạng thái thật ---------- */
+  // Đã đóng khi chủ trọ xác nhận nhận tiền kỳ đó (landlord-dashboard → AnCuFinance), quá hạn khi qua hạn đóng
+  function trangThaiHoaDon(inv){
+    if (inv.status === 'paid' || F.paymentFor(inv.contract_id, inv.period)) return 'paid';
+    return inv.due_date < B.todayVn() ? 'overdue' : 'pending';
+  }
+  function hoaDonCuaToi(){
+    var ids = hopDong.map(function(c){ return c.id; });
+    return D.invoices.filter(function(i){ return ids.indexOf(i.contract_id) !== -1; })
+      .map(function(i){ var c = {}; for (var k in i) c[k] = i[k]; c.state = trangThaiHoaDon(i); return c; });
+  }
+
+  /* ---------- Lịch hẹn ---------- */
+  function sapToi(b){ return (B.isActive(b) || b.status === 'proposed') && Date.parse(b.scheduled_at) > Date.now(); }
+
+  function theLich(b, qua){
+    var r = D.findRoom(b.room_id), st = B.STATUS[b.status] || B.STATUS.pending;
+    var dong2 = [];
+    if (b.status === 'pending' && b.hold_until) dong2.push('Giữ chỗ đến ' + UI.vnDateTime(b.hold_until));
+    else if (b.status === 'pending') dong2.push('Chủ trọ đang xem lịch của bạn');
+    if (b.status === 'confirmed') dong2.push('Chủ trọ đã xác nhận, nhớ đến đúng giờ');
+    if (b.cancel_reason === 'expired') dong2.push('Tự huỷ vì quá 24 giờ chưa được xác nhận');
+    if (b.note) dong2.push('Ghi chú: ' + b.note);
+    var link = r && r.is_listing ? 'phong-chi-tiet.html?id=' + encodeURIComponent(r.id) : null;
+    var tieuDe = r ? r.title : b.room_id;
+    return '<li class="appt' + (qua ? ' is-past' : '') + '">' +
+      '<div class="appt-img">' + (r && r.images ? '<img src="' + esc(r.images[0]) + '" alt="' + esc(r.alt) + '" width="256" height="192" loading="lazy" decoding="async" />' : '') + '</div>' +
+      '<div class="appt-body">' +
+        '<div class="appt-top"><span class="badge b-' + st.tone + '">' + st.label + '</span>' +
+          (b.ref_code ? '<span class="ref" title="Mã môi giới giới thiệu">' + esc(b.ref_code) + '</span>' : '') + '</div>' +
+        '<h3>' + (link ? '<a href="' + link + '">' + esc(tieuDe) + '</a>' : esc(tieuDe)) + '</h3>' +
+        '<p class="when">' + esc(UI.vnDateTime(b.scheduled_at)) + '</p>' +
+        (r ? '<p class="meta">' + esc(r.address) + '</p>' : '') +
+        (dong2.length ? '<p class="meta">' + esc(dong2.join(' · ')) + '</p>' : '') +
+      '</div></li>';
+  }
+
+  function veLich(){
+    var ds = B.forRenter(ME.id);
+    var toi = ds.filter(sapToi).sort(function(a, b){ return Date.parse(a.scheduled_at) - Date.parse(b.scheduled_at); });
+    var qua = ds.filter(function(b){ return !sapToi(b); }).sort(function(a, b){ return Date.parse(b.scheduled_at) - Date.parse(a.scheduled_at); });
+    var html = toi.length
+      ? '<ul class="appts">' + toi.map(function(b){ return theLich(b, false); }).join('') + '</ul>'
+      : '<p class="empty">Chưa có lịch xem phòng nào sắp tới. <a class="link" href="phong-chi-tiet.html">Tìm phòng để đặt lịch</a></p>';
+    if (qua.length) {
+      html += '<details class="past"><summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>Đã qua hoặc đã huỷ (' + qua.length + ')</summary>' +
+        '<ul class="appts">' + qua.map(function(b){ return theLich(b, true); }).join('') + '</ul></details>';
+    }
+    $('lich').innerHTML = html;
+    return toi;
+  }
+
+  /* ---------- Hoá đơn ---------- */
+  function veHoaDon(){
+    var ds = hoaDonCuaToi();
+    var canDong = ds.filter(function(i){ return i.state !== 'paid'; })
+      .sort(function(a, b){ return a.due_date < b.due_date ? -1 : 1; });
+    var daDong = ds.filter(function(i){ return i.state === 'paid'; })
+      .sort(function(a, b){ return a.period < b.period ? 1 : -1; });
+
+    $('hoaDonSub').textContent = canDong.length
+      ? canDong.length + ' hoá đơn · tổng ' + vnd(canDong.reduce(function(s, i){ return s + i.total; }, 0))
+      : 'Bạn đã đóng đủ tiền nhà.';
+
+    var html = '';
+    if (!hopDong.length) html = '<p class="empty">Chưa có hợp đồng thuê nên chưa có hoá đơn.</p>';
+    else if (!canDong.length) html = '<p class="empty">Không có hoá đơn nào cần đóng.</p>';
+    else html = '<ul class="invs">' + canDong.map(function(i){
+      var c = D.findContract(i.contract_id), r = c && D.findRoom(c.room_id), chu = c && D.findUser(c.landlord_id);
+      var tre = i.state === 'overdue';
+      return '<li class="inv' + (tre ? ' is-overdue' : '') + '">' +
+        '<div class="inv-head"><div><h3>Tiền nhà tháng ' + kyLabel(i.period) + '</h3><p>' + esc((r ? r.code + ' · ' : '') + 'mã ' + i.id) + '</p></div>' +
+          '<span class="badge ' + (tre ? 'b-danger">Quá hạn' : 'b-warn">Chờ đóng') + '</span></div>' +
+        '<div><p class="inv-total num">' + vnd(i.total) + '</p>' +
+          '<p class="inv-due' + (tre ? ' is-late' : '') + '">Hạn đóng ' + esc(UI.vnDate(i.due_date + 'T00:00:00+07:00')) + (tre ? ' — đã quá hạn' : '') + '</p></div>' +
+        '<dl class="inv-lines">' +
+          '<div><dt>Tiền phòng</dt><dd class="num">' + vnd(i.rent_amount) + '</dd></div>' +
+          '<div><dt>Điện (' + i.electric_kwh + ' kWh)</dt><dd class="num">' + vnd(i.electric_amount) + '</dd></div>' +
+          '<div><dt>Nước</dt><dd class="num">' + vnd(i.water_amount) + '</dd></div>' +
+          '<div><dt>Dịch vụ (wifi, rác, vệ sinh)</dt><dd class="num">' + vnd(i.service_amount) + '</dd></div>' +
+          (i.other_amount ? '<div><dt>Khác</dt><dd class="num">' + vnd(i.other_amount) + '</dd></div>' : '') +
+        '</dl>' +
+        '<p class="inv-how">Đóng trực tiếp cho chủ trọ' + (chu ? ' ' + esc(chu.name) : '') + '. Hoá đơn chuyển sang "Đã đóng" khi chủ trọ xác nhận đã nhận tiền.</p>' +
+      '</li>';
+    }).join('') + '</ul>';
+
+    if (daDong.length) {
+      html += '<h3 class="sub-h">Đã đóng</h3><ul class="paid-list">' + daDong.map(function(i){
+        var p = F.paymentFor(i.contract_id, i.period);
+        var luc = p ? p.confirmed_at : i.paid_at;
+        return '<li><b>Tháng ' + kyLabel(i.period) + '</b><span class="num">' + vnd(i.total) + (luc ? ' · xác nhận ' + esc(UI.vnDate(luc)) : '') + '</span>' +
+          '<span class="badge b-ok">Đã đóng</span></li>';
+      }).join('') + '</ul>';
+    }
+    $('hoaDon').innerHTML = html;
+    return canDong;
+  }
+
+  function veSoLieu(toi, canDong){
+    var cho = toi.filter(function(b){ return b.status === 'pending'; }).length;
+    var xn = toi.filter(function(b){ return b.status === 'confirmed'; }).length;
+    var tre = canDong.filter(function(i){ return i.state === 'overdue'; }).length;
+    var tong = canDong.reduce(function(s, i){ return s + i.total; }, 0);
+    $('stats').innerHTML = [
+      ['Lịch chờ xác nhận', cho, cho ? 'Chủ trọ sẽ trả lời trong 24 giờ' : 'Không có lịch nào đang chờ'],
+      ['Lịch đã xác nhận', xn, xn ? 'Sắp tới' : 'Chưa có lịch nào'],
+      ['Hoá đơn cần đóng', canDong.length, tre ? tre + ' hoá đơn đã quá hạn' : (canDong.length ? 'Chưa có hoá đơn quá hạn' : 'Đã đóng đủ')],
+      ['Tổng cần đóng', vnd(tong), canDong.length ? 'Gồm tiền phòng, điện, nước, dịch vụ' : 'Không còn khoản nào', true]
+    ].map(function(s){
+      return '<li class="stat reveal"><p class="stat-lb">' + s[0] + '</p><p class="stat-v num' + (s[3] ? ' is-money' : '') + '">' + esc(s[1]) + '</p><p class="stat-s">' + esc(s[2]) + '</p></li>';
+    }).join('');
+  }
+
+  function veTatCa(){ var toi = veLich(); var canDong = veHoaDon(); veSoLieu(toi, canDong); UI.reveal(); }
+  veTatCa();
+
+  // Đặt lịch ở tab khác, hoặc chủ trọ xác nhận tiền ở tab khác → cập nhật ngay
+  window.addEventListener('storage', function(e){
+    if (e.key === B.STORAGE_KEY || e.key === F.STORAGE_KEY) veTatCa();
+  });
+})();
+</script>
+</body>
+</html>

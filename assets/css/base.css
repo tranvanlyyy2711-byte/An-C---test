@@ -1,0 +1,156 @@
+/* Nền chung cho các trang HTML thuần mới (phong-chi-tiet, tenant-dashboard…).
+ * Token lấy đúng khối :root của quan-ly/yeucauvalichhen.html — một bộ màu sáng duy nhất cho cả dự án.
+ * Trang nào cần thêm thì viết phần riêng trong <style> của trang đó, không đặt lại token. */
+:root{
+  --bg:#F7FBF7;--surface:#FFFFFF;--surface-2:#F1F8F1;
+  --border:rgba(34,139,34,.12);--border-strong:rgba(34,139,34,.2);
+  --text:#102010;--text-muted:#4B5C4B;--text-dim:#667565;
+  --accent:#228B22;--accent-hover:#1D7C1D;--accent-fg:#FFFFFF;
+  --success:#228B22;--warning:#F5B14C;--danger:#FF6B6B;--info:#2F6FED;
+  --success-ink:#1B7A1B;--warning-ink:#8A5A11;--danger-ink:#B4291F;--info-ink:#1D4FBE;
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light;-webkit-text-size-adjust:100%}
+body{min-height:100vh;background:var(--bg);color:var(--text);
+  font-family:'Inter','Be Vietnam Pro',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:clip}
+h1,h2,h3{font-family:'Be Vietnam Pro','Inter',sans-serif;line-height:1.2;letter-spacing:-.02em}
+a{color:inherit}
+img{display:block;max-width:100%}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.num{font-variant-numeric:tabular-nums}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+html.dang-kiem-tra body{visibility:hidden}
+
+/* ---------- Thanh trên ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.topbar-in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;
+  font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px}
+.brand img{width:34px;height:34px;object-fit:contain}
+.topbar-end{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+  background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:14px}
+.who-tx{display:none;min-width:0}
+.who-tx b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who-tx span{display:block;font-size:13px;color:var(--text-dim)}
+@media (min-width:600px){.who-tx{display:block}}
+@media (min-width:768px){.topbar-in{padding:12px 24px}}
+
+/* ---------- Nút ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;
+  border-radius:var(--radius-sm);border:1px solid transparent;font-family:'Be Vietnam Pro',sans-serif;
+  font-size:15px;font-weight:600;text-decoration:none;white-space:nowrap;
+  transition:background .18s var(--ease),border-color .18s var(--ease),transform .18s var(--ease)}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--accent);color:var(--accent-fg);box-shadow:0 6px 16px rgba(34,139,34,.16)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:active{transform:translateY(1px)}
+.btn-ghost{background:var(--surface);border-color:var(--border-strong)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-text{background:none;color:var(--text-muted);padding:0 8px}
+.btn-text:hover{color:var(--text)}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none}
+.link{color:var(--success-ink);font-weight:600}
+
+/* ---------- Bố cục ---------- */
+.page{max-width:1240px;margin:0 auto;padding:24px 16px 64px;display:grid;gap:32px}
+@media (min-width:768px){.page{padding:40px 24px 80px;gap:40px}}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--success-ink)}
+.page-head h1{margin-top:6px;font-size:30px;font-weight:700;text-wrap:balance}
+.page-head .lead{margin-top:6px;color:var(--text-muted)}
+@media (min-width:768px){.page-head h1{font-size:40px}}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;margin-bottom:16px}
+.sec-head h2{font-size:21px;font-weight:700}
+.sec-head p{font-size:15px;color:var(--text-dim)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.empty{padding:28px 16px;text-align:center;color:var(--text-dim);background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--radius)}
+
+/* ---------- Thẻ số liệu ---------- */
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;list-style:none}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;min-width:0}
+@media (min-width:768px){.stat{padding:20px}}
+.stat-lb{font-size:14px;font-weight:500;color:var(--text-muted)}
+.stat-v{margin-top:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:30px;font-weight:700;line-height:1.1;white-space:nowrap}
+/* Số tiền dài: nhỏ lại ở màn hình hẹp thay vì gãy giữa con số */
+.stat-v.is-money{font-size:clamp(20px,5.6vw,30px)}
+.stat-s{margin-top:6px;font-size:13.5px;color:var(--text-dim)}
+
+/* ---------- Huy hiệu (chữ đạt tương phản ≥ 4.5:1 trên nền sáng) ---------- */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;border:1px solid}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-ok{color:var(--success-ink);background:rgba(34,139,34,.08);border-color:rgba(34,139,34,.2)}
+.b-warn{color:var(--warning-ink);background:rgba(245,177,76,.12);border-color:rgba(138,90,17,.2)}
+.b-info{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(29,79,190,.2)}
+.b-danger{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.2)}
+.b-mute{color:var(--text-muted);background:var(--surface-2);border-color:var(--border)}
+.ref{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;padding:1px 6px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border)}
+
+/* ---------- Ô nhập ---------- */
+.field label{display:block;margin-bottom:6px;font-size:15px;font-weight:600}
+.field .hint{font-weight:400;color:var(--text-dim)}
+.input{width:100%;min-height:48px;padding:0 14px;font-size:16px;background:var(--surface);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);transition:border-color .18s var(--ease),box-shadow .18s var(--ease)}
+textarea.input{min-height:88px;padding:12px 14px;resize:vertical}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.16)}
+.input[aria-invalid="true"]{border-color:var(--danger-ink)}
+.err{margin-top:6px;font-size:14px;color:var(--danger-ink)}
+.err:empty{display:none}
+
+/* ---------- Bảng (thành thẻ ở màn hình hẹp, mỗi ô cần data-label) ---------- */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-size:13px;font-weight:600;color:var(--text-dim);text-align:left;white-space:nowrap}
+.tbl th,.tbl td{padding:14px 16px;vertical-align:middle}
+.tbl tbody tr + tr td{border-top:1px solid var(--border)}
+.tbl thead th{border-bottom:1px solid var(--border)}
+.tbl .main{font-weight:600}
+.tbl .sub{display:block;font-size:13.5px;color:var(--text-dim)}
+.tbl .r{text-align:right}
+@media (max-width:899.98px){
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block}
+  .tbl thead{display:none}
+  .table-wrap{background:none;border:0}
+  .tbl tbody{display:grid;gap:12px}
+  .tbl tbody tr{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:6px 16px}
+  .tbl tbody tr + tr td{border-top:0}
+  .tbl td{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;align-items:center;padding:10px 0;text-align:right}
+  .tbl td > *{grid-column:2;justify-self:end}
+  .tbl td + td{border-top:1px solid var(--border)}
+  .tbl td::before{content:attr(data-label);grid-column:1;grid-row:1 / span 2;font-size:13.5px;color:var(--text-dim);text-align:left}
+}
+
+/* ---------- Hộp thoại ---------- */
+.dlg-box{width:min(520px,calc(100% - 32px));margin:auto;padding:0;border:1px solid var(--border);border-radius:var(--radius-lg);
+  background:var(--surface);color:var(--text);box-shadow:0 24px 64px rgba(16,32,16,.18)}
+.dlg-box::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
+.dlg-in{padding:24px 20px;display:grid;gap:16px}
+@media (min-width:600px){.dlg-in{padding:28px}}
+.dlg-in h2{font-size:20px;font-weight:700}
+.dlg-act{display:flex;flex-direction:column-reverse;gap:8px;margin-top:8px}
+@media (min-width:480px){.dlg-act{flex-direction:row;justify-content:flex-end}}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:20px;z-index:60;transform:translate(-50%,16px);opacity:0;pointer-events:none;
+  width:max-content;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:flex-start;padding:12px 16px;
+  border-radius:var(--radius);background:var(--text);color:#fff;font-size:15px;box-shadow:0 12px 32px rgba(16,32,16,.24);
+  transition:opacity .2s ease-out,transform .2s ease-out}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast svg{width:20px;height:20px;margin-top:1px;color:#8FE08F}
+.toast a{color:#B9F0B9;font-weight:600}
+
+/* ---------- Hiện dần khi cuộn (tắt hẳn khi giảm chuyển động) ---------- */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .45s ease-out,transform .45s ease-out}
+.reveal.in{opacity:1;transform:none}
+.stagger > .reveal:nth-child(2){transition-delay:.05s}
+.stagger > .reveal:nth-child(3){transition-delay:.1s}
+.stagger > .reveal:nth-child(4){transition-delay:.15s}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
