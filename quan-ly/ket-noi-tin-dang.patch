@@ -1,0 +1,586 @@
+--- a/server/index.mjs
++++ b/server/index.mjs
+@@ -17,6 +17,7 @@
+ import { createPhongChuTro } from './phong-chu-tro.mjs';
+ import { NGUOI_THUE, NHA_TRO } from './phong.mjs';
+ import { createBus } from './thong-bao.mjs';
++import { createListings } from './tin-dang.mjs';
+ 
+ const __dirname = dirname(fileURLToPath(import.meta.url));
+ const root = join(__dirname, '..');
+@@ -28,6 +29,7 @@
+ 
+ const bus = createBus();
+ const store = openDb({ file: dbFile, now, publish: bus.publish });
++const listings = createListings(store.db, ApiError, now);
+ const auth = createAuth(store.db, ApiError);
+ const admin = createAdmin(store.db, ApiError, now);
+ const suCo = createSuCo(store.db, ApiError, now);
+@@ -45,6 +47,11 @@
+   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png',
+   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
+ };
++
++function announceListings() {
++  const users = store.db.prepare("SELECT id FROM users WHERE status = 'active'").all().map(u => u.id);
++  bus.publish(users, ['tin-dang', 'phong']);
++}
+ 
+ function send(res, status, body, headers = {}) {
+   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers });
+@@ -76,6 +83,18 @@
+   let id;
+ 
+   const me = auth.userFromReq(req);
++
++  if (p === '/api/tin-dang' && m === 'GET') return send(res, 200, { items: listings.publicRooms() });
++  if (p === '/api/chu-tro/tin-dang') {
++    if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản chủ trọ.');
++    if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ được quản lý tin đăng.');
++    if (m === 'GET') return send(res, 200, { item: listings.mine(me.id) });
++    if (m === 'PATCH' || m === 'POST') {
++      const item = listings.save(me.id, await readJson(req), m === 'POST');
++      announceListings();
++      return send(res, m === 'POST' ? 201 : 200, { item });
++    }
++  }
+ 
+   if (p === '/api/suc-khoe' && m === 'GET') return send(res, 200, { ok: true, now: now().toISOString(), me });
+ 
+@@ -137,7 +156,7 @@
+     const body = await readJson(req);
+     return send(res, 201, { items: store.addFavorite(mustRenterLogin(), String(body.roomId || '')) });
+   }
+-  if ((id = p.match(/^\/api\/da-luu\/([A-Za-z0-9.]+)$/)) && m === 'DELETE') {
++  if ((id = p.match(/^\/api\/da-luu\/([A-Za-z0-9._-]+)$/)) && m === 'DELETE') {
+     return send(res, 200, { items: store.removeFavorite(mustRenterLogin(), id[1]) });
+   }
+ 
+@@ -308,7 +327,9 @@
+     return send(res, 200, { items: admin.listListings({ status: qs.get('trangThai'), q: qs.get('tim') }) });
+   }
+   if ((id = sub('/api/quan-tri/tin-dang/')) && m === 'PATCH') {
+-    return send(res, 200, { item: admin.decideListing(id, await readJson(req), me.id) });
++    const item = admin.decideListing(id, await readJson(req), me.id);
++    announceListings();
++    return send(res, 200, { item });
+   }
+   if (p === '/api/quan-tri/nha-tro' && m === 'GET') return send(res, 200, admin.listProperties({ q: qs.get('tim') }));
+   if (p === '/api/quan-tri/goi' && m === 'GET') return send(res, 200, { items: admin.listPlans() });
+@@ -439,7 +460,9 @@
+ 
+ server.listen(port, () => {
+   // Địa chỉ cho điện thoại / máy khác cùng mạng Wi-Fi (máy chủ lắng nghe trên mọi địa chỉ)
+-  const lan = Object.values(networkInterfaces()).flat()
++  let interfaces = {};
++  try { interfaces = networkInterfaces(); } catch {}
++  const lan = Object.values(interfaces).flat()
+     .filter((a) => a && a.family === 'IPv4' && !a.internal && !a.address.startsWith('169.254.'))
+     .map((a) => `http://${a.address}:${port}`);
+   console.log(`An Cư: http://localhost:${port}  (dữ liệu: ${dbFile}, bây giờ = ${now().toLocaleString('vi-VN')}${FIXED_NOW ? ' (đóng băng)' : ''})` +
+--- a/server/db.mjs
++++ b/server/db.mjs
+@@ -259,6 +259,13 @@
+     db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS one_active_per_renter_room ON viewing_appointments (renter_id, room_id)
+              WHERE renter_id IS NOT NULL AND status IN ${ACTIVE}`);
+   } catch { /* dữ liệu cũ trùng */ }
++  db.exec(`CREATE TABLE IF NOT EXISTS listing_details (
++    listing_id INTEGER PRIMARY KEY REFERENCES listings(id),
++    owner_id TEXT NOT NULL UNIQUE REFERENCES users(id),
++    data_json TEXT NOT NULL,
++    visible INTEGER NOT NULL DEFAULT 1 CHECK(visible IN (0,1)),
++    updated_at TEXT NOT NULL
++  )`);
+   db.exec(AUTH_SCHEMA);
+   migrateAuth(db);
+   seedDemoUsers(db);
+@@ -284,7 +291,7 @@
+                          WHERE id = ? AND status = 'pending' AND (hold_expires_at IS NULL OR hold_expires_at > ?)
+                          RETURNING *`),
+     // Trạng thái tin đăng của phòng, dùng để chặn đặt lịch với tin chưa qua kiểm duyệt
+-    tinDang: db.prepare('SELECT status FROM listings WHERE room_id = ?'),
++    tinDang: db.prepare('SELECT l.status, COALESCE(d.visible, 1) AS visible FROM listings l LEFT JOIN listing_details d ON d.listing_id = l.id WHERE l.room_id = ?'),
+     insert: db.prepare(`INSERT INTO viewing_appointments
+       (room_id, renter_id, tenant_name, tenant_phone, date, time, dur, status, hold_expires_at, cancel_reason, note, urgent, source, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+@@ -482,6 +489,7 @@
+     if (!room || room.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
+     // Tin đăng bị quản trị từ chối thì không nhận đặt lịch xem nữa
+     const tin = q.tinDang.get(roomId);
++    if (tin && !tin.visible) throw new ApiError(409, 'listing_hidden', 'Tin đăng đã được chủ trọ ẩn, vui lòng chọn phòng khác.');
+     if (tin && tin.status !== 'approved') {
+       throw new ApiError(409, 'listing_not_approved',
+         tin.status === 'rejected'
+--- a/package.json
++++ b/package.json
+@@ -18,7 +18,11 @@
+     "test:lien-thong": "node scripts/check-lien-thong.mjs",
+     "test:xem-thu-lich": "node scripts/check-xem-thu-lich.mjs",
+     "test:thanh-toan": "node scripts/check-thanh-toan.mjs",
+-    "test:co-lap": "node scripts/check-co-lap.mjs"
++    "test:co-lap": "node scripts/check-co-lap.mjs",
++    "build:tin-dang": "node scripts/build-tin-dang.mjs",
++    "test:tin-dang:ui": "node scripts/check-tin-dang-bootstrap.mjs",
++    "test:tin-dang:lien-thong": "node scripts/check-tin-dang-lien-thong.mjs",
++    "test:tin-dang:cloud": "node scripts/check-tin-dang-cloud.mjs"
+   },
+   "keywords": [],
+   "author": "",
+--- a/vercel.json
++++ b/vercel.json
+@@ -8,6 +8,21 @@
+   "functions": {
+     "api/payment/*.mjs": {
+       "maxDuration": 15
++    },
++    "api/tin-dang.mjs": {
++      "maxDuration": 15
++    },
++    "api/chu-tro/tin-dang.mjs": {
++      "maxDuration": 15
++    },
++    "api/quan-tri/tin-dang.mjs": {
++      "maxDuration": 15
+     }
+-  }
++  },
++  "rewrites": [
++    {
++      "source": "/api/quan-tri/tin-dang/:id",
++      "destination": "/api/quan-tri/tin-dang?id=:id"
++    }
++  ]
+ }
+--- a/quan-tri/tong-quan.html
++++ b/quan-tri/tong-quan.html
+@@ -767,6 +767,7 @@
+ <script src="../components/phien-xem-thu.js"></script>
+ <script src="../components/nguoi-dung.js"></script>
+ <script src="du-lieu-xem-thu.js"></script>
++<script src="../assets/tin-dang-store.js"></script>
+ <script>
+ (function(){
+   'use strict';
+@@ -803,6 +804,7 @@
+   var demo = null;
+ 
+   function api(method, path, body){
++    if(window.AnCuAuth?.dungDuoc() && path.startsWith('/api/quan-tri/tin-dang')) return window.AnCuListings.ready().then(()=>window.AnCuListings.request(path,method,body));
+     if (demo) {
+       try { return Promise.resolve(demoApi(method, path, body)); }
+       catch (err) { return Promise.reject(err); }
+@@ -1246,6 +1248,7 @@
+ 
+   // Số tin chờ duyệt hiện ngay trên mục Tin đăng ở cột công cụ bên trái
+   function capSoChoDuyet(){
++    if(window.AnCuAuth?.dungDuoc()){var o=document.querySelector('.side-link[data-muc="tin-dang"] .side-tag');var n=allPosts.filter(t=>t.status==='pending').length;if(o)o.textContent=n?n+' chờ duyệt':'Không có tin chờ';return Promise.resolve();}
+     return api('GET', '/api/quan-tri/tong-quan').then(function(j){
+       var n = j.summary.listings ? j.summary.listings.pending : 0;
+       var o = document.querySelector('.side-link[data-muc="tin-dang"] .side-tag');
+@@ -1583,7 +1586,7 @@
+     api('PATCH', '/api/quan-tri/tin-dang/' + btn.dataset.post, body)
+       .then(function(){
+         msg(act === 'duyet' ? 'Đã duyệt tin đăng.' : act === 'tu-choi' ? 'Đã từ chối tin đăng.' : 'Đã đưa tin về chờ duyệt.', 'ok');
+-        return refresh();
++        return window.AnCuAuth?.dungDuoc()?loadPosts():refresh();
+       })
+       .catch(function(err){ msg(err.message, 'err'); btn.disabled = false; });
+   });
+@@ -1747,6 +1750,7 @@
+   });
+ 
+   el('logout').addEventListener('click', function(){
++    if(window.AnCuAuth?.dungDuoc()){window.AnCuAuth.dangXuat().then(()=>location.href='../trang-chu.html');return;}
+     api('POST', '/api/dang-xuat').catch(function(){}).then(function(){ location.href = '../trang-chu.html'; });
+   });
+ 
+@@ -1824,8 +1828,10 @@
+     el('gate').hidden = true;
+     el('app').hidden = false;
+     el('who').innerHTML = laDemo ? 'Chế độ xem thử' : 'Xin chào, <b>' + esc(me.name) + '</b>';
+-    el('logout').hidden = laDemo;
+-    if (laDemo) {
++    el('logout').hidden = laDemo && !window.AnCuAuth?.dungDuoc();
++    if (laDemo && window.AnCuAuth?.dungDuoc()) {
++      el('demoNote').hidden=false;el('demoNote').textContent='Mục Đăng tin dùng dữ liệu thật từ Supabase. Các mục quản trị khác vẫn theo chế độ hiện có của nhóm.';
++    } else if (laDemo) {
+       el('demoNote').hidden = false;
+       el('demoNote').textContent = 'Chế độ xem thử: trang đang mở không qua máy chủ nên dùng dữ liệu mẫu lưu trong trình duyệt này. '
+         + 'Thao tác khoá tài khoản, ghi nhận gói và thanh toán đều chạy thật nhưng chỉ lưu ở máy bạn, không chia sẻ cho người khác. '
+@@ -1866,7 +1872,10 @@
+   }
+ 
+   // Không chạy qua http(s) (mở file:// từ ổ đĩa) thì chắc chắn không có máy chủ
+-  if (!/^https?:$/.test(location.protocol)) {
++  if(window.AnCuAuth?.dungDuoc()){
++    window.AnCuListings.ready().then(()=>window.AnCuAuth.toi()).then(function(me){if(!me || me.role!=='admin')return gate('Cần đăng nhập quản trị','Đăng nhập tài khoản quản trị Supabase để duyệt tin thật.');demo=demoLoad();return moKhuQuanTri(me,true);}).catch(function(e){gate('Chưa kết nối được dữ liệu',e.message);});
++    setInterval(function(){if(!document.hidden)loadPosts().catch(e=>msg(e.message,'err'));},15000);
++  } else if (!/^https?:$/.test(location.protocol)) {
+     chanNeuKhongPhaiQuanTri(function(){ batCheDoXemThu(); });
+   } else {
+     // Có http(s) nhưng vẫn có thể là bản tĩnh trên Vercel: thử gọi API, không có thì chuyển sang xem thử
+--- a/tai-khoan/tim-phong.html
++++ b/tai-khoan/tim-phong.html
+@@ -619,8 +619,17 @@
+   @keyframes bookedFade{from{opacity:0}to{opacity:1}}
+   @keyframes bookedIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+   @media (prefers-reduced-motion: reduce){.booked-overlay,.booked{animation:none}.booked-btn{transition:none}}
++
++  #mapBox{height:auto;min-height:510px;background:var(--surface,#fff)}
++  #googleMapFrame{position:relative;inset:auto;height:390px;z-index:0}
++  #mapPins{position:relative;inset:auto;display:flex;flex-direction:column;gap:7px;max-height:180px;overflow:auto;background:white;padding:12px;z-index:2;pointer-events:auto}
++  .listing-map-choice{min-height:44px;text-align:left;border:1px solid rgba(34,139,34,.2);background:#f7fbf7;border-radius:9px;padding:9px 12px;font:inherit;font-size:12px;cursor:pointer;color:#102010}
++  .listing-map-choice[aria-pressed=true],.listing-map-choice.hover{background:#e5f2e5;border-color:#228b22}
++  .map-legend{top:55px;bottom:auto;pointer-events:none;font-size:11px;max-width:calc(100% - 24px)}
++  .map-open-link{top:12px;bottom:auto}.read-preview-note{padding:12px 16px;background:#fff9e9;border:1px solid #ead9a9;border-radius:10px;margin-bottom:16px;font-size:12px}
++  @media(max-width:600px){#googleMapFrame{height:350px}.map-pop{max-width:calc(100% - 24px)}}
+ </style>
+-</head>
++<script src="../assets/tin-dang-preview.js"></script><script src="../assets/anh-phong.js"></script><script src="../assets/tin-dang-store.js"></script></head>
+ <body>
+ 
+ <!-- Thanh trên cùng: chỉ hiện khi sidebar thu gọn (≤960px) -->
+@@ -1215,80 +1224,8 @@
+     // BỘ CHUẨN: 9 phòng p01-p09 ở đây là nguồn sự thật, trang-chu.html và PHONG trong
+     // server/phong.mjs lấy theo. Số điện thoại là số đã đăng ký của chủ trọ sở hữu phòng. Ảnh dùng file nội bộ
+     // trong assets/rooms/ thay vì Unsplash từ xa, để khu người thuê không trống ảnh khi mất mạng.
+-    var ROOMS = [
+-      { id:'p01', title:'Phòng gác lửng, thoáng sáng', type:'Phòng trọ', price:2800000, area:22, people:2, floor:2,
+-        ward:'P. Nghĩa Đô', district:'Cầu Giấy', address:'12 Nguyễn Khánh Toàn, P. Nghĩa Đô, Cầu Giấy, Hà Nội',
+-        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng', distance:1.5, mapX:32, mapY:36,
+-        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+-        phone:'0988000999', postedAt:'16/09/2026',
+-        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Nghĩa Tân 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+-        image:'../assets/rooms/phong-lac-trung-vinh-tuy.jpg',
+-        images:['../assets/rooms/phong-lac-trung-vinh-tuy.jpg','../assets/rooms/phong-lac-trung-vinh-tuy-2.webp','../assets/rooms/phong-lac-trung-vinh-tuy-3.webp'] },
+-      { id:'p02', title:'Căn hộ mini full nội thất', type:'Căn hộ mini', price:4200000, area:30, people:2, floor:4,
+-        ward:'P. Kim Liên', district:'Đống Đa', address:'27 Đào Duy Anh, P. Kim Liên, Đống Đa, Hà Nội',
+-        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng', distance:2.3, mapX:48, mapY:42,
+-        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+-        phone:'0977111222', postedAt:'17/09/2026',
+-        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Gần công viên Thống Nhất, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
+-        image:'../assets/rooms/phongtrobachkinhxaygiare1.webp',
+-        images:['../assets/rooms/phongtrobachkinhxaygiare1.webp','../assets/rooms/phongtrobachkinhxaygiare2.webp','../assets/rooms/phongtrobachkinhxaygiare3.webp','../assets/rooms/phongtrobachkinhxaygiare4.webp'] },
+-      { id:'p03', title:'Phòng ban công riêng, đón nắng', type:'Phòng trọ', price:3100000, area:25, people:2, floor:3,
+-        ward:'P. Bạch Mai', district:'Hai Bà Trưng', address:'88 Bạch Mai, P. Bạch Mai, Hai Bà Trưng, Hà Nội',
+-        alt:'Phòng trọ có ban công riêng nhiều ánh sáng', distance:2.8, mapX:54, mapY:50,
+-        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+-        phone:'0977111222', postedAt:'15/09/2026',
+-        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần chợ Mơ và bến xe Nước Ngầm. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
+-        image:'../assets/rooms/210hqv1.webp',
+-        images:['../assets/rooms/210hqv1.webp','../assets/rooms/210hqv2.webp','../assets/rooms/210hqv3.webp','../assets/rooms/210hqv4.webp'] },
+-      { id:'p04', title:'Studio hiện đại gần trung tâm', type:'Căn hộ mini', price:3900000, area:28, people:2, floor:5,
+-        ward:'P. Khương Đình', district:'Thanh Xuân', address:'12 Khương Đình, P. Khương Đình, Thanh Xuân, Hà Nội',
+-        alt:'Phòng studio hiện đại gần trung tâm thành phố', distance:3.6, mapX:44, mapY:62,
+-        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+-        phone:'0977111222', postedAt:'17/09/2026',
+-        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách công viên Hạ Đình 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+-        image:'../assets/rooms/moixay1.webp',
+-        images:['../assets/rooms/moixay1.webp','../assets/rooms/moixay2.webp','../assets/rooms/moixay3.webp','../assets/rooms/moixay4.webp'] },
+-      { id:'p05', title:'Phòng khép kín, an ninh tốt', type:'Phòng trọ', price:2500000, area:20, people:2, floor:1,
+-        ward:'P. Ngọc Hà', district:'Ba Đình', address:'56 Ngọc Hà, P. Ngọc Hà, Ba Đình, Hà Nội',
+-        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt', distance:1.9, mapX:38, mapY:24,
+-        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+-        phone:'0988000999', postedAt:'14/09/2026',
+-        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Lăng Bác 1,2km, gần chợ và trạm xe buýt.',
+-        image:'../assets/rooms/ttt1.webp',
+-        images:['../assets/rooms/ttt1.webp','../assets/rooms/ttt2.webp','../assets/rooms/ttt3.webp'] },
+-      { id:'p06', title:'Phòng rộng, phù hợp gia đình', type:'Phòng trọ', price:4600000, area:35, people:3, floor:2,
+-        ward:'P. Vĩnh Hưng', district:'Hoàng Mai', address:'203 Vĩnh Hưng, P. Vĩnh Hưng, Hoàng Mai, Hà Nội',
+-        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình', distance:4.4, mapX:58, mapY:70,
+-        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+-        phone:'0977111222', postedAt:'16/09/2026',
+-        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Vĩnh Hưng và Times City 2km.',
+-        image:'../assets/rooms/hoalac1.webp',
+-        images:['../assets/rooms/hoalac1.webp','../assets/rooms/hoalac2.webp','../assets/rooms/hoalac3.webp'] },
+-      { id:'p07', title:'Phòng trọ giá mềm cho sinh viên', type:'Phòng trọ', price:1800000, area:16, people:1, floor:3,
+-        ward:'P. Mỹ Đình', district:'Từ Liêm', address:'9 Lê Đức Thọ, P. Mỹ Đình, Từ Liêm, Hà Nội',
+-        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên', distance:5.2, mapX:14, mapY:40,
+-        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+-        phone:'0988000999', postedAt:'13/09/2026',
+-        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê gần Đại học Thương Mại, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
+-        image:'../assets/rooms/ga1.webp',
+-        images:['../assets/rooms/ga1.webp','../assets/rooms/ga2.webp','../assets/rooms/ga3.webp'] },
+-      { id:'p08', title:'Phòng có gác, cửa sổ hướng vườn', type:'Phòng trọ', price:3400000, area:26, people:2, floor:2,
+-        ward:'P. Nhật Tân', district:'Tây Hồ', address:'74 Âu Cơ, P. Nhật Tân, Tây Hồ, Hà Nội',
+-        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn', distance:3.0, mapX:34, mapY:10,
+-        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+-        phone:'0977111222', postedAt:'15/09/2026',
+-        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn đào của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Nhật Tân 1,5km.',
+-        image:'../assets/rooms/dd1.webp',
+-        images:['../assets/rooms/dd1.webp','../assets/rooms/dd2.webp'] },
+-      { id:'p09', title:'Căn hộ dịch vụ 2 phòng ngủ', type:'Căn hộ mini', price:6500000, area:48, people:3, floor:6,
+-        ward:'P. Việt Hưng', district:'Long Biên', address:'15 Việt Hưng, P. Việt Hưng, Long Biên, Hà Nội',
+-        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi', distance:4.8, mapX:76, mapY:28,
+-        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+-        phone:'0977111222', postedAt:'17/09/2026',
+-        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Đuống. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+-        image:'../assets/rooms/hmai1.webp',
+-        images:['../assets/rooms/hmai1.webp','../assets/rooms/hmai2.webp','../assets/rooms/hmai3.webp','../assets/rooms/hmai4.webp','../assets/rooms/hmai5.webp'] }
+-    ];
++    var mapViewRequested=new URLSearchParams(location.search).get('view')==='map';
++    var ROOMS = []; // Nguồn chung với Tin đăng: AnCuListings /api/tin-dang
+ 
+     var nf = new Intl.NumberFormat('vi-VN');
+     function vnd(n){ return nf.format(n) + '₫'; }
+@@ -1374,15 +1311,21 @@
+             '<span>' + SVG_PEOPLE + r.people + ' người</span>' +
+           '</div>' +
+           '<div class="meta">' + r.amenities.slice(0,2).map(function(a){ return '<span class="chip">' + esc(a) + '</span>'; }).join('') + '</div>' +
+-          '<div class="distance">' + SVG_WALK + 'Cách vị trí tìm kiếm ~' + r.distance.toFixed(1).replace('.',',') + ' km</div>' +
++          '<div class="distance">' + SVG_WALK + (typeof r.distance==='number' ? 'Cách vị trí tìm kiếm ~'+r.distance.toFixed(1).replace('.',',')+' km' : 'Chưa có khoảng cách xác nhận') + '</div>' +
+         '</div>' +
+       '</article>';
+     }
+ 
+-    function pinHtml(r, active){
+-      return '<button type="button" class="map-pin' + (active ? ' active' : '') + '" data-pin="' + r.id + '" style="left:' + r.mapX + '%;top:' + r.mapY + '%" aria-label="' + esc(r.title) + ' · ' + vnd(r.price) + '/tháng">' +
+-        '<span class="dot"></span><span class="tag">' + vnd(r.price) + '</span>' +
+-      '</button>';
++    function pinHtml(r,active){
++      if(!active)return '';
++      return '<button type="button" class="listing-map-choice" data-pin="'+esc(r.id)+'">'+esc(r.title)+' · '+vnd(r.price)+'</button>';
++    }
++    function updateMapRoom(r){
++      var query=typeof r.latitude==='number' && typeof r.longitude==='number' ? r.latitude+','+r.longitude : r.address;
++      updateMapSource(query);
++      pins.querySelectorAll('[data-pin]').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-pin')===r.id));});
++      var link=document.querySelector('.map-open-link');if(link)link.href='https://www.google.com/maps?q='+encodeURIComponent(query)+'&t=k';
++      var legend=document.querySelector('.map-legend');if(legend)legend.textContent=r.latitude===null?'Tra cứu theo địa chỉ · Chưa xác nhận tọa độ':'Vị trí phòng đã chọn';
+     }
+ 
+     function activeAmenities(){
+@@ -1394,7 +1337,7 @@
+       if(!address) address = 'Hà Nội, Việt Nam';
+       var iframe = document.getElementById('googleMapFrame');
+       if(iframe){
+-        iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&z=12&output=embed';
++        iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&t=k&z=17&output=embed';
+       }
+     }
+ 
+@@ -1429,7 +1372,8 @@
+       var visibleIds = filtered.reduce(function(obj, r){ obj[r.id] = true; return obj; }, {});
+       pins.innerHTML = ROOMS.map(function(r){ return pinHtml(r, !!visibleIds[r.id]); }).join('');
+       if(filtered.length){
+-        updateMapSource(filtered[0].address);
++        var requested=new URLSearchParams(location.search).get('phong');
++        updateMapRoom(filtered.find(function(r){return r.id===requested;})||filtered[0]);
+       } else {
+         updateMapSource('Hà Nội, Việt Nam');
+       }
+@@ -1647,9 +1591,10 @@
+         '<div class="map-pop-b"><b>' + esc(r.title) + '</b><span>' + vnd(r.price) + '/tháng · ' + r.area + ' m²</span>' +
+         '<div class="map-pop-acts"><button type="button" class="save-room-btn' + (saved ? ' saved' : '') + '" data-save-room="' + r.id + '" data-title="' + esc(r.title) + '" aria-pressed="' + saved + '">' + saveBtnInner(saved) + '</button>' +
+         '<button type="button" class="btn btn-primary btn-sm" data-pop-detail="' + r.id + '">Xem chi tiết</button></div></div>';
+-      mapPop.style.left = r.mapX + '%';
+-      mapPop.style.top = r.mapY + '%';
+-      mapPop.classList.toggle('flip', r.mapY < 45);
++      updateMapRoom(r);
++      mapPop.style.left = '50%';
++      mapPop.style.top = '45%';
++      mapPop.classList.toggle('flip', true);
+       mapPop.hidden = false;
+       mapPop.querySelector('[data-pop-detail]').focus();
+     }
+@@ -1693,10 +1638,10 @@
+     var narrowMq = window.matchMedia('(max-width:960px)');
+     function syncMobileView(mql){
+       var narrow = mql.matches;
+-      roomListCol.hidden = false;
+-      mapCol.hidden = narrow;
++      roomListCol.hidden = narrow && mapViewRequested;
++      mapCol.hidden = narrow && !mapViewRequested;
+       viewToggle.querySelectorAll('button').forEach(function(b){
+-        var on = b.getAttribute('data-view') === 'list';
++        var on = b.getAttribute('data-view') === (narrow && mapViewRequested ? 'map' : 'list');
+         b.classList.toggle('on', on);
+         b.setAttribute('aria-selected', String(on));
+       });
+@@ -1779,7 +1724,7 @@
+       document.getElementById('rdSpecs').innerHTML =
+         '<div><dt>Diện tích</dt><dd>' + r.area + ' m²</dd></div>' +
+         '<div><dt>Số người ở tối đa</dt><dd>' + r.people + ' người</dd></div>' +
+-        '<div><dt>Tầng</dt><dd>Tầng ' + (r.floor || 1) + '</dd></div>' +
++        '<div><dt>Tầng</dt><dd>' + (r.floor ? 'Tầng '+r.floor : 'Chưa cập nhật') + '</dd></div>' +
+         '<div><dt>Tiền cọc</dt><dd>' + vnd(r.deposit || r.price) + '</dd></div>';
+ 
+       document.getElementById('rdDesc').textContent = r.desc || 'Chủ trọ chưa cập nhật mô tả chi tiết cho phòng này.';
+@@ -1972,6 +1917,42 @@
+     });
+ 
+     apply();
++    var listingLoading=false, lastCatalog='';
++    async function refreshListings(){
++      if(listingLoading || document.hidden)return;
++      listingLoading=true;
++      try{
++        var items=await window.AnCuListings.publicRooms();
++        if(!Array.isArray(items))throw Error('Dữ liệu tin đăng không hợp lệ.');
++        var signature=JSON.stringify(items);if(signature===lastCatalog)return;lastCatalog=signature;
++        ROOMS=items.map(function(r){
++          var images=r.images.map(function(src){return window.AnCuListings.image(src,true);});
++          return Object.assign({},r,{images:images,image:images[0]});
++        });
++        if(typeof rd!=='undefined' && rd && rd.classList.contains('open'))closeDetail();
++        if(typeof closeMapPop==='function')closeMapPop();
++        if(typeof renderWardList==='function')renderWardList();
++        if(typeof renderAreaList==='function')renderAreaList();
++        apply();
++        if(window.AnCuListings.mode==='demo' && !document.getElementById('listingModeNote')){
++          var note=document.createElement('div');note.id='listingModeNote';note.className='read-preview-note';
++          note.textContent='Chế độ chạy thử trên trình duyệt. Chạy npm start để dùng dữ liệu chung qua máy chủ của nhóm.';
++          var host=document.querySelector('main');if(host)host.prepend(note);
++        }
++        var requested=new URLSearchParams(location.search).get('phong');
++        if(requested && !mapViewRequested && ROOMS.some(function(r){return r.id===requested;}))openDetail(requested);
++      }catch(error){
++        ROOMS=[];lastCatalog='';apply();
++        countEl.textContent='Chưa tải được tin đăng: '+error.message;
++      }finally{listingLoading=false;}
++    }
++    refreshListings();
++    window.AnCuListings.onChange(refreshListings);
++    if(window.AnCu)window.AnCu.on('tin-dang',refreshListings);
++    window.addEventListener('focus',refreshListings);
++    document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshListings();});
++    setInterval(function(){if(window.AnCuListings.mode!=='demo')refreshListings();},15000);
++
+   })();
+ </script>
+ <div class="toast" id="toast" role="status" aria-live="polite"><b id="toastTitle"></b><span id="toastText"></span></div>
+--- a/trang-chu.html
++++ b/trang-chu.html
+@@ -915,7 +915,7 @@
+     .rd-info .rd-price{font-size:1.5rem}
+   }
+ </style>
+-</head>
++<script src="assets/tin-dang-preview.js"></script><script src="assets/anh-phong.js"></script><script src="assets/tin-dang-store.js"></script></head>
+ <body>
+ 
+ <header id="hdr">
+@@ -2220,79 +2220,7 @@
+     // 9 phòng p01-p09, cùng một bộ với tai-khoan/tim-phong.html (bộ chuẩn) và PHONG trong
+     // server/phong.mjs. Phường ghi theo danh sách 126 đơn vị của Hà Nội sau sáp nhập để bộ lọc
+     // vị trí tìm được; số điện thoại là số đã đăng ký của chủ trọ sở hữu phòng.
+-    var ROOMS = [
+-      { id:'p01', city:'ha-noi', title:'Phòng gác lửng, thoáng sáng', price:2800000, area:22, people:2, floor:2,
+-        ward:'Phường Nghĩa Đô', address:'12 Nguyễn Khánh Toàn, Phường Nghĩa Đô, Hà Nội',
+-        posted:4, postedAt:'16/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+-        alt:'Phòng trọ có gác lửng, cửa sổ lớn đón nắng',
+-        amenities:['Có gác lửng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Máy lạnh','Nóng lạnh'],
+-        desc:'Phòng nằm trong ngõ ô tô đỗ cửa, cách chợ Nghĩa Tân 300m. Gác lửng rộng đủ kê nệm đôi, tầng dưới làm khu sinh hoạt và bếp. Cửa sổ hướng Đông Nam nên sáng và thoáng cả ngày, không chung chủ, giờ giấc tự do.',
+-        images:['assets/rooms/phong-lac-trung-vinh-tuy.jpg','assets/rooms/phong-lac-trung-vinh-tuy-2.webp','assets/rooms/phong-lac-trung-vinh-tuy-3.webp'] },
+-
+-      { id:'p02', city:'ha-noi', title:'Căn hộ mini full nội thất', price:4200000, area:30, people:2, floor:4,
+-        ward:'Phường Kim Liên', address:'27 Đào Duy Anh, Phường Kim Liên, Hà Nội',
+-        posted:1, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+-        alt:'Căn hộ mini đầy đủ nội thất, bếp riêng',
+-        amenities:['Có bếp riêng','Máy lạnh','Thang máy','Wifi miễn phí','Ban công riêng','Chỗ để xe'],
+-        desc:'Căn hộ khép kín trong toà 6 tầng có thang máy, đầy đủ giường tủ, bếp từ, máy giặt chung mỗi tầng. Gần công viên Thống Nhất, đi bộ 5 phút ra siêu thị. Chủ nhà ở tầng 1, an ninh có camera và khoá vân tay.',
+-        images:['assets/rooms/phongtrobachkinhxaygiare1.webp','assets/rooms/phongtrobachkinhxaygiare2.webp','assets/rooms/phongtrobachkinhxaygiare3.webp','assets/rooms/phongtrobachkinhxaygiare4.webp'] },
+-
+-      { id:'p03', city:'ha-noi', title:'Phòng ban công riêng, đón nắng', price:3100000, area:25, people:2, floor:3,
+-        ward:'Phường Bạch Mai', address:'88 Bạch Mai, Phường Bạch Mai, Hà Nội',
+-        posted:6, postedAt:'15/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+-        alt:'Phòng trọ có ban công riêng nhiều ánh sáng',
+-        amenities:['Nuôi thú cưng','Ban công riêng','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+-        desc:'Phòng góc có ban công riêng phơi đồ thoải mái, nhận nuôi mèo và chó nhỏ. Khu dân cư yên tĩnh, gần chợ Mơ và bến xe Nước Ngầm. Nhà 4 phòng nên ít ồn, có sân chung để xe rộng rãi.',
+-        images:['assets/rooms/210hqv1.webp','assets/rooms/210hqv2.webp','assets/rooms/210hqv3.webp','assets/rooms/210hqv4.webp'] },
+-
+-      { id:'p04', city:'ha-noi', title:'Studio hiện đại gần trung tâm', price:3900000, area:28, people:2, floor:5,
+-        ward:'Phường Khương Đình', address:'12 Khương Đình, Phường Khương Đình, Hà Nội',
+-        posted:2, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+-        alt:'Phòng studio hiện đại gần trung tâm thành phố',
+-        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Wifi miễn phí','Camera an ninh','Chỗ để xe'],
+-        desc:'Studio mới hoàn thiện năm nay, tường sơn sáng, sàn gỗ công nghiệp. Cách công viên Hạ Đình 800m, xung quanh nhiều quán ăn và cà phê. Toà nhà có thang máy, camera hành lang và bảo vệ trông xe ban đêm.',
+-        images:['assets/rooms/moixay1.webp','assets/rooms/moixay2.webp','assets/rooms/moixay3.webp','assets/rooms/moixay4.webp'] },
+-
+-      { id:'p05', city:'ha-noi', title:'Phòng khép kín, an ninh tốt', price:2500000, area:20, people:2, floor:1,
+-        ward:'Phường Ngọc Hà', address:'56 Ngọc Hà, Phường Ngọc Hà, Hà Nội',
+-        posted:8, postedAt:'14/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+-        alt:'Phòng trọ khép kín sạch sẽ, an ninh tốt',
+-        amenities:['Camera an ninh','Giờ giấc tự do','Wifi miễn phí','Chỗ để xe','Nóng lạnh'],
+-        desc:'Phòng khép kín tầng trệt, tiện cho người hay đi sớm về khuya. Dãy trọ 10 phòng có camera toàn khu và cổng khoá riêng ban đêm. Cách Lăng Bác 1,2km, gần chợ và trạm xe buýt.',
+-        images:['assets/rooms/ttt1.webp','assets/rooms/ttt2.webp','assets/rooms/ttt3.webp'] },
+-
+-      { id:'p06', city:'ha-noi', title:'Phòng rộng, phù hợp gia đình', price:4600000, area:35, people:3, floor:2,
+-        ward:'Phường Vĩnh Hưng', address:'203 Vĩnh Hưng, Phường Vĩnh Hưng, Hà Nội',
+-        posted:5, postedAt:'16/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+-        alt:'Phòng trọ rộng rãi phù hợp cho hộ gia đình',
+-        amenities:['Có bếp riêng','Chỗ để ô tô','Máy lạnh','Wifi miễn phí','Ban công riêng','Nuôi thú cưng'],
+-        desc:'Phòng rộng 35m² chia được khu ngủ và khu sinh hoạt riêng, phù hợp gia đình nhỏ hoặc 3 bạn ở ghép. Có chỗ đỗ ô tô trong sân, gần trường tiểu học Vĩnh Hưng và Times City 2km.',
+-        images:['assets/rooms/hoalac1.webp','assets/rooms/hoalac2.webp','assets/rooms/hoalac3.webp'] },
+-
+-      { id:'p07', city:'ha-noi', title:'Phòng trọ giá mềm cho sinh viên', price:1800000, area:16, people:1, floor:3,
+-        ward:'Phường Từ Liêm', address:'9 Lê Đức Thọ, Phường Từ Liêm, Hà Nội',
+-        posted:9, postedAt:'13/09/2026', phone:'0988 000 999', owner:'Trần Hoà',
+-        alt:'Phòng trọ nhỏ gọn giá rẻ dành cho sinh viên',
+-        amenities:['Giờ giấc tự do','Wifi miễn phí','Chỗ để xe'],
+-        desc:'Phòng nhỏ gọn cho một người, đủ kê giường 1m2, bàn học và tủ quần áo. Khu vực nhiều sinh viên thuê gần Đại học Thương Mại, chủ nhà không thu phí gửi xe. Điện nước tính theo giá nhà nước, không phát sinh phụ phí.',
+-        images:['assets/rooms/ga1.webp','assets/rooms/ga2.webp','assets/rooms/ga3.webp'] },
+-
+-      { id:'p08', city:'ha-noi', title:'Phòng có gác, cửa sổ hướng vườn', price:3400000, area:26, people:2, floor:2,
+-        ward:'Phường Tây Hồ', address:'74 Âu Cơ, Phường Tây Hồ, Hà Nội',
+-        posted:7, postedAt:'15/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+-        alt:'Phòng trọ có gác lửng, cửa sổ nhìn ra vườn',
+-        amenities:['Có gác lửng','Có bếp riêng','Nuôi thú cưng','Wifi miễn phí','Chỗ để xe','Máy lạnh'],
+-        desc:'Phòng có gác gỗ chắc chắn, cửa sổ lớn nhìn ra vườn đào của chủ nhà nên rất mát. Bếp riêng tách biệt khu ngủ, có máy hút mùi. Ngõ rộng 3m, xe máy vào tận cửa, cách cầu Nhật Tân 1,5km.',
+-        images:['assets/rooms/dd1.webp','assets/rooms/dd2.webp'] },
+-
+-      { id:'p09', city:'ha-noi', title:'Căn hộ dịch vụ 2 phòng ngủ', price:6500000, area:48, people:3, floor:6,
+-        ward:'Phường Việt Hưng', address:'15 Việt Hưng, Phường Việt Hưng, Hà Nội',
+-        posted:3, postedAt:'17/09/2026', phone:'0977 111 222', owner:'Lê Thu Mai',
+-        alt:'Căn hộ dịch vụ hai phòng ngủ đầy đủ tiện nghi',
+-        amenities:['Thang máy','Máy lạnh','Có bếp riêng','Ban công riêng','Camera an ninh','Chỗ để ô tô'],
+-        desc:'Căn hộ dịch vụ 2 phòng ngủ, 1 phòng khách và bếp riêng, có ban công rộng nhìn ra sông Đuống. Bao phí dọn dẹp 2 lần/tuần và internet tốc độ cao. Phù hợp gia đình hoặc nhóm bạn 3 người đi làm.',
+-        images:['assets/rooms/hmai1.webp','assets/rooms/hmai2.webp','assets/rooms/hmai3.webp','assets/rooms/hmai4.webp','assets/rooms/hmai5.webp'] },
+-     ];
++    var ROOMS = []; // Nguồn chung với Tin đăng: AnCuListings /api/tin-dang
+ 
+     var nf = new Intl.NumberFormat('vi-VN');
+     function vnd(n){ return nf.format(n) + '₫'; }
+@@ -2904,6 +2832,42 @@
+       if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+       else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+     });
++    var listingLoading=false, lastCatalog='';
++    async function refreshListings(){
++      if(listingLoading || document.hidden)return;
++      listingLoading=true;
++      try{
++        var items=await window.AnCuListings.publicRooms();
++        if(!Array.isArray(items))throw Error('Dữ liệu tin đăng không hợp lệ.');
++        var signature=JSON.stringify(items);if(signature===lastCatalog)return;lastCatalog=signature;
++        ROOMS=items.map(function(r){
++          var images=r.images.map(function(src){return window.AnCuListings.image(src,false);});
++          return Object.assign({},r,{images:images,image:images[0]});
++        });
++        if(typeof rd!=='undefined' && rd && rd.classList.contains('open'))closeDetail();
++        
++        if(typeof renderWardList==='function')renderWardList();
++        if(typeof renderAreaList==='function')renderAreaList();
++        if(hasSearched) search(); else showSamples();
++        if(window.AnCuListings.mode==='demo' && !document.getElementById('listingModeNote')){
++          var note=document.createElement('div');note.id='listingModeNote';note.className='read-preview-note';
++          note.textContent='Chế độ chạy thử trên trình duyệt. Chạy npm start để dùng dữ liệu chung qua máy chủ của nhóm.';
++          var host=document.querySelector('main');if(host)host.prepend(note);
++        }
++        var requested=new URLSearchParams(location.search).get('phong');
++        if(requested && ROOMS.some(function(r){return r.id===requested;}))openDetail(requested);
++      }catch(error){
++        ROOMS=[];lastCatalog='';if(hasSearched) search(); else showSamples();
++        countEl.textContent='Chưa tải được tin đăng: '+error.message;
++      }finally{listingLoading=false;}
++    }
++    refreshListings();
++    window.AnCuListings.onChange(refreshListings);
++    if(window.AnCu)window.AnCu.on('tin-dang',refreshListings);
++    window.addEventListener('focus',refreshListings);
++    document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshListings();});
++    setInterval(function(){if(window.AnCuListings.mode!=='demo')refreshListings();},15000);
++
+   })();
+ </script>
+ </body>
