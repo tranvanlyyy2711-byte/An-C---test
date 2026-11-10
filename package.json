@@ -18,7 +18,11 @@
     "test:lien-thong": "node scripts/check-lien-thong.mjs",
     "test:xem-thu-lich": "node scripts/check-xem-thu-lich.mjs",
     "test:thanh-toan": "node scripts/check-thanh-toan.mjs",
-    "test:co-lap": "node scripts/check-co-lap.mjs"
+    "test:co-lap": "node scripts/check-co-lap.mjs",
+    "build:tin-dang": "node scripts/build-tin-dang.mjs",
+    "test:tin-dang:ui": "node scripts/check-tin-dang-bootstrap.mjs",
+    "test:tin-dang:lien-thong": "node scripts/check-tin-dang-lien-thong.mjs",
+    "test:tin-dang:cloud": "node scripts/check-tin-dang-cloud.mjs"
   },
   "keywords": [],
   "author": "",

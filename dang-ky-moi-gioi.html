@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Đăng ký môi giới — An Cư</title>
+<meta name="description" content="Đăng ký làm môi giới An Cư: chia sẻ link phòng trọ và nhận hoa hồng từ mỗi kỳ tiền phòng." />
+<link rel="icon" href="assets/logo-ancu.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/base.css" />
+<style>
+.wrap{display:grid;gap:24px;max-width:1040px;margin:0 auto;width:100%}
+@media (min-width:1024px){.wrap{grid-template-columns:minmax(0,1fr) 440px;gap:48px;align-items:start;padding-top:24px}}
+.intro h1{margin-top:8px;font-size:32px;font-weight:700;text-wrap:balance}
+@media (min-width:768px){.intro h1{font-size:42px}}
+.intro .lead{margin-top:10px;color:var(--text-muted)}
+.points{margin-top:24px;display:grid;gap:14px;list-style:none}
+.points li{display:flex;gap:12px}
+.points .ic{flex:0 0 36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border-strong);color:var(--accent)}
+.points .ic svg{width:18px;height:18px}
+.points b{display:block;font-family:'Be Vietnam Pro',sans-serif}
+.points span{font-size:15px;color:var(--text-muted)}
+.invite{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface);font-size:15px}
+.invite svg{width:20px;height:20px;margin-top:2px;color:var(--success-ink)}
+.invite.is-warn svg{color:var(--warning-ink)}
+.invite[hidden]{display:none}
+.form-card{padding:24px 20px;display:grid;gap:16px}
+@media (min-width:600px){.form-card{padding:28px}}
+.form-card h2{font-size:20px;font-weight:700}
+.form-card form{display:grid;gap:16px}
+.demo-note{font-size:13.5px;color:var(--warning-ink);padding:10px 12px;border-radius:var(--radius-sm);background:rgba(245,177,76,.12)}
+.foot{font-size:14px;color:var(--text-dim);text-align:center}
+.foot a{display:inline-flex;align-items:center;min-height:44px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /> An Cư</a>
+    <div class="topbar-end"><a class="btn btn-ghost" href="login.html">Đăng nhập</a></div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <section class="intro reveal" aria-labelledby="tieuDe">
+      <p class="eyebrow">Môi giới An Cư</p>
+      <h1 id="tieuDe">Giới thiệu phòng trọ, nhận hoa hồng mỗi kỳ</h1>
+      <p class="lead">Chia sẻ link phòng cho người cần thuê. Khi khách ký hợp đồng và đóng tiền phòng, bạn được chia quỹ hoa hồng của kỳ đó.</p>
+      <ul class="points">
+        <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg></span>
+          <div><b>Link affiliate cho từng phòng</b><span>Mã của bạn đi kèm lịch xem phòng khách đặt.</span></div></li>
+        <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
+          <div><b id="diemBac"></b><span>Doanh số càng cao, phần hưởng từ quỹ càng lớn.</span></div></li>
+        <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+          <div><b id="diemF2"></b><span>Mời đồng nghiệp làm tuyến dưới của bạn.</span></div></li>
+      </ul>
+    </section>
+
+    <section class="card form-card reveal" aria-labelledby="h-form">
+      <div class="invite" id="loiMoi" role="status" hidden></div>
+      <h2 id="h-form">Đăng ký tài khoản môi giới</h2>
+      <form id="formDk" novalidate>
+        <div class="field"><label for="hoTen">Họ và tên</label><input class="input" id="hoTen" autocomplete="name" aria-describedby="loi-hoTen" /><p class="err" id="loi-hoTen"></p></div>
+        <div class="field"><label for="sdt">Số điện thoại</label><input class="input" id="sdt" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912345678" aria-describedby="loi-sdt" /><p class="err" id="loi-sdt"></p></div>
+        <div class="field"><label for="email">Email</label><input class="input" id="email" type="email" autocomplete="email" placeholder="ten@email.com" aria-describedby="loi-email" /><p class="err" id="loi-email"></p></div>
+        <div class="field"><label for="matKhau">Mật khẩu <span class="hint">(ít nhất 8 ký tự)</span></label><input class="input" id="matKhau" type="password" autocomplete="new-password" aria-describedby="loi-matKhau" /><p class="err" id="loi-matKhau"></p></div>
+        <p class="demo-note">Bản demo: tài khoản chỉ lưu trong trình duyệt này, mật khẩu không được mã hoá. Đừng dùng mật khẩu thật.</p>
+        <button type="submit" class="btn btn-primary btn-block">Đăng ký và vào trang môi giới</button>
+      </form>
+      <p class="foot">Đã có tài khoản? <a class="link" href="login.html">Đăng nhập</a></p>
+    </section>
+  </div>
+</main>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/finance.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>
+(function(){
+  'use strict';
+  var D = window.AnCuData, F = window.AnCuFinance, UI = window.AnCuUI, esc = UI.esc;
+  var $ = function(id){ return document.getElementById(id); };
+  function pct(r){ return Math.round(r * 100) + '%'; }
+
+  var T = F.TIERS;
+  $('diemBac').textContent = 'Hưởng ' + pct(T[0].share) + '–' + pct(T[T.length - 1].share) + ' quỹ hoa hồng theo bậc';
+  $('diemF2').textContent = 'Thêm ' + pct(F.UPLINE_SHARE) + ' quỹ từ tuyến dưới';
+
+  // Người mời: ?moi=<mã môi giới>
+  var maMoi = '';
+  try { maMoi = String(new URLSearchParams(location.search).get('moi') || '').trim().toUpperCase(); } catch (e) {}
+  var nguoiMoi = maMoi ? D.findBrokerByRef(maMoi) : null;
+  var box = $('loiMoi');
+  if (nguoiMoi) {
+    box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><div><b>' + esc(nguoiMoi.name) +
+      '</b> (<span class="ref">' + esc(nguoiMoi.ref_code) + '</span>) mời bạn tham gia. Bạn sẽ là tuyến dưới của người này.</div>';
+    box.hidden = false;
+  } else if (maMoi) {
+    box.className = 'invite is-warn';
+    box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div>Mã mời <span class="ref">' +
+      esc(maMoi) + '</span> không tồn tại. Bạn vẫn đăng ký được, nhưng sẽ không có tuyến trên.</div>';
+    box.hidden = false;
+  }
+
+  function khongDau(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'D'); }
+  // Mã giới thiệu từ tên gọi: Nguyễn Thị Hạnh → MG-HANH, trùng thì MG-HANH2, MG-HANH3…
+  function taoMa(ten){
+    var goc = 'MG-' + (khongDau(ten).trim().split(/\s+/).pop() || 'MOI').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+    var ma = goc, n = 2;
+    while (D.findBrokerByRef(ma)) ma = goc + n++;
+    return ma;
+  }
+
+  function loi(id, text){ $('loi-' + id).textContent = text; $(id).setAttribute('aria-invalid', 'true'); }
+  function xoaLoi(){ ['hoTen', 'sdt', 'email', 'matKhau'].forEach(function(k){ $('loi-' + k).textContent = ''; $(k).removeAttribute('aria-invalid'); }); }
+
+  $('formDk').addEventListener('submit', function(e){
+    e.preventDefault();
+    xoaLoi();
+    var ten = $('hoTen').value.trim().replace(/\s+/g, ' ');
+    var sdt = $('sdt').value.replace(/[^0-9]/g, '');
+    var email = $('email').value.trim().toLowerCase();
+    var mk = $('matKhau').value;
+    var sai = null;
+    if (ten.length < 2) { loi('hoTen', 'Nhập họ và tên.'); sai = sai || 'hoTen'; }
+    if (!/^0\d{9}$/.test(sdt)) { loi('sdt', 'Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.'); sai = sai || 'sdt'; }
+    else if (D.users.some(function(u){ return u.phone === sdt; })) { loi('sdt', 'Số điện thoại này đã có tài khoản. Hãy đăng nhập.'); sai = sai || 'sdt'; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { loi('email', 'Email không hợp lệ.'); sai = sai || 'email'; }
+    else if (D.users.some(function(u){ return String(u.email).toLowerCase() === email; })) { loi('email', 'Email này đã có tài khoản.'); sai = sai || 'email'; }
+    if (mk.length < 8) { loi('matKhau', 'Mật khẩu cần ít nhất 8 ký tự.'); sai = sai || 'matKhau'; }
+    if (sai) { $(sai).focus(); return; }
+
+    var u = {
+      id: 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      role: 'broker', name: ten, phone: sdt, email: email, password: mk,
+      ref_code: taoMa(ten), upline_id: nguoiMoi ? nguoiMoi.id : null, created_at: new Date().toISOString()
+    };
+    var ds;
+    try { ds = JSON.parse(localStorage.getItem(D.LOCAL_USERS_KEY) || '[]'); } catch (err) { ds = []; }
+    if (!Array.isArray(ds)) ds = [];
+    ds.push(u);
+    try { localStorage.setItem(D.LOCAL_USERS_KEY, JSON.stringify(ds)); }
+    catch (err) { loi('email', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa đăng ký được.'); return; }
+
+    // Trang này đã nạp data.js trước khi có tài khoản mới → thêm vào danh sách đang dùng rồi đăng nhập luôn
+    u.local = true;
+    D.users.push(u);
+    if (login(email, mk) === 'broker') location.href = 'broker-dashboard.html';
+  });
+
+  UI.reveal();
+})();
+</script>
+</body>
+</html>
