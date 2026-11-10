@@ -138,7 +138,8 @@
     var u = {
       id: 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
       role: 'broker', name: ten, phone: sdt, email: email, password: mk,
-      ref_code: taoMa(ten), upline_id: nguoiMoi ? nguoiMoi.id : null, created_at: new Date().toISOString()
+      ref_code: taoMa(ten), parent_id: nguoiMoi ? nguoiMoi.id : null,
+      upline_id: nguoiMoi ? nguoiMoi.id : null, created_at: new Date().toISOString()
     };
     var ds;
     try { ds = JSON.parse(localStorage.getItem(D.LOCAL_USERS_KEY) || '[]'); } catch (err) { ds = []; }

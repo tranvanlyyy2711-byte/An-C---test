@@ -7,7 +7,7 @@
  *      giới giới thiệu thì không trích.
  *   3. Chia quỹ:
  *        - môi giới giới thiệu phòng: theo BẬC hiệu suất (TIERS, tính theo doanh số tháng đó, gồm cả khoản này)
- *        - tuyến trên (người đã mời môi giới đó, upline_id): UPLINE_SHARE của quỹ
+ *        - tuyến trên (người đã mời môi giới đó, parent_id/upline_id): UPLINE_SHARE của quỹ
  *        - An Cư giữ phần còn lại.
  *   Ví dụ 15.000.000₫, phòng 20%, môi giới Bậc 1 không có tuyến trên: quỹ 3.000.000₫ → môi giới 41% =
  *   1.230.000₫, An Cư 1.770.000₫.
@@ -30,6 +30,7 @@
 
   var KEY = 'ancu-tai-chinh-v2';
   var OLD_KEYS = ['ancu-tai-chinh-v1'];
+  var SEED_VERSION = 3;
   var MAX_AMOUNT = 1000000000; // chặn gõ nhầm thêm số 0
   var MIN_WITHDRAW = 100000;
 
@@ -39,7 +40,7 @@
     { level: 2, name: 'Bậc 2', minSales: 20000000, share: 0.48 },
     { level: 3, name: 'Bậc 3', minSales: 50000000, share: 0.55 }
   ];
-  var UPLINE_SHARE = 0.05; // tuyến trên hưởng 5% quỹ của mỗi giao dịch do tuyến dưới mang về
+  var UPLINE_SHARE = 0.2; // tuyến trên hưởng 20% quỹ hoa hồng từ giao dịch của tuyến dưới
 
   function data() {
     if (!global.AnCuData) throw new Error('finance.js: chưa nạp assets/js/data.js');
@@ -70,7 +71,7 @@
   function sum(list, f) { return list.reduce(function (s, x) { return s + (f ? f(x) : x); }, 0); }
   function newId(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
-  function empty() { return { version: 2, revenue: {}, commissionFund: {}, payments: [], ledger: [], withdrawals: [] }; }
+  function empty() { return { version: 2, seedVersion: SEED_VERSION, revenue: {}, commissionFund: {}, payments: [], ledger: [], withdrawals: [] }; }
 
   function salesIn(s, brokerId, period) {
     return sum(s.payments.filter(function (p) { return p.broker_id === brokerId && p.period === period; }), function (p) { return p.amount; });
@@ -96,7 +97,8 @@
     q.tier = tierFor(q.salesAfter).tier;
     q.brokerShare = q.tier.share;
     q.brokerAmount = Math.round(q.commission * q.brokerShare);
-    var up = broker.upline_id ? D.findUser(broker.upline_id) : null;
+    var parentId = broker.parent_id || broker.upline_id;
+    var up = parentId ? D.findUser(parentId) : null;
     if (up && up.role === 'broker' && up.id !== broker.id) {
       q.upline = up; q.uplineShare = UPLINE_SHARE; q.uplineAmount = Math.round(q.commission * UPLINE_SHARE);
     }
@@ -140,15 +142,40 @@
     return s;
   }
 
+  function migrateSeed(s) {
+    var D = data(), seedIds = {};
+    D.transactions.forEach(function (t) { if (t.type === 'rent') seedIds[t.id] = true; });
+    var manualPayments = s.payments.filter(function (p) { return !seedIds[p.id]; });
+    var manualIds = {};
+    manualPayments.forEach(function (p) { manualIds[p.id] = true; });
+    var migrated = seed();
+    manualPayments.forEach(function (p) {
+      migrated.payments.push(p);
+      add(migrated.revenue, p.landlord_id, Number(p.amount) || 0);
+      add(migrated.commissionFund, p.landlord_id, Number(p.commission) || 0);
+    });
+    s.ledger.forEach(function (entry) {
+      if (manualIds[entry.payment_id]) migrated.ledger.push(entry);
+    });
+    migrated.withdrawals = Array.isArray(s.withdrawals) ? s.withdrawals : [];
+    return migrated;
+  }
+
   function load() {
     try {
       var s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s && s.version === 2 && s.revenue && Array.isArray(s.payments) && Array.isArray(s.ledger) && Array.isArray(s.withdrawals)) return s;
+      if (s && s.version === 2 && s.revenue && Array.isArray(s.payments) && Array.isArray(s.ledger) && Array.isArray(s.withdrawals)) {
+        if (s.seedVersion === SEED_VERSION) return s;
+        var migrated = migrateSeed(s);
+        save(migrated);
+        return migrated;
+      }
     } catch (e) {}
     return seed();
   }
   function save(s) {
     try {
+      s.seedVersion = SEED_VERSION;
       localStorage.setItem(KEY, JSON.stringify(s));
       OLD_KEYS.forEach(function (k) { localStorage.removeItem(k); }); // sổ v1 chia tiền theo luật cũ
       return true;
@@ -239,7 +266,9 @@
   }
 
   function downlines(brokerId) {
-    return data().users.filter(function (u) { return u.role === 'broker' && u.upline_id === brokerId; });
+    return data().users.filter(function (u) {
+      return u.role === 'broker' && (u.parent_id || u.upline_id) === brokerId;
+    });
   }
 
   var BANKS = ['Vietcombank', 'VietinBank', 'BIDV', 'Agribank', 'Techcombank', 'MB Bank', 'ACB', 'VPBank', 'TPBank', 'Sacombank'];

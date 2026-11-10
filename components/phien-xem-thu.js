@@ -16,7 +16,7 @@
   var KHOA = 'an-cu-phien-xem-thu';
   var MAT_KHAU = 'matkhau123';
 
-  // Khớp DEMO_USERS trong server/auth.mjs — sửa một bên thì sửa cả bên kia.
+  // Tài khoản người thuê/chủ trọ/admin khớp server/auth.mjs. Môi giới là demo phía trình duyệt.
   var TAI_KHOAN = [
     { id:'u-trang', role:'renter',   name:'Phạm Thu Trang', phone:'0912345678' },
     { id:'u-an',    role:'renter',   name:'Nguyễn Văn An',  phone:'0912000111' },
@@ -24,7 +24,10 @@
     { id:'u-huy',   role:'renter',   name:'Lê Quang Huy',   phone:'0933000333' },
     { id:'l-binh',  role:'landlord', name:'Trần Hoà',       phone:'0988000999' },
     { id:'l-mai',   role:'landlord', name:'Lê Thu Mai',     phone:'0977111222' },
-    { id:'ad-01',   role:'admin',    name:'Quản trị An Cư', phone:'0900000001' }
+    { id:'ad-01',   role:'admin',    name:'Quản trị An Cư', phone:'0900000001' },
+    { id:'b-f1-demo', role:'broker', name:'Môi giới F1', phone:'0983333333', ref_code:'F1_DEMO', parent_id:null },
+    { id:'b-hoang', role:'broker', name:'Nguyễn Hoàng', phone:'0977000888', ref_code:'F1_HOANG', parent_id:null },
+    { id:'b-minh', role:'broker', name:'Trần Minh', phone:'0966550011', ref_code:'F2_MINH', parent_id:'b-hoang' }
   ];
 
   function doc(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -67,12 +70,12 @@
       if(String(password) !== MAT_KHAU) return { error:'wrong_password', field:'password',
         message:'Mật khẩu của mọi tài khoản demo là ' + MAT_KHAU + '.' };
       nhoDanhTinh(u);
-      return { user:{ id:u.id, role:u.role, name:u.name, phone:u.phone } };
+      return { user:{ id:u.id, role:u.role, name:u.name, phone:u.phone, ref_code:u.ref_code || null, parent_id:u.parent_id || null } };
     },
 
     toi: function(){
       var u = theoId(doc(KHOA));
-      return u ? { id:u.id, role:u.role, name:u.name, phone:u.phone } : null;
+      return u ? { id:u.id, role:u.role, name:u.name, phone:u.phone, ref_code:u.ref_code || null, parent_id:u.parent_id || null } : null;
     },
 
     dangXuat: function(){ xoa(KHOA); xoa('an-cu-toi'); },
@@ -81,6 +84,7 @@
     khuCua: function(user){
       if(!user) return 'trang-chu.html';
       if(user.role === 'admin') return 'quan-tri/trang-chu.html';
+      if(user.role === 'broker') return 'broker-dashboard.html';
       return user.role === 'landlord' ? 'quan-ly/tong-quan.html' : 'tai-khoan/tim-phong.html';
     }
   };

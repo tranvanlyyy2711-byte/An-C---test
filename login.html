@@ -187,7 +187,7 @@ form{margin-top:24px;display:grid;gap:18px}
         </div>
 
         <button class="btn btn-primary" type="submit" id="nutDangNhap">Đăng nhập</button>
-        <p class="form-foot">Chưa có tài khoản? <a href="trang-chu.html">Đăng ký ở trang chủ</a> · <a href="dang-ky-moi-gioi.html">Làm môi giới</a></p>
+        <p class="form-foot">Chưa có tài khoản? <a href="trang-chu.html">Đăng ký ở trang chủ</a> · <a id="dangKyMoiGioi" href="dang-ky-moi-gioi.html">Làm môi giới</a></p>
       </form>
     </section>
 
@@ -211,9 +211,16 @@ form{margin-top:24px;display:grid;gap:18px}
           </button>
         </li>
         <li class="reveal">
-          <button type="button" class="demo-btn" data-email="khoa@ancu.test">
+          <button type="button" class="demo-btn" data-email="0977000888">
             <span class="demo-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
-            <span class="demo-tx"><b>Đăng nhập nhanh Môi giới</b><span>Đỗ Minh Khoa · khoa@ancu.test</span></span>
+            <span class="demo-tx"><b>Đăng nhập nhanh Môi giới · F1</b><span>Nguyễn Hoàng · 0977000888</span></span>
+            <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </li>
+        <li class="reveal">
+          <button type="button" class="demo-btn" data-email="0983333333">
+            <span class="demo-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+            <span class="demo-tx"><b>Đăng nhập nhanh Môi giới (mẫu)</b><span>Môi giới F1 · 0983333333</span></span>
             <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
           </button>
         </li>
@@ -251,6 +258,13 @@ form{margin-top:24px;display:grid;gap:18px}
   var form = $('formDangNhap'), inEmail = $('email'), inMatKhau = $('matKhau');
   var nutDangNhap = $('nutDangNhap'), notice = $('dangNhapRoi');
   var demoBtns = [].slice.call(document.querySelectorAll('.demo-btn'));
+  var refTeam = '';
+  try { refTeam = String(new URLSearchParams(location.search).get('ref_team') || '').trim().toUpperCase(); } catch(e) {}
+  var nguoiMoi = refTeam && window.AnCuData.findBrokerByRef(refTeam);
+  if(nguoiMoi){
+    $('dangKyMoiGioi').href = 'dang-ky-moi-gioi.html?moi=' + encodeURIComponent(nguoiMoi.ref_code);
+    $('dangKyMoiGioi').textContent = 'Đăng ký qua lời mời của ' + nguoiMoi.name;
+  }
 
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
     return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }

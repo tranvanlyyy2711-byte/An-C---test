@@ -23,6 +23,7 @@
 /* ---------- Ví ---------- */
 .wallets{display:grid;gap:16px}
 @media (min-width:768px){.wallets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1100px){.wallets{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .wallet{padding:20px;display:grid;gap:6px;align-content:start}
 @media (min-width:768px){.wallet{padding:24px}}
 .wallet-lb{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text-muted)}
@@ -71,6 +72,10 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
 .down li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 12px;font-size:14.5px}
 .down li + li{border-top:1px solid var(--border)}
 .down span{color:var(--text-dim)}
+.team-wrap{overflow:hidden}
+.team-table .r{text-align:right}
+.team-table .team-name{font-weight:600}
+.team-table .team-ref{display:block;color:var(--text-dim);font-size:13px}
 
 /* ---------- Lịch sử: danh sách gọn trên điện thoại, bảng trên màn hình rộng ---------- */
 .hist{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
@@ -135,6 +140,12 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
         <p class="wallet-v num" id="viCho"></p>
         <p class="wallet-s" id="viChoNote"></p>
         <div class="wallet-foot" id="viTong"></div>
+      </article>
+      <article class="card wallet reveal">
+        <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-7"/></svg>Doanh số tích lũy tháng</p>
+        <p class="wallet-v num" id="doanhSoThang"></p>
+        <p class="wallet-s">Tổng tiền thuê khách do bạn trực tiếp giới thiệu đã thanh toán trong tháng.</p>
+        <div class="wallet-foot" id="doanhSoThangNote"></div>
       </article>
     </div>
   </section>
@@ -283,6 +294,8 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
     $('bacSub').textContent = 'Tính theo doanh số tháng ' + kyLabel(p.period) + ': tổng tiền phòng khách bạn giới thiệu đã đóng.';
     $('bacHienTai').innerHTML = esc(p.tier.name) + ' – <span>' + pct(p.tier.share) + '</span>';
     $('doanhSo').textContent = vnd(p.sales);
+    $('doanhSoThang').textContent = vnd(p.sales);
+    $('doanhSoThangNote').innerHTML = '<div><span>Bậc hiện tại</span><b>' + esc(p.tier.name) + ' · ' + pct(p.tier.share) + ' quỹ</b></div>';
     var w = Math.min(100, p.sales / max * 100);
     $('bar').innerHTML = '<div class="bar-fill" id="barFill" style="width:' + (p.sales > 0 ? Math.max(w, 1.5) : 0) + '%"></div>' +
       T.slice(1).map(function(t){ return '<span class="bar-mark" style="left:' + (t.minSales / max * 100) + '%" aria-hidden="true"></span>'; }).join('');
@@ -314,18 +327,25 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
   });
 
   /* ---------- Link F2 + tuyến dưới ---------- */
-  $('linkF2').value = absUrl('dang-ky-moi-gioi.html?moi=' + encodeURIComponent(REF));
+  $('linkF2').value = absUrl('login.html?ref_team=' + encodeURIComponent(REF));
   $('f2Desc').textContent = 'Đồng nghiệp đăng ký làm môi giới qua link này sẽ thành tuyến dưới của bạn. Bạn hưởng ' +
     pct(F.UPLINE_SHARE) + ' quỹ hoa hồng từ mỗi kỳ tiền phòng do họ mang về — không trừ vào phần của họ.';
   function veTuyenDuoi(){
     var ds = F.downlines(ME.id);
+    var ky = F.currentPeriod();
     var tuHo = F.ledger(ME.id).filter(function(e){ return e.kind === 'upline'; });
-    if (!ds.length) { $('tuyenDuoi').innerHTML = '<p class="wallet-s">Chưa có ai đăng ký qua link của bạn.</p>'; return; }
-    $('tuyenDuoi').innerHTML = '<p class="wallet-s" style="margin-bottom:8px">Tuyến dưới của bạn (' + ds.length + ')</p><ul class="down">' + ds.map(function(u){
-      var nhan = tuHo.filter(function(e){ return e.from_broker_id === u.id; }).reduce(function(s, e){ return s + e.amount; }, 0);
-      return '<li><b>' + esc(u.name) + ' <span class="ref">' + esc(u.ref_code) + '</span></b>' +
-        '<span class="num">Doanh số tháng: ' + vnd(F.performance(u.id).sales) + ' · bạn đã nhận ' + vnd(nhan) + '</span></li>';
-    }).join('') + '</ul>';
+    if (!ds.length) { $('tuyenDuoi').innerHTML = '<p class="empty">Chưa có môi giới F2 đăng ký qua link của bạn.</p>'; return; }
+    $('tuyenDuoi').innerHTML = '<p class="wallet-s">Tuyến dưới F2 của bạn (' + ds.length + ')</p>' +
+      '<div class="table-wrap team-wrap"><table class="tbl team-table"><thead><tr>' +
+      '<th>Môi giới F2</th><th class="r">Doanh số tháng</th><th class="r">Hoa hồng nhóm (' + pct(F.UPLINE_SHARE) + ')</th>' +
+      '</tr></thead><tbody>' + ds.map(function(u){
+        var dong = tuHo.filter(function(e){ return e.from_broker_id === u.id && e.period === ky; });
+        var nhan = dong.reduce(function(s, e){ return s + e.amount; }, 0);
+        var doanhSo = F.performance(u.id, ky).sales;
+        return '<tr><td data-label="Môi giới F2"><span class="team-name">' + esc(u.name) + '</span><span class="team-ref">' + esc(u.ref_code) + '</span></td>' +
+          '<td data-label="Doanh số tháng" class="r num">' + vnd(doanhSo) + '</td>' +
+          '<td data-label="Hoa hồng nhóm" class="r num">' + vnd(nhan) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
   }
 
   /* ---------- Sao chép ---------- */

@@ -67,15 +67,20 @@
 
   function getCurrentUser() { return readStore(); }
 
-  /* Chặn trang theo vai trò. requiredRole: chuỗi ('landlord') hoặc mảng (['landlord', 'admin']);
-   * bỏ trống = chỉ cần đã đăng nhập. Chưa đăng nhập hoặc sai vai trò → về login.html. */
+  /* Chặn trang theo vai trò. requiredRole: chuỗi ('landlord', 'broker') hoặc mảng (['landlord', 'admin']);
+   * bỏ trống = chỉ cần đã đăng nhập. Chưa đăng nhập thì giữ trang cần vào; sai vai trò thì không giữ
+   * đích bị cấm trong `next`, tránh đăng nhập xong bị chuyển vòng lại trang không có quyền. */
   function checkRole(requiredRole) {
     var user = readStore();
     var allowed = requiredRole == null ? null
       : (Array.isArray(requiredRole) ? requiredRole : [requiredRole]).map(normalizeRole);
 
-    if (!user || !user.role || (allowed && allowed.indexOf(normalizeRole(user.role)) === -1)) {
+    if (!user || !user.role) {
       global.location.replace(loginUrlFor(currentPath()));
+      return null;
+    }
+    if (allowed && allowed.indexOf(normalizeRole(user.role)) === -1) {
+      global.location.replace(loginUrl);
       return null;
     }
     return user;

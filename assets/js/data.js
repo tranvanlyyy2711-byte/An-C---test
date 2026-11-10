@@ -30,10 +30,12 @@
     // Chủ trọ
     { id: 'l-binh',  role: 'landlord', name: 'Trần Hoà',       phone: '0988000999', email: 'chutro@ancu.test', password: DEMO_PASSWORD },
     { id: 'l-mai',   role: 'landlord', name: 'Lê Thu Mai',     phone: '0977111222', email: 'mai@ancu.test',    password: DEMO_PASSWORD },
-    // Môi giới — mỗi người có một mã giới thiệu (ref_code) gắn vào phòng họ đưa khách tới.
-    // upline_id: người đã mời môi giới này vào (tuyến trên), được hưởng một phần quỹ hoa hồng của tuyến dưới.
-    { id: 'b-khoa',  role: 'broker',   name: 'Đỗ Minh Khoa',   phone: '0966100200', email: 'khoa@ancu.test',   password: DEMO_PASSWORD, ref_code: 'MG-KHOA', upline_id: null },
-    { id: 'b-ngoc',  role: 'broker',   name: 'Vũ Bảo Ngọc',    phone: '0966300400', email: 'ngoc@ancu.test',   password: DEMO_PASSWORD, ref_code: 'MG-NGOC', upline_id: 'b-khoa' },
+    // Môi giới — parent_id/upline_id là mã người mời; ref_code được gắn vào link affiliate.
+    { id: 'b-khoa',  role: 'broker',   name: 'Đỗ Minh Khoa',   phone: '0966100200', email: 'khoa@ancu.test',   password: DEMO_PASSWORD, ref_code: 'MG-KHOA', parent_id: null,      upline_id: null },
+    { id: 'b-ngoc',  role: 'broker',   name: 'Vũ Bảo Ngọc',    phone: '0966300400', email: 'ngoc@ancu.test',  password: DEMO_PASSWORD, ref_code: 'MG-NGOC', parent_id: 'b-khoa', upline_id: 'b-khoa' },
+    { id: 'b-hoang', role: 'broker',   name: 'Nguyễn Hoàng',   phone: '0977000888', email: 'hoang@ancu.test',  password: DEMO_PASSWORD, ref_code: 'F1_HOANG', parent_id: null,      upline_id: null },
+    { id: 'b-minh',  role: 'broker',   name: 'Trần Minh',      phone: '0966550011', email: 'minh@ancu.test',   password: DEMO_PASSWORD, ref_code: 'F2_MINH',  parent_id: 'b-hoang', upline_id: 'b-hoang' },
+    { id: 'b-f1-demo', role: 'broker', name: 'Môi giới F1',    phone: '0983333333', email: 'f1-demo@ancu.test', password: DEMO_PASSWORD, ref_code: 'F1_DEMO',  parent_id: null,      upline_id: null },
     // Quản trị
     { id: 'ad-01',   role: 'admin',    name: 'Quản trị An Cư', phone: '0900000001', email: 'admin@ancu.test',  password: DEMO_PASSWORD }
   ];
@@ -49,8 +51,9 @@
       if (!u || typeof u.id !== 'string' || !/^b-/.test(u.id) || !u.ref_code) return;
       var trung = users.some(function (x) { return x.id === u.id || x.phone === u.phone || x.email === u.email || x.ref_code === u.ref_code; });
       if (trung) return;
+      var parentId = u.parent_id || u.upline_id || null;
       users.push({ id: u.id, role: 'broker', name: String(u.name || ''), phone: String(u.phone || ''), email: String(u.email || ''),
-        password: String(u.password || ''), ref_code: String(u.ref_code), upline_id: u.upline_id || null, created_at: u.created_at || null, local: true });
+        password: String(u.password || ''), ref_code: String(u.ref_code), parent_id: parentId, upline_id: parentId, created_at: u.created_at || null, local: true });
     });
   })();
 
@@ -132,7 +135,7 @@
   var contracts = [
     { id: 'HD-2026-019', room_id: 'ab-101', tenant_id: 'u-an',   tenant_name: 'Nguyễn Văn An',  landlord_id: 'l-binh', start_date: '2026-01-01', end_date: '2026-12-31', monthly_rent: 3500000, deposit: 3500000, status: 'active' },
     { id: 'HD-2026-012', room_id: 'ab-201', tenant_id: 'u-linh', tenant_name: 'Trần Mỹ Linh',   landlord_id: 'l-binh', start_date: '2026-03-01', end_date: '2026-11-30', monthly_rent: 4100000, deposit: 4100000, status: 'active' },
-    { id: 'HD-2026-021', room_id: 'ab-202', tenant_id: null,     tenant_name: 'Lê Minh Tú',     landlord_id: 'l-binh', start_date: '2026-02-15', end_date: '2027-02-14', monthly_rent: 3800000, deposit: 3800000, status: 'active' },
+    { id: 'HD-2026-021', room_id: 'ab-202', tenant_id: null,     tenant_name: 'Lê Minh Tú',     landlord_id: 'l-binh', start_date: '2026-02-15', end_date: '2027-02-14', monthly_rent: 3800000, deposit: 3800000, status: 'active', ref_code: 'F2_MINH' },
     { id: 'HD-2026-029', room_id: 'ab-203', tenant_id: null,     tenant_name: 'Đỗ Thảo',        landlord_id: 'l-binh', start_date: '2026-06-01', end_date: '2027-05-31', monthly_rent: 3800000, deposit: 3800000, status: 'active' },
     { id: 'HD-2026-028', room_id: 'ab-301', tenant_id: 'u-trang', tenant_name: 'Phạm Thu Trang', landlord_id: 'l-binh', start_date: '2026-08-01', end_date: '2027-07-31', monthly_rent: 3500000, deposit: 3500000, status: 'active' },
     { id: 'HD-2026-031', room_id: 'ab-302', tenant_id: 'u-huy',  tenant_name: 'Lê Quang Huy',   landlord_id: 'l-binh', start_date: '2026-10-01', end_date: '2027-09-30', monthly_rent: 3000000, deposit: 3000000, status: 'active' }
