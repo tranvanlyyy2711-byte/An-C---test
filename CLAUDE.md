@@ -165,7 +165,7 @@ Trước khi coi một thay đổi là xong: `npm run lint` và `npm run typeche
 **Prototype HTML hiện tại** (chưa phải Next.js) có máy chủ riêng cho lịch xem phòng, dùng SQLite tích hợp của Node, không thêm dependency:
 
 ```bash
-npm start              # trang tĩnh + API lịch xem, http://localhost:5500, dữ liệu ở 'Trang admin/' (không commit)
+npm start              # trang tĩnh + API lịch xem, http://localhost:5600, dữ liệu ở 'Trang admin/' (không commit)
 npm run test:lich      # kiểm thử "một khung giờ chỉ một người" đầu-cuối
 npm run test:dong-thoi # nhiều tiến trình cùng ghi một SQLite: thử giao dịch/khoá thật
 npm run test:auth      # kiểm thử đăng ký / đăng nhập thật (API + trình duyệt, CSDL tạm)
@@ -176,10 +176,10 @@ npm run test:quan-tri-tinh # khu quản trị khi không có API: file:// và b�
 npm run test:thanh-toan # mua gói bằng VietQR qua payOS (dựng payOS giả, không đụng payOS thật)
 npm run test:co-lap    # cô lập dữ liệu + thêm phòng: chủ trọ mới thấy trang trống, An Bình còn nguyên
 npm run test:lien-thong # hai phía người thuê ↔ chủ trọ: lưu phòng, lịch hẹn, thông báo, thuê phòng (trình duyệt thật)
-node scripts/serve.mjs 5500   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
+node scripts/serve.mjs 5600   # chỉ phục vụ file tĩnh, không có API — đủ để xem các trang quan-ly/*.html
 ```
 
-**Luôn tự chạy server xem trước trong terminal của mình, không nhờ AI khởi động hộ.** Nếu để AI chạy nền, tiến trình đó gắn với phiên làm việc của AI và sẽ tắt khi phiên kết thúc, khiến link `localhost:5500` báo lỗi dù trang không có vấn đề gì. Mở một cửa sổ terminal riêng, chạy lệnh ở trên, và **giữ cửa sổ đó mở** suốt lúc làm việc — mỗi lần AI sửa file xong chỉ cần reload trình duyệt.
+**Luôn tự chạy server xem trước trong terminal của mình, không nhờ AI khởi động hộ.** Nếu để AI chạy nền, tiến trình đó gắn với phiên làm việc của AI và sẽ tắt khi phiên kết thúc, khiến link `localhost:5600` báo lỗi dù trang không có vấn đề gì. Mở một cửa sổ terminal riêng, chạy lệnh ở trên, và **giữ cửa sổ đó mở** suốt lúc làm việc — mỗi lần AI sửa file xong chỉ cần reload trình duyệt.
 
 Luật đặt lịch và cách chuyển sang Supabase: xem `docs/dat-lich-mot-khung-gio.md`. Liên thông hai phía (6 trạng thái lịch hẹn dùng chung, thông báo + SSE, quyền theo chủ phòng, khoản nhận phòng): xem `docs/lich-hen-hai-chieu.md`. Tiền cọc khi xem và mục Thanh toán: xem `docs/coc-khi-xem.md` (chụp kiểm tra: `node scripts/shot-thanh-toan.mjs`). Phiếu sự cố người thuê gửi chủ trọ (trạng thái, API, chuông thông báo, hộp thoại chi tiết dùng chung 3 lối vào): xem `docs/su-co-nguoi-thue.md` (kiểm tra: `npm run test:su-co`).
 
@@ -445,7 +445,7 @@ khách + đối soát ở `assets/js/moi-gioi.js` — **chỉ dùng chung trong 
   link mời thì tự nhập được, mã phải là môi giới có thật.
 - **Nguồn khách đi theo lịch hẹn:** `phong-chi-tiet.html?ref=` lưu `localStorage.refCode`; mọi lối đặt lịch
   (`components/lich-xem.js`, `an-cu-store.js`, `tim-phong.html`, `dat-lich.html`) gửi kèm `refCode`, máy chủ lưu
-  cột `viewing_appointments.ref_code` (chỉ nhận dạng `MG-XXXX`). Đặt ở `phong-chi-tiet.html` gửi kho của chủ
+  cột `viewing_appointments.ref_code` (chữ in hoa, số, `_`, `-`, 3–24 ký tự: `MG-KHOA`, `F1_HOANG`). Đặt ở `phong-chi-tiet.html` gửi kho của chủ
   trọ trước (máy chủ hoặc `an-cu-lich-xem-v1`), kho đó từ chối thì không ghi vào sổ khách của môi giới.
 - **Quản trị — Môi giới & Hoa hồng** (`quan-tri/tong-quan.html#moi-gioi`, `#doi-soat` cũ tự chuyển về đây):
   mạng lưới F1–F2 với ví từng người; duyệt lệnh rút tiền (`F.decideWithdrawal`: "Đã chuyển khoản" bắt buộc mã

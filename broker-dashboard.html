@@ -111,6 +111,10 @@
 
 .wallets{display:grid;gap:16px}
 @media (min-width:768px){.wallets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1100px){.wallets{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.wallet-foot{margin-top:10px;padding-top:12px;border-top:1px solid var(--border);display:grid;gap:4px;font-size:14px;color:var(--text-muted)}
+.wallet-foot div{display:flex;justify-content:space-between;gap:12px}
+.wallet-foot b{font-weight:600;color:var(--text)}
 .wallet{padding:20px;display:grid;gap:6px;align-content:start}
 @media (min-width:768px){.wallet{padding:24px}}
 .wallet-lb{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text-muted)}
@@ -312,7 +316,7 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     <section class="card refcard reveal" aria-labelledby="h-ma">
       <div>
         <h2 class="lb" id="h-ma">Mã giới thiệu định danh</h2>
-        <p class="code" id="maRef"></p>
+        <p class="code" id="maCuaToi"></p>
         <p class="sub" id="maRefSub"></p>
       </div>
       <div class="row-btns">
@@ -328,14 +332,20 @@ input[type=file].input{padding:10px 12px;min-height:48px}
       <div class="wallets stagger">
         <article class="card wallet is-main reveal">
           <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20M6 6V4h12v2"/></svg>Ví khả dụng</p>
-          <p class="wallet-v num" id="tqKhaDung"></p>
+          <p class="wallet-v num" id="viKhaDung"></p>
           <p class="wallet-s">Hoa hồng của các kỳ chủ trọ đã xác nhận thu tiền, rút được về ngân hàng.</p>
           <a class="btn btn-primary" href="#vi">Rút tiền &amp; lịch sử ví</a>
         </article>
         <article class="card wallet reveal">
           <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Ví chờ xử lý</p>
-          <p class="wallet-v num" id="tqCho"></p>
-          <p class="wallet-s" id="tqChoNote"></p>
+          <p class="wallet-v num" id="viCho"></p>
+          <p class="wallet-s" id="viChoNote"></p>
+        </article>
+        <article class="card wallet reveal">
+          <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-7"/></svg>Doanh số tích lũy tháng</p>
+          <p class="wallet-v num" id="doanhSoThang"></p>
+          <p class="wallet-s">Tổng tiền thuê khách do bạn trực tiếp giới thiệu đã thanh toán trong tháng.</p>
+          <div class="wallet-foot" id="doanhSoThangNote"></div>
         </article>
       </div>
     </section>
@@ -625,8 +635,8 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   $('avatar').textContent = ten.split(/\s+/).slice(-1)[0].charAt(0).toUpperCase();
   $('loiChao').textContent = 'Chào ' + ten;
   $('chipRefTx').textContent = REF;
-  $('maRef').textContent = REF;
-  var len = toi.upline_id && D.findUser(toi.upline_id);
+  $('maCuaToi').textContent = REF;
+  var len = (toi.parent_id || toi.upline_id) && D.findUser(toi.parent_id || toi.upline_id);
   $('maRefSub').textContent = 'Gắn vào mọi link bạn chia sẻ để khách và đồng nghiệp đến từ bạn được ghi nhận.' +
     (len ? ' Tuyến trên của bạn: ' + len.name + ' (' + len.ref_code + ').' : '');
   $('dangXuat').addEventListener('click', function(){ logout(); });
@@ -697,9 +707,9 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   function veTongQuan(){
     var w = F.wallet(ME.id), ky = F.currentPeriod();
     $('tqLead').textContent = 'Kỳ ' + kyLabel(ky) + ' · tổng hoa hồng đã nhận từ trước tới nay ' + vnd(w.earned) + '.';
-    $('tqKhaDung').textContent = vnd(w.available);
-    $('tqCho').textContent = vnd(w.pending);
-    $('tqChoNote').textContent = w.pendingCount
+    $('viKhaDung').textContent = vnd(w.available);
+    $('viCho').textContent = vnd(w.pending);
+    $('viChoNote').textContent = w.pendingCount
       ? 'Dự kiến từ ' + w.pendingCount + ' kỳ đã tới hạn, chủ trọ chưa xác nhận thu tiền. Xác nhận kỳ nào, hoa hồng kỳ đó chuyển sang ví khả dụng.'
       : 'Không có kỳ nào đang chờ chủ trọ xác nhận thu tiền.';
 
@@ -707,6 +717,8 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     $('bacSub').textContent = 'Tính theo doanh số tháng ' + kyLabel(p.period) + ': tổng tiền phòng khách bạn giới thiệu đã đóng.';
     $('bacHienTai').innerHTML = esc(p.tier.name) + ' – <span>' + pct(p.tier.share) + '</span>';
     $('doanhSo').textContent = vnd(p.sales);
+    $('doanhSoThang').textContent = vnd(p.sales);
+    $('doanhSoThangNote').innerHTML = '<div><span>Bậc hiện tại</span><b>' + esc(p.tier.name) + ' · ' + pct(p.tier.share) + ' quỹ</b></div>';
     var rong = Math.min(100, p.sales / max * 100);
     $('bar').innerHTML = '<div class="bar-fill" style="width:' + (p.sales > 0 ? Math.max(rong, 1.5) : 0) + '%"></div>' +
       T.slice(1).map(function(t){ return '<span class="bar-mark" style="left:' + (t.minSales / max * 100) + '%" aria-hidden="true"></span>'; }).join('');
@@ -902,7 +914,8 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     var hang = ds.map(function(u){
       var s = F.brokerStats(u.id);
       var nhan = tuF2.filter(function(e){ return e.from_broker_id === u.id; }).reduce(function(t, e){ return t + e.amount; }, 0);
-      return { u: u, s: s, nhan: nhan };
+      var nhanThang = tuF2.filter(function(e){ return e.from_broker_id === u.id && e.period === F.currentPeriod(); }).reduce(function(t, e){ return t + e.amount; }, 0);
+      return { u: u, s: s, nhan: nhan, nhanThang: nhanThang, thang: F.performance(u.id).sales };
     });
     var tongDt = hang.reduce(function(t, h){ return t + h.s.sales; }, 0);
     var tongNhan = tuF2.reduce(function(t, e){ return t + e.amount; }, 0);
@@ -911,13 +924,14 @@ input[type=file].input{padding:10px 12px;min-height:48px}
       '<div><dt>Doanh thu F2 mang về</dt><dd class="num">' + vnd(tongDt) + '<small>Tổng tiền phòng khách của F2 đã đóng</small></dd></div>' +
       '<div class="is-accent"><dt>Hoa hồng gián tiếp bạn nhận</dt><dd class="num">' + vnd(tongNhan) + '<small>' + pct(F.UPLINE_SHARE) + ' hoa hồng của F2</small></dd></div>';
     if (!ds.length) { $('bangF2').innerHTML = '<p class="empty">Chưa có ai đăng ký qua link của bạn. Sao chép link ở trên và gửi cho đồng nghiệp.</p>'; return; }
-    $('bangF2').innerHTML = '<div class="table-wrap"><table class="tbl"><thead><tr><th>Môi giới F2</th><th>Tham gia</th><th class="r">Doanh thu</th><th class="r">Hoa hồng F2 nhận</th><th class="r">Bạn nhận (' + pct(F.UPLINE_SHARE) + ')</th></tr></thead><tbody>' +
+    $('bangF2').innerHTML = '<div class="table-wrap"><table class="tbl team-table"><thead><tr><th>Môi giới F2</th><th>Tham gia</th><th class="r">Doanh số tháng</th><th class="r">Doanh thu tích luỹ</th><th class="r">Hoa hồng F2 nhận</th><th class="r">Hoa hồng nhóm (' + pct(F.UPLINE_SHARE) + ')</th></tr></thead><tbody>' +
       hang.map(function(h){
         return '<tr><td data-label="Môi giới F2"><span class="main">' + esc(h.u.name) + '</span><span class="sub"><span class="ref">' + esc(h.u.ref_code) + '</span></span></td>' +
           '<td data-label="Tham gia">' + (h.u.created_at ? esc(UI.vnDate(h.u.created_at)) : '<span class="sub">Tài khoản mẫu</span>') + '</td>' +
-          '<td data-label="Doanh thu" class="r num"><span class="main">' + vnd(h.s.sales) + '</span><span class="sub">' + h.s.payments + ' kỳ đã đóng</span></td>' +
+          '<td data-label="Doanh số tháng" class="r num">' + vnd(h.thang) + '</td>' +
+          '<td data-label="Doanh thu tích luỹ" class="r num"><span class="main">' + vnd(h.s.sales) + '</span><span class="sub">' + h.s.payments + ' kỳ đã đóng</span></td>' +
           '<td data-label="Hoa hồng F2 nhận" class="r num">' + vnd(h.s.direct) + '</td>' +
-          '<td data-label="Bạn nhận" class="r num"><span class="main" style="color:var(--success-ink)">+' + vnd(h.nhan) + '</span></td></tr>';
+          '<td data-label="Hoa hồng nhóm" class="r num"><span class="main" style="color:var(--success-ink)">+' + vnd(h.nhan) + '</span><span class="sub">tháng này ' + vnd(h.nhanThang) + '</span></td></tr>';
       }).join('') + '</tbody></table></div>';
   }
 

@@ -7,7 +7,7 @@
  *      giới giới thiệu thì không trích.
  *   3. Chia quỹ:
  *        - môi giới giới thiệu phòng: theo BẬC hiệu suất (TIERS, tính theo doanh số tháng đó, gồm cả khoản này)
- *        - tuyến trên (F1 — người đã mời môi giới đó, upline_id): UPLINE_SHARE (20%) của phần môi giới F2
+ *        - tuyến trên (F1 — người đã mời môi giới đó, parent_id/upline_id): UPLINE_SHARE (20%) của phần môi giới F2
  *          nhận được. Tiền này lấy từ phần An Cư giữ, F2 không bị trừ đồng nào.
  *        - An Cư giữ phần còn lại.
  *   Ví dụ 15.000.000₫, phòng 20%, môi giới Bậc 1 không có tuyến trên: quỹ 3.000.000₫ → môi giới 41% =
@@ -39,6 +39,11 @@
   var KEY = 'ancu-tai-chinh-v3';
   var V2_KEY = 'ancu-tai-chinh-v2';
   var OLD_KEYS = ['ancu-tai-chinh-v1', V2_KEY];
+  // Tăng khi dữ liệu mẫu trong data.js đổi cách gán hoa hồng (vd hợp đồng đổi mã môi giới): sổ được dựng lại
+  // từ dữ liệu mẫu mới, giữ nguyên các lần chủ trọ xác nhận / An Cư cưỡng chế và các lệnh rút tiền.
+  var SEED_VERSION = 4;
+  // Tuyến trên của một môi giới: parent_id (tên mới) hoặc upline_id (tên cũ) — data.js khai cả hai
+  function parentOf(u) { return u ? (u.parent_id || u.upline_id || null) : null; }
   var MAX_AMOUNT = 1000000000; // chặn gõ nhầm thêm số 0
   var MIN_WITHDRAW = 100000;
 
@@ -79,7 +84,7 @@
   function sum(list, f) { return list.reduce(function (s, x) { return s + (f ? f(x) : x); }, 0); }
   function newId(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
-  function empty() { return { version: 3, revenue: {}, commissionFund: {}, payments: [], ledger: [], withdrawals: [] }; }
+  function empty() { return { version: 3, seedVersion: SEED_VERSION, revenue: {}, commissionFund: {}, payments: [], ledger: [], withdrawals: [] }; }
 
   /* ---------- Kỳ thanh toán của hợp đồng ---------- */
   function addMonths(period, n) {
@@ -124,7 +129,7 @@
     q.tier = tierFor(q.salesAfter).tier;
     q.brokerShare = q.tier.share;
     q.brokerAmount = Math.round(q.commission * q.brokerShare);
-    var up = broker.upline_id ? D.findUser(broker.upline_id) : null;
+    var up = parentOf(broker) ? D.findUser(parentOf(broker)) : null;
     if (up && up.role === 'broker' && up.id !== broker.id) {
       q.upline = up; q.uplineShare = UPLINE_SHARE; q.uplineAmount = Math.round(q.brokerAmount * UPLINE_SHARE);
     }
@@ -174,9 +179,9 @@
     return s && s.version === version && s.revenue && Array.isArray(s.payments) && Array.isArray(s.ledger) && Array.isArray(s.withdrawals);
   }
 
-  // Sổ v2 (luật 5% quỹ cũ): giữ nguyên các lần chủ trọ đã xác nhận và các yêu cầu rút tiền,
-  // chỉ chia lại hoa hồng theo luật hiện hành.
-  function migrateV2(v2) {
+  // Dựng lại sổ từ dữ liệu mẫu hiện hành + luật chia hiện hành, giữ các lần xác nhận làm tay (kể cả khoản
+  // An Cư cưỡng chế) và các lệnh rút tiền của sổ cũ. Dùng cho sổ v2 (luật 5% quỹ) và sổ v3 có seedVersion cũ.
+  function rebuild(v2) {
     var s = seed(), D = data();
     var seeded = {};
     s.payments.forEach(function (p) { seeded[p.id] = true; });
@@ -185,7 +190,8 @@
       .sort(function (a, b) { return String(a.confirmed_at).localeCompare(String(b.confirmed_at)); })
       .forEach(function (p) {
         var c = D.findContract(p.contract_id);
-        if (c) record(s, allocate(s, c, p.amount, p.period), p.landlord_id, p.period, p.confirmed_at, p.id);
+        if (c) record(s, allocate(s, c, p.amount, p.period), p.landlord_id, p.period, p.confirmed_at, p.id,
+          p.forced_by ? { forced_by: p.forced_by, dispute_id: p.dispute_id } : null);
       });
     s.withdrawals = v2.withdrawals.slice();
     return s;
@@ -194,14 +200,18 @@
   function load() {
     var s;
     try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { s = null; }
-    if (valid(s, 3)) return s;
+    if (valid(s, 3)) {
+      if (s.seedVersion === SEED_VERSION) return s;
+      s = rebuild(s); save(s); return s;
+    }
     var v2;
     try { v2 = JSON.parse(localStorage.getItem(V2_KEY) || 'null'); } catch (e) { v2 = null; }
-    if (valid(v2, 2)) { s = migrateV2(v2); save(s); return s; }
+    if (valid(v2, 2)) { s = rebuild(v2); save(s); return s; }
     return seed();
   }
   function save(s) {
     try {
+      s.seedVersion = SEED_VERSION;
       localStorage.setItem(KEY, JSON.stringify(s));
       OLD_KEYS.forEach(function (k) { localStorage.removeItem(k); }); // sổ v1 chia tiền theo luật cũ
       return true;
@@ -343,7 +353,7 @@
       var room = D.findRoom(c.room_id);
       var b = D.findBrokerByRef(c.ref_code || (room && room.ref_code));
       if (!b) return;
-      var up = b.upline_id ? D.findUser(b.upline_id) : null;
+      var up = parentOf(b) ? D.findUser(parentOf(b)) : null;
       var mine = b.id === brokerId, asUpline = up && up.id === brokerId && up.role === 'broker';
       if (!mine && !asUpline) return;
       windowPeriods(c, s).filter(function (k) { return !k.payment; }).forEach(function (k) {
@@ -387,7 +397,7 @@
   }
 
   function downlines(brokerId) {
-    return data().users.filter(function (u) { return u.role === 'broker' && u.upline_id === brokerId; });
+    return data().users.filter(function (u) { return u.role === 'broker' && parentOf(u) === brokerId; });
   }
 
   // Số liệu một môi giới mang về: doanh số (tiền phòng khách đã đóng) và hoa hồng trực tiếp, từ trước tới nay

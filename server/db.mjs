@@ -518,11 +518,11 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
       .map((r) => ({ time: r.time, dur: r.dur, owner: r.renter_id === nguoi ? 'me' : 'other' }));
   }
 
-  // Mã môi giới từ link ?ref=: chỉ nhận đúng dạng MG-XXXX, sai dạng thì coi như khách tự nhiên.
+  // Mã môi giới từ link ?ref=: chữ in hoa / số / _ / - (3–24 ký tự, vd MG-KHOA, F1_HOANG); sai dạng = khách tự nhiên.
   // Máy chủ prototype không có bảng môi giới (đang ở assets/js/data.js), nên chưa kiểm mã có thật hay không.
   function refOf(code) {
     const c = String(code || '').trim().toUpperCase();
-    return /^MG-[A-Z0-9]{2,16}$/.test(c) ? c : null;
+    return /^[A-Z0-9][A-Z0-9_-]{2,23}$/.test(c) ? c : null;
   }
 
   function createForRenter({ nguoi, roomId, date, time, phone, note, source, refCode }) {

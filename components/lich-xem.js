@@ -160,7 +160,7 @@
     if(window.AnCuRef) return window.AnCuRef.code();   // components/ma-gioi-thieu.js: hạn 30 ngày + cookie
     var c = '';
     try{ c = String(localStorage.getItem('refCode') || '').trim().toUpperCase(); }catch(e){}
-    return /^MG-[A-Z0-9]{2,16}$/.test(c) ? c : null;
+    return /^[A-Z0-9][A-Z0-9_-]{2,23}$/.test(c) ? c : null;
   }
 
   // rec: { roomId, room, address, price, image, landlordPhone, phone, note, date, time, source, refCode? }

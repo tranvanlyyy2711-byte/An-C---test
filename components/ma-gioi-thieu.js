@@ -17,7 +17,7 @@
 
   var K_CODE = 'refCode', K_NAME = 'refName', K_AT = 'refAt', COOKIE = 'ancu_ref';
   var DAYS = 30, EVENTS_KEY = 'ancu-thong-bao-mg-v1';
-  var RE = /^MG-[A-Z0-9]{2,16}$/;
+  var RE = /^[A-Z0-9][A-Z0-9_-]{2,23}$/;
 
   function norm(c) { return String(c || '').trim().toUpperCase(); }
   function rd(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }

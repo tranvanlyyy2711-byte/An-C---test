@@ -4,9 +4,9 @@
 
 1. Trong Google Cloud Console, bật **Google Calendar API**.
 2. Tạo OAuth Client loại **Web application**.
-3. Thêm Redirect URI: `http://localhost:5500/api/google-calendar/callback`.
+3. Thêm Redirect URI: `http://localhost:5600/api/google-calendar/callback`.
 4. Mở `.env.local` và điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` như `.env.example`.
-5. Chạy `npm start`, mở `http://localhost:5500/quan-ly/yeucauvalichhen.html`.
+5. Chạy `npm start`, mở `http://localhost:5600/quan-ly/yeucauvalichhen.html`.
 6. Bấm **Kết nối Google Calendar**, đăng nhập Google và cho phép quyền lịch.
 
 Sau khi kết nối, lịch hiện có được tạo trên Google Calendar. Tạo, đổi, xác nhận hoặc huỷ lịch ở website sẽ cập nhật Google. Đổi giờ hoặc xoá sự kiện đã đồng bộ ở Google sẽ cập nhật lại website khi bấm **Đồng bộ ngay**; khi trang mở, hệ thống cũng kiểm tra mỗi 2 phút.

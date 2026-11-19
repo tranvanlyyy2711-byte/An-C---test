@@ -135,7 +135,7 @@
       }
       if(!coMayChu()) {
         return Promise.reject(loi(
-          'Chế độ xem thử không lưu được phòng vì không có máy chủ. Chạy npm start rồi mở http://localhost:5500, hoặc dùng bản đã deploy.',
+          'Chế độ xem thử không lưu được phòng vì không có máy chủ. Chạy npm start rồi mở http://localhost:5600, hoặc dùng bản đã deploy.',
           null, 'xem_thu'));
       }
       return apiGoi('POST', '/api/chu-tro/phong', data).then(function(kq){
