@@ -71,6 +71,36 @@
     @media(max-width:1180px){.stat-grid{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.search-wrap{grid-column:1/-1}}
     @media(max-width:960px){.menu-toggle{display:flex}.side-nav{top:var(--header-h);height:calc(100vh - var(--header-h));transform:translateX(-100%);transition:transform .26s var(--ease)}body.nav-open .side-nav{transform:none}body.nav-open .side-backdrop{display:block;top:var(--header-h)}.dash-main{margin-left:0}.app-header{padding:0 20px}.dash-body{padding:24px 20px 48px}.prop-tx span,.nm{display:none}}
     @media(max-width:640px){.app-header{padding:0 16px;gap:8px}.dash-body{padding:20px 16px 40px}.stat-grid{grid-template-columns:1fr;gap:12px}.toolbar{grid-template-columns:1fr}.search-wrap{grid-column:auto}.page-head{align-items:flex-start}.page-head .btn{width:100%}.rooms-table{min-width:0}.rooms-table thead{display:none}.rooms-table,.rooms-table tbody,.rooms-table tr,.rooms-table td{display:block;width:100%}.rooms-table tr{position:relative;border:1px solid var(--border);border-radius:var(--radius);padding:12px 12px;margin:12px;background:var(--surface-2);width:calc(100% - 24px)}.rooms-table td{border:0;padding:5px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}.rooms-table td::before{content:attr(data-label);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim)}.meter-input{width:110px;font-size:16px}.row-actions{justify-content:flex-end}.bulk-bar{padding:14px 16px}.toast{left:16px;right:16px;bottom:16px}}
+    /* Chiến dịch Môi giới — mỗi phòng một công tắc + tỷ lệ trích quỹ */
+    .cd-sum{padding:14px 20px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:6px 18px}
+    .cd-sum b{color:var(--text)}
+    .cd-list{list-style:none}
+    .cd-row{display:grid;grid-template-columns:minmax(0,1.4fr) auto minmax(0,1fr) minmax(0,1fr);gap:10px 18px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border)}
+    .cd-row:last-child{border-bottom:0}
+    .cd-room b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px}
+    .cd-room span{display:block;font-size:12.5px;color:var(--text-dim);margin-top:2px}
+    .sw{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 4px;border:0;background:none;font-size:13.5px;font-weight:600;color:var(--text-muted);white-space:nowrap}
+    .sw-track{position:relative;width:44px;height:26px;border-radius:999px;background:#C9D3C9;transition:background .2s var(--ease);flex-shrink:0}
+    .sw-track::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(16,32,16,.25);transition:transform .2s var(--ease)}
+    .sw[aria-checked="true"]{color:var(--success-ink)}
+    .sw[aria-checked="true"] .sw-track{background:var(--accent)}
+    .sw[aria-checked="true"] .sw-track::after{transform:translateX(18px)}
+    .sw:disabled{cursor:not-allowed;opacity:.6}
+    .sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+    .cd-rate{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .cd-rate label{font-size:12.5px;color:var(--text-dim);width:100%}
+    .cd-rate .pct{position:relative}
+    .cd-rate input{width:96px;height:44px;padding:0 30px 0 12px;font-size:16px;font-weight:600;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface);font-variant-numeric:tabular-nums}
+    .cd-rate input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.16)}
+    .cd-rate input[aria-invalid="true"]{border-color:var(--danger-ink)}
+    .cd-rate .pct span{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-weight:600}
+    .cd-est{font-size:12.5px;color:var(--text-dim)}
+    .cd-est b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:var(--text)}
+    .cd-err{grid-column:1/-1;font-size:13px;color:var(--danger-ink)}
+    .cd-err:empty{display:none}
+    .cd-empty{padding:32px 20px;text-align:center;color:var(--text-muted);font-size:14px}
+    @media(max-width:860px){.cd-row{grid-template-columns:1fr 1fr}.cd-room{grid-column:1/-1}}
+    @media(max-width:480px){.cd-row{grid-template-columns:1fr}}
   </style>
 <script src="../components/cau-hinh-supabase.js"></script>
 <script src="../components/supabase-auth.js"></script>
@@ -79,6 +109,10 @@
 <script src="../components/chu-tro-pham-vi.js"></script>
 <script src="../components/phong-cua-toi.js"></script>
 <script src="../components/an-cu-store.js"></script>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/bookings.js"></script>
+<script src="../assets/js/finance.js"></script>
+<script src="../assets/js/moi-gioi.js"></script>
 </head>
 <body>
   <div class="dash-shell">
@@ -138,6 +172,12 @@
               <div class="empty" id="emptyState" hidden><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 7h10M7 12h7M7 17h4"/></svg><h3>Không tìm thấy phòng</h3><p>Hãy thử từ khóa hoặc bộ lọc khác.</p></div>
             </div>
             <div class="bulk-bar"><p><strong id="changedCount">0</strong> phòng có chỉ số chưa lưu</p><button class="btn btn-primary btn-sm" id="closeMetersBtn">Chốt điện nước tháng 09</button></div>
+          </section>
+
+          <!-- Chiến dịch Môi giới: mỗi phòng một công tắc + tỷ lệ trích quỹ (assets/js/data.js lưu, trang môi giới đọc lại) -->
+          <section class="card reveal" data-pham-vi id="chien-dich" aria-labelledby="cdTitle" style="margin-top:20px">
+            <div class="card-head"><div><h2 id="cdTitle">Chiến dịch Môi giới</h2><p>Mở chiến dịch để môi giới lấy link giới thiệu phòng. Tỷ lệ trích quỹ hoa hồng tính trên mỗi kỳ tiền phòng khách đóng (mặc định 20%).</p></div></div>
+            <div id="chienDich"><p class="cd-empty">Đang tải…</p></div>
           </section>
         </div>
       </main>
@@ -374,6 +414,83 @@
       });
       napPhongCuaToi();          // tài khoản mới vẫn phải thấy phòng do chính mình đã thêm
     });
+  </script>
+  <script>
+  /* ---------- Chiến dịch Môi giới ----------
+   * Công tắc "Mở chiến dịch Môi giới" + tỷ lệ trích quỹ cho từng phòng của chủ trọ đang đăng nhập.
+   * Lưu bằng AnCuData.setCampaign (assets/js/data.js). Trang môi giới (broker-dashboard.html) chỉ hiện phòng
+   * đang mở chiến dịch; tỷ lệ mới áp cho các kỳ tiền phòng xác nhận từ nay, kỳ đã xác nhận giữ tỷ lệ cũ. */
+  (function(){
+    'use strict';
+    var D = window.AnCuData, M = window.AnCuMoiGioi, box = document.getElementById('chienDich');
+    if (!D || !M || !box) return;
+    var nf = new Intl.NumberFormat('vi-VN');
+    function vnd(n){ return nf.format(n) + '₫'; }
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+    var ME = null;
+    var ST = { available:'Còn trống', reserved:'Đã cọc giữ chỗ', rented:'Đang thuê', hidden:'Đang ẩn' };
+
+    // Lý do công tắc không bật được (null = bật/tắt được)
+    function khoa(r){
+      if (r.status !== 'available') return 'Phòng đang có người — mở lại khi phòng trống.';
+      if (!r.is_listing) return 'Chưa có tin đăng công khai nên môi giới chưa có trang phòng để gửi khách.';
+      return null;
+    }
+    function ve(){
+      var rooms = D.rooms.filter(function(r){ return r.landlord_id === ME; });
+      if (!rooms.length) { box.innerHTML = '<p class="cd-empty">Chưa có phòng nào để mở chiến dịch Môi giới.</p>'; return; }
+      var khach = M.customersOfLandlord(ME);
+      var mo = rooms.filter(function(r){ return r.campaign_open !== false && !khoa(r); });
+      box.innerHTML = '<p class="cd-sum"><span><b>' + mo.length + '</b> phòng đang mở chiến dịch</span>' +
+        '<span><b>' + khach.length + '</b> khách đặt lịch qua môi giới</span>' +
+        '<span>Tỷ lệ cho phép: ' + D.RATE_MIN * 100 + '–' + D.RATE_MAX * 100 + '%</span></p>' +
+        '<ul class="cd-list">' + rooms.map(function(r){
+          var ly = khoa(r), on = r.campaign_open !== false && !ly, pct = Math.round(D.commissionRateOf(r) * 100);
+          var soKhach = khach.filter(function(c){ return c.booking.room_id === r.id; }).length;
+          return '<li class="cd-row" data-cd-row="' + esc(r.id) + '">' +
+            '<div class="cd-room"><b>' + esc(r.code + (r.is_listing ? ' · ' + r.title : '')) + '</b><span>' + esc(ST[r.status] || r.status) + ' · ' + vnd(r.price) + '/tháng' +
+              (soKhach ? ' · ' + soKhach + ' khách qua môi giới' : '') + '</span>' + (ly ? '<span>' + esc(ly) + '</span>' : '') + '</div>' +
+            '<button type="button" class="sw" role="switch" aria-checked="' + on + '" data-cd-open="' + esc(r.id) + '"' + (ly ? ' disabled' : '') +
+              ' aria-label="Mở chiến dịch Môi giới cho ' + esc(r.code) + '"><span class="sw-track" aria-hidden="true"></span>' + (on ? 'Đang mở chiến dịch' : 'Mở chiến dịch Môi giới') + '</button>' +
+            '<div class="cd-rate"><label for="cd-' + esc(r.id) + '">Tỷ lệ trích quỹ hoa hồng</label>' +
+              '<span class="pct"><input id="cd-' + esc(r.id) + '" type="number" inputmode="numeric" min="' + D.RATE_MIN * 100 + '" max="' + D.RATE_MAX * 100 + '" step="1" value="' + pct + '" data-cd-rate="' + esc(r.id) + '" aria-describedby="cdLoi-' + esc(r.id) + '" /><span aria-hidden="true">%</span></span></div>' +
+            '<p class="cd-est" data-cd-est="' + esc(r.id) + '">Quỹ mỗi kỳ<b class="num">≈ ' + vnd(Math.round(r.price * pct / 100)) + '</b></p>' +
+            '<p class="cd-err" id="cdLoi-' + esc(r.id) + '" role="alert"></p></li>';
+        }).join('') + '</ul>';
+    }
+    function luu(roomId, open, percent, thongBao){
+      var kq = D.setCampaign(roomId, { open:open, percent:percent }, ME);
+      var input = document.getElementById('cd-' + roomId), loi = document.getElementById('cdLoi-' + roomId);
+      if (!kq.ok) { if (loi) loi.textContent = kq.message; if (input) { input.setAttribute('aria-invalid', 'true'); input.focus(); } return; }
+      ve();
+      if (typeof showToast === 'function') showToast(thongBao(kq.room), 'Trang Kho phòng của môi giới đã cập nhật.');
+    }
+    box.addEventListener('click', function(e){
+      var b = e.target.closest('[data-cd-open]'); if (!b || b.disabled) return;
+      var id = b.getAttribute('data-cd-open'), r = D.findRoom(id), mo = b.getAttribute('aria-checked') !== 'true';
+      luu(id, mo, Math.round(D.commissionRateOf(r) * 100), function(r){
+        return (mo ? 'Đã mở chiến dịch ' : 'Đã tắt chiến dịch ') + r.code;
+      });
+    });
+    box.addEventListener('input', function(e){
+      var i = e.target.closest('[data-cd-rate]'); if (!i) return;
+      var r = D.findRoom(i.getAttribute('data-cd-rate')), pct = Number(i.value);
+      i.removeAttribute('aria-invalid'); document.getElementById('cdLoi-' + r.id).textContent = '';
+      var est = box.querySelector('[data-cd-est="' + r.id + '"] b');
+      if (est) est.textContent = pct > 0 ? '≈ ' + vnd(Math.round(r.price * pct / 100)) : '—';
+    });
+    box.addEventListener('change', function(e){
+      var i = e.target.closest('[data-cd-rate]'); if (!i) return;
+      var r = D.findRoom(i.getAttribute('data-cd-rate'));
+      // Đổi tỷ lệ giữ nguyên trạng thái công tắc đã lưu (phòng đang có người vẫn đổi được tỷ lệ cho các kỳ sau)
+      luu(r.id, r.campaign_open !== false, Number(i.value), function(r){
+        return 'Đã đặt tỷ lệ ' + Math.round(r.commission_rate * 100) + '% cho ' + r.code;
+      });
+    });
+    // Tab khác đổi chiến dịch → vẽ lại
+    window.addEventListener('storage', function(e){ if (e.key === D.CAMPAIGN_KEY) location.reload(); });
+    M.landlordNow().then(function(id){ ME = id; ve(); });
+  })();
   </script>
 </body>
 </html>

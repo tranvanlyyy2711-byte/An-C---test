@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS ${name} (
   renter_unseen   INTEGER NOT NULL DEFAULT 0,   -- 1: chủ trọ vừa cập nhật mà người thuê chưa mở xem
   urgent          INTEGER NOT NULL DEFAULT 0,
   source          TEXT,
+  ref_code        TEXT,                 -- mã môi giới đã giới thiệu khách (link ?ref=MG-…); NULL = khách tự nhiên
   created_at      TEXT    NOT NULL,
   updated_at      TEXT
 );`;
@@ -253,6 +254,22 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
   migrateLichHen(db);
   migrateThuePhong(db);
   migrateNotifications(db);
+  // CSDL tạo trước khi có nguồn khách từ môi giới thì bổ sung cột (sau migrateLichHen: bước đó dựng lại bảng)
+  if (!db.prepare('PRAGMA table_info(viewing_appointments)').all().some((c) => c.name === 'ref_code')) {
+    db.exec('ALTER TABLE viewing_appointments ADD COLUMN ref_code TEXT');
+  }
+  // Thông báo cho môi giới: mỗi việc của khách đến qua link ?ref= (đặt lịch, chủ trọ xác nhận, yêu cầu thuê,
+  // đặt cọc…) là một dòng theo mã môi giới. Môi giới chưa có tài khoản trên máy chủ nên đọc theo mã.
+  db.exec(`CREATE TABLE IF NOT EXISTS broker_events (
+    id             INTEGER PRIMARY KEY,
+    ref_code       TEXT    NOT NULL,
+    kind           TEXT    NOT NULL,           -- 'lich-hen' | 'thue-phong' | 'dat-coc'
+    appointment_id INTEGER REFERENCES viewing_appointments(id),
+    title          TEXT    NOT NULL,
+    body           TEXT    NOT NULL,
+    created_at     TEXT    NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_broker_events ON broker_events (ref_code, created_at);`);
   // Một người thuê không có hai lịch còn hiệu lực cho cùng một phòng. Kiểm ở code trong giao dịch;
   // chỉ mục này là trọng tài cuối. CSDL cũ lỡ có dữ liệu trùng thì bỏ qua chỉ mục, code vẫn chặn.
   try {
@@ -315,9 +332,14 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
     favOf: db.prepare('SELECT room_id, created_at FROM favorites WHERE renter_id = ? ORDER BY created_at DESC'),
     favAdd: db.prepare('INSERT OR IGNORE INTO favorites (renter_id, room_id, created_at) VALUES (?, ?, ?)'),
     favDel: db.prepare('DELETE FROM favorites WHERE renter_id = ? AND room_id = ?'),
+    setRef: db.prepare('UPDATE viewing_appointments SET ref_code = ? WHERE id = ?'),
   };
 
   if (db.prepare('SELECT COUNT(*) AS n FROM viewing_appointments').get().n === 0) seed(q, db);
+  // Lịch mẫu của Phạm Thu Trang đến qua link môi giới (khớp ref_code của phòng trong assets/js/data.js),
+  // để trang Yêu cầu & lịch hẹn có sẵn cả hai loại nguồn khách. Chỉ chạm lịch seed chưa có mã.
+  db.prepare(`UPDATE viewing_appointments SET ref_code = CASE WHEN room_id IN ('p01','p05','p07') THEN 'MG-KHOA' ELSE 'MG-NGOC' END
+              WHERE source = 'seed' AND renter_id = 'u-trang' AND room_id IN ('p01','p05','p02') AND ref_code IS NULL`).run();
   // Tin đăng seed riêng: CSDL cũ đã có lịch xem vẫn được bổ sung danh sách tin
   if (db.prepare('SELECT COUNT(*) AS n FROM listings').get().n === 0) seedTinDang(db);
   if (db.prepare('SELECT COUNT(*) AS n FROM support_tickets').get().n === 0) seedHoTro(db);
@@ -354,9 +376,21 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
   function toLandlord(row, title, body) {
     const ll = landlordOf(row.room_id);
     notify(ll, 'lich-hen', title, body, LINK_LANDLORD(row.id));
+    toBroker(row.id, 'lich-hen', title);
     emit([ll, row.renter_id], ['lich-hen', 'thong-bao']);
   }
+  // Tên khách cho môi giới: che họ và tên đệm (mã môi giới nằm công khai trên link nên không lộ đủ tên)
+  const maskName = (n) => { const a = String(n || '').trim().split(/\s+/); return a.length < 2 ? a[0] || 'Khách' : a.slice(0, -1).map((x) => x[0] + '.').join(' ') + ' ' + a[a.length - 1]; };
+  const insEvent = db.prepare('INSERT INTO broker_events (ref_code, kind, appointment_id, title, body, created_at) VALUES (?, ?, ?, ?, ?, ?)');
+  // Báo môi giới đã giới thiệu khách của lịch hẹn `apptId` (nếu có)
+  function toBroker(apptId, kind, title) {
+    const a = apptId ? q.get.get(apptId) : null;
+    if (!a || !a.ref_code) return;
+    insEvent.run(a.ref_code, kind, a.id, title, `${maskName(a.tenant_name)} · ${roomName(a.room_id)} · lịch ${whenText(a)}`, nowIso());
+  }
+  const quaMoiGioi = (apptId) => { const a = apptId ? q.get.get(apptId) : null; return a && a.ref_code ? ` (qua môi giới ${a.ref_code})` : ''; };
   function toRenter(row, title, body) {
+    toBroker(row.id, 'lich-hen', title);
     if (row.renter_id) {
       q.touch.run(nowIso(), 1, row.id);
       notify(row.renter_id, 'lich-hen', title, body, LINK_RENTER(row.id));
@@ -388,6 +422,7 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
       renterId: r.renter_id, tenant: r.tenant_name, phone: r.tenant_phone,
       date: r.date, time: r.time, dur: r.dur, status: r.status, urgent: !!r.urgent, note: r.note,
       createdAt: r.created_at, updatedAt: r.updated_at || r.created_at, holdUntil: r.hold_expires_at, cancelReason: r.cancel_reason, source: r.source,
+      refCode: r.ref_code || null,
       rejectReason: r.reject_reason || '', prevDate: r.prev_date || null, prevTime: r.prev_time || null,
       unseen: !!r.renter_unseen, landlordId: landlordOf(r.room_id),
     };
@@ -483,7 +518,14 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
       .map((r) => ({ time: r.time, dur: r.dur, owner: r.renter_id === nguoi ? 'me' : 'other' }));
   }
 
-  function createForRenter({ nguoi, roomId, date, time, phone, note, source }) {
+  // Mã môi giới từ link ?ref=: chỉ nhận đúng dạng MG-XXXX, sai dạng thì coi như khách tự nhiên.
+  // Máy chủ prototype không có bảng môi giới (đang ở assets/js/data.js), nên chưa kiểm mã có thật hay không.
+  function refOf(code) {
+    const c = String(code || '').trim().toUpperCase();
+    return /^MG-[A-Z0-9]{2,16}$/.test(c) ? c : null;
+  }
+
+  function createForRenter({ nguoi, roomId, date, time, phone, note, source, refCode }) {
     const u = renterOf(nguoi);
     const room = PHONG[roomId];
     if (!room || room.kind !== 'renter') throw new ApiError(404, 'room_not_found', 'Không tìm thấy phòng.');
@@ -507,8 +549,10 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
       afterCheck();
       if (c) throw new ApiError(409, 'slot_taken', MSG_TAKEN, { owner: c.renter_id === u.id ? 'me' : 'other' });
       const info = guarded(() => q.insert.run(roomId, u.id, u.name, ph, date, time, 30, 'pending', holdIso(), null, nt, 0, source || 'api', nowIso()));
+      const ref = refOf(refCode);
+      if (ref) q.setRef.run(ref, info.lastInsertRowid);
       const row = q.get.get(info.lastInsertRowid);
-      toLandlord(row, 'Lịch xem phòng mới', `${u.name} muốn xem ${roomName(roomId)} lúc ${whenText(row)}.`);
+      toLandlord(row, 'Lịch xem phòng mới', `${u.name} muốn xem ${roomName(roomId)} lúc ${whenText(row)}` + (ref ? ` (qua môi giới ${ref}).` : '.'));
       return toItem(row);
     });
   }
@@ -665,7 +709,8 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
         throw e;
       }
       const ll = landlordOf(row.room_id);
-      notify(ll, 'thue-phong', 'Yêu cầu thuê mới', `${u.name} muốn thuê ${roomName(row.room_id)}, dọn vào từ ${wantDate.slice(8)}/${wantDate.slice(5, 7)}.`,
+      toBroker(row.id, 'thue-phong', 'Khách gửi yêu cầu thuê phòng');
+      notify(ll, 'thue-phong', 'Yêu cầu thuê mới', `${u.name} muốn thuê ${roomName(row.room_id)}, dọn vào từ ${wantDate.slice(8)}/${wantDate.slice(5, 7)}${quaMoiGioi(row.id)}.`,
         'quan-ly/yeucauvalichhen.html?tab=yeu-cau');
       emit([ll, u.id], ['yeu-cau-thue', 'thong-bao']);
       return toRequest(qr.get.get(info.lastInsertRowid));
@@ -693,8 +738,9 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
                                WHERE id = ? AND pay_status = 'unpaid' RETURNING *`).get(nowIso(), r.id);
       const ll = landlordOf(r.room_id);
       notify(ll, 'thue-phong', 'Người thuê báo đã chuyển tiền',
-        `${u.name} báo đã chuyển ${new Intl.NumberFormat('vi-VN').format(r.pay_amount)}₫ nhận ${roomName(r.room_id)}. Hãy đối chiếu và xác nhận.`,
+        `${u.name} báo đã chuyển ${new Intl.NumberFormat('vi-VN').format(r.pay_amount)}₫ nhận ${roomName(r.room_id)}${quaMoiGioi(r.appointment_id)}. Hãy đối chiếu và xác nhận.`,
         'quan-ly/thanh-toan.html#nhan-phong');
+      toBroker(r.appointment_id, 'dat-coc', 'Khách báo đã chuyển tiền đặt cọc + tháng đầu');
       emit([ll, u.id], ['yeu-cau-thue', 'thanh-toan', 'thong-bao']);
       return toRequest(done);
     });
@@ -739,6 +785,8 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
         notify(r.renter_id, 'thue-phong', 'Yêu cầu thuê không được duyệt',
           `Chủ trọ chưa đồng ý cho thuê ${roomName(r.room_id)}.` + (r.reject_reason ? ' Lý do: ' + r.reject_reason : ''), LINK_PAY);
       }
+      if (mv.to === 'approved') toBroker(r.appointment_id, 'thue-phong', 'Chủ trọ duyệt yêu cầu thuê — chờ khách đặt cọc');
+      else if (mv.to === 'rejected') toBroker(r.appointment_id, 'thue-phong', 'Chủ trọ không duyệt yêu cầu thuê');
       emit([r.renter_id, landlordOf(r.room_id)], ['yeu-cau-thue', 'thanh-toan', 'thong-bao']);
       return toRequest(r);
     });
@@ -758,6 +806,7 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
         done = db.prepare(`UPDATE rental_requests SET pay_status = 'paid', paid_at = ?, pay_note = '' WHERE id = ? RETURNING *`).get(nowIso(), r.id);
         notify(r.renter_id, 'thue-phong', 'Thanh toán thành công — chào mừng về phòng mới',
           `Chủ trọ đã nhận tiền ${roomName(r.room_id)}. Mục "Phòng của tôi" và "Hỗ trợ & báo cáo" đã mở cho bạn.`, 'tai-khoan/phong-cua-toi.html');
+        toBroker(r.appointment_id, 'dat-coc', 'Chủ trọ đã nhận tiền đặt cọc — khách chính thức thuê phòng');
       } else {
         if (r.pay_status !== 'submitted') throw new ApiError(409, 'not_submitted', 'Chỉ báo "chưa nhận được" với khoản người thuê đã báo chuyển.');
         const note = String(reason || '').trim().slice(0, 300) || 'Chủ trọ chưa nhận được tiền. Hãy kiểm tra lại giao dịch.';
@@ -927,7 +976,8 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
       db.prepare(`UPDATE viewing_deposits SET status = 'submitted', submitted_at = ?, reject_note = NULL WHERE id = ?`).run(nowIso(), d.id);
       const a = q.get.get(d.appointment_id), ll = landlordOf(a.room_id);
       notify(ll, 'lich-hen', 'Người thuê báo đã chuyển cọc xem phòng',
-        `${u.name} báo đã chuyển cọc xem ${roomName(a.room_id)} (lịch ${whenText(a)}).`, 'quan-ly/thanh-toan.html');
+        `${u.name} báo đã chuyển cọc xem ${roomName(a.room_id)} (lịch ${whenText(a)})${quaMoiGioi(a.id)}.`, 'quan-ly/thanh-toan.html');
+      toBroker(a.id, 'dat-coc', 'Khách báo đã chuyển cọc xem phòng');
       emit([ll, u.id], ['thanh-toan', 'thong-bao']);
       return toDeposit(q.depGet.get(d.id));
     });
@@ -951,6 +1001,7 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
         }
         db.prepare(`UPDATE viewing_deposits SET status = 'paid', paid_at = ?, reject_note = NULL WHERE id = ?`).run(nowIso(), d.id);
         notify(a.renter_id, 'lich-hen', 'Chủ trọ đã nhận cọc xem phòng', `Cọc xem ${roomName(a.room_id)} đã được xác nhận.`, 'tai-khoan/thanh-toan.html');
+        toBroker(a.id, 'dat-coc', 'Chủ trọ đã nhận cọc xem phòng');
         return toDeposit(q.depGet.get(d.id));
       }
       if (body.action === 'reject') {
@@ -964,8 +1015,27 @@ export function openDb({ file, now, afterCheck = () => {}, publish = () => {} })
     });
   }
 
+  // Thông báo và danh sách khách của mã môi giới `code`. Không có đăng nhập môi giới trên máy chủ nên chỉ trả
+  // dữ liệu đã che: tên rút gọn, không số điện thoại, không ghi chú. Khi lên Supabase: bắt buộc tài khoản môi giới.
+  const evOf = db.prepare('SELECT * FROM broker_events WHERE ref_code = ? ORDER BY created_at DESC, id DESC LIMIT 50');
+  const apptOf = db.prepare('SELECT * FROM viewing_appointments WHERE ref_code = ? ORDER BY date DESC, time DESC LIMIT 100');
+  const reqOfAppt = db.prepare('SELECT status, pay_status FROM rental_requests WHERE appointment_id = ?');
+  function brokerFeed(code) {
+    const ref = refOf(code);
+    if (!ref) throw new ApiError(400, 'invalid_ref', 'Mã môi giới không hợp lệ.');
+    sweep();
+    const items = evOf.all(ref).map((e) => ({ id: e.id, kind: e.kind, appointmentId: e.appointment_id, title: e.title, body: e.body, createdAt: e.created_at }));
+    const khach = apptOf.all(ref).map((a) => {
+      const r = reqOfAppt.get(a.id) || null, p = PHONG[a.room_id] || {};
+      return { id: a.id, roomId: a.room_id, roomCode: p.code || a.room_id, room: p.title || a.room_id, tenant: maskName(a.tenant_name),
+        date: a.date, time: a.time, status: a.status, createdAt: a.created_at,
+        request: r ? { status: r.status, payStatus: r.pay_status || 'none' } : null };
+    });
+    return { items, khach };
+  }
+
   return {
-    db, sweep, now,
+    db, sweep, now, brokerFeed,
     listForRenter, takenFor, createForRenter, rescheduleForRenter, cancelForRenter, memoForRenter,
     acceptProposalForRenter, markSeenForRenter, listFavorites, addFavorite, removeFavorite, landlordOf,
     requestsForRenter, createRequest, markRequestSeen, submitRentPayment, requestsForLandlord, decideRequest,

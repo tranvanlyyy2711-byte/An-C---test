@@ -589,7 +589,7 @@ window.AnCuRoomImages = {"phongtrobachkinhxaygiare1.webp":"data:image/webp;base6
   $('closeLogin').addEventListener('click', () => $('login').close());
   $('loginForm').addEventListener('submit', async event => {
     event.preventDefault(); const fields = new FormData(event.target); $('loginError').textContent = ''; $('loginBtn').disabled = true;
-    try { await catalog.login(fields.get('phone'),fields.get('password')); $('login').close(); event.target.reset(); await load(); }
+    try { await catalog.login(fields.get('phone'),fields.get('password')); $('login').close(); event.target.reset(); await load(); moFormNeuCan(); }
     catch(error) { $('loginError').textContent = error.message; }
     finally { $('loginBtn').disabled = false; }
   });
@@ -607,7 +607,16 @@ window.AnCuRoomImages = {"phongtrobachkinhxaygiare1.webp":"data:image/webp;base6
   if(window.AnCu) window.AnCu.on('tin-dang',load);
   window.addEventListener('focus',load); document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
   setInterval(()=>{if(catalog.mode==='server'&&!document.hidden)load();},15000);
-  load();
+  // Nút "Đăng tin mới" ở trang Tổng quan dẫn tới tin-dang.html?tao=1: mở thẳng form
+  // (đã có tin thì mở form sửa tin đó, vì mỗi chủ trọ quản lý một tin). Chưa đăng nhập thì hỏi đăng nhập trước.
+  let canMoForm = new URLSearchParams(location.search).get('tao') === '1';
+  if (canMoForm) history.replaceState(null, '', location.pathname + location.hash);
+  function moFormNeuCan() {
+    if (!canMoForm) return;
+    if (user?.role === 'landlord') { canMoForm = false; openEditor(); }
+    else if (!$('login').open) $('login').showModal();
+  }
+  load().then(moFormNeuCan);
 })();
 
 </script><!-- LISTING_BUNDLE_END --></body></html>

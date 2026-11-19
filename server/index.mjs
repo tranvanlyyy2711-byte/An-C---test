@@ -85,6 +85,8 @@ async function api(req, res, url) {
   const me = auth.userFromReq(req);
 
   if (p === '/api/tin-dang' && m === 'GET') return send(res, 200, { items: listings.publicRooms() });
+  // Môi giới (affiliate): thông báo + khách của một mã, dữ liệu đã che — xem brokerFeed trong server/db.mjs
+  if (p === '/api/moi-gioi/thong-bao' && m === 'GET') return send(res, 200, store.brokerFeed(qs.get('ma')));
   if (p === '/api/chu-tro/tin-dang') {
     if (!me) throw new ApiError(401, 'login_required', 'Vui lòng đăng nhập bằng tài khoản chủ trọ.');
     if (me.role !== 'landlord') throw new ApiError(403, 'not_landlord', 'Chỉ chủ trọ được quản lý tin đăng.');

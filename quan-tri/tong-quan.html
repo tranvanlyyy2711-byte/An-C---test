@@ -66,6 +66,8 @@
   .side-menu > [data-muc="tin-dang"]{order:3}
   .side-menu > [data-muc="ho-tro"]{order:4}
   .side-menu > [data-muc="thanh-toan"]{order:5}
+  .side-menu > [data-muc="moi-gioi"]{order:5}
+  .side-menu > [data-muc="trong-tai"]{order:5}
   .side-menu > .side-sep{order:6}
   .side-menu > .side-link.is-off{order:7}
   .side-link{
@@ -376,6 +378,43 @@
   .billing-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:28px;margin-bottom:12px}
   .billing-title h2{font-size:17px}
   .scope-note{margin:0 0 14px;color:var(--text-dim);font-size:13px}
+  .ds-title{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px;margin:26px 0 12px}
+  .ds-title h2{font-size:17px}
+  #dsStats .stat,#mgStats .stat,#tnStats .stat{min-width:0}
+  #mgStats dd,#tnStats dd{font-size:clamp(1.15rem,5.2vw,1.55rem);white-space:nowrap}
+  @media (max-width:420px){ #mgStats,#tnStats{grid-template-columns:1fr} }
+  .tree-f2 td:first-child b::before{content:'↳ ';color:var(--text-dim);font-weight:400}
+  .check{margin:10px 0 0;padding:10px 14px;border-radius:var(--radius-sm);font-size:13.5px}
+  .check.ok{background:rgba(34,139,34,.07);border:1px solid rgba(34,139,34,.22);color:var(--success-ink)}
+  .check.bad{background:rgba(180,41,31,.06);border:1px solid rgba(180,41,31,.24);color:var(--danger-ink)}
+  .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+  .panel[data-panel="moi-gioi"] .btn-sm,.panel[data-panel="trong-tai"] .btn-sm{min-height:44px}
+  /* Bảng nhiều cột: cuộn ngang trong thẻ thay vì bị cắt (màn hình 761–1100px) */
+  .panel[data-panel="moi-gioi"] .card,.panel[data-panel="trong-tai"] .card{overflow-x:auto}
+  .btn-danger-ghost{background:var(--surface);border:1px solid rgba(180,41,31,.3);color:var(--danger-ink)}
+  .btn-danger-ghost:hover{background:rgba(180,41,31,.06)}
+  .qd h2{font-size:18px;margin-bottom:4px}
+  .qd .sub{font-size:13.5px;color:var(--text-dim);margin-bottom:14px}
+  .qd-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;margin:12px 0}
+  .qd-grid dt{color:var(--text-dim)}
+  .qd-grid dd{font-weight:600;overflow-wrap:anywhere}
+  .qd-ev{display:block;width:100%;max-height:340px;object-fit:contain;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);margin:8px 0}
+  .qd label{display:block;font-size:13px;font-weight:600;color:var(--text-dim);margin:14px 0 6px}
+  .qd textarea,.qd input{width:100%;min-height:44px;padding:10px 12px;font:inherit;font-size:16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface)}
+  .qd textarea{min-height:84px;resize:vertical}
+  .qd textarea:focus,.qd input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.18)}
+  .qd .err{margin-top:6px;font-size:13.5px;color:var(--danger-ink)}
+  .qd .err:empty{display:none}
+  .qd-act{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:16px}
+  .qd-note{font-size:13px;color:var(--text-muted);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2);margin-top:10px}
+  .qd-split{width:100%;font-size:13.5px;margin-top:8px}
+  .qd-split td{padding:5px 0;border-bottom:1px solid var(--border)}
+  .qd-split td:last-child{text-align:right;font-weight:600}
+  #dsStats .stat{min-width:0}
+  #dsStats dd{font-size:clamp(1.15rem,5.2vw,1.55rem);white-space:nowrap}
+  @media (max-width:420px){ #dsStats{grid-template-columns:1fr} }
+  .ds-title p{font-size:13px;color:var(--text-dim)}
+  td .ref{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;padding:1px 6px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border)}
   .occupancy-track{height:10px;margin:12px 0;background:var(--surface-2);border-radius:999px;overflow:hidden}
   .occupancy-fill{width:var(--fill);height:100%;background:var(--accent);border-radius:inherit}
 
@@ -431,6 +470,8 @@
       <a href="tong-quan.html#tai-khoan" class="side-link" data-muc="tai-khoan"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> Tài khoản</a>
       <a href="tong-quan.html#nha-tro" class="side-link" data-muc="nha-tro"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg> Nhà trọ &amp; người thuê</a>
       <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Gói &amp; thanh toán</a>
+      <a href="tong-quan.html#moi-gioi" class="side-link" data-muc="moi-gioi"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5l-5.5 5.5M12 11.5l5.5 5.5"/></svg> Môi giới &amp; Hoa hồng<span class="side-tag" data-dem="rut" hidden></span></a>
+      <a href="tong-quan.html#trong-tai" class="side-link" data-muc="trong-tai"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 21h14"/><path d="M5 7h14"/><path d="m5 7-3 7a3 3 0 0 0 6 0Z"/><path d="m19 7-3 7a3 3 0 0 0 6 0Z"/></svg> Trọng tài đối soát<span class="side-tag" data-dem="kn" hidden></span></a>
       <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Đăng tin<span class="side-tag">Chờ duyệt</span></a>
       <a href="tong-quan.html#ho-tro" class="side-link" data-muc="ho-tro"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ<span class="side-tag">Chờ xử lý</span></a>
     </nav>
@@ -744,10 +785,104 @@
         <p class="empty" id="planEmpty" hidden>Chưa có chủ trọ nào mua gói.</p>
       </div>
     </section>
+
+    <!-- Đối soát hoa hồng môi giới: mỗi lần chủ trọ bấm "Xác nhận đã thu tiền" một kỳ (quan-ly/thanh-toan.html#tien-phong)
+         là một dòng ở đây — quỹ đã trích, phần môi giới, tuyến trên và An Cư giữ lại. Sổ do assets/js/finance.js giữ. -->
+    <section class="panel" data-panel="moi-gioi">
+      <dl class="stats" id="mgStats"></dl>
+      <div class="ds-title"><div><h2>Mạng lưới F1 – F2</h2><p>F1 tự đăng ký; F2 đăng ký qua link mời của F1 và F1 hưởng thêm 20% hoa hồng của F2.</p></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Môi giới</th><th>Cấp</th><th class="num">Doanh số</th><th class="num">Đã nhận</th><th class="num">Khả dụng</th><th class="num">Chờ xử lý</th><th class="num">Chờ chuyển khoản</th><th class="num">Đã rút</th></tr></thead>
+          <tbody id="mgRows"></tbody>
+        </table>
+        <p class="empty" id="mgEmpty" hidden>Chưa có môi giới nào.</p>
+      </div>
+
+      <div class="ds-title"><div><h2>Lệnh rút tiền về ngân hàng</h2><p>Chuyển khoản thủ công rồi bấm “Đã chuyển khoản” kèm mã giao dịch. Từ chối thì tiền trả lại ví khả dụng của môi giới.</p></div>
+        <div class="fld"><label for="rtLoc">Trạng thái</label><select id="rtLoc"><option value="processing">Đang chờ chuyển khoản</option><option value="">Tất cả lệnh</option><option value="paid">Đã chuyển</option><option value="rejected">Đã từ chối</option></select></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Gửi lúc</th><th>Môi giới</th><th class="num">Số tiền</th><th>Tài khoản nhận</th><th>Trạng thái</th><th class="act"><span class="sr-only">Thao tác</span></th></tr></thead>
+          <tbody id="rtRows"></tbody>
+        </table>
+        <p class="empty" id="rtEmpty" hidden>Không có lệnh rút tiền nào.</p>
+      </div>
+      <p class="check" id="rtCheck"></p>
+
+      <div class="ds-title"><div><h2>Lịch sử hoa hồng theo kỳ</h2><p>Mỗi kỳ chủ trọ xác nhận đã thu (hoặc An Cư cưỡng chế theo khiếu nại): quỹ đã trích, phần môi giới, tuyến trên và An Cư.</p></div></div>
+      <p class="scope-note" id="dsScope">Sổ hoa hồng môi giới của prototype lưu trong trình duyệt này (localStorage): chỉ thấy các kỳ chủ trọ đã xác nhận trên cùng trình duyệt. Khi lên Supabase, sổ này thành bảng chung ở máy chủ.</p>
+      <dl class="stats" id="dsStats"></dl>
+      <div class="toolbar">
+        <div class="fld"><label for="dsMoiGioi">Môi giới</label><select id="dsMoiGioi" class="grow"><option value="">Tất cả môi giới</option></select></div>
+        <div class="fld"><label for="dsChuTro">Chủ trọ</label><select id="dsChuTro"><option value="">Tất cả chủ trọ</option></select></div>
+        <div class="fld"><label for="dsLoai">Loại kỳ</label><select id="dsLoai"><option value="mg">Có hoa hồng môi giới</option><option value="">Tất cả kỳ đã thu</option></select></div>
+        <button type="button" class="btn btn-ghost" id="dsXuat">Xuất Excel (CSV)</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Xác nhận lúc</th><th>Chủ trọ</th><th>Phòng · kỳ</th><th class="num">Tiền thu</th><th class="num">Quỹ</th><th>Môi giới</th><th class="num">Môi giới nhận</th><th class="num">Tuyến trên</th><th class="num">An Cư giữ</th></tr></thead>
+          <tbody id="dsRows"></tbody>
+        </table>
+        <p class="empty" id="dsEmpty" hidden>Chưa có kỳ nào khớp bộ lọc.</p>
+      </div>
+      <div class="ds-title"><div><h2>Yêu cầu đối soát của môi giới</h2><p>Môi giới nhờ chủ trọ kiểm tra kỳ chưa được ghi nhận; tự chuyển “Đã đối soát” khi chủ trọ xác nhận thu tiền kỳ đó.</p></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Gửi lúc</th><th>Môi giới</th><th>Chủ trọ</th><th>Phòng · kỳ</th><th>Ghi chú</th><th>Trạng thái</th></tr></thead>
+          <tbody id="dsYcRows"></tbody>
+        </table>
+        <p class="empty" id="dsYcEmpty" hidden>Chưa có yêu cầu đối soát nào.</p>
+      </div>
+    </section>
+
+    <!-- Trọng tài đối soát: khiếu nại của môi giới khi khách đã đóng mà chủ trọ không xác nhận (assets/js/moi-gioi.js) -->
+    <section class="panel" data-panel="trong-tai">
+      <p class="scope-note">Môi giới chỉ khiếu nại được sau khi đã gửi yêu cầu đối soát cho chủ trọ. Kiểm tra chứng từ, liên hệ chủ trọ / khách thuê nếu cần, rồi cưỡng chế duyệt hoặc bác. Mọi quyết định ghi rõ người duyệt và kết luận; môi giới và chủ trọ đều thấy.</p>
+      <dl class="stats" id="tnStats"></dl>
+      <div class="toolbar">
+        <div class="fld"><label for="tnLoc">Trạng thái</label><select id="tnLoc"><option value="open">Chờ xử lý</option><option value="">Tất cả khiếu nại</option><option value="forced">Đã cưỡng chế duyệt</option><option value="rejected">Đã bác</option><option value="auto">Chủ trọ tự xác nhận</option></select></div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Gửi lúc</th><th>Môi giới</th><th>Chủ trọ</th><th>Phòng · kỳ</th><th>Khách đã đóng</th><th>Trạng thái</th><th class="act"><span class="sr-only">Thao tác</span></th></tr></thead>
+          <tbody id="tnRows"></tbody>
+        </table>
+        <p class="empty" id="tnEmpty" hidden>Không có khiếu nại nào.</p>
+      </div>
+    </section>
   </div>
     </main>
   </div>
 </div>
+
+<dialog class="post-preview qd" id="dlgRt" aria-labelledby="rtTitle">
+  <form method="dialog" id="formRt" novalidate>
+    <h2 id="rtTitle"></h2>
+    <p class="sub" id="rtSub"></p>
+    <dl class="qd-grid" id="rtInfo"></dl>
+    <label for="rtNhap" id="rtNhapLb"></label>
+    <input id="rtNhap" autocomplete="off" aria-describedby="rtLoi" />
+    <p class="err" id="rtLoi" role="alert"></p>
+    <div class="qd-act"><button type="button" class="btn btn-ghost" data-dong>Huỷ</button><button type="submit" class="btn btn-primary" id="rtOk"></button></div>
+  </form>
+</dialog>
+<dialog class="post-preview qd" id="dlgTn" aria-labelledby="tnTitle">
+  <form method="dialog" id="formTn" novalidate>
+    <h2 id="tnTitle"></h2>
+    <p class="sub" id="tnSub"></p>
+    <div id="tnBody"></div>
+    <div id="tnXuLy">
+      <label for="tnKetLuan">Kết luận kiểm tra chứng từ (môi giới và chủ trọ đều thấy)</label>
+      <textarea id="tnKetLuan" maxlength="500" aria-describedby="tnLoi" placeholder="Ví dụ: Sao kê khớp số tiền và ngày; đã gọi chủ trọ xác nhận khách đóng ngày 05/11."></textarea>
+      <p class="err" id="tnLoi" role="alert"></p>
+      <div class="qd-act"><button type="button" class="btn btn-ghost" data-dong>Đóng</button>
+        <button type="button" class="btn btn-danger-ghost" id="tnBac">Bác khiếu nại</button>
+        <button type="button" class="btn btn-primary" id="tnDuyet">Cưỡng chế duyệt quỹ hoa hồng</button></div>
+    </div>
+    <div class="qd-act" id="tnDong"><button type="button" class="btn btn-ghost" data-dong>Đóng</button></div>
+  </form>
+</dialog>
 
 <dialog class="post-preview" id="postPreview" aria-labelledby="previewTitle">
   <button type="button" class="post-preview-close" id="closePreview" aria-label="Đóng xem trước">×</button>
@@ -1440,7 +1575,9 @@
     'tin-dang': ['Đăng tin', 'Quản lý tin cho thuê, xem trước nội dung và duyệt tin trước khi công khai.'],
     'ho-tro': ['Hỗ trợ & thông báo', 'Trả lời yêu cầu của chủ trọ và người thuê, gửi thông báo hàng loạt và nhắc hết hạn gói.'],
     'bao-cao': ['Báo cáo tài chính', 'Doanh thu gói dịch vụ theo tháng, theo năm và tỷ lệ phòng cho thuê qua website.'],
-    'thanh-toan': ['Thanh toán', 'Theo dõi và đối soát các kỳ thanh toán gói dịch vụ An Cư.']
+    'thanh-toan': ['Thanh toán', 'Theo dõi và đối soát các kỳ thanh toán gói dịch vụ An Cư.'],
+    'moi-gioi': ['Môi giới & Hoa hồng', 'Mạng lưới F1 – F2, ví hoa hồng, duyệt lệnh rút tiền và lịch sử chia quỹ theo từng kỳ.'],
+    'trong-tai': ['Trọng tài đối soát', 'Khiếu nại của môi giới khi khách đã đóng tiền mà chủ trọ chưa xác nhận: kiểm tra chứng từ, cưỡng chế duyệt hoặc bác.']
   };
   var panelRevealObserver = window.IntersectionObserver ? new IntersectionObserver(function(entries, observer){
     entries.forEach(function(entry){
@@ -1451,6 +1588,7 @@
     });
   }, { threshold: 0.08, rootMargin: '0px 0px -10% 0px' }) : null;
   function moKhu(ten){
+    if (ten === 'doi-soat') ten = 'moi-gioi'; // đường dẫn cũ của khu đối soát hoa hồng
     var panel = document.querySelector('.panel[data-panel="' + ten + '"]');
     if (!panel) ten = ten === 'nha-tro' ? 'tai-khoan' : 'tong-quan';
     el('pageTitle').textContent = TIEU_DE[ten][0];
@@ -1881,6 +2019,270 @@
         return moKhuQuanTri(me, false);
       });
   }
+})();
+</script>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/bookings.js"></script>
+<script src="../assets/js/finance.js"></script>
+<script src="../assets/js/moi-gioi.js"></script>
+<script>
+/* Môi giới & Hoa hồng + Trọng tài đối soát — đọc/ghi đúng sổ mà trang môi giới và trang Thanh toán của chủ trọ dùng
+ * (assets/js/finance.js, assets/js/moi-gioi.js). Sổ ở localStorage: chỉ thấy dữ liệu trên cùng trình duyệt. */
+(function(){
+  'use strict';
+  var D = window.AnCuData, F = window.AnCuFinance, M = window.AnCuMoiGioi;
+  if (!D || !F || !document.getElementById('dsRows')) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var nf = new Intl.NumberFormat('vi-VN');
+  function vnd(n){ return nf.format(n || 0) + '₫'; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function luc(iso){ return new Date(iso).toLocaleString('vi-VN', { timeZone:'Asia/Ho_Chi_Minh', hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric' }); }
+  function ky(p){ var a = p.split('-'); return a[1] + '/' + a[0]; }
+  function ten(id){ var u = D.findUser(id); return u ? u.name : (id || '—'); }
+  var brokers = D.users.filter(function(u){ return u.role === 'broker'; });
+  var landlords = D.users.filter(function(u){ return u.role === 'landlord'; });
+  $('dsMoiGioi').innerHTML = '<option value="">Tất cả môi giới</option>' + brokers.map(function(b){ return '<option value="' + esc(b.id) + '">' + esc(b.name + ' · ' + b.ref_code) + '</option>'; }).join('');
+  $('dsChuTro').innerHTML = '<option value="">Tất cả chủ trọ</option>' + landlords.map(function(l){ return '<option value="' + esc(l.id) + '">' + esc(l.name) + '</option>'; }).join('');
+
+  function loc(){
+    var mg = $('dsMoiGioi').value, ct = $('dsChuTro').value, loai = $('dsLoai').value;
+    return F.payments().filter(function(p){
+      return (!loai || p.commission > 0) && (!ct || p.landlord_id === ct) && (!mg || p.broker_id === mg || p.upline_id === mg);
+    });
+  }
+  function ve(){
+    var all = F.payments(), mg = all.filter(function(p){ return p.commission > 0; });
+    var sum = function(l, k){ return l.reduce(function(s, p){ return s + (p[k] || 0); }, 0); };
+    var duKien = brokers.reduce(function(s, b){ return s + F.projected(b.id).reduce(function(t, x){ return t + x.amount; }, 0); }, 0);
+    var cho = M ? M.allRequests().filter(function(r){ return r.state === 'open'; }).length : 0;
+    $('dsStats').innerHTML = [
+      ['Quỹ hoa hồng đã trích', vnd(sum(mg, 'commission')), mg.length + ' kỳ có môi giới / ' + all.length + ' kỳ đã thu'],
+      ['Đã chia môi giới', vnd(sum(mg, 'broker_amount') + sum(mg, 'upline_amount')), 'Trực tiếp ' + vnd(sum(mg, 'broker_amount')) + ' · tuyến trên ' + vnd(sum(mg, 'upline_amount'))],
+      ['An Cư giữ lại', vnd(sum(mg, 'platform_amount')), 'Phần còn lại của quỹ'],
+      ['Chờ chủ trọ xác nhận', '≈ ' + vnd(duKien), cho + ' yêu cầu đối soát đang mở']
+    ].map(function(x){ return '<div class="stat"><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>'; }).join('');
+
+    var ds = loc();
+    $('dsEmpty').hidden = ds.length > 0;
+    $('dsRows').innerHTML = ds.map(function(p){
+      var r = D.findRoom(p.room_id), c = D.findContract(p.contract_id);
+      var b = p.broker_id && D.findUser(p.broker_id), up = p.upline_id && D.findUser(p.upline_id);
+      return '<tr><td data-th="Xác nhận lúc">' + esc(luc(p.confirmed_at)) + '</td>' +
+        '<td data-th="Chủ trọ">' + esc(ten(p.landlord_id)) + '</td>' +
+        '<td data-th="Phòng · kỳ"><b>' + esc((r ? r.code : p.room_id) + ' · Kỳ ' + (c ? F.kyOf(c, p.period) : '?')) + '</b><small>' + esc(ky(p.period) + ' · ' + p.contract_id) + '</small></td>' +
+        '<td data-th="Tiền thu" class="num">' + vnd(p.amount) + '</td>' +
+        '<td data-th="Quỹ" class="num">' + (p.commission ? vnd(p.commission) + '<small>' + Math.round(p.rate * 100) + '%</small>' : '—') + '</td>' +
+        '<td data-th="Môi giới">' + (b ? '<span class="ref">' + esc(b.ref_code) + '</span><small>' + esc(b.name + ' · Bậc ' + p.tier) + '</small>' : '<small>Khách tự nhiên</small>') + '</td>' +
+        '<td data-th="Môi giới nhận" class="num">' + (p.broker_amount ? vnd(p.broker_amount) : '—') + '</td>' +
+        '<td data-th="Tuyến trên" class="num">' + (up ? vnd(p.upline_amount) + '<small>' + esc(up.ref_code) + '</small>' : '—') + '</td>' +
+        '<td data-th="An Cư giữ" class="num">' + (p.commission ? vnd(p.platform_amount) : '—') + '</td></tr>';
+    }).join('');
+
+    var yc = M ? M.allRequests() : [];
+    var ST = { open:['Chờ chủ trọ', 'wait'], done:['Đã đối soát', 'ok'], rejected:['Chủ trọ từ chối', 'bad'] };
+    $('dsYcEmpty').hidden = yc.length > 0;
+    $('dsYcRows').innerHTML = yc.map(function(x){
+      var b = D.findUser(x.broker_id), st = ST[x.state];
+      return '<tr><td data-th="Gửi lúc">' + esc(luc(x.created_at)) + '</td>' +
+        '<td data-th="Môi giới">' + (b ? '<span class="ref">' + esc(b.ref_code) + '</span><small>' + esc(b.name) + '</small>' : '—') + '</td>' +
+        '<td data-th="Chủ trọ">' + esc(ten(x.landlord_id)) + '</td>' +
+        '<td data-th="Phòng · kỳ"><b>' + esc((x.room ? x.room.code : '') + ' · Kỳ ' + x.ky) + '</b><small>' + esc(ky(x.period)) + '</small></td>' +
+        '<td data-th="Ghi chú">' + esc(x.state === 'rejected' ? 'Lý do: ' + x.reject_note : (x.note || '—')) + '</td>' +
+        '<td data-th="Trạng thái"><span class="tag ' + st[1] + '">' + st[0] + '</span></td></tr>';
+    }).join('');
+  }
+  ['dsMoiGioi', 'dsChuTro', 'dsLoai'].forEach(function(id){ $(id).addEventListener('change', ve); });
+  $('dsXuat').addEventListener('click', function(){
+    var dong = [['Xác nhận lúc', 'Chủ trọ', 'Phòng', 'Hợp đồng', 'Kỳ', 'Tiền thu', 'Tỷ lệ quỹ', 'Quỹ', 'Mã môi giới', 'Môi giới nhận', 'Tuyến trên', 'Tuyến trên nhận', 'An Cư giữ']]
+      .concat(loc().map(function(p){
+        var r = D.findRoom(p.room_id), up = p.upline_id && D.findUser(p.upline_id);
+        return [luc(p.confirmed_at), ten(p.landlord_id), r ? r.code : p.room_id, p.contract_id, ky(p.period), p.amount, Math.round(p.rate * 100) + '%',
+          p.commission, p.ref_code || '', p.broker_amount, up ? up.ref_code : '', p.upline_amount, p.platform_amount];
+      }));
+    var csv = '\ufeff' + dong.map(function(d){ return d.map(function(v){ return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+    a.download = 'an-cu-doi-soat-hoa-hong.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  /* ---------- Quản trị đang đăng nhập (người duyệt) ---------- */
+  var ADMIN = null;
+  if (window.AnCuNguoiDung) AnCuNguoiDung.hienTai().then(function(u){ if (u && u.role === 'admin') ADMIN = { id:u.id, role:'admin', name:u.name }; });
+  function canDuyet(){ if (!ADMIN) { alert('Cần đăng nhập bằng tài khoản quản trị.'); return false; } return true; }
+  [].forEach.call(document.querySelectorAll('dialog [data-dong]'), function(b){ b.addEventListener('click', function(){ b.closest('dialog').close(); }); });
+
+  /* ---------- Mạng lưới F1 – F2 ---------- */
+  function veMang(){
+    var hang = [], f1 = brokers.filter(function(b){ return !b.upline_id || !D.findUser(b.upline_id); });
+    f1.forEach(function(b){ hang.push(b); brokers.filter(function(x){ return x.upline_id === b.id; }).forEach(function(x){ hang.push(x); }); });
+    brokers.forEach(function(b){ if (hang.indexOf(b) === -1) hang.push(b); });
+    var tong = { kd:0, cho:0, ck:0, rut:0, nhan:0 };
+    $('mgEmpty').hidden = hang.length > 0;
+    $('mgRows').innerHTML = hang.map(function(b){
+      var w = F.wallet(b.id), st = F.brokerStats(b.id), up = b.upline_id && D.findUser(b.upline_id);
+      var soF2 = brokers.filter(function(x){ return x.upline_id === b.id; }).length;
+      tong.kd += w.available; tong.cho += w.pending; tong.ck += w.processing; tong.rut += w.withdrawn; tong.nhan += w.earned;
+      return '<tr class="' + (up ? 'tree-f2' : '') + '"><td data-th="Môi giới"><b>' + esc(b.name) + '</b><small><span class="ref">' + esc(b.ref_code) + '</span> · ' + esc(b.phone) + '</small></td>' +
+        '<td data-th="Cấp">' + (up ? '<span class="tag info">F2</span><small>của ' + esc(up.name) + '</small>' : '<span class="tag ok">F1</span><small>' + soF2 + ' F2</small>') + '</td>' +
+        '<td data-th="Doanh số" class="num">' + vnd(st.sales) + '<small>' + st.payments + ' kỳ</small></td>' +
+        '<td data-th="Đã nhận" class="num">' + vnd(w.earned) + '</td>' +
+        '<td data-th="Khả dụng" class="num"' + (w.available < 0 ? ' style="color:var(--danger-ink)"' : '') + '><b>' + vnd(w.available) + '</b></td>' +
+        '<td data-th="Chờ xử lý" class="num">≈ ' + vnd(w.pending) + '<small>' + w.pendingCount + ' kỳ</small></td>' +
+        '<td data-th="Chờ chuyển khoản" class="num">' + vnd(w.processing) + '</td>' +
+        '<td data-th="Đã rút" class="num">' + vnd(w.withdrawn) + '</td></tr>';
+    }).join('');
+    var nF2 = brokers.filter(function(b){ return b.upline_id && D.findUser(b.upline_id); }).length;
+    $('mgStats').innerHTML = [
+      ['Môi giới', String(brokers.length), (brokers.length - nF2) + ' F1 · ' + nF2 + ' F2'],
+      ['Ví khả dụng (tổng)', vnd(tong.kd), 'Môi giới rút được ngay'],
+      ['Đang chờ An Cư chuyển khoản', vnd(tong.ck), F.allWithdrawals().filter(function(w){ return w.status === 'processing'; }).length + ' lệnh rút chờ duyệt'],
+      ['Đã chi trả', vnd(tong.rut), 'Tổng hoa hồng đã chia ' + vnd(tong.nhan)]
+    ].map(function(x){ return '<div class="stat"><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>'; }).join('');
+    return tong;
+  }
+
+  /* ---------- Lệnh rút tiền ---------- */
+  var RT_ST = { processing:['Chờ chuyển khoản', 'wait'], paid:['Đã chuyển', 'ok'], rejected:['Đã từ chối', 'bad'] };
+  function veRut(tong){
+    var loc = $('rtLoc').value, all = F.allWithdrawals();
+    var ds = all.filter(function(w){ return !loc || w.status === loc; });
+    $('rtEmpty').hidden = ds.length > 0;
+    $('rtRows').innerHTML = ds.map(function(w){
+      var b = D.findUser(w.broker_id), st = RT_ST[w.status] || RT_ST.processing;
+      var tk = w.account_no ? w.account_no : '••••' + w.account_last4;
+      return '<tr><td data-th="Gửi lúc">' + esc(luc(w.created_at)) + '</td>' +
+        '<td data-th="Môi giới">' + (b ? '<b>' + esc(b.name) + '</b><small><span class="ref">' + esc(b.ref_code) + '</span></small>' : esc(w.broker_id)) + '</td>' +
+        '<td data-th="Số tiền" class="num"><b>' + vnd(w.amount) + '</b></td>' +
+        '<td data-th="Tài khoản nhận"><b>' + esc(w.bank + ' · ' + tk) + '</b><small>' + esc(w.account_name) + (w.account_no ? '' : ' · lệnh cũ chỉ lưu 4 số cuối') + '</small></td>' +
+        '<td data-th="Trạng thái"><span class="tag ' + st[1] + '">' + st[0] + '</span>' +
+          (w.transfer_ref ? '<small>Mã GD ' + esc(w.transfer_ref) + '</small>' : '') + (w.reject_note ? '<small>' + esc(w.reject_note) + '</small>' : '') +
+          (w.decided_at ? '<small>' + esc(ten(w.decided_by) + ' · ' + luc(w.decided_at)) + '</small>' : '') + '</td>' +
+        '<td class="act" data-th="">' + (w.status === 'processing'
+          ? '<div class="acts"><button type="button" class="btn btn-danger-ghost btn-sm" data-rt="' + esc(w.id) + '|rejected">Từ chối</button><button type="button" class="btn btn-primary btn-sm" data-rt="' + esc(w.id) + '|paid">Đã chuyển khoản</button></div>' : '') + '</td></tr>';
+    }).join('');
+    // Đối soát: tổng lệnh đang chờ phải đúng bằng tổng ô "Đang chờ An Cư chuyển khoản" trên ví các môi giới
+    var choLenh = all.filter(function(w){ return w.status === 'processing'; }).reduce(function(s, w){ return s + w.amount; }, 0);
+    var am = brokers.filter(function(b){ return F.wallet(b.id).available < 0; });
+    var khop = choLenh === tong.ck && !am.length;
+    $('rtCheck').className = 'check ' + (khop ? 'ok' : 'bad');
+    $('rtCheck').textContent = khop
+      ? 'Khớp: tổng lệnh đang chờ ' + vnd(choLenh) + ' = tổng “Đang chờ An Cư chuyển khoản” trên ví của ' + brokers.length + ' môi giới; không ví nào âm.'
+      : 'Lệch: lệnh đang chờ ' + vnd(choLenh) + ' / ví ghi ' + vnd(tong.ck) + (am.length ? '; ví âm: ' + am.map(function(b){ return b.ref_code; }).join(', ') : '') + '. Kiểm tra lại trước khi chuyển khoản.';
+  }
+  var rtDang = null;
+  $('rtLoc').addEventListener('change', veTatCa);
+  $('rtRows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-rt]'); if (!b || !canDuyet()) return;
+    var p = b.getAttribute('data-rt').split('|'), w = F.allWithdrawals().filter(function(x){ return x.id === p[0]; })[0]; if (!w) return;
+    var mg = D.findUser(w.broker_id), tra = p[1] === 'paid';
+    rtDang = { id:w.id, action:p[1] };
+    $('rtTitle').textContent = tra ? 'Xác nhận đã chuyển khoản' : 'Từ chối lệnh rút tiền';
+    $('rtSub').textContent = tra ? 'Chuyển khoản thủ công theo thông tin dưới đây, rồi nhập mã giao dịch ngân hàng.' : 'Tiền trả lại ví khả dụng của môi giới; môi giới thấy lý do.';
+    $('rtInfo').innerHTML = '<dt>Môi giới</dt><dd>' + esc((mg ? mg.name + ' · ' + mg.ref_code : w.broker_id)) + '</dd>' +
+      '<dt>Số tiền</dt><dd>' + vnd(w.amount) + '</dd><dt>Ngân hàng</dt><dd>' + esc(w.bank) + '</dd>' +
+      '<dt>Số tài khoản</dt><dd>' + esc(w.account_no || '••••' + w.account_last4) + '</dd><dt>Chủ tài khoản</dt><dd>' + esc(w.account_name) + '</dd>' +
+      '<dt>Ví khả dụng còn</dt><dd>' + vnd(F.wallet(w.broker_id).available) + ' (đã trừ lệnh này)</dd>';
+    $('rtNhapLb').textContent = tra ? 'Mã giao dịch chuyển khoản' : 'Lý do từ chối';
+    $('rtNhap').value = ''; $('rtLoi').textContent = '';
+    $('rtNhap').placeholder = tra ? 'Ví dụ: FT26323123456' : 'Ví dụ: Tên chủ tài khoản không khớp tên môi giới.';
+    $('rtOk').textContent = tra ? 'Đã chuyển khoản' : 'Từ chối lệnh';
+    $('rtOk').className = 'btn ' + (tra ? 'btn-primary' : 'btn-danger-ghost');
+    $('dlgRt').showModal(); $('rtNhap').focus();
+  });
+  $('formRt').addEventListener('submit', function(e){
+    e.preventDefault(); if (!rtDang) return;
+    var v = $('rtNhap').value;
+    var kq = F.decideWithdrawal(rtDang.id, rtDang.action, ADMIN, rtDang.action === 'paid' ? { transferRef:v } : { reason:v });
+    if (!kq.ok) { $('rtLoi').textContent = kq.message; $('rtNhap').focus(); return; }
+    $('dlgRt').close(); veTatCa();
+  });
+
+  /* ---------- Trọng tài đối soát ---------- */
+  var TN_ST = { open:['Chờ xử lý', 'wait'], forced:['Đã cưỡng chế duyệt', 'ok'], rejected:['Đã bác', 'bad'], auto:['Chủ trọ tự xác nhận', 'mute'] };
+  function veTrongTai(){
+    var all = M.allDisputes(), loc = $('tnLoc').value;
+    var ds = all.filter(function(d){ return !loc || d.state === loc; });
+    var mo = all.filter(function(d){ return d.state === 'open'; });
+    var forced = all.filter(function(d){ return d.state === 'forced' && d.payment; });
+    $('tnStats').innerHTML = [
+      ['Khiếu nại chờ xử lý', String(mo.length), mo.length ? 'Cũ nhất gửi ' + luc(mo[mo.length - 1].created_at) : 'Không có việc tồn'],
+      ['Đã cưỡng chế duyệt', String(forced.length), 'Chia ' + vnd(forced.reduce(function(s, d){ return s + d.payment.broker_amount + d.payment.upline_amount; }, 0)) + ' cho môi giới'],
+      ['Đã bác', String(all.filter(function(d){ return d.state === 'rejected'; }).length), 'Chứng từ không đủ / không khớp'],
+      ['Chủ trọ tự xác nhận', String(all.filter(function(d){ return d.state === 'auto'; }).length), 'Trước khi An Cư xử lý']
+    ].map(function(x){ return '<div class="stat"><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd><small>' + esc(x[2]) + '</small></div>'; }).join('');
+    $('tnEmpty').hidden = ds.length > 0;
+    $('tnRows').innerHTML = ds.map(function(d){
+      var st = TN_ST[d.state];
+      return '<tr><td data-th="Gửi lúc">' + esc(luc(d.created_at)) + '</td>' +
+        '<td data-th="Môi giới">' + (d.broker ? '<b>' + esc(d.broker.name) + '</b><small><span class="ref">' + esc(d.broker.ref_code) + '</span></small>' : '—') + '</td>' +
+        '<td data-th="Chủ trọ">' + esc(d.landlord ? d.landlord.name : d.landlord_id) + '</td>' +
+        '<td data-th="Phòng · kỳ"><b>' + esc((d.room ? d.room.code : '') + ' · Kỳ ' + d.ky) + '</b><small>' + esc(ky(d.period) + ' · ' + d.contract_id) + '</small></td>' +
+        '<td data-th="Khách đã đóng"><b>' + vnd(d.amount) + '</b><small>' + esc(d.paid_date.split('-').reverse().join('/') + (d.tx_ref ? ' · ' + d.tx_ref : '') + (d.evidence ? ' · có ảnh' : ' · không ảnh')) + '</small></td>' +
+        '<td data-th="Trạng thái"><span class="tag ' + st[1] + '">' + st[0] + '</span></td>' +
+        '<td class="act" data-th=""><button type="button" class="btn ' + (d.state === 'open' ? 'btn-primary' : 'btn-ghost') + ' btn-sm" data-tn="' + esc(d.id) + '">' + (d.state === 'open' ? 'Xem chứng từ & xử lý' : 'Xem') + '</button></td></tr>';
+    }).join('');
+  }
+  var tnDang = null;
+  $('tnLoc').addEventListener('change', veTrongTai);
+  $('tnRows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-tn]'); if (!b) return;
+    var d = M.allDisputes().filter(function(x){ return x.id === b.getAttribute('data-tn'); })[0]; if (!d) return;
+    tnDang = d.id;
+    var c = d.contract, yc = M.allRequests().filter(function(r){ return r.contract_id === d.contract_id && r.period === d.period; });
+    var q = c ? F.quote(c.id, d.amount, d.period) : null, mo = d.state === 'open';
+    $('tnTitle').textContent = 'Khiếu nại ' + (d.room ? d.room.code + ' · ' : '') + 'Kỳ ' + d.ky + ' (' + ky(d.period) + ')';
+    $('tnSub').textContent = (d.broker ? d.broker.name + ' (' + d.broker.ref_code + ')' : '') + ' khiếu nại chủ trọ ' + (d.landlord ? d.landlord.name : '') + ' · gửi ' + luc(d.created_at);
+    $('tnBody').innerHTML =
+      '<dl class="qd-grid"><dt>Hợp đồng</dt><dd>' + esc(d.contract_id + (c ? ' · ' + c.tenant_name + ' · ' + vnd(c.monthly_rent) + '/tháng' : '')) + '</dd>' +
+      '<dt>Khách đã đóng</dt><dd>' + vnd(d.amount) + (c && d.amount !== c.monthly_rent ? ' <span class="tag wait">khác tiền thuê tháng</span>' : '') + '</dd>' +
+      '<dt>Ngày đóng</dt><dd>' + esc(d.paid_date.split('-').reverse().join('/')) + '</dd>' +
+      '<dt>Mã giao dịch</dt><dd>' + esc(d.tx_ref || '—') + '</dd>' +
+      '<dt>Mô tả</dt><dd>' + esc(d.note || '—') + '</dd>' +
+      '<dt>Phía chủ trọ</dt><dd>' + (yc.length ? yc.map(function(r){ return r.state === 'rejected' ? 'Từ chối đối soát: “' + esc(r.reject_note) + '”' : r.state === 'open' ? 'Chưa trả lời yêu cầu đối soát gửi ' + esc(luc(r.created_at)) : 'Đã xác nhận'; }).join('<br>') : 'Chưa có yêu cầu đối soát') + '</dd></dl>' +
+      (d.evidence ? '<a href="' + d.evidence + '" target="_blank" rel="noopener"><img class="qd-ev" src="' + d.evidence + '" alt="Ảnh chứng từ môi giới gửi" /></a>' : '<p class="qd-note">Môi giới không gửi ảnh — chỉ có mã giao dịch. Nên đối chiếu với chủ trọ hoặc khách thuê trước khi duyệt.</p>') +
+      (q && q.broker && mo ? '<table class="qd-split"><tr><td>Nếu duyệt: quỹ ' + Math.round(q.rate * 100) + '%</td><td>' + vnd(q.commission) + '</td></tr>' +
+        '<tr><td>' + esc(q.refCode + ' · ' + q.tier.name + ' ' + Math.round(q.brokerShare * 100) + '%') + '</td><td>' + vnd(q.brokerAmount) + '</td></tr>' +
+        (q.upline ? '<tr><td>Tuyến trên ' + esc(q.upline.ref_code) + '</td><td>' + vnd(q.uplineAmount) + '</td></tr>' : '') +
+        '<tr><td>An Cư giữ lại</td><td>' + vnd(q.platformAmount) + '</td></tr></table>' : '') +
+      (!mo ? '<p class="qd-note">' + (d.state === 'auto' ? 'Chủ trọ đã tự xác nhận kỳ này nên khiếu nại tự đóng.' :
+        esc(TN_ST[d.state][0] + ' bởi ' + ten(d.decided_by) + ' lúc ' + luc(d.decided_at) + ': ' + d.decision_note)) + '</p>' : '');
+    $('tnXuLy').hidden = !mo; $('tnDong').hidden = mo;
+    $('tnKetLuan').value = ''; $('tnLoi').textContent = '';
+    $('dlgTn').showModal();
+  });
+  function xuLy(action){
+    if (!tnDang || !canDuyet()) return;
+    if (action === 'force' && !confirm('Cưỡng chế ghi nhận kỳ này đã thu và chia quỹ hoa hồng cho môi giới? Doanh thu được ghi cho chủ trọ, thao tác không hoàn tác được.')) return;
+    var kq = M.decideDispute(tnDang, action, ADMIN, $('tnKetLuan').value);
+    if (!kq.ok) { $('tnLoi').textContent = kq.message; $('tnKetLuan').focus(); return; }
+    $('dlgTn').close(); veTatCa();
+  }
+  $('tnDuyet').addEventListener('click', function(){ xuLy('force'); });
+  $('tnBac').addEventListener('click', function(){ xuLy('rejected'); });
+
+  function veTatCa(){ var t = veMang(); veRut(t); ve(); veTrongTai(); if (window.AnCuDemQuanTri) AnCuDemQuanTri(); }
+  window.addEventListener('storage', function(e){ if ([F.STORAGE_KEY, M.KEY_DOI_SOAT, M.KEY_KHIEU_NAI, D.CAMPAIGN_KEY].indexOf(e.key) !== -1) veTatCa(); });
+  window.addEventListener('hashchange', function(){ if (/^#(moi-gioi|trong-tai|doi-soat)$/.test(location.hash)) veTatCa(); });
+  veTatCa();
+})();
+</script>
+<script>
+/* Huy hiệu ở cột công cụ: lệnh rút tiền chờ duyệt + khiếu nại chờ xử lý (sổ môi giới trong trình duyệt này) */
+(function(){
+  function dem(){
+    var F = window.AnCuFinance, M = window.AnCuMoiGioi; if (!F || !M) return;
+    var n = { rut: F.allWithdrawals().filter(function(w){ return w.status === 'processing'; }).length,
+              kn: M.allDisputes().filter(function(d){ return d.state === 'open'; }).length };
+    [].forEach.call(document.querySelectorAll('.side-tag[data-dem]'), function(t){
+      var k = t.getAttribute('data-dem');
+      t.textContent = n[k] ? n[k] + (k === 'rut' ? ' chờ duyệt' : ' chờ xử lý') : '';
+      t.hidden = !n[k];
+    });
+  }
+  window.AnCuDemQuanTri = dem;
+  window.addEventListener('storage', dem);
+  dem();
 })();
 </script>
 </body>

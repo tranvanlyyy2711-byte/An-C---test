@@ -1447,7 +1447,7 @@
       <p class="auth-demo" id="authDemoNote" hidden>
         <b>Chế độ xem thử</b> — trang đang mở không qua máy chủ An Cư, nên chỉ đăng nhập được bằng
         tài khoản demo, mật khẩu <b>matkhau123</b>:<br />
-        <span>0912345678 người thuê · 0988000999 chủ trọ · 0900000001 quản trị</span>
+        <span>0912345678 người thuê · 0988000999 chủ trọ · 0966100200 môi giới · 0900000001 quản trị</span>
         <span id="authDemoNoteMay" hidden>Muốn tài khoản thật: chạy <code>npm start</code> rồi mở
           http://localhost:5500, hoặc dùng bản đã deploy.</span>
       </p>
@@ -1693,6 +1693,8 @@
 <script src="components/supabase-auth.js"></script>
 <script src="components/phien-xem-thu.js"></script>
 <script src="components/mua-goi.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/auth.js"></script>
 <script>
   // Header scroll state
   var hdr = document.getElementById('hdr');
@@ -2105,6 +2107,28 @@
       }, 600);
     }
 
+    // Tài khoản môi giới mới chỉ có trong dữ liệu mẫu assets/js/data.js — máy chủ SQLite và Supabase
+    // chưa có vai trò này. Nên kiểm số môi giới ở đây trước, ở cả ba chế độ; số khác đi tiếp lối cũ.
+    // Trả về true khi đã xử lý xong (vào trang môi giới hoặc báo sai mật khẩu).
+    function dangNhapMoiGioi(form, busy){
+      var D = window.AnCuData;
+      if(!D || typeof window.login !== 'function') return false;
+      var f = form.elements, nhap = String(f.phone.value).trim().toLowerCase(), so = nhap.replace(/[^0-9]/g, '');
+      var u = D.users.filter(function(x){
+        return x.role === 'broker' && (nhap.indexOf('@') !== -1 ? String(x.email).toLowerCase() === nhap : x.phone === so);
+      })[0];
+      if(!u) return false;
+      if(window.login(nhap, f.password.value) !== 'broker'){
+        busy(false);
+        failField(f.password, 'Số điện thoại hoặc mật khẩu không đúng.');
+        f.password.focus();
+        return true;
+      }
+      showDone(form, 'Đang chuyển tới trang môi giới…');
+      setTimeout(function(){ window.location.href = 'broker-dashboard.html'; }, 900);
+      return true;
+    }
+
     overlay.querySelectorAll('[data-auth-form]').forEach(function(form){
       var kind = form.getAttribute('data-auth-form');
       var btn = form.querySelector('.btn-submit');
@@ -2121,6 +2145,7 @@
         busy(true);
 
         SAN_SANG.then(function(){
+          if(kind === 'login' && dangNhapMoiGioi(form, busy)) return;
           if(kind !== 'forgot' && CHE_DO === 'supabase') return supabaseSubmit(form, kind, busy);
           if(!AUTH_API.on || kind === 'forgot') return mockSubmit(form, kind);
 

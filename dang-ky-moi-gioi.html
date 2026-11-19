@@ -32,6 +32,13 @@
 .form-card form{display:grid;gap:16px}
 .demo-note{font-size:13.5px;color:var(--warning-ink);padding:10px 12px;border-radius:var(--radius-sm);background:rgba(245,177,76,.12)}
 .foot{font-size:14px;color:var(--text-dim);text-align:center}
+.lock-wrap{position:relative}
+.lock-wrap .input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase}
+.lock-wrap .input[readonly]{padding-right:44px;background:var(--surface-2);color:var(--text);cursor:not-allowed;border-style:dashed}
+.lock-ic{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--success-ink)}
+.lock-ic[hidden]{display:none}
+.f1-note{margin-top:6px;font-size:13.5px;color:var(--text-dim)}
+.f1-note.is-locked{color:var(--success-ink)}
 .foot a{display:inline-flex;align-items:center;min-height:44px}
 </style>
 </head>
@@ -67,6 +74,15 @@
         <div class="field"><label for="hoTen">Họ và tên</label><input class="input" id="hoTen" autocomplete="name" aria-describedby="loi-hoTen" /><p class="err" id="loi-hoTen"></p></div>
         <div class="field"><label for="sdt">Số điện thoại</label><input class="input" id="sdt" type="tel" inputmode="tel" autocomplete="tel" placeholder="0912345678" aria-describedby="loi-sdt" /><p class="err" id="loi-sdt"></p></div>
         <div class="field"><label for="email">Email</label><input class="input" id="email" type="email" autocomplete="email" placeholder="ten@email.com" aria-describedby="loi-email" /><p class="err" id="loi-email"></p></div>
+        <div class="field">
+          <label for="maF1">Mã người giới thiệu (F1) <span class="hint" id="maF1Hint">(không bắt buộc)</span></label>
+          <div class="lock-wrap">
+            <input class="input" id="maF1" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="MG-…" aria-describedby="maF1Note loi-maF1" />
+            <svg class="lock-ic" id="maF1Lock" viewBox="0 0 24 24" aria-hidden="true" hidden><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          </div>
+          <p class="f1-note" id="maF1Note">Người mời bạn sẽ là tuyến trên (F1) và hưởng thêm một phần hoa hồng từ An Cư — không trừ vào tiền của bạn.</p>
+          <p class="err" id="loi-maF1"></p>
+        </div>
         <div class="field"><label for="matKhau">Mật khẩu <span class="hint">(ít nhất 8 ký tự)</span></label><input class="input" id="matKhau" type="password" autocomplete="new-password" aria-describedby="loi-matKhau" /><p class="err" id="loi-matKhau"></p></div>
         <p class="demo-note">Bản demo: tài khoản chỉ lưu trong trình duyệt này, mật khẩu không được mã hoá. Đừng dùng mật khẩu thật.</p>
         <button type="submit" class="btn btn-primary btn-block">Đăng ký và vào trang môi giới</button>
@@ -89,11 +105,14 @@
 
   var T = F.TIERS;
   $('diemBac').textContent = 'Hưởng ' + pct(T[0].share) + '–' + pct(T[T.length - 1].share) + ' quỹ hoa hồng theo bậc';
-  $('diemF2').textContent = 'Thêm ' + pct(F.UPLINE_SHARE) + ' quỹ từ tuyến dưới';
+  $('diemF2').textContent = 'Thêm ' + pct(F.UPLINE_SHARE) + ' hoa hồng của mỗi tuyến dưới';
 
-  // Người mời: ?moi=<mã môi giới>
+  // Người mời: ?invite=<mã môi giới> (link tuyển dụng hiện tại); ?moi= là tên cũ, vẫn nhận
   var maMoi = '';
-  try { maMoi = String(new URLSearchParams(location.search).get('moi') || '').trim().toUpperCase(); } catch (e) {}
+  try {
+    var qs = new URLSearchParams(location.search);
+    maMoi = String(qs.get('invite') || qs.get('moi') || '').trim().toUpperCase();
+  } catch (e) {}
   var nguoiMoi = maMoi ? D.findBrokerByRef(maMoi) : null;
   var box = $('loiMoi');
   if (nguoiMoi) {
@@ -103,8 +122,20 @@
   } else if (maMoi) {
     box.className = 'invite is-warn';
     box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div>Mã mời <span class="ref">' +
-      esc(maMoi) + '</span> không tồn tại. Bạn vẫn đăng ký được, nhưng sẽ không có tuyến trên.</div>';
+      esc(maMoi) + '</span> không tồn tại. Nhập đúng mã người giới thiệu ở ô bên dưới, hoặc để trống nếu không có tuyến trên.</div>';
     box.hidden = false;
+  }
+
+  // Ô "Mã người giới thiệu": link mời hợp lệ → tự điền và KHOÁ (tuyến trên lấy từ link, không đọc lại ô này
+  // khi gửi, nên sửa thuộc tính readonly bằng DevTools cũng không đổi được F1). Không có link mời → tự nhập.
+  var oF1 = $('maF1');
+  if (nguoiMoi) {
+    oF1.value = nguoiMoi.ref_code;
+    oF1.readOnly = true; oF1.setAttribute('aria-readonly', 'true');
+    $('maF1Lock').hidden = false;
+    $('maF1Hint').textContent = '(đã khoá theo link mời)';
+    $('maF1Note').className = 'f1-note is-locked';
+    $('maF1Note').textContent = 'Đã điền từ link mời của ' + nguoiMoi.name + '. Sau khi đăng ký, ' + nguoiMoi.name + ' là tuyến trên (F1) của bạn.';
   }
 
   function khongDau(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'D'); }
@@ -117,7 +148,7 @@
   }
 
   function loi(id, text){ $('loi-' + id).textContent = text; $(id).setAttribute('aria-invalid', 'true'); }
-  function xoaLoi(){ ['hoTen', 'sdt', 'email', 'matKhau'].forEach(function(k){ $('loi-' + k).textContent = ''; $(k).removeAttribute('aria-invalid'); }); }
+  function xoaLoi(){ ['hoTen', 'sdt', 'email', 'maF1', 'matKhau'].forEach(function(k){ $('loi-' + k).textContent = ''; $(k).removeAttribute('aria-invalid'); }); }
 
   $('formDk').addEventListener('submit', function(e){
     e.preventDefault();
@@ -132,13 +163,22 @@
     else if (D.users.some(function(u){ return u.phone === sdt; })) { loi('sdt', 'Số điện thoại này đã có tài khoản. Hãy đăng nhập.'); sai = sai || 'sdt'; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { loi('email', 'Email không hợp lệ.'); sai = sai || 'email'; }
     else if (D.users.some(function(u){ return String(u.email).toLowerCase() === email; })) { loi('email', 'Email này đã có tài khoản.'); sai = sai || 'email'; }
+    // Tuyến trên: link mời hợp lệ thắng; không có thì lấy mã tự nhập (phải là môi giới có thật)
+    var tuyenTren = nguoiMoi;
+    if (!tuyenTren) {
+      var maNhap = oF1.value.trim().toUpperCase();
+      if (maNhap) {
+        tuyenTren = D.findBrokerByRef(maNhap);
+        if (!tuyenTren) { loi('maF1', 'Không có môi giới nào mang mã ' + maNhap + '. Kiểm tra lại hoặc để trống.'); sai = sai || 'maF1'; }
+      }
+    }
     if (mk.length < 8) { loi('matKhau', 'Mật khẩu cần ít nhất 8 ký tự.'); sai = sai || 'matKhau'; }
     if (sai) { $(sai).focus(); return; }
 
     var u = {
       id: 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
       role: 'broker', name: ten, phone: sdt, email: email, password: mk,
-      ref_code: taoMa(ten), upline_id: nguoiMoi ? nguoiMoi.id : null, created_at: new Date().toISOString()
+      ref_code: taoMa(ten), upline_id: tuyenTren ? tuyenTren.id : null, created_at: new Date().toISOString()
     };
     var ds;
     try { ds = JSON.parse(localStorage.getItem(D.LOCAL_USERS_KEY) || '[]'); } catch (err) { ds = []; }

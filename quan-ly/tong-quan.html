@@ -405,7 +405,10 @@
     /* Thanh trên cùng phải co lại vừa màn hình, nếu không cả trang bị cuộn ngang */
     .app-header{padding:0 16px;gap:10px;overflow:hidden}
     .app-header .pop-wrap{min-width:0}
-    .prop-switch{min-width:0;padding:0 10px}
+    .prop-switch{min-width:0;max-width:100%;padding:0 10px}
+    /* Nút "Đăng tin mới" thu thành nút vuông 44px chỉ có dấu +; chữ vẫn còn cho trình đọc màn hình */
+    .btn-post{width:44px;height:44px;padding:0;flex-shrink:0}
+    .btn-post .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     .prop-switch .tx{min-width:0;overflow:hidden}
     .header-actions{gap:8px;flex-shrink:0}
     .dash-body{padding:20px 16px 40px}
@@ -576,9 +579,9 @@
       </div>
 
       <div class="header-actions">
-        <a href="#" class="btn btn-primary btn-sm">
-          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-          Đăng tin mới
+        <a href="tin-dang.html?tao=1" class="btn btn-primary btn-sm btn-post">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="lbl">Đăng tin mới</span>
         </a>
 
         <!-- Thông báo -->

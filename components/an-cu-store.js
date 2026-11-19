@@ -457,6 +457,32 @@
   function hm(d){ return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
   var LICH_KEY = 'an-cu-lich-xem-v1';
   // Không có máy chủ: ghi vào kho lịch xem của trình duyệt, cùng luật (không trùng phòng, không quá khứ)
+  // Mã môi giới khách mang theo từ link ?ref= (phong-chi-tiet.html lưu ở localStorage 'refCode').
+  // Gửi kèm mọi lịch xem để chủ trọ thấy nguồn khách; sai dạng thì coi như khách tự nhiên.
+  function refCode(){
+    if(window.AnCuRef) return window.AnCuRef.code();   // components/ma-gioi-thieu.js: hạn 30 ngày + cookie
+    var c = '';
+    try{ c = String(localStorage.getItem('refCode') || '').trim().toUpperCase(); }catch(e){}
+    return /^MG-[A-Z0-9]{2,16}$/.test(c) ? c : null;
+  }
+  // { code, name } của môi giới đang tư vấn khách (cho huy hiệu trên form đặt lịch / đặt cọc)
+  function refInfo(){
+    if(window.AnCuRef){ var r = window.AnCuRef.get(); return r ? { code:r.code, name:r.name } : null; }
+    var c = refCode(); return c ? { code:c, name:null } : null;
+  }
+  // Huy hiệu "Được tư vấn & hỗ trợ bởi Môi giới: …" (HTML, rỗng nếu khách không đến từ link môi giới)
+  function refBadge(){
+    var r = refInfo(); if(!r) return '';
+    return '<p class="mg-badge" style="display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:8px 12px;border-radius:10px;' +
+      'background:rgba(47,111,237,.08);border:1px solid rgba(29,79,190,.22);color:#1D4FBE;font-size:13.5px;font-weight:600">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M19 8v6M22 11h-6"/></svg>' +
+      '<span>Được tư vấn &amp; hỗ trợ bởi Môi giới: ' + esc(r.name || r.code) + (r.name ? ' (' + esc(r.code) + ')' : '') + '</span></p>';
+  }
+  // Không có máy chủ: báo môi giới qua kho thông báo trong trình duyệt (có máy chủ thì máy chủ tự báo)
+  function baoMoiGioi(kind, title, body){
+    var c = refCode();
+    if(c && !server.on && window.AnCuRef) window.AnCuRef.pushLocal(c, kind, title, body);
+  }
   function localBook(room, date, time, note){
     var obj = readJson(LICH_KEY) || { v:1, seq:1, items:[] };
     var me = renterId();
@@ -468,9 +494,11 @@
     var now = nowDate();
     var rec = { id:max + 1, roomId:room.id, room:room.title, address:room.address || '', price:room.price || 0, image:room.image || '',
       landlordPhone:room.phone || '', tenant:RENTERS[me], phone:'', date:date, time:time, dur:30, status:'pending', urgent:false,
-      note:note, createdAt:now.toISOString(), holdUntil:new Date(now.getTime() + 24 * 3600000).toISOString(), source:'dat-lich-chung' };
+      note:note, createdAt:now.toISOString(), holdUntil:new Date(now.getTime() + 24 * 3600000).toISOString(), source:'dat-lich-chung',
+      refCode:refCode() };
     obj.items.push(rec); obj.seq = rec.id + 1;
     writeJson(LICH_KEY, obj);
+    if(rec.refCode) baoMoiGioi('lich-hen', 'Lịch xem phòng mới', (window.AnCuRef ? AnCuRef.maskName(rec.tenant) : rec.tenant) + ' · ' + room.title + ' · lịch ' + time + ' ngày ' + date.split('-').reverse().join('/'));
     return { ok:true, item:rec };
   }
   // room: { id, title, address, price, image, phone }
@@ -480,7 +508,7 @@
     dlg.setAttribute('aria-labelledby', 'ancuBookTitle');
     var now = nowDate(), today = ymd(now), tomorrow = ymd(new Date(now.getTime() + 864e5));
     dlg.innerHTML = '<form method="dialog" novalidate>' +
-      '<h2 id="ancuBookTitle">Đặt lịch xem phòng</h2>' +
+      '<h2 id="ancuBookTitle">Đặt lịch xem phòng</h2>' + refBadge() +
       '<div class="room">' + (room.image ? '<img src="' + esc(room.image) + '" alt="Ảnh ' + esc(room.title) + '" width="72" height="54" />' : '') +
         '<div><b>' + esc(room.title) + '</b><span>' + esc(room.address || '') + '</span></div></div>' +
       '<div class="row"><label>Ngày xem<input type="date" name="date" required min="' + today + '" value="' + tomorrow + '" /></label>' +
@@ -511,7 +539,7 @@
         send.disabled = true; send.textContent = 'Đang gửi…';
         ready.then(function(){
           if(!server.on) return localBook(room, date, time, note);
-          return api('POST', '/api/lich-xem', { roomId:room.id, date:date, time:time, note:note, source:'dat-lich-chung' });
+          return api('POST', '/api/lich-xem', { roomId:room.id, date:date, time:time, note:note, source:'dat-lich-chung', refCode:refCode() });
         }).then(function(j){
           send.disabled = false; send.textContent = 'Gửi yêu cầu xem';
           if(!j.ok){ err.textContent = j.message || 'Chưa đặt được lịch. Hãy thử lại.'; return; }
@@ -532,7 +560,8 @@
 
   window.AnCu = {
     ROOT:ROOT, ROLE:ROLE, STATUS:STATUS, statusBadge:statusBadge,
-    ready:ready, server:server, api:api, url:url, who:who, renterId:renterId, landlordId:landlordId,
+    ready:ready, server:server, api:api, url:url, who:who, renterId:renterId, landlordId:landlordId, refCode:refCode,
+    refInfo:refInfo, refBadge:refBadge, baoMoiGioi:baoMoiGioi,
     on:on, invalidate:invalidate, toast:toast, goLogin:goLogin,
     favorites:favorites, notifications:{ reload:loadNoti }, openBooking:openBooking,
     util:{ esc:esc, vnd:vnd, ymd:ymd, nowDate:nowDate },

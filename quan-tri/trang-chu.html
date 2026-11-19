@@ -65,6 +65,8 @@
   .side-menu > [data-muc="tin-dang"]{order:3}
   .side-menu > [data-muc="ho-tro"]{order:4}
   .side-menu > [data-muc="thanh-toan"]{order:5}
+  .side-menu > [data-muc="moi-gioi"]{order:5}
+  .side-menu > [data-muc="trong-tai"]{order:5}
   .side-menu > .side-sep{order:6}
   .side-menu > .side-link.is-off{order:7}
   .side-link{
@@ -259,6 +261,8 @@
       <a href="tong-quan.html#tai-khoan" class="side-link" data-muc="tai-khoan"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> Tài khoản</a>
       <a href="tong-quan.html#nha-tro" class="side-link" data-muc="nha-tro"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg> Nhà trọ &amp; người thuê</a>
       <a href="tong-quan.html#thanh-toan" class="side-link" data-muc="thanh-toan"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Gói &amp; thanh toán</a>
+      <a href="tong-quan.html#moi-gioi" class="side-link" data-muc="moi-gioi"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5l-5.5 5.5M12 11.5l5.5 5.5"/></svg> Môi giới &amp; Hoa hồng<span class="side-tag" data-dem="rut" hidden></span></a>
+      <a href="tong-quan.html#trong-tai" class="side-link" data-muc="trong-tai"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 21h14"/><path d="M5 7h14"/><path d="m5 7-3 7a3 3 0 0 0 6 0Z"/><path d="m19 7-3 7a3 3 0 0 0 6 0Z"/></svg> Trọng tài đối soát<span class="side-tag" data-dem="kn" hidden></span></a>
       <a href="tong-quan.html#tin-dang" class="side-link" data-muc="tin-dang"><svg viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Đăng tin<span class="side-tag">Chờ duyệt</span></a>
       <a href="tong-quan.html#ho-tro" class="side-link" data-muc="ho-tro"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Hỗ trợ<span class="side-tag">Chờ xử lý</span></a>
     </nav>
@@ -715,6 +719,28 @@
         return mo(me, false);
       });
   }
+})();
+</script>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/bookings.js"></script>
+<script src="../assets/js/finance.js"></script>
+<script src="../assets/js/moi-gioi.js"></script>
+<script>
+/* Huy hiệu ở cột công cụ: lệnh rút tiền chờ duyệt + khiếu nại chờ xử lý (sổ môi giới trong trình duyệt này) */
+(function(){
+  function dem(){
+    var F = window.AnCuFinance, M = window.AnCuMoiGioi; if (!F || !M) return;
+    var n = { rut: F.allWithdrawals().filter(function(w){ return w.status === 'processing'; }).length,
+              kn: M.allDisputes().filter(function(d){ return d.state === 'open'; }).length };
+    [].forEach.call(document.querySelectorAll('.side-tag[data-dem]'), function(t){
+      var k = t.getAttribute('data-dem');
+      t.textContent = n[k] ? n[k] + (k === 'rut' ? ' chờ duyệt' : ' chờ xử lý') : '';
+      t.hidden = !n[k];
+    });
+  }
+  window.AnCuDemQuanTri = dem;
+  window.addEventListener('storage', dem);
+  dem();
 })();
 </script>
 </body>

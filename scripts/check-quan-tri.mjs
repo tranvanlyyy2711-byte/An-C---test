@@ -514,7 +514,7 @@ try {
       expect('trang chủ: có biểu đồ doanh thu', await u.p.locator('#revenueChart .chart-month').count(), 12);
       expect('trang chủ: có tỷ lệ lấp đầy', await txt(u.p, '#occupancyPercent'), '35%');
       expect('trang chủ: nhắc số yêu cầu hỗ trợ đang chờ', /\d+ yêu cầu/.test(await txt(u.p, '#taskTickets')), true);
-      expect('cột công cụ bên trái: 6 mục dùng được', await u.p.locator('.side-nav a.side-link[data-muc]').count(), 6);
+      expect('cột công cụ bên trái: 8 mục dùng được', await u.p.locator('.side-nav a.side-link[data-muc]').count(), 8);
       expect('đã bỏ mục Báo cáo khỏi cột công cụ', await u.p.locator('.side-nav [data-muc="bao-cao"]').count(), 0);
       expect('không còn mục nào ghi Chưa làm', await u.p.locator('.side-nav .side-link.is-off').count(), 0);
       expect('đã bỏ mục Cấu hình hệ thống', await u.p.locator('.side-nav [data-muc="cau-hinh"]').count(), 0);

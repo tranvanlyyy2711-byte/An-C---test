@@ -7,15 +7,22 @@
  *      giới giới thiệu thì không trích.
  *   3. Chia quỹ:
  *        - môi giới giới thiệu phòng: theo BẬC hiệu suất (TIERS, tính theo doanh số tháng đó, gồm cả khoản này)
- *        - tuyến trên (người đã mời môi giới đó, upline_id): UPLINE_SHARE của quỹ
+ *        - tuyến trên (F1 — người đã mời môi giới đó, upline_id): UPLINE_SHARE (20%) của phần môi giới F2
+ *          nhận được. Tiền này lấy từ phần An Cư giữ, F2 không bị trừ đồng nào.
  *        - An Cư giữ phần còn lại.
  *   Ví dụ 15.000.000₫, phòng 20%, môi giới Bậc 1 không có tuyến trên: quỹ 3.000.000₫ → môi giới 41% =
- *   1.230.000₫, An Cư 1.770.000₫.
+ *   1.230.000₫, An Cư 1.770.000₫. Nếu môi giới đó có tuyến trên: tuyến trên thêm 20% × 1.230.000₫ =
+ *   246.000₫, An Cư còn 1.524.000₫.
+ *
+ * KỲ THANH TOÁN: mỗi tháng của hợp đồng là một kỳ (Kỳ 1 = tháng bắt đầu hợp đồng). Chủ trọ xác nhận được
+ *   kỳ hiện tại hoặc kỳ đã qua (khi môi giới gửi yêu cầu đối soát), không xác nhận trước kỳ tương lai.
  *
  * VÍ MÔI GIỚI
- *   - Chờ xử lý: hoa hồng của kỳ đang chạy (tháng hiện tại). Chủ trọ còn có thể điều chỉnh.
- *   - Khả dụng: hoa hồng của các kỳ đã kết thúc, trừ số đã yêu cầu rút. Mỗi đầu tháng, phần chờ xử lý
- *     của tháng trước tự chuyển sang khả dụng.
+ *   - Chờ xử lý: hoa hồng DỰ KIẾN của các kỳ đã tới hạn mà chủ trọ chưa xác nhận đã thu tiền (hợp đồng do
+ *     môi giới giới thiệu, và hợp đồng của tuyến dưới). Ước theo tiền thuê tháng × tỷ lệ quỹ hiện tại × bậc
+ *     tháng này — chưa phải tiền thật, không rút được.
+ *   - Khả dụng: chủ trọ bấm "Xác nhận đã thu tiền" kỳ nào thì hoa hồng kỳ đó được chia và vào thẳng ví
+ *     khả dụng (rời khỏi ví chờ xử lý), trừ số đã yêu cầu rút.
  *   - Rút tiền: chỉ GHI NHẬN yêu cầu (trạng thái 'processing'), An Cư duyệt và chuyển khoản thủ công —
  *     bản demo không chuyển tiền thật.
  *
@@ -28,8 +35,10 @@
 (function (global) {
   'use strict';
 
-  var KEY = 'ancu-tai-chinh-v2';
-  var OLD_KEYS = ['ancu-tai-chinh-v1'];
+  // v3: tuyến trên hưởng 20% hoa hồng của F2 (v2 là 5% quỹ). Sổ v2 được chia lại theo luật mới khi mở lần đầu.
+  var KEY = 'ancu-tai-chinh-v3';
+  var V2_KEY = 'ancu-tai-chinh-v2';
+  var OLD_KEYS = ['ancu-tai-chinh-v1', V2_KEY];
   var MAX_AMOUNT = 1000000000; // chặn gõ nhầm thêm số 0
   var MIN_WITHDRAW = 100000;
 
@@ -39,7 +48,7 @@
     { level: 2, name: 'Bậc 2', minSales: 20000000, share: 0.48 },
     { level: 3, name: 'Bậc 3', minSales: 50000000, share: 0.55 }
   ];
-  var UPLINE_SHARE = 0.05; // tuyến trên hưởng 5% quỹ của mỗi giao dịch do tuyến dưới mang về
+  var UPLINE_SHARE = 0.2; // tuyến trên (F1) hưởng 20% phần hoa hồng tuyến dưới (F2) nhận, lấy từ phần của An Cư
 
   function data() {
     if (!global.AnCuData) throw new Error('finance.js: chưa nạp assets/js/data.js');
@@ -70,7 +79,26 @@
   function sum(list, f) { return list.reduce(function (s, x) { return s + (f ? f(x) : x); }, 0); }
   function newId(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
-  function empty() { return { version: 2, revenue: {}, commissionFund: {}, payments: [], ledger: [], withdrawals: [] }; }
+  function empty() { return { version: 3, revenue: {}, commissionFund: {}, payments: [], ledger: [], withdrawals: [] }; }
+
+  /* ---------- Kỳ thanh toán của hợp đồng ---------- */
+  function addMonths(period, n) {
+    var a = period.split('-').map(Number), t = a[0] * 12 + (a[1] - 1) + n;
+    return Math.floor(t / 12) + '-' + ('0' + (t % 12 + 1)).slice(-2);
+  }
+  // Số thứ tự kỳ: Kỳ 1 là tháng bắt đầu hợp đồng
+  function kyOf(contract, period) {
+    var s = contract.start_date.slice(0, 7).split('-').map(Number), p = period.split('-').map(Number);
+    return (p[0] - s[0]) * 12 + (p[1] - s[1]) + 1;
+  }
+  // Các kỳ đã tới hạn của hợp đồng: từ tháng bắt đầu tới tháng hiện tại (không quá tháng kết thúc)
+  function periodsOf(contract) {
+    var last = currentPeriod(), end = contract.end_date.slice(0, 7);
+    if (end < last) last = end;
+    var list = [], p = contract.start_date.slice(0, 7);
+    while (p <= last && list.length < 120) { list.push(p); p = addMonths(p, 1); }
+    return list;
+  }
 
   function salesIn(s, brokerId, period) {
     return sum(s.payments.filter(function (p) { return p.broker_id === brokerId && p.period === period; }), function (p) { return p.amount; });
@@ -98,7 +126,7 @@
     q.brokerAmount = Math.round(q.commission * q.brokerShare);
     var up = broker.upline_id ? D.findUser(broker.upline_id) : null;
     if (up && up.role === 'broker' && up.id !== broker.id) {
-      q.upline = up; q.uplineShare = UPLINE_SHARE; q.uplineAmount = Math.round(q.commission * UPLINE_SHARE);
+      q.upline = up; q.uplineShare = UPLINE_SHARE; q.uplineAmount = Math.round(q.brokerAmount * UPLINE_SHARE);
     }
     q.platformAmount = q.commission - q.brokerAmount - q.uplineAmount;
     q.net = amt - q.commission;
@@ -106,8 +134,10 @@
   }
 
   // Ghi một khoản đã xác nhận vào sổ `s` (không lưu). Dùng chung cho dữ liệu mẫu và thao tác thật.
-  function record(s, q, landlordId, period, when, id) {
+  // extra (không bắt buộc): { forced_by, dispute_id } khi quản trị cưỡng chế duyệt theo khiếu nại
+  function record(s, q, landlordId, period, when, id, extra) {
     var payment = {
+      forced_by: extra && extra.forced_by || null, dispute_id: extra && extra.dispute_id || null,
       id: id || newId('pay-'), contract_id: q.contract.id, room_id: q.room ? q.room.id : null, landlord_id: landlordId,
       period: period, amount: q.amount, rate: q.rate, commission: q.commission,
       ref_code: q.refCode, broker_id: q.broker ? q.broker.id : null,
@@ -119,7 +149,7 @@
     if (q.commission > 0) add(s.commissionFund, landlordId, q.commission);
     s.payments.push(payment);
     var base = { payment_id: payment.id, period: period, room_id: payment.room_id, contract_id: payment.contract_id,
-      payment_amount: q.amount, fund: q.commission, created_at: when };
+      payment_amount: q.amount, fund: q.commission, created_at: when, forced: !!payment.forced_by };
     function entry(extra) { var e = { id: payment.id + ':' + extra.kind }; for (var k in base) e[k] = base[k]; for (var j in extra) e[j] = extra[j]; s.ledger.push(e); }
     if (q.brokerAmount > 0) entry({ kind: 'direct', broker_id: q.broker.id, ref_code: q.refCode, share: q.brokerShare, tier: q.tier.level, amount: q.brokerAmount });
     if (q.uplineAmount > 0) entry({ kind: 'upline', broker_id: q.upline.id, ref_code: q.upline.ref_code, from_broker_id: q.broker.id, share: q.uplineShare, amount: q.uplineAmount });
@@ -140,11 +170,34 @@
     return s;
   }
 
+  function valid(s, version) {
+    return s && s.version === version && s.revenue && Array.isArray(s.payments) && Array.isArray(s.ledger) && Array.isArray(s.withdrawals);
+  }
+
+  // Sổ v2 (luật 5% quỹ cũ): giữ nguyên các lần chủ trọ đã xác nhận và các yêu cầu rút tiền,
+  // chỉ chia lại hoa hồng theo luật hiện hành.
+  function migrateV2(v2) {
+    var s = seed(), D = data();
+    var seeded = {};
+    s.payments.forEach(function (p) { seeded[p.id] = true; });
+    v2.payments
+      .filter(function (p) { return !seeded[p.id]; })
+      .sort(function (a, b) { return String(a.confirmed_at).localeCompare(String(b.confirmed_at)); })
+      .forEach(function (p) {
+        var c = D.findContract(p.contract_id);
+        if (c) record(s, allocate(s, c, p.amount, p.period), p.landlord_id, p.period, p.confirmed_at, p.id);
+      });
+    s.withdrawals = v2.withdrawals.slice();
+    return s;
+  }
+
   function load() {
-    try {
-      var s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s && s.version === 2 && s.revenue && Array.isArray(s.payments) && Array.isArray(s.ledger) && Array.isArray(s.withdrawals)) return s;
-    } catch (e) {}
+    var s;
+    try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { s = null; }
+    if (valid(s, 3)) return s;
+    var v2;
+    try { v2 = JSON.parse(localStorage.getItem(V2_KEY) || 'null'); } catch (e) { v2 = null; }
+    if (valid(v2, 2)) { s = migrateV2(v2); save(s); return s; }
     return seed();
   }
   function save(s) {
@@ -158,9 +211,9 @@
   function fail(error, message, field) { return { ok: false, error: error, message: message, field: field || null }; }
 
   /* ---------- Chủ trọ ---------- */
-  function quote(contractId, amount) {
+  function quote(contractId, amount, period) {
     var c = data().findContract(contractId);
-    return c ? allocate(load(), c, amount, currentPeriod()) : null;
+    return c ? allocate(load(), c, amount, period || currentPeriod()) : null;
   }
 
   function paymentFor(contractId, period) {
@@ -168,23 +221,83 @@
     return load().payments.filter(function (x) { return x.contract_id === contractId && x.period === p; })[0] || null;
   }
 
-  function confirmPayment(contractId, amount, landlordId) {
+  // period (không bắt buộc, 'YYYY-MM'): kỳ được xác nhận. Mặc định là kỳ hiện tại; kỳ đã qua dùng khi
+  // môi giới gửi yêu cầu đối soát. Kỳ phải nằm trong thời hạn hợp đồng và không ở tương lai.
+  function confirmPayment(contractId, amount, landlordId, period) {
     var c = data().findContract(contractId);
     if (!c) return fail('not_found', 'Không tìm thấy hợp đồng.');
     if (c.landlord_id !== landlordId) return fail('forbidden', 'Hợp đồng này không thuộc nhà trọ của bạn.');
     if (c.status !== 'active') return fail('inactive', 'Hợp đồng không còn hiệu lực.');
+    period = period ? String(period) : currentPeriod();
+    if (periodsOf(c).indexOf(period) === -1) {
+      return fail('invalid_period', period > currentPeriod() ? 'Kỳ này chưa tới, chưa xác nhận được.' : 'Kỳ này nằm ngoài thời hạn hợp đồng.');
+    }
     if (!Number.isInteger(Number(amount)) || Number(amount) <= 0) return fail('invalid_amount', 'Nhập số tiền đã nhận (số nguyên, lớn hơn 0).');
     if (Number(amount) > MAX_AMOUNT) return fail('invalid_amount', 'Số tiền quá lớn — kiểm tra lại số chữ số 0.');
 
     // Đọc lại sổ ngay trước khi ghi: tab khác có thể vừa xác nhận cùng kỳ
-    var s = load(), period = currentPeriod();
+    var s = load();
     if (s.payments.some(function (x) { return x.contract_id === contractId && x.period === period; })) {
-      return fail('duplicate', 'Kỳ ' + period + ' của hợp đồng này đã được xác nhận rồi.');
+      return fail('duplicate', 'Kỳ ' + kyOf(c, period) + ' (' + period.split('-').reverse().join('/') + ') của hợp đồng này đã được xác nhận rồi.');
     }
     var q = allocate(s, c, amount, period);
     var payment = record(s, q, landlordId, period, new Date().toISOString());
     if (!save(s)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
     return { ok: true, payment: payment, quote: q };
+  }
+
+  /* ---------- Quản trị ---------- */
+  // admin: id tài khoản trong dữ liệu mẫu, hoặc { id, role } lấy từ phiên đăng nhập (components/nguoi-dung.js)
+  function isAdmin(a) { var u = a && typeof a === 'object' ? a : data().findUser(a); return !!u && u.role === 'admin'; }
+  function idOf(a) { return a && typeof a === 'object' ? a.id : a; }
+
+  // Trọng tài: quản trị đã kiểm chứng từ và kết luận khách ĐÃ đóng tiền kỳ đó cho chủ trọ, nhưng chủ trọ
+  // không bấm xác nhận. Ghi kỳ đó như chủ trọ đã thu (doanh thu thuộc chủ trọ), chia hoa hồng theo luật thường,
+  // đánh dấu forced_by + dispute_id để mọi bên thấy đây là quyết định của An Cư chứ không phải chủ trọ bấm.
+  function forceConfirm(contractId, period, amount, adminId, disputeId) {
+    if (!isAdmin(adminId)) return fail('forbidden', 'Chỉ quản trị An Cư mới cưỡng chế duyệt được.');
+    var c = data().findContract(contractId);
+    if (!c) return fail('not_found', 'Không tìm thấy hợp đồng.');
+    if (periodsOf(c).indexOf(period) === -1) return fail('invalid_period', 'Kỳ này chưa tới hoặc nằm ngoài thời hạn hợp đồng.');
+    amount = Number(amount);
+    if (!Number.isInteger(amount) || amount <= 0 || amount > MAX_AMOUNT) return fail('invalid_amount', 'Số tiền khách đã đóng không hợp lệ.');
+    var s = load();
+    if (s.payments.some(function (x) { return x.contract_id === contractId && x.period === period; })) {
+      return fail('duplicate', 'Chủ trọ đã xác nhận kỳ này rồi, không cần cưỡng chế.');
+    }
+    var q = allocate(s, c, amount, period);
+    var payment = record(s, q, c.landlord_id, period, new Date().toISOString(), null, { forced_by: idOf(adminId), dispute_id: disputeId || null });
+    if (!save(s)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
+    return { ok: true, payment: payment, quote: q };
+  }
+
+  // Duyệt lệnh rút tiền: 'paid' (đã chuyển khoản, bắt buộc mã giao dịch) | 'rejected' (bắt buộc lý do,
+  // tiền trả lại ví khả dụng). Chỉ lệnh đang 'processing' mới xử lý được.
+  function decideWithdrawal(id, action, adminId, input) {
+    if (!isAdmin(adminId)) return fail('forbidden', 'Chỉ quản trị An Cư mới duyệt lệnh rút tiền.');
+    var s = load();
+    var w = s.withdrawals.filter(function (x) { return x.id === id; })[0];
+    if (!w) return fail('not_found', 'Không tìm thấy lệnh rút tiền.');
+    if (w.status !== 'processing') return fail('closed', 'Lệnh này đã được xử lý.');
+    input = input || {};
+    if (action === 'paid') {
+      var ref = String(input.transferRef || '').trim().replace(/\s+/g, ' ');
+      if (ref.length < 4 || ref.length > 60) return fail('ref_required', 'Nhập mã giao dịch chuyển khoản (4–60 ký tự) để đối soát sau này.', 'ref');
+      w.status = 'paid'; w.transfer_ref = ref;
+    } else if (action === 'rejected') {
+      var why = String(input.reason || '').trim().replace(/\s+/g, ' ');
+      if (why.length < 5 || why.length > 300) return fail('reason_required', 'Ghi lý do từ chối (5–300 ký tự) để môi giới biết.', 'reason');
+      w.status = 'rejected'; w.reject_note = why;
+    } else return fail('invalid_action', 'Thao tác không hợp lệ.');
+    w.decided_by = idOf(adminId); w.decided_at = new Date().toISOString();
+    if (!save(s)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
+    return { ok: true, withdrawal: w };
+  }
+
+  function allWithdrawals() {
+    return load().withdrawals.slice().sort(function (a, b) {
+      return (a.status === 'processing' ? 0 : 1) - (b.status === 'processing' ? 0 : 1) || String(b.created_at).localeCompare(String(a.created_at));
+    });
   }
 
   function summary(landlordId) {
@@ -200,12 +313,48 @@
   }
 
   /* ---------- Môi giới ---------- */
+  // Mọi khoản trong sổ đều đã được chủ trọ xác nhận thu tiền → khả dụng
   function ledger(brokerId) {
-    var cur = currentPeriod();
     return load().ledger
       .filter(function (e) { return e.broker_id === brokerId; })
-      .map(function (e) { var x = {}; for (var k in e) x[k] = e[k]; x.state = e.period < cur ? 'available' : 'pending'; return x; })
+      .map(function (e) { var x = {}; for (var k in e) x[k] = e[k]; x.state = 'available'; return x; })
       .sort(function (a, b) { return String(b.created_at).localeCompare(String(a.created_at)); });
+  }
+
+  /* ---------- Kỳ cần thu & hoa hồng dự kiến ---------- */
+  // Các kỳ cần theo dõi của hợp đồng: từ kỳ đầu tiên đã được xác nhận (hoặc từ Kỳ 1 nếu chưa có kỳ nào)
+  // tới kỳ hiện tại. Kỳ trước lần xác nhận đầu tiên thường là trước khi có sổ, không tính.
+  function windowPeriods(contract, s) {
+    s = s || load();
+    var all = periodsOf(contract);
+    var paid = {};
+    s.payments.forEach(function (p) { if (p.contract_id === contract.id) paid[p.period] = p; });
+    var first = -1;
+    all.forEach(function (p, i) { if (first === -1 && paid[p]) first = i; });
+    return all.slice(first === -1 ? 0 : first).map(function (p) { return { period: p, ky: kyOf(contract, p), payment: paid[p] || null }; });
+  }
+
+  // Hoa hồng dự kiến của các kỳ đã tới hạn chưa xác nhận, dành cho môi giới `brokerId`
+  function projected(brokerId) {
+    var D = data(), s = load(), out = [];
+    var share = {};
+    function shareOf(id) { if (!(id in share)) share[id] = tierFor(salesIn(s, id, currentPeriod())).tier.share; return share[id]; }
+    D.contracts.filter(function (c) { return c.status === 'active'; }).forEach(function (c) {
+      var room = D.findRoom(c.room_id);
+      var b = D.findBrokerByRef(c.ref_code || (room && room.ref_code));
+      if (!b) return;
+      var up = b.upline_id ? D.findUser(b.upline_id) : null;
+      var mine = b.id === brokerId, asUpline = up && up.id === brokerId && up.role === 'broker';
+      if (!mine && !asUpline) return;
+      windowPeriods(c, s).filter(function (k) { return !k.payment; }).forEach(function (k) {
+        var direct = Math.round(D.commissionFor(c.monthly_rent, room) * shareOf(b.id));
+        out.push({
+          contract_id: c.id, room_id: c.room_id, period: k.period, ky: k.ky, kind: mine ? 'direct' : 'upline',
+          from_broker_id: mine ? null : b.id, amount: mine ? direct : Math.round(direct * UPLINE_SHARE)
+        });
+      });
+    });
+    return out;
   }
 
   function withdrawals(brokerId) {
@@ -215,16 +364,15 @@
   }
 
   function wallet(brokerId) {
-    var s = load(), cur = currentPeriod();
-    var mine = s.ledger.filter(function (e) { return e.broker_id === brokerId; });
-    var done = sum(mine.filter(function (e) { return e.period < cur; }), function (e) { return e.amount; });
-    var pending = sum(mine.filter(function (e) { return e.period >= cur; }), function (e) { return e.amount; });
+    var s = load();
+    var done = sum(s.ledger.filter(function (e) { return e.broker_id === brokerId; }), function (e) { return e.amount; });
+    var du = projected(brokerId);
     var ws = s.withdrawals.filter(function (w) { return w.broker_id === brokerId && w.status !== 'rejected'; });
     var processing = sum(ws.filter(function (w) { return w.status === 'processing'; }), function (w) { return w.amount; });
     var withdrawn = sum(ws.filter(function (w) { return w.status === 'paid'; }), function (w) { return w.amount; });
     return {
-      available: done - processing - withdrawn, pending: pending, processing: processing, withdrawn: withdrawn,
-      earned: done + pending, availableFrom: nextPeriodStart(cur)
+      available: done - processing - withdrawn, pending: sum(du, function (x) { return x.amount; }), pendingCount: du.length,
+      processing: processing, withdrawn: withdrawn, earned: done
     };
   }
 
@@ -240,6 +388,17 @@
 
   function downlines(brokerId) {
     return data().users.filter(function (u) { return u.role === 'broker' && u.upline_id === brokerId; });
+  }
+
+  // Số liệu một môi giới mang về: doanh số (tiền phòng khách đã đóng) và hoa hồng trực tiếp, từ trước tới nay
+  function brokerStats(brokerId) {
+    var s = load();
+    var mine = s.payments.filter(function (p) { return p.broker_id === brokerId; });
+    return {
+      sales: sum(mine, function (p) { return p.amount; }),
+      direct: sum(mine, function (p) { return p.broker_amount; }),
+      payments: mine.length
+    };
   }
 
   var BANKS = ['Vietcombank', 'VietinBank', 'BIDV', 'Agribank', 'Techcombank', 'MB Bank', 'ACB', 'VPBank', 'TPBank', 'Sacombank'];
@@ -262,7 +421,8 @@
     if (amount > w.available) return fail('insufficient', 'Ví khả dụng chỉ còn ' + new Intl.NumberFormat('vi-VN').format(w.available) + '₫.', 'amount');
     var req = {
       id: newId('rt-'), broker_id: brokerId, amount: amount, bank: bank,
-      account_last4: acc.slice(-4), account_name: holder.toUpperCase(),
+      // Số tài khoản đầy đủ để quản trị chuyển khoản (giao diện môi giới chỉ hiện 4 số cuối)
+      account_no: acc, account_last4: acc.slice(-4), account_name: holder.toUpperCase(),
       status: 'processing', created_at: new Date().toISOString()
     };
     s.withdrawals.push(req);
@@ -280,6 +440,11 @@
     BANKS: BANKS,
     currentPeriod: currentPeriod,
     nextPeriodStart: nextPeriodStart,
+    kyOf: kyOf,
+    periodsOf: periodsOf,
+    windowPeriods: windowPeriods,
+    projected: projected,
+    brokerStats: brokerStats,
     tierFor: tierFor,
     quote: quote,
     confirmPayment: confirmPayment,
@@ -292,6 +457,9 @@
     performance: performance,
     downlines: downlines,
     requestWithdrawal: requestWithdrawal,
+    decideWithdrawal: decideWithdrawal,
+    allWithdrawals: allWithdrawals,
+    forceConfirm: forceConfirm,
     reset: reset
   };
 })(window);

@@ -155,18 +155,29 @@
     return { ok:true, rec:rec };
   }
 
-  // rec: { roomId, room, address, price, image, landlordPhone, phone, note, date, time, source }
+  // Mã môi giới khách mang theo từ link ?ref= (localStorage 'refCode'); sai dạng = khách tự nhiên
+  function refCode(){
+    if(window.AnCuRef) return window.AnCuRef.code();   // components/ma-gioi-thieu.js: hạn 30 ngày + cookie
+    var c = '';
+    try{ c = String(localStorage.getItem('refCode') || '').trim().toUpperCase(); }catch(e){}
+    return /^MG-[A-Z0-9]{2,16}$/.test(c) ? c : null;
+  }
+
+  // rec: { roomId, room, address, price, image, landlordPhone, phone, note, date, time, source, refCode? }
+  // refCode không khai thì lấy mã môi giới đang lưu; khai null là chủ động không gắn mã.
   function create(rec){
     return ready.then(function(){
+      var ref = rec.refCode === undefined ? refCode() : rec.refCode;
       var full = {
+        refCode:ref,
         roomId:rec.roomId, room:rec.room, address:rec.address || '', price:rec.price || 0, image:rec.image || '',
         landlordPhone:rec.landlordPhone || '', tenant:renter.name, phone:rec.phone || renter.phone,
         date:rec.date, time:rec.time, dur:30, status:'pending', urgent:false, note:rec.note || '',
         createdAt:simNow.toISOString(), holdUntil:new Date(simNow.getTime() + HOLD_HOURS * 3600000).toISOString(),
         source:rec.source || 'tai-khoan'
       };
-      if(!API.on) return addLocal(full);
-      return apiCall('POST', '/api/lich-xem', { nguoi:renter.id, roomId:full.roomId, date:full.date, time:full.time, phone:full.phone, note:full.note, source:full.source })
+      if(!API.on) return (function(r){ if(r && r.ok && full.refCode && window.AnCuRef) AnCuRef.pushLocal(full.refCode, 'lich-hen', 'Lịch xem phòng mới', AnCuRef.maskName(full.tenant || '') + ' · ' + (full.room || full.roomId) + ' · lịch ' + full.time + ' ngày ' + full.date.split('-').reverse().join('/')); return r; })(addLocal(full));   // không có máy chủ: báo môi giới qua kho trình duyệt
+      return apiCall('POST', '/api/lich-xem', { nguoi:renter.id, roomId:full.roomId, date:full.date, time:full.time, phone:full.phone, note:full.note, source:full.source, refCode:full.refCode })
         .then(function(j){
           if(j.httpStatus === 201) return { ok:true, rec:j.item };
           if(j.httpStatus === 409 && j.error === 'slot_taken') return { ok:false, owner:j.owner };
@@ -180,6 +191,6 @@
     ready:ready,
     renter:function(){ return renter; },
     today:today, tomorrow:tomorrow,
-    taken:taken, ownerOf:ownerOf, create:create
+    taken:taken, ownerOf:ownerOf, create:create, refCode:refCode
   };
 })();

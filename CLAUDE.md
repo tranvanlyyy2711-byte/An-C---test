@@ -212,8 +212,8 @@ Người thuê trong các trang chủ trọ mà không có trong `DEMO_USERS` l�
 - **Khung giống khu chủ trọ:** cột công cụ cố định bên trái (`.side-nav`, 264px), dưới 960px thành ngăn
   kéo mở bằng nút hamburger. Markup sidebar lặp ở cả hai trang — sửa một bên thì sửa cả bên kia. Mục chưa
   làm để trong cột nhưng là `<span class="side-link is-off">` kèm nhãn **"Chưa làm"**, không bấm được.
-  Cột công cụ hiện có 6 mục, đều chạy được: Tổng quan · Tài khoản · Nhà trọ & người thuê · Gói & thanh
-  toán · Đăng tin · Hỗ trợ. Mục Cấu hình hệ thống và Báo cáo đã bỏ khỏi cột; **khu báo cáo tài chính vẫn
+  Cột công cụ hiện có 8 mục, đều chạy được: Tổng quan · Tài khoản · Nhà trọ & người thuê · Gói & thanh
+  toán · Đăng tin · Hỗ trợ · Môi giới & Hoa hồng · Trọng tài đối soát. Mục Cấu hình hệ thống và Báo cáo đã bỏ khỏi cột; **khu báo cáo tài chính vẫn
   còn**, vào bằng liên kết trong khu Tổng quan hoặc `tong-quan.html#bao-cao`.
 - **Trang chủ quản trị** (`trang-chu.html`): 4 chỉ số cần nhìn mỗi ngày (doanh thu tháng này, gói đang
   hoạt động theo Plus/Pro, gói sắp đến hạn trong 7 ngày, yêu cầu hỗ trợ chưa xử lý), danh sách việc cần
@@ -410,6 +410,54 @@ thái (mặc định "Còn trống"). Lưu xong: đóng hộp thoại, nạp l�
   được cùng đặt `P.501`. Trùng mã thì báo ngay dưới ô nhập.
 - `GET /api/chu-tro/phong` trả số liệu gộp: phòng mẫu (nếu là chủ trọ demo) + phòng tự thêm, nên trang
   Tổng quan và khu quản trị vẫn đếm chung một nguồn.
+
+**Môi giới (Affiliate).** Vai trò `broker` chỉ có trong dữ liệu mẫu phía trình duyệt (`assets/js/data.js`:
+Đỗ Minh Khoa `MG-KHOA`, Vũ Bảo Ngọc `MG-NGOC` là F2 của Khoa) — máy chủ prototype và Supabase chưa có vai trò này.
+Trang môi giới `broker-dashboard.html` (5 mục `#tong-quan|kho-phong|khach-hang|mang-luoi|vi`), đăng ký F2
+`dang-ky-moi-gioi.html?invite=MG-…`. Sổ tiền ở `assets/js/finance.js` (localStorage `ancu-tai-chinh-v3`),
+khách + đối soát ở `assets/js/moi-gioi.js` — **chỉ dùng chung trong một trình duyệt**.
+
+- **Luật chia** mỗi kỳ chủ trọ xác nhận đã thu: quỹ = tiền phòng × tỷ lệ của phòng (mặc định 20%); môi giới
+  hưởng theo bậc doanh số tháng (41% / 48% / 55%); tuyến trên (F1) thêm 20% phần môi giới nhận, lấy từ phần
+  An Cư; An Cư giữ phần còn lại.
+- **Ví:** *Chờ xử lý* = hoa hồng dự kiến của các kỳ đã tới hạn chủ trọ chưa xác nhận (`F.projected`);
+  chủ trọ bấm "Xác nhận đã thu tiền" kỳ nào thì khoản đó vào thẳng *Khả dụng*. Rút tiền chỉ ghi nhận.
+- **Kỳ:** Kỳ 1 = tháng bắt đầu hợp đồng; theo dõi từ kỳ đầu tiên đã xác nhận tới tháng hiện tại
+  (`F.windowPeriods`). Chủ trọ xác nhận được kỳ đã qua (đối soát), không xác nhận kỳ tương lai.
+- **Chủ trọ (quan-ly/*):** công tắc "Mở chiến dịch Môi giới" + tỷ lệ 5–50% từng phòng ở
+  `phong-dien-nuoc.html#chien-dich` (localStorage `ancu-chien-dich-mg-v1`, `AnCuData.setCampaign`; tắt thì phòng
+  rời Kho phòng của môi giới và lịch mới không gắn mã); nhãn nguồn khách "Khách tự nhiên" / "Qua Môi giới: MG-…"
+  ở `yeucauvalichhen.html`; tab "Tiền phòng hằng kỳ" ở `thanh-toan.html#tien-phong`.
+- **Nhận diện mã giới thiệu** — `components/ma-gioi-thieu.js` (`AnCuRef`) là chỗ đọc/ghi duy nhất: mã + tên môi
+  giới + thời điểm trong localStorage (`refCode`/`refName`/`refAt`) và cookie `ancu_ref` (30 ngày, link mới nhất
+  thắng; mất localStorage thì khôi phục từ cookie). Chỉ `phong-chi-tiet.html?ref=` ghi mã, sau khi kiểm môi giới có
+  thật. Form đặt lịch (trang phòng + hộp thoại chung `AnCu.refBadge()`) và bước thông tin ở `tai-khoan/dat-coc.html`
+  hiện huy hiệu "Được tư vấn & hỗ trợ bởi Môi giới: …" (không hiện khi phòng tắt chiến dịch).
+- **Thông báo cho môi giới:** bảng `broker_events` (server/db.mjs `toBroker`) ghi mọi việc của lịch có `ref_code`:
+  đặt / đổi / huỷ lịch, chủ trọ xác nhận, yêu cầu thuê, duyệt, khách báo đã chuyển cọc (xem phòng và nhận phòng),
+  chủ trọ nhận tiền. Thông báo của chủ trọ ghi kèm "(qua môi giới MG-…)". Môi giới đọc
+  `GET /api/moi-gioi/thong-bao?ma=` — **không đăng nhập** (môi giới chưa có tài khoản máy chủ, mã lại công khai trên
+  link) nên chỉ trả tên khách đã che ("P. T. Trang"), không số điện thoại; lên Supabase phải có tài khoản môi giới.
+  Không có máy chủ thì các trang người thuê ghi `ancu-thong-bao-mg-v1` (`AnCuRef.pushLocal`). Trang môi giới gộp
+  cả hai vào chuông (hỏi lại 20 giây/lần khi tab đang mở) và đưa khách máy chủ vào mục Khách hàng (chỉ xem).
+- **Đăng ký F2:** `dang-ky-moi-gioi.html?invite=MG-…` (nhận cả `?moi=` cũ) tự điền và khoá ô "Mã người giới
+  thiệu (F1)"; tuyến trên lấy từ link chứ không đọc lại ô (sửa readonly bằng DevTools không đổi được). Không có
+  link mời thì tự nhập được, mã phải là môi giới có thật.
+- **Nguồn khách đi theo lịch hẹn:** `phong-chi-tiet.html?ref=` lưu `localStorage.refCode`; mọi lối đặt lịch
+  (`components/lich-xem.js`, `an-cu-store.js`, `tim-phong.html`, `dat-lich.html`) gửi kèm `refCode`, máy chủ lưu
+  cột `viewing_appointments.ref_code` (chỉ nhận dạng `MG-XXXX`). Đặt ở `phong-chi-tiet.html` gửi kho của chủ
+  trọ trước (máy chủ hoặc `an-cu-lich-xem-v1`), kho đó từ chối thì không ghi vào sổ khách của môi giới.
+- **Quản trị — Môi giới & Hoa hồng** (`quan-tri/tong-quan.html#moi-gioi`, `#doi-soat` cũ tự chuyển về đây):
+  mạng lưới F1–F2 với ví từng người; duyệt lệnh rút tiền (`F.decideWithdrawal`: "Đã chuyển khoản" bắt buộc mã
+  giao dịch, "Từ chối" bắt buộc lý do và trả tiền lại ví khả dụng) kèm dòng kiểm tra tổng lệnh đang chờ = tổng
+  "Đang chờ An Cư chuyển khoản" trên các ví; lịch sử chia quỹ theo kỳ + yêu cầu đối soát, xuất CSV.
+- **Quản trị — Trọng tài đối soát** (`#trong-tai`): môi giới đã gửi yêu cầu đối soát mà chủ trọ không xác nhận
+  thì khiếu nại ở mục Ví của trang môi giới (số tiền, ngày đóng, mã giao dịch, ảnh chứng từ thu nhỏ còn ≤ ~900 KB;
+  localStorage `ancu-khieu-nai-v1`). Quản trị xem chứng từ + phản hồi của chủ trọ, ghi kết luận (bắt buộc) rồi
+  **cưỡng chế duyệt** (`F.forceConfirm`: ghi kỳ đó như chủ trọ đã thu, chia hoa hồng vào Ví khả dụng, đánh dấu
+  `forced_by` + `dispute_id`) hoặc **bác**. Chủ trọ tự xác nhận trước thì khiếu nại tự đóng. Chủ trọ thấy nhãn
+  "môi giới đã khiếu nại" / "An Cư duyệt theo khiếu nại" ở tab Tiền phòng hằng kỳ.
+- Hai mục này có ở cột công cụ của cả hai trang quản trị, kèm số lệnh rút chờ duyệt / khiếu nại chờ xử lý.
 
 **Đăng nhập ở chế độ xem thử** — `components/phien-xem-thu.js` (`window.PhienXemThu`). Không có máy chủ
 thì hộp đăng nhập ở `trang-chu.html` nhận đúng bộ tài khoản demo (mật khẩu `matkhau123`) và lưu phiên

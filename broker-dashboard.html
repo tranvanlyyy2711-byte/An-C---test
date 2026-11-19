@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Môi giới — An Cư</title>
+<title>Tổng quan — Môi giới An Cư</title>
 <meta name="robots" content="noindex" />
 <link rel="icon" href="assets/logo-ancu.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="assets/css/base.css" />
 
+<script src="components/ma-gioi-thieu.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
@@ -20,7 +21,94 @@
 </script>
 
 <style>
-/* ---------- Ví ---------- */
+:root{--side-w:264px;--top-h:64px}
+
+/* ---------- Khung: cột điều hướng trái + nội dung (giống khu chủ trọ / quản trị) ---------- */
+.side{position:fixed;inset:0 auto 0 0;width:var(--side-w);z-index:40;display:flex;flex-direction:column;
+  padding:18px 16px 20px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto}
+.side .brand{padding:0 10px 14px}
+.side-role{margin:0 4px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2)}
+.side-role span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+.side-role b{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:600}
+.side-menu{list-style:none;display:flex;flex-direction:column;gap:4px}
+.side-link{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:var(--radius-sm);text-decoration:none;
+  font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:500;color:var(--text-muted);
+  transition:background .18s var(--ease),color .18s var(--ease)}
+.side-link svg{width:20px;height:20px}
+.side-link:hover{color:var(--text);background:rgba(34,139,34,.06)}
+.side-link[aria-current="page"]{color:var(--text);background:rgba(34,139,34,.1)}
+.side-link[aria-current="page"] svg{color:var(--accent)}
+.side-link:focus-visible{outline-offset:-2px}
+.side-count{margin-left:auto;min-width:24px;padding:1px 8px;border-radius:999px;text-align:center;font-size:12.5px;font-weight:600;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted)}
+.side-count:empty{display:none}
+.side-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.side-foot .who-tx{display:block;flex:1}
+.side-foot .who-tx span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-backdrop{position:fixed;inset:var(--top-h) 0 0 0;z-index:35;background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
+.side-backdrop[hidden]{display:none}
+
+.shell-main{margin-left:var(--side-w);min-width:0}
+.m-top{position:sticky;top:0;z-index:30;height:var(--top-h);display:flex;align-items:center;gap:12px;padding:0 32px;
+  background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.m-title{font-family:'Be Vietnam Pro',sans-serif;font-size:16px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-top .ref-chip{margin-left:auto}
+.ref-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--border-strong);
+  background:var(--surface);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;font-weight:600;white-space:nowrap}
+.ref-chip svg{width:16px;height:16px;color:var(--text-dim)}
+.ref-chip:hover{background:var(--surface-2)}
+/* Chuông thông báo */
+.tb-wrap{position:relative;margin-left:auto}
+.m-top .tb-wrap + .ref-chip{margin-left:0}
+.tb-btn{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:10px;border:1px solid var(--border-strong);background:var(--surface)}
+.tb-btn svg{width:20px;height:20px}
+.tb-dot{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--danger-ink);color:#fff;font-size:11px;font-weight:700;line-height:19px;text-align:center}
+.tb-dot[hidden]{display:none}
+.tb-pop{position:absolute;right:0;top:calc(100% + 10px);z-index:50;width:min(380px,calc(100vw - 32px));max-height:70vh;overflow:auto;padding:14px 16px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 18px 50px rgba(16,32,16,.16)}
+.tb-pop[hidden]{display:none}
+.tb-pop h2{font-size:15px;margin-bottom:6px}
+.tb-pop .tb-src{font-size:12.5px;color:var(--text-dim);margin-bottom:6px}
+.tb-list{list-style:none}
+.tb-list li{padding:10px 0;border-top:1px solid var(--border);font-size:13.5px}
+.tb-list li:first-child{border-top:0}
+.tb-list b{display:block;font-size:14px}
+.tb-list span{display:block;color:var(--text-muted)}
+.tb-list small{color:var(--text-dim);font-size:12px}
+.tb-list li.is-new b::before{content:'';display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:var(--danger-ink);vertical-align:middle}
+@media (max-width:960px){.tb-pop{position:fixed;left:16px;right:16px;top:calc(var(--top-h) + 8px);width:auto}}
+.menu-toggle{display:none;width:44px;height:44px;flex-shrink:0;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border-strong);background:var(--surface)}
+.menu-toggle svg{width:20px;height:20px}
+.m-brand{display:none}
+
+/* minmax(0,1fr): bảng dài không được kéo giãn cả cột nội dung (gây cuộn ngang cả trang) */
+.view{max-width:1200px;margin:0 auto;padding:32px 32px 72px;display:grid;grid-template-columns:minmax(0,1fr);gap:36px}
+.view section{min-width:0}
+@media (min-width:900px){.table-wrap{overflow-x:auto}}
+.view[hidden]{display:none}
+.view > .page-head h1:focus{outline:none}
+
+@media (max-width:960px){
+  .menu-toggle{display:inline-flex}
+  .m-brand{display:flex;padding:0}
+  .m-title{display:none}
+  .side{top:var(--top-h);transform:translateX(-100%);transition:transform .26s var(--ease);box-shadow:0 30px 60px -20px rgba(16,48,16,.28)}
+  body.nav-open .side{transform:none}
+  .side .brand{display:none}
+  .shell-main{margin-left:0}
+  .m-top{padding:0 16px}
+  .view{padding:24px 16px 64px;gap:32px}
+}
+@media (max-width:420px){ .ref-chip .lb{display:none} }
+
+/* ---------- Tổng quan ---------- */
+.refcard{padding:20px;display:grid;gap:14px}
+@media (min-width:768px){.refcard{padding:24px;grid-template-columns:minmax(0,1fr) auto;align-items:center}}
+.refcard .lb{font-size:14px;font-weight:600;color:var(--text-muted)}
+.refcard .code{margin-top:4px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(26px,7vw,34px);font-weight:700;letter-spacing:.02em;color:var(--success-ink);overflow-wrap:anywhere}
+.refcard .sub{margin-top:4px;font-size:14px;color:var(--text-dim)}
+.row-btns{display:flex;flex-wrap:wrap;gap:8px}
+
 .wallets{display:grid;gap:16px}
 @media (min-width:768px){.wallets{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .wallet{padding:20px;display:grid;gap:6px;align-content:start}
@@ -31,11 +119,7 @@
 .wallet.is-main .wallet-v{color:var(--success-ink)}
 .wallet-s{font-size:14px;color:var(--text-dim)}
 .wallet .btn{margin-top:12px;justify-self:start}
-.wallet-foot{margin-top:10px;padding-top:12px;border-top:1px solid var(--border);display:grid;gap:4px;font-size:14px;color:var(--text-muted)}
-.wallet-foot div{display:flex;justify-content:space-between;gap:12px}
-.wallet-foot b{font-weight:600;color:var(--text)}
 
-/* ---------- Bậc hiệu suất ---------- */
 .perf{padding:20px;display:grid;gap:18px}
 @media (min-width:768px){.perf{padding:24px}}
 .perf-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
@@ -54,25 +138,95 @@
 .tiers li.is-on{border-color:var(--accent);background:rgba(34,139,34,.06)}
 .tiers li.is-on b{color:var(--success-ink)}
 .perf-note{font-size:14px;color:var(--text-muted)}
+@media (min-width:1024px){.stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
+.stat a{display:inline-flex;align-items:center;min-height:44px;color:var(--success-ink);font-weight:600;font-size:14px}
+.stat .stat-s{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px}
 
-/* ---------- Công cụ ---------- */
-.tools{display:grid;gap:16px}
-@media (min-width:1024px){.tools{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
-.tool{padding:20px;display:grid;gap:14px}
-@media (min-width:768px){.tool{padding:24px}}
-.tool h3{font-size:18px;font-weight:700}
-.tool .desc{font-size:14.5px;color:var(--text-muted)}
+/* ---------- Kho phòng ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.toolbar .search{flex:1 1 240px;position:relative}
+.toolbar .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-dim)}
+.toolbar .search .input{padding-left:42px}
+.toolbar select.input{flex:0 1 220px;width:auto}
 select.input{appearance:none;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23667565' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.toolbar .count{font-size:14px;color:var(--text-dim)}
+.room-grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.room{display:flex;flex-direction:column;overflow:hidden}
+.room-img{position:relative;display:block;margin:10px 10px 0;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--surface-2)}
+.room-img img{width:100%;height:100%;object-fit:cover;transition:transform .25s ease-out}
+.room-img:hover img{transform:scale(1.03)}
+.price-tag{position:absolute;left:10px;bottom:10px;padding:5px 10px;border-radius:8px;background:rgba(16,32,16,.78);color:#fff;
+  font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:700;backdrop-filter:blur(4px)}
+.price-tag small{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;opacity:.85}
+.rate-tag{position:absolute;right:10px;top:10px;padding:4px 10px;border-radius:999px;background:var(--surface);color:var(--success-ink);
+  font-size:13px;font-weight:700;border:1px solid var(--border-strong)}
+.room-body{padding:14px 16px 16px;display:grid;gap:8px;flex:1}
+.room-meta{font-size:13.5px;color:var(--text-dim)}
+.room h3{font-size:17px;font-weight:700}
+.room-addr{font-size:14px;color:var(--text-muted)}
+.room-earn{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:4px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--border)}
+.room-earn div{background:var(--surface-2);padding:8px 10px}
+.room-earn dt{font-size:12.5px;color:var(--text-dim)}
+.room-earn dd{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;font-weight:700}
+.room-earn .is-me dd{color:var(--success-ink)}
+.room-act{margin-top:auto;padding-top:6px;display:grid;gap:8px}
+.room-act .btn{width:100%}
+.room-act .btn-text{min-height:44px;justify-self:center;width:auto}
+
+.dl-list{list-style:none;display:grid;gap:8px;max-height:46vh;overflow-y:auto}
+.dl-list li{display:flex;align-items:center;gap:12px}
+.dl-list img{width:72px;aspect-ratio:4/3;object-fit:cover;border-radius:8px;flex-shrink:0}
+.dl-list span{flex:1;min-width:0;font-size:14.5px}
+
+/* ---------- Khách hàng ---------- */
+.stage-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;list-style:none}
+@media (min-width:768px){.stage-legend{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:767.98px){.stage-legend li{padding:12px}.stage-legend li span:last-child{font-size:13px}}
+.stage-legend li{padding:14px 16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);display:grid;gap:6px}
+.stage-legend li .n{font-family:'Be Vietnam Pro',sans-serif;font-size:26px;font-weight:700;line-height:1}
+.stage-legend li span:last-child{font-size:13.5px;color:var(--text-dim)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);font-size:14.5px;font-weight:500}
+.chip:hover{background:var(--surface-2)}
+.chip[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:#fff}
+.tbl td .note{display:block;font-size:13.5px;color:var(--text-dim);max-width:240px}
+.tbl td.act .btn{white-space:normal;text-align:center}
+@media (max-width:899.98px){.tbl td.act{display:block}.tbl td.act::before{content:none}.tbl td.act .btn{width:100%}.tbl td.act .note{max-width:none;text-align:left}}
+
+/* ---------- Mạng lưới F2 ---------- */
 .copy-row{display:flex;gap:8px}
 .copy-row .input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:16px;color:var(--text-muted);background:var(--surface-2)}
 .copy-row .btn{flex-shrink:0}
-.row-btns{display:flex;flex-wrap:wrap;gap:8px}
-.down{list-style:none;border:1px solid var(--border);border-radius:var(--radius-sm)}
-.down li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 12px;font-size:14.5px}
-.down li + li{border-top:1px solid var(--border)}
-.down span{color:var(--text-dim)}
+.invite{padding:20px;display:grid;gap:14px}
+@media (min-width:768px){.invite{padding:24px}}
+.invite h2{font-size:19px;font-weight:700}
+.invite p{font-size:15px;color:var(--text-muted)}
+.example{font-size:14px;color:var(--text-dim);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.money{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+@media (min-width:768px){.money{grid-template-columns:repeat(var(--cols,3),minmax(0,1fr))}}
+.money > div{background:var(--surface);padding:18px 20px;display:grid;gap:4px;align-content:start}
+.money dt{font-size:14px;color:var(--text-muted)}
+.money dd{font-family:'Be Vietnam Pro',sans-serif;font-size:24px;font-weight:700;white-space:nowrap}
+.money dd small{display:block;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--text-dim);white-space:normal}
+.money .is-accent dd{color:var(--success-ink)}
+.money .btn{justify-self:start;margin-top:6px}
 
-/* ---------- Lịch sử: danh sách gọn trên điện thoại, bảng trên màn hình rộng ---------- */
+/* ---------- Ví & đối soát ---------- */
+.ds-list{display:grid;gap:12px;list-style:none}
+.ds-item{padding:16px;display:grid;gap:10px}
+@media (min-width:768px){.ds-item{padding:18px 20px}}
+.ds-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}
+.ds-head b{font-family:'Be Vietnam Pro',sans-serif}
+.ds-head span{font-size:14px;color:var(--text-dim)}
+.ky-list{display:flex;flex-wrap:wrap;gap:8px;list-style:none}
+.ky{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--border);font-size:14px;background:var(--surface-2);color:var(--text-muted)}
+.ky svg{width:16px;height:16px}
+.ky.is-done{color:var(--success-ink);background:rgba(34,139,34,.08);border-color:rgba(34,139,34,.2)}
+.ky.is-asked{color:var(--warning-ink);background:rgba(245,177,76,.12);border-color:rgba(138,90,17,.2)}
+button.ky{border-style:dashed;border-color:var(--border-strong);background:var(--surface);color:var(--text);font-weight:600}
+button.ky:hover{background:var(--surface-2)}
+.ds-note{font-size:13.5px;color:var(--text-dim)}
+.ds-note.is-err{color:var(--danger-ink)}
 .hist{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
 .hist li{padding:12px 16px;display:grid;gap:4px}
 .hist li + li{border-top:1px solid var(--border)}
@@ -80,127 +234,245 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
 .hist p,.hist .h-top > span:not(.badge){font-size:13.5px;color:var(--text-dim)}
 .hist-table{display:none}
 @media (min-width:900px){.hist{display:none}.hist-table{display:block}}
-
-/* ---------- Rút tiền ---------- */
-.wd-list{list-style:none;margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
-.wd-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:12px 16px;font-size:15px}
-.wd-list li + li{border-top:1px solid var(--border)}
-.wd-list span{color:var(--text-dim);font-size:14px}
-.sub-h{margin:28px 0 0;font-size:16px;font-weight:600;color:var(--text-muted)}
+.sub-sec{display:grid;gap:0}
 .amount{position:relative}
 .amount .input{padding-right:40px;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
 .amount span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-weight:600}
 .dlg-note{font-size:13.5px;color:var(--text-dim);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2)}
 .link-inline{background:none;border:0;padding:0;min-height:44px;color:var(--success-ink);font-weight:600;text-decoration:underline}
+.dlg-sub{font-size:14.5px;color:var(--text-dim)}
+.kn-row{display:flex;flex-wrap:wrap;gap:8px}
+.kn-btn{min-height:44px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid rgba(180,41,31,.28);background:var(--surface);color:var(--danger-ink);font-size:14px;font-weight:600}
+.kn-btn:hover{background:rgba(255,107,107,.08)}
+.ky.is-kn{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(29,79,190,.22)}
+.row2{display:grid;gap:12px}
+@media (min-width:480px){.row2{grid-template-columns:1fr 1fr}}
+.ev-prev{display:flex;align-items:center;gap:12px}
+.ev-prev img{width:96px;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.ev-prev[hidden]{display:none}
+input[type=file].input{padding:10px 12px;min-height:48px}
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="topbar-in">
-    <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /> An Cư</a>
-    <div class="topbar-end">
-      <span class="who"><span class="av" id="avatar" aria-hidden="true"></span><span class="who-tx"><b id="tenToi"></b><span id="vaiTro">Môi giới</span></span></span>
-      <button type="button" class="btn btn-ghost" id="dangXuat" aria-label="Đăng xuất">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 01-2-2V5a2 2 0 012-2h7"/></svg>
-        <span class="sr-only">Đăng xuất</span>
-      </button>
-    </div>
+<aside class="side" id="side" aria-label="Điều hướng khu môi giới">
+  <a class="brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /> An Cư</a>
+  <p class="side-role"><span>Khu vực</span><b>Môi giới · Affiliate</b></p>
+  <nav aria-label="Mục chính">
+    <ul class="side-menu">
+      <li><a class="side-link" href="#tong-quan" data-view="tong-quan"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Tổng quan</a></li>
+      <li><a class="side-link" href="#kho-phong" data-view="kho-phong"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg>Kho phòng &amp; Link<span class="side-count" id="demPhong"></span></a></li>
+      <li><a class="side-link" href="#khach-hang" data-view="khach-hang"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 15h3"/></svg>Khách hàng &amp; Lịch hẹn<span class="side-count" id="demKhach"></span></a></li>
+      <li><a class="side-link" href="#mang-luoi" data-view="mang-luoi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5l-5.5 5.5M12 11.5l5.5 5.5"/></svg>Mạng lưới F2<span class="side-count" id="demF2"></span></a></li>
+      <li><a class="side-link" href="#vi" data-view="vi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20M6 6V4h12v2"/></svg>Ví &amp; Rút tiền<span class="side-count" id="demDoiSoat"></span></a></li>
+    </ul>
+  </nav>
+  <div class="side-foot">
+    <span class="av" id="avatar" aria-hidden="true"></span>
+    <span class="who-tx"><b id="tenToi"></b><span id="vaiTro">Môi giới</span></span>
+    <button type="button" class="btn btn-ghost" id="dangXuat" aria-label="Đăng xuất" title="Đăng xuất">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 01-2-2V5a2 2 0 012-2h7"/></svg>
+    </button>
   </div>
-</header>
+</aside>
+<div class="side-backdrop" id="sideBackdrop" hidden></div>
 
-<main class="page">
-  <section class="page-head reveal">
-    <p class="eyebrow">Môi giới · Affiliate</p>
-    <h1 id="loiChao">Chào bạn</h1>
-    <p class="lead" id="maCuaToi"></p>
-  </section>
-
-  <!-- Thẻ tài chính -->
-  <section aria-labelledby="h-vi">
-    <h2 id="h-vi" class="sr-only">Ví hoa hồng</h2>
-    <div class="wallets stagger">
-      <article class="card wallet is-main reveal">
-        <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20M6 6V4h12v2"/></svg>Ví khả dụng</p>
-        <p class="wallet-v num" id="viKhaDung"></p>
-        <p class="wallet-s">Hoa hồng từ các kỳ thanh toán đã kết thúc, rút được ngay.</p>
-        <button type="button" class="btn btn-primary" id="nutRut">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M19 10v8M9 10v8M15 10v8M3 21h18"/></svg>
-          Rút tiền về Ngân hàng
-        </button>
-        <div class="wallet-foot" id="viPhu"></div>
-      </article>
-      <article class="card wallet reveal">
-        <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Ví chờ xử lý</p>
-        <p class="wallet-v num" id="viCho"></p>
-        <p class="wallet-s" id="viChoNote"></p>
-        <div class="wallet-foot" id="viTong"></div>
-      </article>
-    </div>
-  </section>
-
-  <!-- Bậc hiệu suất -->
-  <section class="reveal" aria-labelledby="h-bac">
-    <div class="sec-head"><div><h2 id="h-bac">Bậc hiệu suất</h2><p id="bacSub"></p></div></div>
-    <div class="card perf">
-      <div class="perf-top">
-        <p class="perf-tier" id="bacHienTai"></p>
-        <p class="perf-sales"><b class="num" id="doanhSo"></b><span>doanh số tháng này</span></p>
+<div class="shell-main">
+  <header class="m-top">
+    <button type="button" class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false" aria-controls="side">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <a class="brand m-brand" href="trang-chu.html" aria-label="An Cư — về trang chủ"><img src="assets/logo-ancu.png" alt="" width="34" height="34" /></a>
+    <p class="m-title" id="mTitle">Tổng quan</p>
+    <div class="tb-wrap">
+      <button type="button" class="tb-btn" id="tbBtn" aria-expanded="false" aria-controls="tbPop" aria-label="Thông báo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="tb-dot" id="tbDot" hidden></span>
+      </button>
+      <div class="tb-pop" id="tbPop" hidden>
+        <h2>Thông báo khách của bạn</h2>
+        <p class="tb-src" id="tbSrc"></p>
+        <ul class="tb-list" id="tbList"></ul>
       </div>
-      <div class="bar" id="bar" role="progressbar" aria-labelledby="h-bac"><div class="bar-fill" id="barFill"></div></div>
-      <ul class="tiers" id="cacBac"></ul>
-      <p class="perf-note" id="bacNote"></p>
     </div>
-  </section>
+    <button type="button" class="ref-chip" id="chipRef" title="Sao chép mã giới thiệu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+      <span class="lb">Mã:</span><span id="chipRefTx"></span>
+    </button>
+  </header>
 
-  <!-- Công cụ -->
-  <section class="reveal" aria-labelledby="h-cong-cu">
-    <div class="sec-head"><div><h2 id="h-cong-cu">Công cụ môi giới</h2><p>Chia sẻ link để khách và đồng nghiệp đến từ bạn được ghi nhận.</p></div></div>
-    <div class="tools stagger">
-      <div class="card tool reveal">
-        <div><h3>Tạo link affiliate</h3>
-          <p class="desc">Khách mở link, mã của bạn được lưu trên máy họ và gắn vào lịch xem phòng họ đặt. Bạn hưởng hoa hồng khi khách ký hợp đồng và đóng tiền phòng.</p></div>
-        <div class="field"><label for="chonPhong">Chọn phòng</label><select class="input" id="chonPhong"></select></div>
-        <button type="button" class="btn btn-primary" id="nutTaoLink">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>
-          Tạo link affiliate
+  <!-- 1. Tổng quan -->
+  <main class="view" id="v-tong-quan" data-title="Tổng quan">
+    <section class="page-head reveal">
+      <p class="eyebrow">Tổng quan</p>
+      <h1 id="loiChao" tabindex="-1">Chào bạn</h1>
+      <p class="lead" id="tqLead"></p>
+    </section>
+
+    <section class="card refcard reveal" aria-labelledby="h-ma">
+      <div>
+        <h2 class="lb" id="h-ma">Mã giới thiệu định danh</h2>
+        <p class="code" id="maRef"></p>
+        <p class="sub" id="maRefSub"></p>
+      </div>
+      <div class="row-btns">
+        <button type="button" class="btn btn-primary" data-copy-text="ref">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>Sao chép mã
         </button>
-        <div id="ketQuaLink" hidden>
-          <label class="sr-only" for="linkAff">Link affiliate</label>
-          <div class="copy-row">
-            <input class="input" id="linkAff" readonly />
-            <button type="button" class="btn btn-ghost" data-copy="linkAff">Sao chép</button>
-          </div>
-          <div class="row-btns" style="margin-top:8px"><a class="btn btn-text" id="moThu" target="_blank" rel="noopener">Mở thử link ↗</a></div>
+        <a class="btn btn-ghost" href="#kho-phong">Lấy link phòng</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-vi-tq">
+      <div class="sec-head reveal"><div><h2 id="h-vi-tq">Ví hoa hồng</h2><p>Số dư cập nhật ngay khi chủ trọ xác nhận đã nhận tiền phòng.</p></div></div>
+      <div class="wallets stagger">
+        <article class="card wallet is-main reveal">
+          <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20M6 6V4h12v2"/></svg>Ví khả dụng</p>
+          <p class="wallet-v num" id="tqKhaDung"></p>
+          <p class="wallet-s">Hoa hồng của các kỳ chủ trọ đã xác nhận thu tiền, rút được về ngân hàng.</p>
+          <a class="btn btn-primary" href="#vi">Rút tiền &amp; lịch sử ví</a>
+        </article>
+        <article class="card wallet reveal">
+          <p class="wallet-lb"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Ví chờ xử lý</p>
+          <p class="wallet-v num" id="tqCho"></p>
+          <p class="wallet-s" id="tqChoNote"></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="reveal" aria-labelledby="h-bac">
+      <div class="sec-head"><div><h2 id="h-bac">Bậc hiệu suất</h2><p id="bacSub"></p></div></div>
+      <div class="card perf">
+        <div class="perf-top">
+          <p class="perf-tier" id="bacHienTai"></p>
+          <p class="perf-sales"><b class="num" id="doanhSo"></b><span>doanh số tháng này</span></p>
+        </div>
+        <div class="bar" id="bar" role="progressbar" aria-labelledby="h-bac"></div>
+        <ul class="tiers" id="cacBac"></ul>
+        <p class="perf-note" id="bacNote"></p>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-nhanh">
+      <h2 id="h-nhanh" class="sr-only">Số liệu nhanh</h2>
+      <ul class="stats stagger" id="tqStats"></ul>
+    </section>
+  </main>
+
+  <!-- 2. Kho phòng & Link Affiliate -->
+  <main class="view" id="v-kho-phong" data-title="Kho phòng & Link Affiliate" hidden>
+    <section class="page-head reveal">
+      <p class="eyebrow">Kho phòng &amp; Link Affiliate</p>
+      <h1 tabindex="-1">Phòng trống để giới thiệu</h1>
+      <p class="lead" id="khoLead"></p>
+    </section>
+    <section aria-labelledby="h-kho" class="reveal">
+      <h2 id="h-kho" class="sr-only">Danh sách phòng trống</h2>
+      <div class="toolbar">
+        <label class="search"><span class="sr-only">Tìm phòng</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input class="input" id="timPhong" type="search" placeholder="Tìm theo mã, tên, quận…" autocomplete="off" />
+        </label>
+        <label class="sr-only" for="sapXep">Sắp xếp</label>
+        <select class="input" id="sapXep">
+          <option value="hh">Hoa hồng cao nhất</option>
+          <option value="re">Giá thấp đến cao</option>
+          <option value="dat">Giá cao đến thấp</option>
+          <option value="ma">Theo mã phòng</option>
+        </select>
+        <span class="count" id="demKetQua" aria-live="polite"></span>
+      </div>
+    </section>
+    <div class="room-grid" id="khoPhong"></div>
+  </main>
+
+  <!-- 3. Khách hàng & Lịch hẹn -->
+  <main class="view" id="v-khach-hang" data-title="Khách hàng & Lịch hẹn" hidden>
+    <section class="page-head reveal">
+      <p class="eyebrow">Khách hàng &amp; Lịch hẹn</p>
+      <h1 tabindex="-1">Khách bạn giới thiệu</h1>
+      <p class="lead">Mỗi lịch xem phòng khách đặt qua link của bạn là một khách. Trạng thái đi theo bốn bước bên dưới.</p>
+    </section>
+    <section aria-labelledby="h-buoc" class="reveal">
+      <h2 id="h-buoc" class="sr-only">Các bước</h2>
+      <ol class="stage-legend stagger" id="buoc"></ol>
+    </section>
+    <section aria-labelledby="h-khach" class="reveal">
+      <div class="sec-head"><div><h2 id="h-khach">Danh sách khách</h2><p id="khachSub"></p></div></div>
+      <div class="chips" id="locKhach" role="group" aria-label="Lọc theo trạng thái" style="margin-bottom:16px"></div>
+      <div id="bangKhach"></div>
+    </section>
+  </main>
+
+  <!-- 4. Mạng lưới F2 -->
+  <main class="view" id="v-mang-luoi" data-title="Mạng lưới F2" hidden>
+    <section class="page-head reveal">
+      <p class="eyebrow">Mạng lưới F2</p>
+      <h1 tabindex="-1">Tuyến dưới của bạn</h1>
+      <p class="lead" id="f2Lead"></p>
+    </section>
+    <section class="card invite reveal" aria-labelledby="h-moi">
+      <h2 id="h-moi">Link tuyển dụng môi giới</h2>
+      <p>Đồng nghiệp đăng ký qua link này sẽ thành F2 của bạn. Gửi qua Zalo, Facebook hoặc tin nhắn.</p>
+      <div>
+        <label class="sr-only" for="linkF2">Link tuyển dụng</label>
+        <div class="copy-row">
+          <input class="input" id="linkF2" readonly />
+          <button type="button" class="btn btn-primary" data-copy="linkF2">Sao chép</button>
         </div>
       </div>
+      <p class="example" id="f2ViDu"></p>
+    </section>
+    <section class="reveal" aria-labelledby="h-f2-so">
+      <h2 id="h-f2-so" class="sr-only">Số liệu mạng lưới</h2>
+      <dl class="money" id="f2So" style="--cols:3"></dl>
+    </section>
+    <section class="reveal" aria-labelledby="h-f2">
+      <div class="sec-head"><div><h2 id="h-f2">Danh sách F2</h2><p>Doanh thu là tổng tiền phòng khách của F2 đã đóng và chủ trọ đã xác nhận.</p></div></div>
+      <div id="bangF2"></div>
+    </section>
+  </main>
 
-      <div class="card tool reveal">
-        <div><h3>Mời đồng nghiệp (tuyến dưới F2)</h3>
-          <p class="desc" id="f2Desc"></p></div>
-        <div>
-          <label class="sr-only" for="linkF2">Link mời F2</label>
-          <div class="copy-row">
-            <input class="input" id="linkF2" readonly />
-            <button type="button" class="btn btn-ghost" data-copy="linkF2">Sao chép</button>
-          </div>
-        </div>
-        <div id="tuyenDuoi"></div>
+  <!-- 5. Ví & Rút tiền -->
+  <main class="view" id="v-vi" data-title="Ví & Rút tiền" hidden>
+    <section class="page-head reveal">
+      <p class="eyebrow">Ví &amp; Rút tiền</p>
+      <h1 tabindex="-1">Ví hoa hồng</h1>
+      <p class="lead">Rút tiền từ ví khả dụng về ngân hàng, và nhắc chủ trọ đối soát các kỳ tiền phòng chưa được ghi nhận.</p>
+    </section>
+    <section class="reveal" aria-labelledby="h-so-du">
+      <h2 id="h-so-du" class="sr-only">Số dư</h2>
+      <dl class="money" id="viSo" style="--cols:4"></dl>
+    </section>
+
+    <section class="reveal" aria-labelledby="h-ds">
+      <div class="sec-head">
+        <div><h2 id="h-ds">Đối soát thanh toán</h2><p>Các kỳ tiền phòng của hợp đồng bạn giới thiệu. Kỳ đã tới mà chủ trọ chưa xác nhận thì gửi yêu cầu đối soát.</p></div>
+        <button type="button" class="btn btn-primary" id="nutDoiSoat">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg>
+          Gửi yêu cầu đối soát thanh toán
+        </button>
       </div>
-    </div>
-  </section>
+      <ul class="ds-list" id="doiSoat"></ul>
+      <div id="yeuCauDs"></div>
+    </section>
 
-  <!-- Lịch sử hoa hồng -->
-  <section class="reveal" aria-labelledby="h-ls">
-    <div class="sec-head"><div><h2 id="h-ls">Lịch sử hoa hồng</h2><p>Mỗi dòng là một kỳ tiền phòng khách đã đóng và chủ trọ đã xác nhận.</p></div></div>
-    <div id="lichSu"></div>
-    <div id="rutTien"></div>
-  </section>
-</main>
+    <section class="reveal" aria-labelledby="h-rut">
+      <div class="sec-head"><div><h2 id="h-rut">Lịch sử rút tiền</h2><p>An Cư duyệt và chuyển khoản thủ công trong 1–3 ngày làm việc.</p></div></div>
+      <div id="rutTien"></div>
+    </section>
 
+    <section class="reveal" aria-labelledby="h-ls">
+      <div class="sec-head"><div><h2 id="h-ls">Lịch sử hoa hồng</h2><p>Mỗi dòng là một kỳ tiền phòng khách đã đóng và chủ trọ đã xác nhận.</p></div></div>
+      <div id="lichSu"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Hộp thoại: rút tiền -->
 <dialog class="dlg-box" id="dlgRut" aria-labelledby="dlgRutTitle">
   <form method="dialog" class="dlg-in" id="formRut" novalidate>
-    <div><h2 id="dlgRutTitle">Rút tiền về ngân hàng</h2><p class="wallet-s" id="dlgRutSub"></p></div>
+    <div><h2 id="dlgRutTitle">Rút tiền về ngân hàng</h2><p class="dlg-sub" id="dlgRutSub"></p></div>
     <div class="field">
       <label for="soTienRut">Số tiền rút</label>
       <div class="amount"><input class="input" id="soTienRut" inputmode="numeric" autocomplete="off" aria-describedby="loi-amount" /><span aria-hidden="true">₫</span></div>
@@ -224,15 +496,102 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
     </div>
     <p class="dlg-note">Bản demo chỉ ghi nhận yêu cầu, không chuyển tiền thật. An Cư duyệt và chuyển khoản thủ công; trong lúc chờ, số tiền này tạm trừ khỏi ví khả dụng.</p>
     <div class="dlg-act">
-      <button type="button" class="btn btn-ghost" id="huyRut">Huỷ</button>
+      <button type="button" class="btn btn-ghost" data-close>Huỷ</button>
       <button type="submit" class="btn btn-primary">Gửi yêu cầu rút tiền</button>
     </div>
   </form>
 </dialog>
 
+<!-- Hộp thoại: yêu cầu đối soát -->
+<dialog class="dlg-box" id="dlgDs" aria-labelledby="dlgDsTitle">
+  <form method="dialog" class="dlg-in" id="formDs" novalidate>
+    <div><h2 id="dlgDsTitle">Gửi yêu cầu đối soát thanh toán</h2>
+      <p class="dlg-sub">Nhờ chủ trọ kiểm tra khách đã đóng tiền kỳ này chưa. Chủ trọ xác nhận là hoa hồng của kỳ được chia ngay.</p></div>
+    <div class="field">
+      <label for="dsHopDong">Hợp đồng</label>
+      <select class="input" id="dsHopDong" aria-describedby="loi-contract"></select>
+      <p class="err" id="loi-contract"></p>
+    </div>
+    <div class="field">
+      <label for="dsKy">Kỳ thanh toán</label>
+      <select class="input" id="dsKy" aria-describedby="loi-period"></select>
+      <p class="err" id="loi-period"></p>
+    </div>
+    <div class="field">
+      <label for="dsGhiChu">Ghi chú cho chủ trọ <span class="hint">(không bắt buộc)</span></label>
+      <textarea class="input" id="dsGhiChu" maxlength="300" placeholder="Ví dụ: Khách báo đã chuyển khoản ngày 05." aria-describedby="loi-note"></textarea>
+      <p class="err" id="loi-note"></p>
+    </div>
+    <div class="dlg-act">
+      <button type="button" class="btn btn-ghost" data-close>Huỷ</button>
+      <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Hộp thoại: khiếu nại lên An Cư (trọng tài đối soát) -->
+<dialog class="dlg-box" id="dlgKn" aria-labelledby="dlgKnTitle">
+  <form method="dialog" class="dlg-in" id="formKn" novalidate>
+    <div><h2 id="dlgKnTitle">Khiếu nại lên An Cư</h2>
+      <p class="dlg-sub" id="dlgKnSub"></p></div>
+    <div class="row2">
+      <div class="field">
+        <label for="knTien">Số tiền khách đã đóng</label>
+        <div class="amount"><input class="input" id="knTien" inputmode="numeric" autocomplete="off" aria-describedby="loi-knamount" /><span aria-hidden="true">₫</span></div>
+        <p class="err" id="loi-knamount"></p>
+      </div>
+      <div class="field">
+        <label for="knNgay">Ngày khách đóng</label>
+        <input class="input" id="knNgay" type="date" aria-describedby="loi-knpaidDate" />
+        <p class="err" id="loi-knpaidDate"></p>
+      </div>
+    </div>
+    <div class="field">
+      <label for="knMa">Mã giao dịch / nội dung chuyển khoản</label>
+      <input class="input" id="knMa" maxlength="60" autocomplete="off" placeholder="Ví dụ: FT2611051234 hoặc P101 T11" aria-describedby="loi-kntxRef" />
+      <p class="err" id="loi-kntxRef"></p>
+    </div>
+    <div class="field">
+      <label for="knAnh">Ảnh chứng từ <span class="hint">(biên lai, sao kê, tin nhắn xác nhận)</span></label>
+      <input class="input" id="knAnh" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="loi-knevidence" />
+      <div class="ev-prev" id="knXem" hidden><img id="knXemAnh" alt="Xem trước ảnh chứng từ" /><button type="button" class="link-inline" id="knBoAnh">Bỏ ảnh</button></div>
+      <p class="err" id="loi-knevidence"></p>
+    </div>
+    <div class="field">
+      <label for="knMoTa">Mô tả <span class="hint">(không bắt buộc)</span></label>
+      <textarea class="input" id="knMoTa" maxlength="500" placeholder="Ví dụ: khách chuyển khoản ngày 05, đã báo chủ trọ 2 lần qua Zalo." aria-describedby="loi-knnote"></textarea>
+      <p class="err" id="loi-knnote"></p>
+    </div>
+    <p class="dlg-note">An Cư kiểm tra chứng từ và có thể liên hệ chủ trọ, khách thuê. Nếu đúng khách đã đóng, An Cư cưỡng chế duyệt quỹ hoa hồng của kỳ này vào Ví khả dụng của bạn. Khai sai chứng từ có thể bị khoá tài khoản.</p>
+    <div class="dlg-act">
+      <button type="button" class="btn btn-ghost" data-close>Huỷ</button>
+      <button type="submit" class="btn btn-primary">Gửi khiếu nại</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Hộp thoại: tài liệu & ảnh phòng -->
+<dialog class="dlg-box" id="dlgTai" aria-labelledby="dlgTaiTitle">
+  <div class="dlg-in">
+    <div><h2 id="dlgTaiTitle">Tài liệu phòng</h2><p class="dlg-sub" id="dlgTaiSub"></p></div>
+    <button type="button" class="btn btn-primary" id="taiThongTin">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>
+      Tải thông tin phòng (.txt)
+    </button>
+    <ul class="dl-list" id="dsAnh"></ul>
+    <p class="dlg-note">File thông tin có sẵn mô tả, giá, tiện ích và link giới thiệu kèm mã của bạn — dán thẳng vào bài đăng.</p>
+    <div class="dlg-act">
+      <button type="button" class="btn btn-ghost" id="taiHetAnh">Tải tất cả ảnh</button>
+      <button type="button" class="btn btn-ghost" data-close>Đóng</button>
+    </div>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="assets/js/bookings.js"></script>
 <script src="assets/js/finance.js"></script>
+<script src="assets/js/moi-gioi.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
 (function(){
@@ -240,7 +599,7 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
   var ME = window.ME;
   if (!ME) return; // đang chuyển về login.html
 
-  var D = window.AnCuData, F = window.AnCuFinance, UI = window.AnCuUI;
+  var D = window.AnCuData, F = window.AnCuFinance, B = window.AnCuBookings, M = window.AnCuMoiGioi, UI = window.AnCuUI;
   var esc = UI.esc, vnd = D.formatVnd;
   var $ = function(id){ return document.getElementById(id); };
   var toi = D.findUser(ME.id) || ME;
@@ -249,173 +608,468 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
   function kyLabel(p){ var a = String(p).split('-'); return a[1] + '/' + a[0]; }
   function trieu(n){ return n >= 1000000 ? (n / 1000000).toLocaleString('vi-VN') + ' triệu' : vnd(n); }
   function absUrl(path){ return new URL(path, location.href).href; }
+  function linkPhong(id){ return absUrl('phong-chi-tiet.html?id=' + encodeURIComponent(id) + '&ref=' + encodeURIComponent(REF)); }
+  function khongDau(s){ return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase(); }
+  function anSo(p){ p = String(p || ''); return p.length >= 7 ? p.slice(0, 4) + ' ••• ' + p.slice(-3) : p; }
+  var ICON = {
+    check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',
+    cho: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    gui: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>',
+    tai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>'
+  };
 
-  /* ---------- Đầu trang ---------- */
+  /* ---------- Thông tin chung ---------- */
   var ten = toi.name || 'bạn';
   $('tenToi').textContent = ten;
-  $('vaiTro').textContent = 'Môi giới · ' + REF;
+  $('vaiTro').textContent = 'Môi giới ' + REF;
   $('avatar').textContent = ten.split(/\s+/).slice(-1)[0].charAt(0).toUpperCase();
   $('loiChao').textContent = 'Chào ' + ten;
+  $('chipRefTx').textContent = REF;
+  $('maRef').textContent = REF;
   var len = toi.upline_id && D.findUser(toi.upline_id);
-  $('maCuaToi').innerHTML = 'Mã giới thiệu của bạn: <span class="ref">' + esc(REF) + '</span>' +
-    (len ? ' · tuyến trên: ' + esc(len.name) + ' (<span class="ref">' + esc(len.ref_code) + '</span>)' : '');
+  $('maRefSub').textContent = 'Gắn vào mọi link bạn chia sẻ để khách và đồng nghiệp đến từ bạn được ghi nhận.' +
+    (len ? ' Tuyến trên của bạn: ' + len.name + ' (' + len.ref_code + ').' : '');
   $('dangXuat').addEventListener('click', function(){ logout(); });
 
-  /* ---------- Ví ---------- */
-  function veVi(){
-    var w = F.wallet(ME.id), ky = F.currentPeriod();
-    $('viKhaDung').textContent = vnd(w.available);
-    $('nutRut').disabled = w.available < F.MIN_WITHDRAW;
-    $('nutRut').title = w.available < F.MIN_WITHDRAW ? 'Cần tối thiểu ' + vnd(F.MIN_WITHDRAW) + ' để rút' : '';
-    $('viPhu').innerHTML =
-      '<div><span>Đang chờ An Cư chuyển khoản</span><b class="num">' + vnd(w.processing) + '</b></div>' +
-      '<div><span>Đã rút về ngân hàng</span><b class="num">' + vnd(w.withdrawn) + '</b></div>';
-    $('viCho').textContent = vnd(w.pending);
-    $('viChoNote').textContent = 'Hoa hồng kỳ ' + kyLabel(ky) + ' đang chạy. Chuyển sang ví khả dụng từ ' +
-      UI.vnDate(w.availableFrom + 'T00:00:00+07:00') + ', khi kỳ kết thúc.';
-    $('viTong').innerHTML = '<div><span>Tổng hoa hồng đã nhận từ trước tới nay</span><b class="num">' + vnd(w.earned) + '</b></div>';
-    return w;
+  /* ---------- Điều hướng ---------- */
+  var VIEWS = ['tong-quan', 'kho-phong', 'khach-hang', 'mang-luoi', 'vi'];
+  function moMenu(on){
+    document.body.classList.toggle('nav-open', on);
+    $('sideBackdrop').hidden = !on;
+    $('menuToggle').setAttribute('aria-expanded', String(on));
+    $('menuToggle').setAttribute('aria-label', on ? 'Đóng menu' : 'Mở menu');
   }
+  $('menuToggle').addEventListener('click', function(){ moMenu(!document.body.classList.contains('nav-open')); });
+  $('sideBackdrop').addEventListener('click', function(){ moMenu(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && document.body.classList.contains('nav-open')) { moMenu(false); $('menuToggle').focus(); } });
 
-  /* ---------- Bậc hiệu suất ---------- */
-  function veBac(){
+  function hienMuc(nguoiBam){
+    var v = location.hash.slice(1);
+    if (VIEWS.indexOf(v) === -1) v = 'tong-quan';
+    VIEWS.forEach(function(k){ $('v-' + k).hidden = k !== v; });
+    [].forEach.call(document.querySelectorAll('.side-link'), function(a){
+      if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    var title = $('v-' + v).dataset.title;
+    $('mTitle').textContent = title;
+    document.title = title + ' — Môi giới An Cư';
+    moMenu(false);
+    if (nguoiBam) {
+      window.scrollTo(0, 0);
+      var h = $('v-' + v).querySelector('h1');
+      if (h) h.focus({ preventScroll: true });
+    }
+    UI.reveal();
+  }
+  window.addEventListener('hashchange', function(){ hienMuc(true); });
+
+  /* ---------- Sao chép ---------- */
+  function chepChu(text, btn, label){
+    var xong = function(){
+      if (btn) { var cu = btn.innerHTML; btn.textContent = 'Đã chép'; setTimeout(function(){ btn.innerHTML = cu; }, 1600); }
+      UI.toast(label || 'Đã sao chép vào bộ nhớ tạm.');
+    };
+    var cach2 = function(){
+      var t = document.createElement('textarea');
+      t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(t);
+      if (ok) xong(); else UI.toast('Trình duyệt chặn sao chép tự động. Nội dung: ' + text);
+    };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(xong, cach2);
+    else cach2();
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-copy]');
+    if (b) { chepChu($(b.dataset.copy).value, b, 'Đã sao chép link vào bộ nhớ tạm.'); return; }
+    var r = e.target.closest('[data-copy-text="ref"]');
+    if (r || e.target.closest('#chipRef')) chepChu(REF, r, 'Đã sao chép mã ' + REF + '.');
+    var l = e.target.closest('[data-copy-link]');
+    if (l) chepChu(linkPhong(l.dataset.copyLink), l, 'Đã sao chép link giới thiệu phòng ' + l.dataset.ma + ' (kèm ?ref=' + REF + ').');
+    var t = e.target.closest('[data-tai]');
+    if (t) moTaiLieu(t.dataset.tai);
+    var c = e.target.closest('dialog [data-close]');
+    if (c) c.closest('dialog').close();
+  });
+
+  /* ================= 1. Tổng quan ================= */
+  function veTongQuan(){
+    var w = F.wallet(ME.id), ky = F.currentPeriod();
+    $('tqLead').textContent = 'Kỳ ' + kyLabel(ky) + ' · tổng hoa hồng đã nhận từ trước tới nay ' + vnd(w.earned) + '.';
+    $('tqKhaDung').textContent = vnd(w.available);
+    $('tqCho').textContent = vnd(w.pending);
+    $('tqChoNote').textContent = w.pendingCount
+      ? 'Dự kiến từ ' + w.pendingCount + ' kỳ đã tới hạn, chủ trọ chưa xác nhận thu tiền. Xác nhận kỳ nào, hoa hồng kỳ đó chuyển sang ví khả dụng.'
+      : 'Không có kỳ nào đang chờ chủ trọ xác nhận thu tiền.';
+
     var p = F.performance(ME.id), T = F.TIERS, max = T[T.length - 1].minSales * 1.25;
     $('bacSub').textContent = 'Tính theo doanh số tháng ' + kyLabel(p.period) + ': tổng tiền phòng khách bạn giới thiệu đã đóng.';
     $('bacHienTai').innerHTML = esc(p.tier.name) + ' – <span>' + pct(p.tier.share) + '</span>';
     $('doanhSo').textContent = vnd(p.sales);
-    var w = Math.min(100, p.sales / max * 100);
-    $('bar').innerHTML = '<div class="bar-fill" id="barFill" style="width:' + (p.sales > 0 ? Math.max(w, 1.5) : 0) + '%"></div>' +
+    var rong = Math.min(100, p.sales / max * 100);
+    $('bar').innerHTML = '<div class="bar-fill" style="width:' + (p.sales > 0 ? Math.max(rong, 1.5) : 0) + '%"></div>' +
       T.slice(1).map(function(t){ return '<span class="bar-mark" style="left:' + (t.minSales / max * 100) + '%" aria-hidden="true"></span>'; }).join('');
     $('bar').setAttribute('aria-valuemin', '0');
     $('bar').setAttribute('aria-valuemax', String(T[T.length - 1].minSales));
     $('bar').setAttribute('aria-valuenow', String(Math.min(p.sales, T[T.length - 1].minSales)));
     $('bar').setAttribute('aria-valuetext', p.tier.name + ', doanh số ' + vnd(p.sales));
     $('cacBac').innerHTML = T.map(function(t){
-      return '<li class="' + (t.level === p.tier.level ? 'is-on' : '') + '"' + (t.level === p.tier.level ? ' aria-current="true"' : '') + '>' +
-        '<b>' + esc(t.name) + '</b><span>' + pct(t.share) + ' quỹ · ' + (t.minSales ? 'từ ' + trieu(t.minSales) : 'mặc định') + '</span></li>';
+      var on = t.level === p.tier.level;
+      return '<li class="' + (on ? 'is-on' : '') + '"' + (on ? ' aria-current="true"' : '') + '><b>' + esc(t.name) + '</b><span>' +
+        pct(t.share) + ' quỹ</span><span>' + (t.minSales ? 'từ ' + trieu(t.minSales) : 'mặc định') + '</span></li>';
     }).join('');
     $('bacNote').textContent = (p.next
       ? 'Còn ' + vnd(p.toNext) + ' doanh số nữa để lên ' + p.next.name + ' (hưởng ' + pct(p.next.share) + ' quỹ hoa hồng). '
-      : 'Bạn đang ở bậc cao nhất. ') +
-      'Tỷ lệ là phần bạn hưởng từ quỹ hoa hồng của mỗi kỳ tiền phòng; bậc tính lại từ đầu mỗi tháng, khoản đã chia không đổi.';
+      : 'Bạn đang ở bậc cao nhất. ') + 'Bậc tính lại từ đầu mỗi tháng; khoản đã chia không đổi.';
+
+    var khach = khachTatCa();
+    var dangTheoDoi = khach.filter(function(c){ return !c.closed && c.stageIndex < 3; }).length;
+    var daKy = khach.filter(function(c){ return c.stageIndex === 3; }).length;
+    var f2 = F.downlines(ME.id).length;
+    var thangNay = F.ledger(ME.id).filter(function(e){ return e.period === ky; }).reduce(function(s, e){ return s + e.amount; }, 0);
+    var o = [
+      ['Khách đang theo dõi', dangTheoDoi, 'Chưa ký hợp đồng', '#khach-hang', false],
+      ['Đã ký hợp đồng', daKy, 'Khách qua link của bạn', '#khach-hang', false],
+      ['Tuyến dưới F2', f2, 'Môi giới bạn đã mời', '#mang-luoi', false],
+      ['Hoa hồng tháng này', vnd(thangNay), 'Trực tiếp và từ F2', '#vi', true]
+    ];
+    $('tqStats').innerHTML = o.map(function(x){
+      return '<li class="stat reveal"><p class="stat-lb">' + x[0] + '</p><p class="stat-v num' + (x[4] ? ' is-money' : '') + '">' + esc(x[1]) +
+        '</p><p class="stat-s"><span>' + esc(x[2]) + '</span><a href="' + x[3] + '" aria-label="Xem ' + esc(x[0].toLowerCase()) + '">Xem →</a></p></li>';
+    }).join('');
   }
 
-  /* ---------- Link affiliate ---------- */
-  var phong = D.rooms.filter(function(r){ return r.is_listing && r.status === 'available'; });
-  $('chonPhong').innerHTML = phong.map(function(r){
-    return '<option value="' + esc(r.id) + '">' + esc(r.code + ' · ' + r.title + ' · ' + vnd(r.price)) + '</option>';
-  }).join('');
-  $('nutTaoLink').addEventListener('click', function(){
-    var url = absUrl('phong-chi-tiet.html?id=' + encodeURIComponent($('chonPhong').value) + '&ref=' + encodeURIComponent(REF));
-    $('linkAff').value = url;
-    $('moThu').href = url;
-    $('ketQuaLink').hidden = false;
-    $('linkAff').focus(); $('linkAff').select();
+  /* ================= 2. Kho phòng ================= */
+  // Phòng trống đồng bộ từ chủ trọ: tin đang rao, còn trống
+  var PHONG = D.rooms.filter(function(r){ return r.is_listing && r.status === 'available' && r.campaign_open !== false; });
+  $('demPhong').textContent = PHONG.length || '';
+  function veKho(){
+    var p = F.performance(ME.id);
+    $('khoLead').textContent = PHONG.length + ' phòng còn trống, chủ trọ đang mở chiến dịch Môi giới. Link giới thiệu luôn kèm ?ref=' + REF +
+      '; bạn nhận ' + pct(p.tier.share) + ' quỹ hoa hồng (' + p.tier.name + ') mỗi kỳ khách đóng tiền.';
+    var q = khongDau($('timPhong').value.trim());
+    var ds = PHONG.filter(function(r){ return !q || khongDau(r.code + ' ' + r.title + ' ' + r.address + ' ' + r.type).indexOf(q) !== -1; });
+    var sx = $('sapXep').value;
+    ds.sort(function(a, b){
+      if (sx === 're') return a.price - b.price;
+      if (sx === 'dat') return b.price - a.price;
+      if (sx === 'ma') return a.code.localeCompare(b.code);
+      return D.commissionFor(b.price, b) - D.commissionFor(a.price, a);
+    });
+    $('demKetQua').textContent = q ? ds.length + ' / ' + PHONG.length + ' phòng' : PHONG.length + ' phòng';
+    if (!ds.length) { $('khoPhong').innerHTML = '<p class="empty" style="grid-column:1/-1">Không có phòng nào khớp "' + esc($('timPhong').value) + '".</p>'; return; }
+    $('khoPhong').innerHTML = ds.map(function(r){
+      var quy = D.commissionFor(r.price, r), nhan = Math.round(quy * p.tier.share);
+      var chu = D.findUser(r.landlord_id);
+      return '<article class="card room reveal">' +
+        '<a class="room-img" href="phong-chi-tiet.html?id=' + encodeURIComponent(r.id) + '" target="_blank" rel="noopener" aria-label="Xem tin ' + esc(r.code) + ' (mở thẻ mới)">' +
+          '<img src="' + esc(r.images[0]) + '" alt="' + esc(r.alt || r.title) + '" loading="lazy" width="400" height="300" />' +
+          '<span class="price-tag num">' + vnd(r.price) + '<small>/tháng</small></span>' +
+          '<span class="rate-tag">Quỹ ' + pct(D.commissionRateOf(r)) + '</span></a>' +
+        '<div class="room-body">' +
+          '<p class="room-meta">' + esc(r.code + ' · ' + r.type + ' · ' + r.area + ' m² · ' + r.people + ' người') + '</p>' +
+          '<h3>' + esc(r.title) + '</h3>' +
+          '<p class="room-addr">' + esc(r.address) + '</p>' +
+          '<dl class="room-earn"><div><dt>Quỹ hoa hồng mỗi kỳ</dt><dd class="num">' + vnd(quy) + '</dd></div>' +
+            '<div class="is-me"><dt>Bạn nhận (' + esc(p.tier.name) + ')</dt><dd class="num">≈ ' + vnd(nhan) + '</dd></div></dl>' +
+          '<div class="room-act">' +
+            '<button type="button" class="btn btn-primary" data-copy-link="' + esc(r.id) + '" data-ma="' + esc(r.code) + '">' +
+              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>Copy Link giới thiệu</button>' +
+            '<button type="button" class="btn btn-ghost" data-tai="' + esc(r.id) + '">' + ICON.tai + 'Tải ảnh &amp; tài liệu</button>' +
+          '</div>' +
+          '<p class="room-meta">Chủ trọ: ' + esc(chu ? chu.name : '—') + '</p>' +
+        '</div></article>';
+    }).join('');
+    UI.reveal();
+  }
+  $('timPhong').addEventListener('input', veKho);
+  $('sapXep').addEventListener('change', veKho);
+
+  /* ---------- Tải tài liệu & ảnh ---------- */
+  var dangTai = null;
+  function tenFile(r, i, src){ var ext = (src.split('.').pop() || 'jpg').split('?')[0]; return 'AnCu-' + r.code + '-anh-' + (i + 1) + '.' + ext; }
+  function taiVe(href, name){ var a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  function moTaiLieu(id){
+    var r = D.findRoom(id); if (!r) return;
+    dangTai = r;
+    $('dlgTaiTitle').textContent = 'Tài liệu phòng ' + r.code;
+    $('dlgTaiSub').textContent = r.title + ' · ' + r.images.length + ' ảnh';
+    $('dsAnh').innerHTML = r.images.map(function(src, i){
+      return '<li><img src="' + esc(src) + '" alt="Ảnh ' + (i + 1) + ' của ' + esc(r.code) + '" loading="lazy" />' +
+        '<span>Ảnh ' + (i + 1) + '</span><a class="btn btn-ghost" href="' + esc(src) + '" download="' + esc(tenFile(r, i, src)) + '">' + ICON.tai + 'Tải</a></li>';
+    }).join('');
+    $('dlgTai').showModal();
+  }
+  $('taiThongTin').addEventListener('click', function(){
+    var r = dangTai; if (!r) return;
+    var dong = [
+      'AN CƯ — THÔNG TIN PHÒNG ' + r.code, '', r.title, '',
+      'Giá thuê: ' + vnd(r.price) + '/tháng',
+      'Diện tích: ' + r.area + ' m² · Tối đa ' + r.people + ' người · Tầng ' + r.floor,
+      'Loại phòng: ' + r.type,
+      'Địa chỉ: ' + r.address,
+      'Tiện ích: ' + (r.amenities || []).join(', '), '',
+      'Mô tả:', r.desc, '',
+      'Xem ảnh và đặt lịch xem phòng: ' + linkPhong(r.id),
+      'Môi giới: ' + ten + (toi.phone ? ' · ' + toi.phone : '') + ' · mã ' + REF
+    ];
+    var blob = new Blob(['﻿' + dong.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    taiVe(url, 'AnCu-' + r.code + '-thong-tin.txt');
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    UI.toast('Đã tải thông tin phòng ' + r.code + '.');
+  });
+  $('taiHetAnh').addEventListener('click', function(){
+    var r = dangTai; if (!r) return;
+    r.images.forEach(function(src, i){ setTimeout(function(){ taiVe(src, tenFile(r, i, src)); }, i * 400); });
+    UI.toast('Đang tải ' + r.images.length + ' ảnh. Trình duyệt có thể hỏi cho phép tải nhiều file.');
   });
 
-  /* ---------- Link F2 + tuyến dưới ---------- */
-  $('linkF2').value = absUrl('dang-ky-moi-gioi.html?moi=' + encodeURIComponent(REF));
-  $('f2Desc').textContent = 'Đồng nghiệp đăng ký làm môi giới qua link này sẽ thành tuyến dưới của bạn. Bạn hưởng ' +
-    pct(F.UPLINE_SHARE) + ' quỹ hoa hồng từ mỗi kỳ tiền phòng do họ mang về — không trừ vào phần của họ.';
-  function veTuyenDuoi(){
+  /* ================= 3. Khách hàng ================= */
+  var locKhach = 'tat-ca';
+  function veKhach(){
+    var all = khachTatCa();
+    var dem = { 'tat-ca': all.length, 'da-huy': 0 };
+    M.STAGES.forEach(function(s){ dem[s.key] = 0; });
+    all.forEach(function(c){ dem[c.stage.key] = (dem[c.stage.key] || 0) + 1; });
+    var dangMo = all.filter(function(c){ return !c.closed && c.stageIndex < 3; }).length;
+    $('demKhach').textContent = dangMo || '';
+
+    $('buoc').innerHTML = M.STAGES.map(function(s){
+      return '<li class="reveal"><span class="badge ' + s.tone + '" style="justify-self:start">' + esc(s.label) + '</span>' +
+        '<span class="n num">' + dem[s.key] + '</span><span>' + esc(s.who) + '</span></li>';
+    }).join('');
+
+    var loc = [['tat-ca', 'Tất cả']].concat(M.STAGES.map(function(s){ return [s.key, s.label]; })).concat([['da-huy', M.CLOSED.label]]);
+    $('locKhach').innerHTML = loc.map(function(x){
+      return '<button type="button" class="chip" data-loc="' + x[0] + '" aria-pressed="' + (locKhach === x[0]) + '">' + esc(x[1]) + ' (' + (dem[x[0]] || 0) + ')</button>';
+    }).join('');
+
+    var ds = all.filter(function(c){ return locKhach === 'tat-ca' || c.stage.key === locKhach; });
+    $('khachSub').textContent = all.length ? all.length + ' khách · ' + dangMo + ' khách đang theo dõi' : '';
+    if (!all.length) {
+      $('bangKhach').innerHTML = '<p class="empty">Chưa có khách nào đặt lịch qua link của bạn. Vào <a class="link" href="#kho-phong">Kho phòng</a> để lấy link giới thiệu.</p>';
+      return;
+    }
+    if (!ds.length) { $('bangKhach').innerHTML = '<p class="empty">Không có khách ở trạng thái này.</p>'; return; }
+    $('bangKhach').innerHTML = '<div class="table-wrap"><table class="tbl"><thead><tr><th>Khách</th><th>Phòng</th><th>Lịch xem</th><th>Trạng thái</th><th><span class="sr-only">Thao tác</span></th></tr></thead><tbody>' +
+      ds.map(function(c){
+        var b = c.booking, st = B.STATUS[b.status] || { label: b.status };
+        var ai = c.last ? (c.last.by_role === 'landlord' ? 'Chủ trọ xác nhận' : c.last.by_role === 'broker' ? 'Bạn xác nhận' : 'Hệ thống ghi nhận') +
+          (c.last.by_role !== 'system' ? ' · ' + UI.vnDate(c.last.at) : '') : 'Hệ thống tự động';
+        var buoc = c.server ? [] : M.nextSteps(c, ME), thaoTac;
+        if (c.server) thaoTac = '<span class="note">Lịch trên hệ thống An Cư' + (c.request && c.request.payStatus === 'submitted' ? ' · khách báo đã chuyển cọc' : '') + '. Chủ trọ cập nhật trạng thái.</span>';
+        else if (buoc.indexOf('da-xem') !== -1) {
+          var chan = M.viewBlocker(b);
+          thaoTac = chan ? '<span class="note">' + esc(chan) + ' Xác nhận đã xem sau buổi hẹn.</span>'
+            : '<button type="button" class="btn btn-ghost" data-da-xem="' + esc(b.id) + '">' + ICON.check + 'Xác nhận đã xem phòng</button>';
+        } else if (c.closed) thaoTac = '<span class="note">Lịch đã huỷ trước khi xem.</span>';
+        else if (c.stageIndex === 3) thaoTac = '<span class="note">Hoàn tất. Hoa hồng chia theo từng kỳ khách đóng tiền.</span>';
+        else thaoTac = '<span class="note">Chờ chủ trọ xác nhận khách đã cọc hoặc đã ký hợp đồng.</span>';
+        return '<tr>' +
+          '<td data-label="Khách"><span class="main">' + esc(c.name) + '</span><span class="sub num">' + esc(anSo(c.phone)) + '</span></td>' +
+          '<td data-label="Phòng"><span class="main">' + esc(c.room ? c.room.code : b.room_id) + '</span><span class="sub">' + esc(c.room ? c.room.title : '') + '</span></td>' +
+          '<td data-label="Lịch xem"><span class="main">' + esc(UI.vnDateTime(b.scheduled_at)) + '</span><span class="sub">Lịch: ' + esc(st.label) + '</span></td>' +
+          '<td data-label="Trạng thái"><span class="badge ' + c.stage.tone + '">' + esc(c.stage.label) + '</span><span class="sub">' + esc(ai) + '</span></td>' +
+          '<td class="act r">' + thaoTac + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  $('locKhach').addEventListener('click', function(e){
+    var b = e.target.closest('[data-loc]'); if (!b) return;
+    locKhach = b.dataset.loc; veKhach();
+    var lai = $('locKhach').querySelector('[data-loc="' + locKhach + '"]'); if (lai) lai.focus();
+  });
+  $('bangKhach').addEventListener('click', function(e){
+    var b = e.target.closest('[data-da-xem]'); if (!b) return;
+    var kq = M.advance(b.dataset.daXem, 'da-xem', ME);
+    if (!kq.ok) { UI.toast(kq.message); return; }
+    veTatCa();
+    UI.toast('Đã xác nhận ' + kq.customer.name + ' đã xem phòng ' + (kq.customer.room ? kq.customer.room.code : '') + '.');
+  });
+
+  /* ================= 4. Mạng lưới F2 ================= */
+  $('linkF2').value = absUrl('dang-ky-moi-gioi.html?invite=' + encodeURIComponent(REF));
+  function veF2(){
     var ds = F.downlines(ME.id);
-    var tuHo = F.ledger(ME.id).filter(function(e){ return e.kind === 'upline'; });
-    if (!ds.length) { $('tuyenDuoi').innerHTML = '<p class="wallet-s">Chưa có ai đăng ký qua link của bạn.</p>'; return; }
-    $('tuyenDuoi').innerHTML = '<p class="wallet-s" style="margin-bottom:8px">Tuyến dưới của bạn (' + ds.length + ')</p><ul class="down">' + ds.map(function(u){
-      var nhan = tuHo.filter(function(e){ return e.from_broker_id === u.id; }).reduce(function(s, e){ return s + e.amount; }, 0);
-      return '<li><b>' + esc(u.name) + ' <span class="ref">' + esc(u.ref_code) + '</span></b>' +
-        '<span class="num">Doanh số tháng: ' + vnd(F.performance(u.id).sales) + ' · bạn đã nhận ' + vnd(nhan) + '</span></li>';
-    }).join('') + '</ul>';
+    $('demF2').textContent = ds.length || '';
+    var tuF2 = F.ledger(ME.id).filter(function(e){ return e.kind === 'upline'; });
+    $('f2Lead').textContent = 'Bạn hưởng ' + pct(F.UPLINE_SHARE) + ' hoa hồng của mỗi F2 trên từng kỳ tiền phòng khách của họ đóng. ' +
+      'Phần này An Cư trả thêm, không trừ vào tiền của F2.';
+    var quy = 3000000, f2Nhan = Math.round(quy * F.TIERS[0].share);
+    $('f2ViDu').textContent = 'Ví dụ: khách của F2 đóng 15.000.000₫, quỹ 20% = ' + vnd(quy) + '. F2 ở ' + F.TIERS[0].name + ' nhận ' +
+      pct(F.TIERS[0].share) + ' = ' + vnd(f2Nhan) + ', bạn nhận thêm ' + pct(F.UPLINE_SHARE) + ' × ' + vnd(f2Nhan) + ' = ' + vnd(Math.round(f2Nhan * F.UPLINE_SHARE)) + '.';
+    var hang = ds.map(function(u){
+      var s = F.brokerStats(u.id);
+      var nhan = tuF2.filter(function(e){ return e.from_broker_id === u.id; }).reduce(function(t, e){ return t + e.amount; }, 0);
+      return { u: u, s: s, nhan: nhan };
+    });
+    var tongDt = hang.reduce(function(t, h){ return t + h.s.sales; }, 0);
+    var tongNhan = tuF2.reduce(function(t, e){ return t + e.amount; }, 0);
+    $('f2So').innerHTML =
+      '<div><dt>Số môi giới F2</dt><dd class="num">' + ds.length + '<small>Đăng ký qua link của bạn</small></dd></div>' +
+      '<div><dt>Doanh thu F2 mang về</dt><dd class="num">' + vnd(tongDt) + '<small>Tổng tiền phòng khách của F2 đã đóng</small></dd></div>' +
+      '<div class="is-accent"><dt>Hoa hồng gián tiếp bạn nhận</dt><dd class="num">' + vnd(tongNhan) + '<small>' + pct(F.UPLINE_SHARE) + ' hoa hồng của F2</small></dd></div>';
+    if (!ds.length) { $('bangF2').innerHTML = '<p class="empty">Chưa có ai đăng ký qua link của bạn. Sao chép link ở trên và gửi cho đồng nghiệp.</p>'; return; }
+    $('bangF2').innerHTML = '<div class="table-wrap"><table class="tbl"><thead><tr><th>Môi giới F2</th><th>Tham gia</th><th class="r">Doanh thu</th><th class="r">Hoa hồng F2 nhận</th><th class="r">Bạn nhận (' + pct(F.UPLINE_SHARE) + ')</th></tr></thead><tbody>' +
+      hang.map(function(h){
+        return '<tr><td data-label="Môi giới F2"><span class="main">' + esc(h.u.name) + '</span><span class="sub"><span class="ref">' + esc(h.u.ref_code) + '</span></span></td>' +
+          '<td data-label="Tham gia">' + (h.u.created_at ? esc(UI.vnDate(h.u.created_at)) : '<span class="sub">Tài khoản mẫu</span>') + '</td>' +
+          '<td data-label="Doanh thu" class="r num"><span class="main">' + vnd(h.s.sales) + '</span><span class="sub">' + h.s.payments + ' kỳ đã đóng</span></td>' +
+          '<td data-label="Hoa hồng F2 nhận" class="r num">' + vnd(h.s.direct) + '</td>' +
+          '<td data-label="Bạn nhận" class="r num"><span class="main" style="color:var(--success-ink)">+' + vnd(h.nhan) + '</span></td></tr>';
+      }).join('') + '</tbody></table></div>';
   }
 
-  /* ---------- Sao chép ---------- */
-  function chep(input, btn){
-    var xong = function(){
-      var cu = btn.textContent; btn.textContent = 'Đã chép';
-      setTimeout(function(){ btn.textContent = cu; }, 1800);
-      UI.toast('Đã sao chép link vào bộ nhớ tạm.');
-    };
-    var cach2 = function(){
-      input.focus(); input.select();
-      try { if (document.execCommand('copy')) { xong(); return; } } catch (e) {}
-      UI.toast('Trình duyệt chặn sao chép tự động — link đã được bôi đen, bấm Ctrl+C để chép.');
-    };
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(input.value).then(xong, cach2);
-    else cach2();
+  /* ================= 5. Ví & Rút tiền ================= */
+  function veViSo(){
+    var w = F.wallet(ME.id);
+    $('viSo').innerHTML =
+      '<div class="is-accent"><dt>Ví khả dụng</dt><dd class="num">' + vnd(w.available) + '<small>Rút được về ngân hàng</small></dd>' +
+        '<button type="button" class="btn btn-primary" id="nutRut"' + (w.available < F.MIN_WITHDRAW ? ' disabled title="Cần tối thiểu ' + vnd(F.MIN_WITHDRAW) + ' để rút"' : '') + '>' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M19 10v8M9 10v8M15 10v8M3 21h18"/></svg>Rút tiền về Ngân hàng</button>' +
+        (w.available < F.MIN_WITHDRAW ? '<small class="ds-note">Tối thiểu ' + vnd(F.MIN_WITHDRAW) + ' mỗi lần.</small>' : '') + '</div>' +
+      '<div><dt>Ví chờ xử lý</dt><dd class="num">≈ ' + vnd(w.pending) + '<small>' + (w.pendingCount ? w.pendingCount + ' kỳ chờ chủ trọ xác nhận thu tiền' : 'Không có kỳ nào đang chờ') + '</small></dd></div>' +
+      '<div><dt>Đang chờ chuyển khoản</dt><dd class="num">' + vnd(w.processing) + '<small>Yêu cầu rút đang xử lý</small></dd></div>' +
+      '<div><dt>Đã rút về ngân hàng</dt><dd class="num">' + vnd(w.withdrawn) + '<small>Từ trước tới nay</small></dd></div>';
+    $('nutRut').addEventListener('click', moRut);
   }
-  document.addEventListener('click', function(e){
-    var b = e.target.closest('[data-copy]');
-    if (b) chep($(b.dataset.copy), b);
-  });
 
-  /* ---------- Lịch sử hoa hồng ---------- */
+  function veDoiSoat(){
+    var hds = M.contractsOfBroker(ME.id);
+    var coTheGui = 0;
+    if (!hds.length) {
+      $('doiSoat').innerHTML = '<li class="empty">Chưa có hợp đồng nào do bạn giới thiệu. Khi khách ký hợp đồng, các kỳ thanh toán hiện ở đây.</li>';
+    } else {
+      $('doiSoat').innerHTML = hds.map(function(c){
+        var r = D.findRoom(c.room_id), ky = M.periodsForBroker(c);
+        coTheGui += ky.filter(function(k){ return k.state === 'open'; }).length;
+        var sau = F.periodsOf(c), cuoi = sau[sau.length - 1];
+        var tiepTheo = !cuoi ? 'Kỳ 1 tới hạn từ ' + UI.vnDate(c.start_date + 'T00:00:00+07:00') + '.'
+          : c.end_date.slice(0, 7) > cuoi ? 'Kỳ ' + (F.kyOf(c, cuoi) + 1) + ' tới hạn từ 01/' + kyLabel(nextP(cuoi)) + '.' : 'Hợp đồng đã tới kỳ cuối.';
+        var chips = ky.map(function(k){
+          var nhan = 'Kỳ ' + k.ky + ' · ' + kyLabel(k.period);
+          if (k.state === 'done') return '<li class="ky is-done">' + ICON.check + nhan + ' · đã đối soát</li>';
+          if (k.state === 'asked') return '<li class="ky is-asked">' + ICON.cho + nhan + ' · chờ chủ trọ</li>';
+          return '<li><button type="button" class="ky" data-gui-ds="' + esc(c.id) + '|' + k.period + '">' + ICON.gui + nhan + ' · gửi đối soát</button></li>';
+        }).join('');
+        var tuChoi = ky.filter(function(k){ return k.state === 'open' && k.request && k.request.state === 'rejected'; }).map(function(k){
+          return '<p class="ds-note is-err">Kỳ ' + k.ky + ' bị chủ trọ từ chối: ' + esc(k.request.reject_note) + '</p>';
+        }).join('');
+        // Đã nhắc chủ trọ (yêu cầu đối soát) mà kỳ vẫn chưa được xác nhận → khiếu nại lên An Cư
+        var kn = ky.filter(function(k){ return k.state !== 'done' && k.request; }).map(function(k){
+          if (M.openDisputeFor(c.id, k.period)) return '<span class="ky is-kn">' + ICON.cho + 'Kỳ ' + k.ky + ' · An Cư đang xem khiếu nại</span>';
+          return '<button type="button" class="kn-btn" data-khieu-nai="' + esc(c.id) + '|' + k.period + '">Khiếu nại kỳ ' + k.ky + ' lên An Cư</button>';
+        }).join('');
+        var forced = ky.filter(function(k){ return k.payment && k.payment.forced_by; }).map(function(k){
+          return '<p class="ds-note">Kỳ ' + k.ky + ': An Cư đã duyệt theo khiếu nại của bạn.</p>';
+        }).join('');
+        return '<li class="card ds-item reveal"><div class="ds-head"><b>' + esc((r ? r.code + ' · ' : '') + c.tenant_name) + '</b>' +
+          '<span>' + esc(c.id) + ' · ' + vnd(c.monthly_rent) + '/tháng</span></div>' +
+          '<ul class="ky-list">' + chips + '</ul>' + tuChoi + forced + (kn ? '<div class="kn-row">' + kn + '</div>' : '') +
+          '<p class="ds-note">' + esc(tiepTheo) + '</p></li>';
+      }).join('');
+    }
+    $('nutDoiSoat').disabled = coTheGui === 0;
+    $('nutDoiSoat').title = coTheGui ? '' : 'Không có kỳ nào cần đối soát';
+    var cho = M.requestsOfBroker(ME.id).filter(function(x){ return x.state === 'open'; }).length;
+    $('demDoiSoat').textContent = cho || '';
+
+    var ycs = M.requestsOfBroker(ME.id);
+    var ST = { open: ['Chờ chủ trọ', 'b-warn'], done: ['Đã đối soát', 'b-ok'], rejected: ['Bị từ chối', 'b-danger'] };
+    $('yeuCauDs').innerHTML = ycs.length ? '<h3 style="margin:24px 0 12px;font-size:16px;font-weight:600;color:var(--text-muted)">Yêu cầu đã gửi</h3><ul class="hist">' +
+      ycs.map(function(x){
+        var st = ST[x.state];
+        return '<li><div class="h-top"><b>' + esc((x.room ? x.room.code : '') + ' · Kỳ ' + x.ky + ' (' + kyLabel(x.period) + ')') + '</b><span class="badge ' + st[1] + '">' + st[0] + '</span></div>' +
+          '<p>' + esc('Gửi ' + UI.vnDateTime(x.created_at) + (x.note ? ' · "' + x.note + '"' : '')) + '</p>' +
+          (x.state === 'done' ? '<p>' + (x.payment.forced_by ? 'An Cư duyệt theo khiếu nại: ' : 'Chủ trọ xác nhận đã nhận ') + vnd(x.payment.amount) + '; bạn được ' + vnd(x.payment.broker_id === ME.id ? x.payment.broker_amount : x.payment.upline_amount) + '.</p>' : '') +
+          (x.state === 'rejected' ? '<p class="ds-note is-err">Lý do: ' + esc(x.reject_note) + '</p>' : '') + '</li>';
+      }).join('') + '</ul>' : '';
+    var kns = M.disputesOfBroker(ME.id);
+    var KST = { open: ['An Cư đang xem xét', 'b-warn'], forced: ['An Cư đã duyệt', 'b-ok'], rejected: ['An Cư bác khiếu nại', 'b-danger'], auto: ['Chủ trọ đã tự xác nhận', 'b-ok'] };
+    $('yeuCauDs').innerHTML += kns.length ? '<h3 style="margin:24px 0 12px;font-size:16px;font-weight:600;color:var(--text-muted)">Khiếu nại đã gửi An Cư</h3><ul class="hist">' +
+      kns.map(function(x){
+        var st = KST[x.state];
+        return '<li><div class="h-top"><b>' + esc((x.room ? x.room.code : '') + ' · Kỳ ' + x.ky + ' (' + kyLabel(x.period) + ')') + '</b><span class="badge ' + st[1] + '">' + st[0] + '</span></div>' +
+          '<p>' + esc('Gửi ' + UI.vnDateTime(x.created_at) + ' · khách đóng ' + vnd(x.amount) + ' ngày ' + x.paid_date.split('-').reverse().join('/') + (x.evidence ? ' · có ảnh chứng từ' : '')) + '</p>' +
+          (x.decision_note ? '<p class="ds-note' + (x.state === 'rejected' ? ' is-err' : '') + '">Kết luận của An Cư: ' + esc(x.decision_note) + '</p>' : '') +
+          (x.state === 'forced' && x.payment ? '<p>Bạn được ' + vnd(x.payment.broker_amount) + ' vào Ví khả dụng.</p>' : '') + '</li>';
+      }).join('') + '</ul>' : '';
+    $('demDoiSoat').textContent = (cho + kns.filter(function(x){ return x.state === 'open'; }).length) || '';
+    return coTheGui;
+  }
+  function nextP(p){ var a = p.split('-').map(Number); return a[1] === 12 ? (a[0] + 1) + '-01' : a[0] + '-' + ('0' + (a[1] + 1)).slice(-2); }
+
+  function veRut(){
+    var rut = F.withdrawals(ME.id);
+    if (!rut.length) { $('rutTien').innerHTML = '<p class="empty">Chưa có yêu cầu rút tiền nào.</p>'; return; }
+    var ST = { processing: ['Đang xử lý', 'b-warn'], paid: ['Đã chuyển', 'b-ok'], rejected: ['Bị từ chối', 'b-danger'] };
+    $('rutTien').innerHTML = '<div class="table-wrap"><table class="tbl"><thead><tr><th>Ngày yêu cầu</th><th class="r">Số tiền</th><th>Tài khoản nhận</th><th>Trạng thái</th></tr></thead><tbody>' +
+      rut.map(function(w){
+        var st = ST[w.status] || ST.processing;
+        return '<tr><td data-label="Ngày yêu cầu">' + esc(UI.vnDateTime(w.created_at)) + '</td>' +
+          '<td data-label="Số tiền" class="r num"><span class="main">−' + vnd(w.amount) + '</span></td>' +
+          '<td data-label="Tài khoản nhận"><span class="main">' + esc(w.bank + ' ••••' + w.account_last4) + '</span><span class="sub">' + esc(w.account_name) + '</span></td>' +
+          '<td data-label="Trạng thái"><span class="badge ' + st[1] + '">' + st[0] + '</span>' +
+            (w.status === 'paid' && w.transfer_ref ? '<span class="sub">Mã GD ' + esc(w.transfer_ref) + '</span>' : '') +
+            (w.status === 'rejected' && w.reject_note ? '<span class="sub" style="color:var(--danger-ink)">' + esc(w.reject_note) + '</span>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
   var hienHet = false, SO_DONG = 8;
   function veLichSu(){
     var tatCa = F.ledger(ME.id);
     var ds = hienHet ? tatCa : tatCa.slice(0, SO_DONG);
-    if (!tatCa.length) {
-      $('lichSu').innerHTML = '<p class="empty">Chưa có hoa hồng nào. Tạo link affiliate ở trên và gửi cho khách để bắt đầu.</p>';
-    } else {
-      // Điện thoại: danh sách gọn (mỗi khoản 3 dòng). Màn hình rộng: bảng đủ cột. CSS chỉ hiện một trong hai.
-      var gon = '<ul class="hist">' + ds.map(function(e){
-        var r = D.findRoom(e.room_id), from = e.from_broker_id && D.findUser(e.from_broker_id);
-        var loai = e.kind === 'upline' ? 'Tuyến dưới ' + (from ? from.name : '') + ' · ' + pct(e.share) + ' quỹ' : 'Trực tiếp · Bậc ' + e.tier + ' · ' + pct(e.share) + ' quỹ';
-        return '<li><div class="h-top"><b>' + esc((r ? r.code : e.room_id) + ' · kỳ ' + kyLabel(e.period)) + '</b><b class="num">+' + vnd(e.amount) + '</b></div>' +
-          '<p>' + esc(loai) + ' ' + vnd(e.fund) + ' · khách đóng ' + vnd(e.payment_amount) + '</p>' +
-          '<div class="h-top"><span>' + esc(UI.vnDate(e.created_at)) + '</span>' +
-          (e.state === 'available' ? '<span class="badge b-ok">Khả dụng</span>' : '<span class="badge b-warn">Chờ xử lý</span>') + '</div></li>';
-      }).join('') + '</ul>';
-      $('lichSu').innerHTML = gon + '<div class="table-wrap hist-table"><table class="tbl"><thead><tr>' +
-        '<th>Ngày xác nhận</th><th>Kỳ</th><th>Phòng</th><th class="r">Khách đóng</th><th class="r">Quỹ hoa hồng</th><th>Loại</th><th class="r">Bạn nhận</th><th>Trạng thái</th>' +
-        '</tr></thead><tbody>' + ds.map(function(e){
-          var r = D.findRoom(e.room_id), from = e.from_broker_id && D.findUser(e.from_broker_id);
-          var loai = e.kind === 'upline'
-            ? '<span class="main">Tuyến dưới</span><span class="sub">' + esc(from ? from.name : '') + ' · ' + pct(e.share) + ' quỹ</span>'
-            : '<span class="main">Trực tiếp</span><span class="sub">Bậc ' + e.tier + ' · ' + pct(e.share) + ' quỹ</span>';
-          var st = e.state === 'available' ? '<span class="badge b-ok">Khả dụng</span>' : '<span class="badge b-warn">Chờ xử lý</span>';
-          return '<tr><td data-label="Ngày xác nhận">' + esc(UI.vnDate(e.created_at)) + '</td>' +
-            '<td data-label="Kỳ">' + kyLabel(e.period) + '</td>' +
-            '<td data-label="Phòng"><span class="main">' + esc(r ? r.code : e.room_id) + '</span><span class="sub">' + esc(r ? r.title : '') + '</span></td>' +
-            '<td data-label="Khách đóng" class="r num">' + vnd(e.payment_amount) + '</td>' +
-            '<td data-label="Quỹ hoa hồng" class="r num">' + vnd(e.fund) + '</td>' +
-            '<td data-label="Loại">' + loai + '</td>' +
-            '<td data-label="Bạn nhận" class="r num"><span class="main">+' + vnd(e.amount) + '</span></td>' +
-            '<td data-label="Trạng thái">' + st + '</td></tr>';
-        }).join('') + '</tbody></table></div>' +
-        (tatCa.length > SO_DONG ? '<button type="button" class="btn btn-ghost" id="xemThem" style="margin-top:12px">' +
-          (hienHet ? 'Thu gọn' : 'Xem thêm ' + (tatCa.length - SO_DONG) + ' khoản') + '</button>' : '');
-      var xt = $('xemThem');
-      if (xt) xt.addEventListener('click', function(){ hienHet = !hienHet; veLichSu(); });
+    if (!tatCa.length) { $('lichSu').innerHTML = '<p class="empty">Chưa có hoa hồng nào. Lấy link ở <a class="link" href="#kho-phong">Kho phòng</a> và gửi cho khách để bắt đầu.</p>'; return; }
+    function loai(e){
+      var from = e.from_broker_id && D.findUser(e.from_broker_id);
+      return e.kind === 'upline'
+        ? ['Từ F2', (from ? from.name : '') + ' · ' + pct(e.share) + ' hoa hồng của F2']
+        : ['Trực tiếp', 'Bậc ' + e.tier + ' · ' + pct(e.share) + ' quỹ ' + vnd(e.fund) + (e.forced ? ' · An Cư duyệt theo khiếu nại' : '')];
     }
-    var rut = F.withdrawals(ME.id);
-    $('rutTien').innerHTML = rut.length ? '<h3 class="sub-h">Yêu cầu rút tiền</h3><ul class="wd-list">' + rut.map(function(w){
-      var st = { processing: ['Đang xử lý', 'b-warn'], paid: ['Đã chuyển', 'b-ok'], rejected: ['Bị từ chối', 'b-danger'] }[w.status] || ['Đang xử lý', 'b-warn'];
-      return '<li><b class="num">−' + vnd(w.amount) + '</b><span>' + esc(w.bank + ' ••••' + w.account_last4 + ' · ' + w.account_name + ' · ' + UI.vnDateTime(w.created_at)) + '</span>' +
-        '<span class="badge ' + st[1] + '">' + st[0] + '</span></li>';
-    }).join('') + '</ul>' : '';
+    function st(){ return '<span class="badge b-ok">Khả dụng</span>'; }
+    var gon = '<ul class="hist">' + ds.map(function(e){
+      var r = D.findRoom(e.room_id), l = loai(e);
+      return '<li><div class="h-top"><b>' + esc((r ? r.code : e.room_id) + ' · kỳ ' + kyLabel(e.period)) + '</b><b class="num">+' + vnd(e.amount) + '</b></div>' +
+        '<p>' + esc(l[0] + ' · ' + l[1] + ' · khách đóng ' + vnd(e.payment_amount)) + '</p>' +
+        '<div class="h-top"><span>' + esc(UI.vnDate(e.created_at)) + '</span>' + st(e) + '</div></li>';
+    }).join('') + '</ul>';
+    var bang = '<div class="table-wrap hist-table"><table class="tbl"><thead><tr><th>Ngày xác nhận</th><th>Kỳ</th><th>Phòng</th><th class="r">Khách đóng</th><th>Loại</th><th class="r">Bạn nhận</th><th>Trạng thái</th></tr></thead><tbody>' +
+      ds.map(function(e){
+        var r = D.findRoom(e.room_id), l = loai(e);
+        return '<tr><td data-label="Ngày xác nhận">' + esc(UI.vnDate(e.created_at)) + '</td><td data-label="Kỳ">' + kyLabel(e.period) + '</td>' +
+          '<td data-label="Phòng"><span class="main">' + esc(r ? r.code : e.room_id) + '</span><span class="sub">' + esc(r ? r.title : '') + '</span></td>' +
+          '<td data-label="Khách đóng" class="r num">' + vnd(e.payment_amount) + '</td>' +
+          '<td data-label="Loại"><span class="main">' + esc(l[0]) + '</span><span class="sub">' + esc(l[1]) + '</span></td>' +
+          '<td data-label="Bạn nhận" class="r num"><span class="main">+' + vnd(e.amount) + '</span></td><td data-label="Trạng thái">' + st(e) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    $('lichSu').innerHTML = gon + bang + (tatCa.length > SO_DONG
+      ? '<button type="button" class="btn btn-ghost" id="xemThem" style="margin-top:12px">' + (hienHet ? 'Thu gọn' : 'Xem thêm ' + (tatCa.length - SO_DONG) + ' khoản') + '</button>' : '');
+    var xt = $('xemThem');
+    if (xt) xt.addEventListener('click', function(){ hienHet = !hienHet; veLichSu(); });
   }
 
   /* ---------- Rút tiền ---------- */
-  var dlg = $('dlgRut'), inTien = $('soTienRut');
+  var dlgRut = $('dlgRut'), inTien = $('soTienRut');
   function docSo(s){ var d = String(s).replace(/[^0-9]/g, ''); return d ? Number(d) : 0; }
   function vietSo(n){ return n ? new Intl.NumberFormat('vi-VN').format(n) : ''; }
   $('nganHang').innerHTML = '<option value="">Chọn ngân hàng</option>' + F.BANKS.map(function(b){ return '<option>' + esc(b) + '</option>'; }).join('');
-  function xoaLoiRut(){
-    ['amount', 'bank', 'accountNo', 'accountName'].forEach(function(k){ $('loi-' + k).textContent = ''; });
-    [inTien, $('nganHang'), $('soTk'), $('chuTk')].forEach(function(el){ el.removeAttribute('aria-invalid'); });
+  function xoaLoi(keys, els){
+    keys.forEach(function(k){ $('loi-' + k).textContent = ''; });
+    els.forEach(function(el){ el.removeAttribute('aria-invalid'); });
   }
-  $('nutRut').addEventListener('click', function(){
+  function xoaLoiRut(){ xoaLoi(['amount', 'bank', 'accountNo', 'accountName'], [inTien, $('nganHang'), $('soTk'), $('chuTk')]); }
+  function moRut(){
     var w = F.wallet(ME.id);
     xoaLoiRut();
     $('dlgRutSub').textContent = 'Ví khả dụng: ' + vnd(w.available) + ' · tối thiểu ' + vnd(F.MIN_WITHDRAW) + ' mỗi lần.';
     inTien.value = vietSo(w.available);
     if (!$('chuTk').value) $('chuTk').value = ten;
-    dlg.showModal();
+    dlgRut.showModal();
     inTien.focus(); inTien.select();
-  });
+  }
   inTien.addEventListener('input', function(){ inTien.value = vietSo(docSo(inTien.value)); });
   $('rutHet').addEventListener('click', function(){ inTien.value = vietSo(F.wallet(ME.id).available); });
-  $('huyRut').addEventListener('click', function(){ dlg.close(); });
   $('formRut').addEventListener('submit', function(e){
     e.preventDefault();
     xoaLoiRut();
@@ -426,16 +1080,167 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
       if (o) { o.setAttribute('aria-invalid', 'true'); o.focus(); }
       return;
     }
-    dlg.close();
+    dlgRut.close();
     veTatCa();
     UI.toast('Đã gửi yêu cầu rút ' + vnd(kq.withdrawal.amount) + ' về ' + kq.withdrawal.bank + ' ••••' + kq.withdrawal.account_last4 + '.');
   });
 
-  function veTatCa(){ veVi(); veBac(); veTuyenDuoi(); veLichSu(); UI.reveal(); }
-  veTatCa();
+  /* ---------- Yêu cầu đối soát ---------- */
+  var dlgDs = $('dlgDs'), selHd = $('dsHopDong'), selKy = $('dsKy');
+  function hdCoTheGui(){
+    return M.contractsOfBroker(ME.id).map(function(c){
+      return { c: c, ky: M.periodsForBroker(c).filter(function(k){ return k.state === 'open'; }) };
+    }).filter(function(x){ return x.ky.length; });
+  }
+  function veChonKy(chon){
+    var x = hdCoTheGui().filter(function(h){ return h.c.id === selHd.value; })[0];
+    selKy.innerHTML = x ? x.ky.map(function(k){
+      return '<option value="' + k.period + '"' + (k.period === chon ? ' selected' : '') + '>Kỳ ' + k.ky + ' · tháng ' + kyLabel(k.period) + ' · ' + vnd(x.c.monthly_rent) + '</option>';
+    }).join('') : '';
+  }
+  function moDoiSoat(contractId, period){
+    var ds = hdCoTheGui();
+    if (!ds.length) { UI.toast('Không có kỳ nào cần đối soát.'); return; }
+    xoaLoi(['contract', 'period', 'note'], [selHd, selKy, $('dsGhiChu')]);
+    selHd.innerHTML = ds.map(function(x){
+      var r = D.findRoom(x.c.room_id);
+      return '<option value="' + esc(x.c.id) + '">' + esc((r ? r.code + ' · ' : '') + x.c.tenant_name + ' · ' + x.c.id) + '</option>';
+    }).join('');
+    if (contractId) selHd.value = contractId;
+    veChonKy(period);
+    $('dsGhiChu').value = '';
+    dlgDs.showModal();
+    (contractId ? $('dsGhiChu') : selHd).focus();
+  }
+  selHd.addEventListener('change', function(){ veChonKy(); });
+  $('nutDoiSoat').addEventListener('click', function(){ moDoiSoat(); });
+  $('doiSoat').addEventListener('click', function(e){
+    var b = e.target.closest('[data-gui-ds]'); if (!b) return;
+    var p = b.dataset.guiDs.split('|'); moDoiSoat(p[0], p[1]);
+  });
+  $('formDs').addEventListener('submit', function(e){
+    e.preventDefault();
+    xoaLoi(['contract', 'period', 'note'], [selHd, selKy, $('dsGhiChu')]);
+    var kq = M.requestReconcile(ME.id, selHd.value, selKy.value, $('dsGhiChu').value);
+    if (!kq.ok) {
+      var o = { contract: selHd, period: selKy, note: $('dsGhiChu') }[kq.field] || selKy;
+      $('loi-' + (kq.field || 'period')).textContent = kq.message;
+      o.setAttribute('aria-invalid', 'true'); o.focus();
+      return;
+    }
+    dlgDs.close();
+    veTatCa();
+    UI.toast('Đã gửi yêu cầu đối soát Kỳ ' + kq.request.ky + ' (' + kyLabel(kq.request.period) + ') tới chủ trọ.');
+  });
 
-  // Chủ trọ xác nhận tiền ở tab khác → hoa hồng mới hiện ngay
-  window.addEventListener('storage', function(e){ if (e.key === F.STORAGE_KEY) veTatCa(); });
+  /* ---------- Khiếu nại lên An Cư ---------- */
+  var dlgKn = $('dlgKn'), knDang = null, knAnh = null;
+  var KN_FIELDS = { amount: 'knTien', paidDate: 'knNgay', txRef: 'knMa', evidence: 'knAnh', note: 'knMoTa' };
+  function xoaLoiKn(){ Object.keys(KN_FIELDS).forEach(function(k){ $('loi-kn' + k).textContent = ''; $(KN_FIELDS[k]).removeAttribute('aria-invalid'); }); }
+  function datAnh(url){ knAnh = url; $('knXem').hidden = !url; if (url) $('knXemAnh').src = url; else $('knAnh').value = ''; }
+  // Thu nhỏ ảnh (cạnh dài tối đa 1280px, JPEG) để vừa localStorage của bản demo
+  function thuNho(file){
+    return new Promise(function(ok, loi){
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { loi(new Error('Chọn ảnh JPG, PNG hoặc WEBP.')); return; }
+      if (file.size > 15 * 1024 * 1024) { loi(new Error('Ảnh lớn hơn 15 MB, hãy chọn ảnh khác.')); return; }
+      var rd = new FileReader();
+      rd.onerror = function(){ loi(new Error('Không đọc được ảnh.')); };
+      rd.onload = function(){
+        var img = new Image();
+        img.onerror = function(){ loi(new Error('Ảnh bị lỗi, hãy chọn ảnh khác.')); };
+        img.onload = function(){
+          var k = Math.min(1, 1280 / Math.max(img.width, img.height));
+          var cv = document.createElement('canvas');
+          cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          var q = 0.8, url = cv.toDataURL('image/jpeg', q);
+          while (url.length > 850000 && q > 0.35) { q -= 0.15; url = cv.toDataURL('image/jpeg', q); }
+          ok(url);
+        };
+        img.src = rd.result;
+      };
+      rd.readAsDataURL(file);
+    });
+  }
+  function moKhieuNai(contractId, period){
+    var c = D.findContract(contractId), r = c && D.findRoom(c.room_id); if (!c) return;
+    knDang = { contractId: contractId, period: period };
+    xoaLoiKn(); datAnh(null);
+    $('dlgKnSub').textContent = (r ? r.code + ' · ' : '') + c.tenant_name + ' · Kỳ ' + F.kyOf(c, period) + ' (' + kyLabel(period) + '). Khách đã đóng nhưng chủ trọ chưa xác nhận.';
+    $('knTien').value = new Intl.NumberFormat('vi-VN').format(c.monthly_rent);
+    $('knNgay').value = ''; $('knNgay').max = B.todayVn(); $('knMa').value = ''; $('knMoTa').value = '';
+    dlgKn.showModal(); $('knNgay').focus();
+  }
+  $('doiSoat').addEventListener('click', function(e){
+    var b = e.target.closest('[data-khieu-nai]'); if (!b) return;
+    var p = b.dataset.khieuNai.split('|'); moKhieuNai(p[0], p[1]);
+  });
+  $('knTien').addEventListener('input', function(){ var d = this.value.replace(/[^0-9]/g, ''); this.value = d ? new Intl.NumberFormat('vi-VN').format(Number(d)) : ''; });
+  $('knAnh').addEventListener('change', function(){
+    $('loi-knevidence').textContent = '';
+    var file = this.files && this.files[0]; if (!file) { datAnh(null); return; }
+    thuNho(file).then(datAnh, function(err){ datAnh(null); $('loi-knevidence').textContent = err.message; });
+  });
+  $('knBoAnh').addEventListener('click', function(){ datAnh(null); });
+  $('formKn').addEventListener('submit', function(e){
+    e.preventDefault(); if (!knDang) return;
+    xoaLoiKn();
+    var kq = M.fileDispute(ME.id, { contractId: knDang.contractId, period: knDang.period, amount: $('knTien').value, paidDate: $('knNgay').value,
+      txRef: $('knMa').value, evidence: knAnh, note: $('knMoTa').value });
+    if (!kq.ok) {
+      var k = KN_FIELDS[kq.field] ? kq.field : 'evidence';
+      $('loi-kn' + k).textContent = kq.message; $(KN_FIELDS[k]).setAttribute('aria-invalid', 'true'); $(KN_FIELDS[k]).focus();
+      return;
+    }
+    dlgKn.close(); veTatCa();
+    UI.toast('Đã gửi khiếu nại Kỳ ' + kq.dispute.ky + ' lên An Cư. Bạn sẽ thấy kết luận ở mục Ví & Rút tiền.');
+  });
+
+  /* ---------- Vẽ lại ---------- */
+  /* ---------- Thông báo + khách từ máy chủ ---------- */
+  var SRV_KHACH = [], TB = [], TB_SEEN_KEY = 'ancu-mg-tb-da-xem:' + REF;
+  function khachTatCa(){ return M.customersOfBroker(ME.id).concat(M.fromServer(SRV_KHACH, ME.id)); }
+  function daXem(){ try { return localStorage.getItem(TB_SEEN_KEY) || ''; } catch (e) { return ''; } }
+  function veChuong(srv){
+    var moc = daXem(), moi = TB.filter(function(e){ return String(e.createdAt) > moc; }).length;
+    $('tbDot').textContent = moi > 9 ? '9+' : String(moi); $('tbDot').hidden = !moi;
+    $('tbBtn').setAttribute('aria-label', moi ? 'Thông báo, ' + moi + ' mục mới' : 'Thông báo');
+    $('tbSrc').textContent = srv ? 'Từ hệ thống An Cư và trình duyệt này.' : 'Bản xem thử: chỉ có thông báo của khách đặt trên trình duyệt này.';
+    $('tbList').innerHTML = TB.length ? TB.slice(0, 30).map(function(e){
+      return '<li class="' + (String(e.createdAt) > moc ? 'is-new' : '') + '"><b>' + esc(e.title) + '</b><span>' + esc(e.body) + '</span><small>' + esc(UI.vnDateTime(e.createdAt)) + '</small></li>';
+    }).join('') : '<li><span>Chưa có thông báo. Khách đặt lịch, gửi yêu cầu thuê hoặc đặt cọc qua link của bạn sẽ hiện ở đây.</span></li>';
+  }
+  var dangNap = false;
+  function napThongBao(){
+    if (dangNap) return; dangNap = true;
+    M.feed(REF).then(function(f){
+      dangNap = false;
+      var doiKhach = JSON.stringify(f.khach) !== JSON.stringify(SRV_KHACH);
+      TB = f.items; SRV_KHACH = f.khach; veChuong(f.server);
+      if (doiKhach) { veTongQuan(); veKhach(); UI.reveal(); }
+    });
+  }
+  function moChuong(on){
+    $('tbPop').hidden = !on; $('tbBtn').setAttribute('aria-expanded', String(on));
+    if (on) { try { localStorage.setItem(TB_SEEN_KEY, new Date().toISOString()); } catch (e) {} setTimeout(function(){ veChuong(true); }, 1500); }
+  }
+  $('tbBtn').addEventListener('click', function(e){ e.stopPropagation(); moChuong($('tbPop').hidden); });
+  document.addEventListener('click', function(e){ if (!$('tbPop').hidden && !e.target.closest('.tb-wrap')) moChuong(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('tbPop').hidden) { moChuong(false); $('tbBtn').focus(); } });
+  setInterval(function(){ if (!document.hidden) napThongBao(); }, 20000);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) napThongBao(); });
+
+  function veTatCa(){ veTongQuan(); veKho(); veKhach(); veF2(); veViSo(); veDoiSoat(); veRut(); veLichSu(); UI.reveal(); }
+  veTatCa();
+  hienMuc(false);
+  napThongBao();
+
+  // Chủ trọ xác nhận tiền / khách / đối soát ở tab khác → cập nhật ngay
+  var KEYS = [F.STORAGE_KEY, B.STORAGE_KEY, M.KEY_KHACH, M.KEY_DOI_SOAT, M.KEY_KHIEU_NAI, D.CAMPAIGN_KEY];
+  window.addEventListener('storage', function(e){
+    if (KEYS.indexOf(e.key) !== -1) veTatCa();
+    if (window.AnCuRef && (e.key === AnCuRef.EVENTS_KEY || e.key === 'an-cu-lich-xem-v1')) napThongBao();
+  });
 })();
 </script>
 </body>

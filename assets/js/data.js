@@ -127,6 +127,41 @@
     if (d) for (var k in d) r[k] = d[k];
   });
 
+  // Chiến dịch Môi giới — chủ trọ bật/tắt và đặt tỷ lệ trích quỹ cho từng phòng ở quan-ly/phong-dien-nuoc.html.
+  // Lưu trong trình duyệt: { [roomId]: { open, rate, landlord_id, updated_at } }. Chưa cài thì mở, tỷ lệ như trên.
+  //   open = false: phòng không hiện ở Kho phòng của môi giới, lịch đặt mới qua link không gắn mã môi giới.
+  //   rate: áp cho các kỳ tiền phòng xác nhận TỪ NAY; kỳ đã xác nhận giữ tỷ lệ cũ (đã lưu trong sổ).
+  var CAMPAIGN_KEY = 'ancu-chien-dich-mg-v1';
+  var RATE_MIN = 0.05, RATE_MAX = 0.5;
+  function readCampaigns() {
+    try { var o = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function applyCampaign(r, c) {
+    r.campaign_open = !c || c.open !== false;
+    var rate = c && Number(c.rate);
+    if (c && rate >= RATE_MIN && rate <= RATE_MAX) r.commission_rate = rate;
+    r.campaign_updated_at = c ? c.updated_at || null : null;
+  }
+  (function () { var all = readCampaigns(); rooms.forEach(function (r) { applyCampaign(r, all[r.id]); }); })();
+
+  // Chủ trọ đổi chiến dịch của một phòng. percent: số nguyên 5–50 (%).
+  function setCampaign(roomId, input, landlordId) {
+    var r = byId(rooms, roomId);
+    if (!r) return { ok: false, error: 'not_found', message: 'Không tìm thấy phòng.' };
+    if (r.landlord_id !== landlordId) return { ok: false, error: 'forbidden', message: 'Phòng này không thuộc nhà trọ của bạn.' };
+    var pct = Number(input.percent);
+    if (!Number.isInteger(pct) || pct < RATE_MIN * 100 || pct > RATE_MAX * 100) {
+      return { ok: false, error: 'invalid_rate', message: 'Tỷ lệ trích quỹ là số nguyên từ ' + RATE_MIN * 100 + '% đến ' + RATE_MAX * 100 + '%.' };
+    }
+    var all = readCampaigns();
+    all[roomId] = { open: !!input.open, rate: pct / 100, landlord_id: landlordId, updated_at: new Date().toISOString() };
+    try { localStorage.setItem(CAMPAIGN_KEY, JSON.stringify(all)); }
+    catch (e) { return { ok: false, error: 'storage', message: 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa lưu được.' }; }
+    applyCampaign(r, all[roomId]);
+    return { ok: true, room: r };
+  }
+
   // Hợp đồng đang cho thuê. tenant_id = null là khách chưa có tài khoản An Cư (chủ trọ tự thêm).
   // ref_code (không bắt buộc): môi giới đã mang khách này về — đứng trước ref_code của phòng khi chia hoa hồng.
   var contracts = [
@@ -219,7 +254,11 @@
   global.AnCuData = {
     DEMO_PASSWORD: DEMO_PASSWORD,
     LOCAL_USERS_KEY: LOCAL_USERS_KEY,
+    CAMPAIGN_KEY: CAMPAIGN_KEY,
     DEFAULT_COMMISSION_RATE: DEFAULT_COMMISSION_RATE,
+    RATE_MIN: RATE_MIN,
+    RATE_MAX: RATE_MAX,
+    setCampaign: setCampaign,
     users: users,
     rooms: rooms,
     contracts: contracts,

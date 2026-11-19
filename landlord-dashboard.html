@@ -14,6 +14,7 @@
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/finance.js"></script>
 <script src="assets/js/bookings.js"></script>
+<script src="assets/js/moi-gioi.js"></script>
 <script>
   // Chặn trước khi vẽ: chưa đăng nhập hoặc không phải chủ trọ thì về login.html, không kịp thấy dữ liệu
   window.ME = checkRole('landlord');
@@ -185,6 +186,13 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
 .split .sub-row dt{color:var(--text-dim)}
 .split .sub-row dd{font-weight:500}
 .dlg-note{margin-top:12px;font-size:13.5px;color:var(--text-dim)}
+.dlg textarea{display:block;width:100%;margin-top:6px;padding:12px 14px;font:inherit;font-size:16px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);resize:vertical}
+.dlg textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,139,34,.16)}
+.dlg textarea[aria-invalid="true"]{border-color:var(--danger-ink)}
+.b-danger{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.2)}
+td .note{display:block;font-size:13.5px;color:var(--text-dim)}
+.act-group{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+@media (max-width:899.98px){ td.act .act-group{display:grid} td.act .note{text-align:left} }
 .dlg-act{margin-top:24px;display:flex;flex-direction:column-reverse;gap:8px}
 @media (min-width:480px){ .dlg-act{flex-direction:row;justify-content:flex-end} }
 
@@ -249,6 +257,20 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
     <div id="hopDong"></div>
   </section>
 
+  <section class="reveal" aria-labelledby="h-ds">
+    <div class="sec-head">
+      <div><h2 id="h-ds">Yêu cầu đối soát từ môi giới</h2><p>Môi giới nhờ bạn kiểm tra khách đã đóng tiền các kỳ chưa được ghi nhận.</p></div>
+    </div>
+    <div id="doiSoat"></div>
+  </section>
+
+  <section class="reveal" aria-labelledby="h-khach">
+    <div class="sec-head">
+      <div><h2 id="h-khach">Khách do môi giới giới thiệu</h2><p>Xác nhận khách đã xem phòng, đã cọc hoặc đã ký hợp đồng để môi giới theo dõi.</p></div>
+    </div>
+    <div id="khachMg"></div>
+  </section>
+
   <section class="reveal" aria-labelledby="h-phan-bo">
     <div class="sec-head">
       <div><h2 id="h-phan-bo">Phân bổ gần đây</h2><p>Mỗi lần xác nhận: doanh thu, quỹ hoa hồng và ví môi giới.</p></div>
@@ -292,6 +314,20 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
   </form>
 </dialog>
 
+<dialog id="dlgTuChoi" aria-labelledby="tuChoiTitle">
+  <form method="dialog" class="dlg" id="formTuChoi" novalidate>
+    <h2 id="tuChoiTitle">Từ chối yêu cầu đối soát</h2>
+    <p class="ctx" id="tuChoiCtx"></p>
+    <label for="lyDo">Lý do (môi giới sẽ thấy)</label>
+    <textarea id="lyDo" maxlength="300" rows="3" aria-describedby="loiLyDo" placeholder="Ví dụ: Khách chưa đóng tiền kỳ này."></textarea>
+    <p class="err" id="loiLyDo"></p>
+    <div class="dlg-act">
+      <button type="button" class="btn btn-ghost" id="tuChoiHuy">Huỷ</button>
+      <button type="submit" class="btn btn-primary">Gửi từ chối</button>
+    </div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite">
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
   <span id="toastTx"></span>
@@ -303,7 +339,7 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
   var ME = window.ME;
   if (!ME) return; // đang chuyển về login.html
 
-  var D = window.AnCuData, F = window.AnCuFinance;
+  var D = window.AnCuData, F = window.AnCuFinance, M = window.AnCuMoiGioi, BK = window.AnCuBookings;
   var vnd = D.formatVnd;
   var $ = function(id){ return document.getElementById(id); };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
@@ -441,22 +477,79 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
       }).join('') + '</tbody></table></div>';
   }
 
-  function renderAll(){ renderStats(); renderMoney(); renderContracts(); renderLog(); renderRooms(); reveal(); }
+  /* ---------- Yêu cầu đối soát ---------- */
+  function renderDoiSoat(){
+    var list = M.requestsOfLandlord(ME.id);
+    var mo = list.filter(function(r){ return r.state === 'open'; });
+    var xong = list.filter(function(r){ return r.state !== 'open'; }).slice(0, 4);
+    if (!list.length) { $('doiSoat').innerHTML = '<p class="empty">Chưa có yêu cầu đối soát nào.</p>'; return; }
+    var ST = { done: ['Đã đối soát', 'b-ok'], rejected: ['Đã từ chối', 'b-danger'] };
+    $('doiSoat').innerHTML = (mo.length ? '<div class="table-wrap"><table><thead><tr><th>Môi giới</th><th>Hợp đồng</th><th>Kỳ</th><th>Ghi chú</th><th class="r"><span class="sr-only">Thao tác</span></th></tr></thead><tbody>' +
+      mo.map(function(r){
+        var b = D.findUser(r.broker_id), c = r.contract;
+        return '<tr><td data-label="Môi giới"><span class="ref">' + esc(b ? b.ref_code : '') + '</span><span class="sub">' + esc(b ? b.name : '') + '</span></td>' +
+          '<td data-label="Hợp đồng"><span class="main">' + esc((r.room ? r.room.code + ' · ' : '') + (c ? c.tenant_name : '')) + '</span><span class="sub">' + esc(r.contract_id) + '</span></td>' +
+          '<td data-label="Kỳ"><span class="main">Kỳ ' + r.ky + ' · ' + kyLabel(r.period) + '</span><span class="sub">Gửi ' + luc(r.created_at) + '</span></td>' +
+          '<td data-label="Ghi chú">' + (r.note ? esc(r.note) : '<span class="sub">—</span>') + '</td>' +
+          '<td class="act r"><div class="act-group"><button type="button" class="btn btn-primary" data-ds-nhan="' + esc(r.contract_id) + '|' + r.period + '">Xác nhận đã nhận tiền kỳ ' + r.ky + '</button>' +
+          '<button type="button" class="btn btn-ghost" data-ds-tu-choi="' + esc(r.id) + '">Từ chối</button></div></td></tr>';
+      }).join('') + '</tbody></table></div>' : '<p class="empty">Không có yêu cầu nào đang chờ bạn.</p>') +
+      (xong.length ? '<ul class="log" style="margin-top:12px">' + xong.map(function(r){
+        var b = D.findUser(r.broker_id), st = ST[r.state];
+        return '<li><div class="l-main"><b>' + esc((r.room ? r.room.code : '') + ' · Kỳ ' + r.ky + ' (' + kyLabel(r.period) + ')') + '</b><span>' +
+          esc((b ? b.ref_code + ' · ' : '') + (r.state === 'rejected' ? 'Lý do: ' + r.reject_note : 'Đã nhận ' + vnd(r.payment.amount))) + '</span></div>' +
+          '<span class="badge ' + st[1] + '">' + st[0] + '</span></li>';
+      }).join('') + '</ul>' : '');
+  }
+
+  /* ---------- Khách do môi giới giới thiệu ---------- */
+  var NUT_BUOC = { 'da-xem': 'Đã xem phòng', 'da-coc': 'Đã cọc', 'da-ky': 'Đã ký hợp đồng' };
+  function renderKhachMg(){
+    var list = M.customersOfLandlord(ME.id);
+    if (!list.length) { $('khachMg').innerHTML = '<p class="empty">Chưa có khách nào đặt lịch qua link của môi giới.</p>'; return; }
+    $('khachMg').innerHTML = '<div class="table-wrap"><table><thead><tr><th>Khách</th><th>Phòng</th><th>Môi giới</th><th>Lịch xem</th><th>Trạng thái</th><th class="r"><span class="sr-only">Thao tác</span></th></tr></thead><tbody>' +
+      list.map(function(c){
+        var b = c.booking, st = BK.STATUS[b.status] || { label: b.status };
+        var buoc = M.nextSteps(c, ME), nut;
+        if (!buoc.length) nut = '<span class="note">' + (c.closed ? 'Lịch đã huỷ.' : 'Đã hoàn tất.') + '</span>';
+        else if (buoc[0] === 'da-xem' && M.viewBlocker(b)) nut = '<span class="note">' + esc(M.viewBlocker(b)) + '</span>';
+        else nut = '<div class="act-group">' + buoc.map(function(k, i){
+          return '<button type="button" class="btn ' + (i === buoc.length - 1 ? 'btn-primary' : 'btn-ghost') + '" data-buoc="' + esc(b.id) + '|' + k + '">' + NUT_BUOC[k] + '</button>';
+        }).join('') + '</div>';
+        return '<tr><td data-label="Khách"><span class="main">' + esc(c.name) + '</span>' + (c.phone ? '<span class="sub num">' + esc(c.phone) + '</span>' : '') + '</td>' +
+          '<td data-label="Phòng"><span class="main">' + esc(c.room ? c.room.code : b.room_id) + '</span></td>' +
+          '<td data-label="Môi giới"><span class="ref">' + esc(c.broker ? c.broker.ref_code : b.ref_code) + '</span><span class="sub">' + esc(c.broker ? c.broker.name : '') + '</span></td>' +
+          '<td data-label="Lịch xem"><span class="main">' + luc(b.scheduled_at) + '</span><span class="sub">Lịch: ' + esc(st.label) + '</span></td>' +
+          '<td data-label="Trạng thái"><span class="badge ' + c.stage.tone + '">' + esc(c.stage.label) + '</span></td>' +
+          '<td class="act r">' + nut + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  $('khachMg').addEventListener('click', function(e){
+    var b = e.target.closest('[data-buoc]'); if (!b) return;
+    var p = b.dataset.buoc.split('|');
+    var kq = M.advance(p[0], p[1], ME);
+    if (!kq.ok) { toast(kq.message); return; }
+    renderAll();
+    toast('Đã cập nhật ' + kq.customer.name + ': ' + kq.customer.stage.label + '.');
+  });
+
+  function renderAll(){ renderStats(); renderMoney(); renderContracts(); renderDoiSoat(); renderKhachMg(); renderLog(); renderRooms(); reveal(); }
 
   /* ---------- Hộp thoại xác nhận ---------- */
-  var dlg = $('dlg'), inTien = $('soTien'), dangXacNhan = null;
+  // dangKy: kỳ đang xác nhận ('YYYY-MM') — kỳ hiện tại, hoặc kỳ đã qua khi xử lý yêu cầu đối soát
+  var dlg = $('dlg'), inTien = $('soTien'), dangXacNhan = null, dangKy = null;
   function docSo(s){ var d = String(s).replace(/[^0-9]/g, ''); return d ? Number(d) : 0; }
   function vietSo(n){ return n ? new Intl.NumberFormat('vi-VN').format(n) : ''; }
 
   function veChiaTien(){
-    var q = F.quote(dangXacNhan, docSo(inTien.value));
+    var q = F.quote(dangXacNhan, docSo(inTien.value), dangKy);
     if (!q) return;
     $('split').innerHTML =
       '<div><dt>Cộng vào doanh thu</dt><dd class="num">' + vnd(q.amount) + '</dd></div>' +
       (q.broker
         ? '<div><dt>Quỹ hoa hồng (' + pct(q.rate) + ')</dt><dd class="num">− ' + vnd(q.commission) + '</dd></div>' +
           '<div class="sub-row"><dt>Môi giới <span class="ref">' + esc(q.refCode) + '</span> · ' + esc(q.tier.name) + ' ' + pct(q.brokerShare) + '</dt><dd class="num">' + vnd(q.brokerAmount) + '</dd></div>' +
-          (q.upline ? '<div class="sub-row"><dt>Tuyến trên <span class="ref">' + esc(q.upline.ref_code) + '</span> · ' + pct(q.uplineShare) + '</dt><dd class="num">' + vnd(q.uplineAmount) + '</dd></div>' : '') +
+          (q.upline ? '<div class="sub-row"><dt>Tuyến trên <span class="ref">' + esc(q.upline.ref_code) + '</span> · ' + pct(q.uplineShare) + ' phần môi giới</dt><dd class="num">' + vnd(q.uplineAmount) + '</dd></div>' : '') +
           '<div class="sub-row"><dt>An Cư giữ lại</dt><dd class="num">' + vnd(q.platformAmount) + '</dd></div>'
         : '<div><dt>Quỹ hoa hồng</dt><dd>Không trích</dd></div>') +
       '<div class="total"><dt>Chủ trọ thực nhận</dt><dd class="num">' + vnd(q.net) + '</dd></div>';
@@ -466,12 +559,13 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
       : 'Phòng ' + (q.room ? q.room.code : '') + ' không có môi giới giới thiệu nên không trích quỹ hoa hồng.';
   }
 
-  function moHopThoai(contractId){
+  function moHopThoai(contractId, period){
     var c = D.findContract(contractId);
     if (!c) return;
     dangXacNhan = contractId;
+    dangKy = period || F.currentPeriod();
     var room = D.findRoom(c.room_id);
-    $('dlgTitle').textContent = 'Xác nhận đã nhận tiền kỳ ' + kyLabel(F.currentPeriod());
+    $('dlgTitle').textContent = 'Xác nhận đã nhận tiền kỳ ' + F.kyOf(c, dangKy) + ' (' + kyLabel(dangKy) + ')';
     $('dlgCtx').textContent = (room ? room.code + ' · ' : '') + c.tenant_name + ' · hợp đồng ' + c.id;
     $('chips').innerHTML = [1, 3, 6].map(function(n){
       return '<button type="button" class="chip" data-thang="' + n + '">' + n + ' tháng</button>';
@@ -503,7 +597,7 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
 
   $('dlgForm').addEventListener('submit', function(e){
     e.preventDefault();
-    var kq = F.confirmPayment(dangXacNhan, docSo(inTien.value), ME.id);
+    var kq = F.confirmPayment(dangXacNhan, docSo(inTien.value), ME.id, dangKy);
     if (!kq.ok){
       $('loiSoTien').textContent = kq.message;
       inTien.setAttribute('aria-invalid', 'true');
@@ -522,6 +616,31 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
     if (b) moHopThoai(b.dataset.xacNhan);
   });
 
+  /* ---------- Xử lý yêu cầu đối soát ---------- */
+  var dlgTuChoi = $('dlgTuChoi'), dangTuChoi = null;
+  $('doiSoat').addEventListener('click', function(e){
+    var n = e.target.closest('[data-ds-nhan]');
+    if (n) { var p = n.dataset.dsNhan.split('|'); moHopThoai(p[0], p[1]); return; }
+    var t = e.target.closest('[data-ds-tu-choi]');
+    if (!t) return;
+    var r = M.requestsOfLandlord(ME.id).filter(function(x){ return x.id === t.dataset.dsTuChoi; })[0];
+    if (!r) return;
+    dangTuChoi = r.id;
+    var b = D.findUser(r.broker_id);
+    $('tuChoiCtx').textContent = (r.room ? r.room.code + ' · ' : '') + 'Kỳ ' + r.ky + ' (' + kyLabel(r.period) + ') · ' + (b ? b.name + ' ' + b.ref_code : '');
+    $('lyDo').value = ''; $('lyDo').removeAttribute('aria-invalid'); $('loiLyDo').textContent = '';
+    dlgTuChoi.showModal(); $('lyDo').focus();
+  });
+  $('tuChoiHuy').addEventListener('click', function(){ dlgTuChoi.close(); });
+  $('formTuChoi').addEventListener('submit', function(e){
+    e.preventDefault();
+    var kq = M.rejectReconcile(dangTuChoi, ME.id, $('lyDo').value);
+    if (!kq.ok) { $('loiLyDo').textContent = kq.message; $('lyDo').setAttribute('aria-invalid', 'true'); $('lyDo').focus(); return; }
+    dlgTuChoi.close();
+    renderAll();
+    toast('Đã từ chối yêu cầu đối soát Kỳ ' + kq.request.ky + '. Môi giới sẽ thấy lý do.');
+  });
+
   /* ---------- Toast ---------- */
   var toastTimer;
   function toast(text){
@@ -532,12 +651,13 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
   }
 
   $('datLai').addEventListener('click', function(){
-    if (!confirm('Xoá mọi lần xác nhận, doanh thu và ví môi giới đã ghi trong trình duyệt này?')) return;
-    F.reset(); renderAll(); toast('Đã đặt lại dữ liệu demo.');
+    if (!confirm('Xoá mọi lần xác nhận, doanh thu, ví môi giới, trạng thái khách và yêu cầu đối soát đã ghi trong trình duyệt này?')) return;
+    F.reset(); M.reset(); renderAll(); toast('Đã đặt lại dữ liệu demo.');
   });
 
-  // Tab khác vừa xác nhận → vẽ lại để không xác nhận trùng
-  window.addEventListener('storage', function(e){ if (e.key === F.STORAGE_KEY) renderAll(); });
+  // Tab khác vừa xác nhận / môi giới vừa gửi đối soát → vẽ lại để không xác nhận trùng
+  var KEYS = [F.STORAGE_KEY, M.KEY_KHACH, M.KEY_DOI_SOAT, BK.STORAGE_KEY];
+  window.addEventListener('storage', function(e){ if (KEYS.indexOf(e.key) !== -1) renderAll(); });
 
   /* ---------- Hiện dần khi cuộn ---------- */
   var giamChuyenDong = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

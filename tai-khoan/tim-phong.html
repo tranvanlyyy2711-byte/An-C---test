@@ -14,6 +14,7 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/ma-gioi-thieu.js"></script>
 <script src="../components/an-cu-store.js"></script>
 <script src="../components/sidebar.js"></script>
 <style>
@@ -1177,9 +1178,11 @@
   }
   // Tạo lịch. Có máy chủ thì máy chủ quyết định; lỗi 409 nghĩa là khung giờ đã có người.
   function lichCreate(rec){
+    // Khách đến từ link môi giới (?ref=) thì gắn mã để chủ trọ thấy nguồn khách
+    if(rec.refCode === undefined) rec.refCode = window.AnCu && AnCu.refCode ? AnCu.refCode() : null;
     return API_READY.then(function(){
-      if(!API.on) return lichAdd(rec);
-      return apiCall('POST', '/api/lich-xem', { nguoi:NGUOI_THUE.id, roomId:rec.roomId, date:rec.date, time:rec.time, phone:rec.phone, note:rec.note, source:rec.source })
+      if(!API.on) return (function(r){ if(r && r.ok && rec.refCode && window.AnCuRef) AnCuRef.pushLocal(rec.refCode, 'lich-hen', 'Lịch xem phòng mới', AnCuRef.maskName(rec.tenant || '') + ' · ' + (rec.room || rec.roomId) + ' · lịch ' + rec.time + ' ngày ' + rec.date.split('-').reverse().join('/')); return r; })(lichAdd(rec));   // không có máy chủ: báo môi giới qua kho trình duyệt
+      return apiCall('POST', '/api/lich-xem', { nguoi:NGUOI_THUE.id, roomId:rec.roomId, date:rec.date, time:rec.time, phone:rec.phone, note:rec.note, source:rec.source, refCode:rec.refCode })
         .then(function(j){
           if(j.httpStatus === 201) return { ok:true, rec:j.item };
           if(j.httpStatus === 409 && j.error === 'slot_taken') return { ok:false, owner:j.owner };

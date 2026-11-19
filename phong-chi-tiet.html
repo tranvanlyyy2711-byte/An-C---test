@@ -74,6 +74,10 @@
 .taken{font-size:14px;color:var(--text-muted);padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-2)}
 .taken:empty{display:none}
 .book-note{font-size:13.5px;color:var(--text-dim)}
+/* Huy hiệu môi giới tư vấn khách (link ?ref=) */
+.mg-badge{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;border-radius:var(--radius-sm);background:rgba(47,111,237,.07);border:1px solid rgba(29,79,190,.22);color:var(--info-ink);font-size:14px;line-height:1.4}
+.mg-badge .av{width:32px;height:32px;font-size:13px;background:var(--info-ink)}
+.mg-badge b{display:block;font-family:'Be Vietnam Pro',sans-serif;color:var(--text)}
 .booked{display:grid;gap:10px;padding:16px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border)}
 .booked b{font-family:'Be Vietnam Pro',sans-serif;font-size:16px}
 .booked p{font-size:14.5px;color:var(--text-muted)}
@@ -201,8 +205,18 @@ body.has-mbar{padding-bottom:76px}
 
 <script src="assets/js/data.js"></script>
 <script src="assets/js/auth.js"></script>
+<script src="components/ma-gioi-thieu.js"></script>
 <script src="assets/js/bookings.js"></script>
 <script src="assets/js/ui.js"></script>
+<script>
+  // Kho lịch dùng chung với trang chủ trọ (components/lich-xem.js) đọc người thuê demo từ 'an-cu-nguoi-thue':
+  // khớp với người vừa đăng nhập ở login.html để lịch gửi đi đúng tên.
+  try {
+    var cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (cu && cu.role === 'renter' && /^u-(trang|an|linh|huy)$/.test(cu.id)) localStorage.setItem('an-cu-nguoi-thue', cu.id);
+  } catch (e) {}
+</script>
+<script src="components/lich-xem.js"></script>
 <script>
 (function(){
   'use strict';
@@ -343,9 +357,15 @@ body.has-mbar{padding-bottom:76px}
         '<a class="btn btn-ghost btn-block" href="tenant-dashboard.html">Xem lịch hẹn của tôi</a>';
       return;
     }
+    // Huy hiệu tư vấn: chỉ khi lịch thật sự gắn mã (phòng đang mở chiến dịch Môi giới)
+    function huyHieuMoiGioi(){
+      var r = B.refCodeOf(room) && B.currentRef(); if (!r) return '';
+      return '<div class="mg-badge" role="note"><span class="av" aria-hidden="true">' + esc(r.broker.name.split(/s+/).slice(-1)[0].charAt(0)) + '</span>' +
+        '<span>Được tư vấn &amp; hỗ trợ bởi Môi giới: <b>' + esc(r.broker.name) + '</b>Mã <span class="ref">' + esc(r.code) + '</span> được gắn vào lịch xem bạn đặt.</span></div>';
+    }
     var homNay = B.todayVn();
     body.innerHTML =
-      '<form id="formLich" novalidate>' +
+      '<form id="formLich" novalidate>' + huyHieuMoiGioi() +
         '<div class="row2">' +
           '<div class="field"><label for="ngay">Ngày</label><input class="input" type="date" id="ngay" min="' + homNay + '" max="' + ngayCong(60) + '" value="' + ngayCong(1) + '" required aria-describedby="loiNgay" /><p class="err" id="loiNgay"></p></div>' +
           '<div class="field"><label for="gio">Giờ</label><input class="input" type="time" id="gio" min="' + B.OPEN + '" max="' + B.LAST_START + '" value="09:00" required aria-describedby="loiGio" /><p class="err" id="loiGio"></p></div>' +
@@ -354,7 +374,7 @@ body.has-mbar{padding-bottom:76px}
         '<div class="field"><label for="ghiChu">Ghi chú <span class="hint">(không bắt buộc)</span></label><textarea class="input" id="ghiChu" maxlength="300" placeholder="Ví dụ: đi cùng một người bạn"></textarea></div>' +
         '<p class="err" id="loiChung" role="alert"></p>' +
         '<button type="submit" class="btn btn-primary btn-block" id="nutDat">Đặt lịch xem phòng</button>' +
-        (ref ? '<p class="book-note">Lịch sẽ gắn mã giới thiệu <span class="ref">' + esc(ref.code) + '</span>.</p>' : '') +
+
       '</form>';
 
     function veGioDaDat(){
@@ -369,19 +389,41 @@ body.has-mbar{padding-bottom:76px}
     $('gio').addEventListener('input', xoaLoi);
     veGioDaDat();
 
+    function baoLoi(kq){
+      var o = kq.field === 'date' ? ['ngay', 'loiNgay'] : kq.field === 'time' ? ['gio', 'loiGio'] : [null, 'loiChung'];
+      $(o[1]).textContent = kq.message;
+      if (o[0]) { $(o[0]).setAttribute('aria-invalid', 'true'); $(o[0]).focus(); }
+      veGioDaDat();
+    }
+    var dangGui = false;
     $('formLich').addEventListener('submit', function(e){
       e.preventDefault();
+      if (dangGui) return;
       xoaLoi();
-      var kq = B.create({ roomId: room.id, date: $('ngay').value, time: $('gio').value, note: $('ghiChu').value }, getCurrentUser());
-      if (!kq.ok) {
-        var o = kq.field === 'date' ? ['ngay', 'loiNgay'] : kq.field === 'time' ? ['gio', 'loiGio'] : [null, 'loiChung'];
-        $(o[1]).textContent = kq.message;
-        if (o[0]) { $(o[0]).setAttribute('aria-invalid', 'true'); $(o[0]).focus(); }
-        veGioDaDat();
-        return;
-      }
-      veKhungDatLich();
-      UI.toast('Đặt lịch xem phòng thành công! Chủ trọ sẽ xác nhận trong 24 giờ.', '<a href="tenant-dashboard.html">Xem lịch hẹn</a>');
+      var user = getCurrentUser();
+      var input = { roomId: room.id, date: $('ngay').value, time: $('gio').value, note: $('ghiChu').value };
+      var thu = B.create(input, user, { dryRun: true });
+      if (!thu.ok) { baoLoi(thu); return; }
+      // Gửi tới kho lịch của chủ trọ trước (máy chủ khi chạy npm start, hoặc kho xem thử trong trình duyệt),
+      // kèm mã môi giới để trang "Yêu cầu & lịch hẹn" hiện đúng nguồn khách. Kho chủ trọ từ chối thì không ghi gì.
+      dangGui = true; $('nutDat').disabled = true; $('nutDat').textContent = 'Đang gửi…';
+      var gui = window.AnCuLich ? window.AnCuLich.create({
+        roomId: room.id, room: room.title, address: room.address, price: room.price, image: room.images[0],
+        phone: user.phone, note: input.note, date: input.date, time: input.time, source: 'phong-chi-tiet', refCode: B.refCodeOf(room)
+      }) : Promise.resolve({ ok: true, rec: null });
+      gui.catch(function(){ return { ok: false, error: 'Không gửi được lịch tới chủ trọ. Kiểm tra kết nối rồi thử lại.' }; }).then(function(r){
+        dangGui = false;
+        if (!r.ok) {
+          $('nutDat').disabled = false; $('nutDat').textContent = 'Đặt lịch xem phòng';
+          baoLoi(r.owner ? { field: 'time', message: r.owner === 'me' ? 'Bạn đã có lịch trùng giờ này.' : 'Khung giờ này đã có người đặt. Chọn giờ khác.' }
+                         : { message: r.error || 'Chủ trọ chưa nhận được lịch. Hãy thử lại.' });
+          return;
+        }
+        var kq = B.create(input, getCurrentUser(), { lichId: r.rec ? r.rec.id : null });
+        if (!kq.ok) { baoLoi(kq); return; }
+        veKhungDatLich();
+        UI.toast('Đặt lịch xem phòng thành công! Chủ trọ sẽ xác nhận trong 24 giờ.', '<a href="tenant-dashboard.html">Xem lịch hẹn</a>');
+      });
     });
   }
   veKhungDatLich();

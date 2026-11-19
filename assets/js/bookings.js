@@ -48,12 +48,14 @@
     if (!code) return null;
     code = normRef(code);
     var broker = D().findBrokerByRef(code);
-    if (broker) write(REF_KEY, code);
+    // components/ma-gioi-thieu.js: localStorage + cookie 30 ngày, nhớ tên môi giới cho huy hiệu
+    if (broker) { if (global.AnCuRef) global.AnCuRef.save(code, broker.name); else write(REF_KEY, code); }
     return { code: code, broker: broker };
   }
 
   function currentRef() {
-    var code = normRef(read(REF_KEY));
+    var r = global.AnCuRef ? global.AnCuRef.get() : null;
+    var code = r ? r.code : normRef(read(REF_KEY));
     var broker = code ? D().findBrokerByRef(code) : null;
     return broker ? { code: code, broker: broker } : null;
   }
@@ -109,7 +111,12 @@
 
   /* ---------- Đặt lịch ---------- */
   // input: { roomId, date:'YYYY-MM-DD', time:'HH:MM', note }. Người đặt là currentUser (vai trò renter).
-  function create(input, user) {
+  // opts.dryRun: chỉ kiểm tra, không ghi (để gửi kho của chủ trọ trước). opts.lichId: id lịch bên kho chủ trọ.
+  // refCodeOf(room): mã môi giới sẽ gắn cho phòng này (null nếu không có hoặc phòng tắt chiến dịch).
+  function refCodeOf(room) { var r = room && room.campaign_open === false ? null : currentRef(); return r ? r.code : null; }
+
+  function create(input, user, opts) {
+    opts = opts || {};
     if (!user || user.role !== 'renter') return fail('login_required', 'Vui lòng đăng nhập bằng tài khoản người thuê để đặt lịch.');
     var room = D().findRoom(input.roomId);
     if (!room || !room.is_listing) return fail('not_found', 'Không tìm thấy phòng.');
@@ -142,15 +149,18 @@
       return fail('slot_taken', 'Khung ' + t + '–' + addMinutes(t, 30) + ' đã có người đặt. Chọn giờ cách ít nhất 30 phút.', 'time');
     }
 
-    var ref = currentRef();
+    if (opts.dryRun) return { ok: true };
+    // Chủ trọ tắt chiến dịch Môi giới của phòng thì lịch mới không gắn mã môi giới
+    var refCode = refCodeOf(room);
     var now = Date.now();
     var booking = {
+      lich_id: opts.lichId == null ? null : opts.lichId,
       id: 'bk-' + now.toString(36) + Math.random().toString(36).slice(2, 6),
       room_id: room.id,
       renter_id: user.id,
       renter_name: user.name,
       landlord_id: room.landlord_id,
-      ref_code: ref ? ref.code : null,
+      ref_code: refCode,
       scheduled_at: new Date(start).toISOString(),
       status: 'pending',
       note: note,
@@ -171,6 +181,7 @@
     LAST_START: LAST_START,
     captureRef: captureRef,
     currentRef: currentRef,
+    refCodeOf: refCodeOf,
     all: all,
     forRenter: forRenter,
     forLandlord: forLandlord,

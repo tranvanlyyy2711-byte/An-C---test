@@ -268,6 +268,7 @@
 <script src="../components/supabase-auth.js"></script>
 <script src="../components/phien-xem-thu.js"></script>
 <script src="../components/nguoi-dung.js"></script>
+<script src="../components/ma-gioi-thieu.js"></script>
 <script src="../components/an-cu-store.js"></script>
 </head>
 <body>
@@ -447,6 +448,7 @@
       '<button type="button" class="chip-back" data-go="phong">' + ICON.back + (FROM_PAY ? 'Xác nhận thuê' : 'Thông tin phòng') + '</button>' +
       '<div class="step-head reveal"><h1 tabindex="-1">Thông tin đặt cọc</h1>' +
       '<p>Hãy kiểm tra và chốt số tiền đặt cọc (tương đương 1 tháng tiền phòng).</p></div>' +
+      (AnCu.refBadge ? AnCu.refBadge() : '') +
       roomCard(false) +
       '<form class="form" id="infoForm" novalidate>' +
         '<div class="field reveal"><label for="fDeposit">Số tiền cọc <span class="req">*</span></label>' +
@@ -505,6 +507,8 @@
       order = order || { code:SV.req ? SV.req.payRef : newCode(), roomId:room.id, createdAt:new Date().toISOString(), method:'bank' };
       order.deposit = SV.req ? SV.req.payAmount : amount; order.phone = phone; order.email = email;
       order.name = renter.name;
+      // Khách đến từ link môi giới: gắn mã vào đơn cọc (có máy chủ thì mã đi theo lịch xem của yêu cầu thuê)
+      order.refCode = AnCu.refCode ? AnCu.refCode() : null;
       writeJson(ORDER_KEY, order);
       go('thanh-toan');
     });
@@ -550,7 +554,13 @@
     });
     document.getElementById('paidBtn').addEventListener('click', function(){
       var btn = this;
-      function next(){ order.paidAt = new Date().toISOString(); writeJson(ORDER_KEY, order); go('da-gui'); }
+      function next(){
+        order.paidAt = new Date().toISOString(); writeJson(ORDER_KEY, order);
+        // Không có máy chủ: báo môi giới qua kho trình duyệt (có máy chủ thì máy chủ báo khi nhận PATCH pay)
+        if(!SV.req && order.refCode && window.AnCuRef) AnCuRef.pushLocal(order.refCode, 'dat-coc', 'Khách báo đã chuyển tiền đặt cọc',
+          AnCuRef.maskName(renter.name) + ' · ' + room.title + ' · ' + vnd(order.deposit));
+        go('da-gui');
+      }
       if(!SV.req){ next(); return; }
       btn.disabled = true; btn.textContent = 'Đang gửi…';
       AnCu.api('PATCH', '/api/yeu-cau-thue/' + SV.req.id, { action:'pay' }).then(function(j){

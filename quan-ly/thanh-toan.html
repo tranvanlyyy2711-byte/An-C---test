@@ -163,6 +163,8 @@ body.modal-open{overflow:hidden}
   .page-head{align-items:flex-start}
   .tabbar{width:100%}.tab-btn{flex:1;justify-content:center;padding:0 10px}
   .tabbar{flex-wrap:wrap;border-radius:24px}.tab-group{flex:1 1 100%}.tab-out{flex:1 1 100%}
+  /* Ba tab: xếp hai hàng thay vì tràn ngang */
+  .tab-group{flex-wrap:wrap}.tab-group .tab-btn{flex:1 1 150px;min-width:0}
   .chip-row{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;width:100%}
   .search-wrap{min-width:0;flex-basis:100%}
   .list-row{grid-template-columns:1fr;gap:6px}
@@ -176,6 +178,27 @@ body.modal-open{overflow:hidden}
   .modal-overlay{padding:0}
   .modal-foot .btn{flex:1}
 }
+/* ---------- Tiền phòng hằng kỳ (hoa hồng môi giới) ---------- */
+.hd-list{display:grid;gap:12px}
+.hd-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:14px 16px;display:grid;gap:10px}
+.hd-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:6px 14px}
+.hd-head b{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:15px}
+.hd-head .hd-sub{display:block;font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.src-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;min-height:26px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);white-space:nowrap}
+.src-tag.is-mg{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(29,79,190,.22)}
+.ky-row{display:flex;flex-wrap:wrap;gap:8px;list-style:none}
+.ky-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--border);font-size:13px;background:var(--surface-2);color:var(--text-muted)}
+.ky-chip svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7}
+.ky-chip.is-done{color:var(--success-ink);background:rgba(34,139,34,.08);border-color:rgba(34,139,34,.2)}
+button.ky-chip{border-style:dashed;border-color:var(--border-strong);background:var(--surface);color:var(--text);font-weight:600;cursor:pointer}
+button.ky-chip:hover{background:rgba(34,139,34,.05);border-color:var(--accent)}
+button.ky-chip.is-asked{border-style:solid;border-color:rgba(245,177,76,.55);background:rgba(245,177,76,.12);color:var(--warning-ink)}
+.hd-note{font-size:12.5px;color:var(--text-dim)}
+.split-tb{width:100%;margin-top:12px;border-collapse:collapse;font-size:14px}
+.split-tb td{padding:7px 0;border-top:1px solid var(--border)}
+.split-tb td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.split-tb tr.sub td:first-child{padding-left:12px;color:var(--text-dim)}
+.split-tb tr.total td{font-weight:700;color:var(--text)}
 </style>
 <script src="../components/cau-hinh-supabase.js"></script>
 <script src="../components/supabase-auth.js"></script>
@@ -183,6 +206,10 @@ body.modal-open{overflow:hidden}
 <script src="../components/nguoi-dung.js"></script>
 <script src="../components/chu-tro-pham-vi.js"></script>
 <script src="../components/an-cu-store.js"></script>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/bookings.js"></script>
+<script src="../assets/js/finance.js"></script>
+<script src="../assets/js/moi-gioi.js"></script>
 </head>
 <body class="is-loading">
 <div class="dash-shell">
@@ -243,6 +270,9 @@ body.modal-open{overflow:hidden}
             <button class="tab-btn" id="tabPay" type="button" role="tab" aria-selected="false" aria-controls="panelPay">
               <svg viewBox="0 0 24 24"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>Thanh toán<span class="side-count" id="cntPay">0</span>
             </button>
+            <button class="tab-btn" id="tabKy" type="button" role="tab" aria-selected="false" aria-controls="panelKy">
+              <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>Tiền phòng hằng kỳ<span class="side-count" id="cntKy">0</span>
+            </button>
             </div>
             <a class="tab-btn tab-out" href="hoa-don.html">Hoá đơn tiền nhà<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           </div>
@@ -275,6 +305,15 @@ body.modal-open{overflow:hidden}
               </div>
               <div class="list-rows" id="payRows"></div>
               <div class="empty-state" id="payEmpty" hidden></div>
+            </div>
+          </section>
+
+          <!-- ===== Tiền phòng hằng kỳ: xác nhận đã thu → trích quỹ hoa hồng, chuyển vào Ví khả dụng của môi giới ===== -->
+          <section class="card reveal tab-panel" id="panelKy" role="tabpanel" aria-labelledby="tabKy">
+            <div class="card-head"><div><h2>Tiền phòng hằng kỳ</h2><p>Bấm “Xác nhận đã thu tiền” khi khách đã đóng kỳ đó. Khách đến qua môi giới thì quỹ hoa hồng được trích và chuyển ngay vào Ví khả dụng của môi giới.</p></div></div>
+            <div class="card-body">
+              <div class="hd-list" id="kyRows"></div>
+              <div class="empty-state" id="kyEmpty" hidden></div>
             </div>
           </section>
 
@@ -528,7 +567,7 @@ body.modal-open{overflow:hidden}
     return khoLoad().then(function(r){ S.loadError=false; S.appts=r.appts; S.deps=r.deps; })
       .catch(function(){ S.loadError=true; showToast('Mất kết nối','Không tải được dữ liệu thanh toán từ máy chủ.'); })
       .then(loadRent)
-      .then(function(){ renderStats(); renderLists(); renderRent(); });
+      .then(function(){ renderStats(); renderLists(); renderRent(); veKy(); });
   }
 
   /* ================= Tiền nhận phòng ================= */
@@ -571,6 +610,93 @@ body.modal-open{overflow:hidden}
       doneTitle: paid ? 'Đã nhận tiền nhận phòng' : 'Đã báo người thuê',
       doneText:function(){ return paid ? r.tenant + ' chính thức thuê ' + r.roomCode + '.' : r.tenant + ' sẽ kiểm tra lại giao dịch.'; } });
   });
+
+  /* ================= Tiền phòng hằng kỳ + hoa hồng môi giới =================
+   * Hợp đồng lấy từ assets/js/data.js (cùng nguồn với ví môi giới). Xác nhận một kỳ = AnCuFinance.confirmPayment:
+   * ghi doanh thu, trích quỹ theo tỷ lệ của phòng (Chiến dịch Môi giới ở Phòng & điện nước), chia cho môi giới
+   * theo bậc + tuyến trên 20%, và khoản đó vào thẳng Ví khả dụng của môi giới. Khu quản trị đọc lại cùng sổ
+   * (quan-tri/tong-quan.html#moi-gioi). Môi giới khiếu nại kỳ chưa xác nhận thì quản trị xử lý ở #trong-tai.
+   * Sổ nằm trong localStorage — chỉ dùng chung trong một trình duyệt. */
+  var DM = window.AnCuData, FM = window.AnCuFinance, MM = window.AnCuMoiGioi, KY_ME = null;
+  var ICON_TICK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+  function kyLbl(p){ var a = p.split('-'); return a[1] + '/' + a[0]; }
+  function pctOf(r){ return Math.round(r * 100) + '%'; }
+  function hdCuaToi(){
+    if(!DM || !FM || !KY_ME) return [];
+    return DM.contracts.filter(function(c){ return c.landlord_id === KY_ME && c.status === 'active'; });
+  }
+  function moiGioiCua(c){ var r = DM.findRoom(c.room_id); return DM.findBrokerByRef(c.ref_code || (r && r.ref_code)); }
+  function veKy(){
+    var list = document.getElementById('kyRows'), em = document.getElementById('kyEmpty');
+    if(!list) return;
+    var hds = hdCuaToi(), mo = 0;
+    if(!hds.length){
+      list.innerHTML = '';
+      em.innerHTML = emptyHtml('Chưa có hợp đồng đang cho thuê', 'Khi có hợp đồng, từng kỳ tiền phòng hiện ở đây để bạn xác nhận đã thu.', null);
+      em.hidden = false; document.getElementById('cntKy').textContent = '0'; return;
+    }
+    em.hidden = true;
+    var rows = hds.map(function(c){
+      var room = DM.findRoom(c.room_id), b = moiGioiCua(c), ky = FM.windowPeriods(c);
+      var chua = ky.filter(function(k){ return !k.payment; });
+      mo += chua.length;
+      return { c:c, room:room, b:b, ky:ky, chua:chua.length };
+    }).sort(function(a, b){ return (b.chua > 0) - (a.chua > 0) || String(a.room ? a.room.code : '').localeCompare(String(b.room ? b.room.code : '')); });
+    list.innerHTML = rows.map(function(x){
+      var c = x.c, room = x.room, b = x.b;
+      var nguon = b ? '<span class="src-tag is-mg">Qua Môi giới: '+esc(b.ref_code)+' · quỹ '+pctOf(DM.commissionRateOf(room))+'</span>' : '<span class="src-tag">Khách tự nhiên</span>';
+      var chips = x.ky.map(function(k){
+        var nhan = 'Kỳ '+k.ky+' · '+kyLbl(k.period);
+        if(k.payment) return '<li class="ky-chip is-done">'+ICON_TICK+nhan+' · đã thu '+vnd(k.payment.amount)+(k.payment.forced_by ? ' · An Cư duyệt theo khiếu nại' : '')+'</li>';
+        var hoi = MM && MM.openRequestFor(c.id, k.period), kn = MM && MM.openDisputeFor && MM.openDisputeFor(c.id, k.period);
+        return '<li><button type="button" class="ky-chip'+(hoi || kn ? ' is-asked' : '')+'" data-ky-thu="'+esc(c.id)+'|'+k.period+'">'+nhan+' · '+
+          (kn ? 'môi giới đã khiếu nại lên An Cư · ' : hoi ? 'môi giới nhờ đối soát · ' : '')+'Xác nhận đã thu tiền</button></li>';
+      }).join('');
+      return '<article class="hd-card"><div class="hd-head"><div><b>'+esc((room ? room.code + ' · ' : '') + c.tenant_name)+'</b>'+
+        '<span class="hd-sub">'+esc(c.id)+' · '+vnd(c.monthly_rent)+'/tháng · Kỳ 1 từ '+kyLbl(c.start_date.slice(0,7))+'</span></div>'+nguon+'</div>'+
+        '<ul class="ky-row">'+chips+'</ul>'+
+        (b ? '<p class="hd-note">Mỗi kỳ xác nhận: trích '+pctOf(DM.commissionRateOf(room))+' tiền phòng làm quỹ hoa hồng, '+esc(b.name)+' nhận theo bậc hiệu suất, hoa hồng vào thẳng Ví khả dụng.</p>' : '')+
+        '</article>';
+    }).join('');
+    document.getElementById('cntKy').textContent = mo;
+  }
+  function thuKy(contractId, period){
+    var c = DM.findContract(contractId); if(!c) return;
+    var q = FM.quote(contractId, c.monthly_rent, period), room = DM.findRoom(c.room_id), ky = FM.kyOf(c, period);
+    var hoi = MM && MM.openRequestFor(contractId, period);
+    var chia = q.broker
+      ? '<tr><td>Quỹ hoa hồng ('+pctOf(q.rate)+')</td><td>− '+vnd(q.commission)+'</td></tr>'+
+        '<tr class="sub"><td>Môi giới '+esc(q.refCode)+' · '+esc(q.tier.name)+' '+pctOf(q.brokerShare)+'</td><td>'+vnd(q.brokerAmount)+'</td></tr>'+
+        (q.upline ? '<tr class="sub"><td>Tuyến trên '+esc(q.upline.ref_code)+' · '+pctOf(q.uplineShare)+' phần môi giới</td><td>'+vnd(q.uplineAmount)+'</td></tr>' : '')+
+        '<tr class="sub"><td>An Cư giữ lại</td><td>'+vnd(q.platformAmount)+'</td></tr>'
+      : '<tr><td>Quỹ hoa hồng</td><td>Không trích</td></tr>';
+    ask({ title:'Xác nhận đã thu tiền Kỳ '+ky+'?', ok:'Xác nhận đã thu tiền',
+      html:'Bạn đã nhận <b>'+vnd(c.monthly_rent)+'</b> tiền phòng tháng <b>'+kyLbl(period)+'</b> của <b>'+esc(c.tenant_name)+'</b> ('+esc(room ? room.code : c.room_id)+').'+
+        (hoi ? ' Môi giới <b>'+esc(hoi.contract ? (moiGioiCua(hoi.contract) || {}).ref_code || '' : '')+'</b> đã gửi yêu cầu đối soát kỳ này'+(hoi.note ? ': “'+esc(hoi.note)+'”' : '')+'.' : '')+
+        '<table class="split-tb"><tr><td>Cộng vào doanh thu</td><td>'+vnd(q.amount)+'</td></tr>'+chia+
+        '<tr class="total"><td>Chủ trọ thực nhận</td><td>'+vnd(q.net)+'</td></tr></table>'+
+        (q.broker ? '<p class="hd-note" style="margin-top:10px">Hoa hồng của kỳ này chuyển từ Ví chờ xử lý sang Ví khả dụng của môi giới ngay khi bạn xác nhận, và ghi vào lịch sử đối soát của quản trị An Cư.</p>' : ''),
+      run:function(){
+        var kq = FM.confirmPayment(contractId, c.monthly_rent, KY_ME, period);
+        return Promise.resolve(kq.ok ? { ok:true, item:kq } : { ok:false, error:kq.message });
+      },
+      doneTitle:'Đã xác nhận thu tiền Kỳ '+ky,
+      doneText:function(kq){
+        var p = kq.payment;
+        return (room ? room.code + ' · ' : '') + vnd(p.amount) + (p.commission > 0
+          ? '. Đã chia '+vnd(p.broker_amount)+' cho '+p.ref_code+(p.upline_amount ? ', '+vnd(p.upline_amount)+' cho tuyến trên' : '')+' vào Ví khả dụng.'
+          : '. Không có môi giới nên không trích hoa hồng.');
+      } });
+  }
+  document.getElementById('kyRows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-ky-thu]'); if(!b) return;
+    var p = b.getAttribute('data-ky-thu').split('|'); thuKy(p[0], p[1]);
+  });
+  // Môi giới gửi đối soát / tab khác xác nhận → vẽ lại
+  window.addEventListener('storage', function(e){
+    if(FM && MM && [FM.STORAGE_KEY, MM.KEY_DOI_SOAT, MM.KEY_KHIEU_NAI, DM.CAMPAIGN_KEY].indexOf(e.key) !== -1) veKy();
+  });
+  if(MM) MM.landlordNow().then(function(id){ KY_ME = id; veKy(); });
 
   /* ================= Toast ================= */
   function showToast(title,text){
@@ -646,15 +772,16 @@ body.modal-open{overflow:hidden}
   }
 
   /* ================= Tabs / bộ lọc ================= */
+  var TABS = [['appts','tabAppts','panelAppts'],['pay','tabPay','panelPay'],['ky','tabKy','panelKy']];
   function setTab(tab){
     S.tab = tab;
-    [['appts','tabAppts','panelAppts'],['pay','tabPay','panelPay']].forEach(function(t){
+    TABS.forEach(function(t){
       var on = t[0]===tab;
       document.getElementById(t[1]).classList.toggle('active', on);
       document.getElementById(t[1]).setAttribute('aria-selected', on ? 'true' : 'false');
       var p = document.getElementById(t[2]); p.classList.toggle('active', on); if(on) p.classList.add('in');
     });
-    try{ history.replaceState(null, '', tab==='pay' ? '#thanh-toan' : '#lich-xem'); }catch(e){}
+    try{ history.replaceState(null, '', tab==='pay' ? '#thanh-toan' : tab==='ky' ? '#tien-phong' : '#lich-xem'); }catch(e){}
     markActiveStat();
   }
   function setStatus(v){
@@ -666,10 +793,12 @@ body.modal-open{overflow:hidden}
   }
   document.getElementById('tabAppts').addEventListener('click', function(){ setTab('appts'); });
   document.getElementById('tabPay').addEventListener('click', function(){ setTab('pay'); });
+  document.getElementById('tabKy').addEventListener('click', function(){ setTab('ky'); });
   document.querySelector('.tab-group').addEventListener('keydown', function(e){
     if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
-    var next = S.tab==='appts' ? 'pay' : 'appts';
-    setTab(next); document.getElementById(next==='pay' ? 'tabPay' : 'tabAppts').focus();
+    var i = TABS.map(function(t){ return t[0]; }).indexOf(S.tab), n = TABS.length;
+    var next = TABS[(i + (e.key==='ArrowRight' ? 1 : n - 1)) % n];
+    setTab(next[0]); document.getElementById(next[1]).focus();
   });
   document.getElementById('payChips').addEventListener('click', function(e){
     var b = e.target.closest('[data-status]'); if(!b) return;
@@ -718,6 +847,7 @@ body.modal-open{overflow:hidden}
 
   /* ================= Khởi động ================= */
   if(location.hash==='#thanh-toan') setTab('pay');
+  if(location.hash==='#tien-phong') setTab('ky');
   // Nguồn dữ liệu chung (SSE): người thuê đặt lịch, báo đã chuyển cọc / tiền nhận phòng → tải lại ngay
   // Cô lập dữ liệu: tài khoản chủ trọ chưa có phòng nào thì không có lịch xem, không có tiền cọc.
   if (window.ChuTroPhamVi) ChuTroPhamVi.khiMoi(function(){

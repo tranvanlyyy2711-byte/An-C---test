@@ -69,7 +69,7 @@ try {
       if (ten === 'desktop') {
         expect(`${nguon}: trang chủ quản trị mở được, có 4 chỉ số`, await p.locator('#kpis .kpi').count(), 4);
         expect(`${nguon}: trang chủ có dải báo chế độ xem thử`, (await txt(p, '#demoNote')).includes('Chế độ xem thử'), true);
-        expect(`${nguon}: trang chủ có cột công cụ bên trái`, await p.locator('.side-nav .side-link').count(), 6);
+        expect(`${nguon}: trang chủ có cột công cụ bên trái`, await p.locator('.side-nav .side-link').count(), 8);
         expect(`${nguon}: không còn mục nào ghi Chưa làm`, await p.locator('.side-nav .side-link.is-off').count(), 0);
         expect(`${nguon}: trang chủ dùng chung số liệu với khu quản trị`,
           (await txt(p, '#footNote')).includes('7 tài khoản'), true);

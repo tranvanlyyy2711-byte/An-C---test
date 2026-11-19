@@ -144,6 +144,10 @@ button{cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;overflow:h
 .apt-tenant{font-size:13.5px;color:var(--text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .apt-date-lbl{font-size:11.5px;color:var(--text-dim);margin-top:2px}
 
+.src-tag{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.src-tag svg{width:13px;height:13px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.6}
+.src-tag.is-mg{color:var(--info-ink);background:rgba(47,111,237,.08);border-color:rgba(29,79,190,.22)}
+.lr-info .src-tag{display:inline-flex}
 .apt-status{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;border:1px solid}
 .apt-status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
 .apt-status.is-confirmed{color:var(--success-ink);background:rgba(34,139,34,.09);border-color:rgba(34,139,34,.22)}
@@ -519,7 +523,7 @@ function taiLichMayChu(){
     j.items.forEach(function(it){
       APPTS.push({ id:it.id, date:it.date, time:it.time, dur:it.dur, room:it.roomCode, roomId:it.roomId,
         tenant:it.tenant, phone:it.phone, status:it.status, urgent:it.urgent, renterId:it.renterId, note:it.note || '',
-        rejectReason:it.rejectReason || '', cancelReason:it.cancelReason, prevDate:it.prevDate, prevTime:it.prevTime });
+        rejectReason:it.rejectReason || '', cancelReason:it.cancelReason, prevDate:it.prevDate, prevTime:it.prevTime, refCode:it.refCode || null });
       if(ROOM_CODES.indexOf(it.roomCode) === -1) ROOM_CODES.push(it.roomCode);
     });
   });
@@ -575,7 +579,7 @@ function apptTuKho(it, key){
   return { id:it.id, date:it.date, time:it.time, dur:it.dur || 30, room:khach ? it.roomId : String(it.roomId).toUpperCase(), roomId:it.roomId,
     tenant:it.tenant || 'Người thuê', phone:it.phone || (u ? u.phone : ''), status:it.status, urgent:!!it.urgent,
     renterId:khach ? null : (u ? u.id : 'nguoi-thue'), note:it.note || '', rejectReason:it.rejectReason || '',
-    cancelReason:it.cancelReason, prevDate:it.prevDate || null, prevTime:it.prevTime || null, kho:key };
+    cancelReason:it.cancelReason, prevDate:it.prevDate || null, prevTime:it.prevTime || null, kho:key, refCode:khach ? null : (it.refCode || null) };
 }
 function taiLichXemThu(){
   APPTS.length = 0;
@@ -626,7 +630,7 @@ function reqFromItem(it, base){
   return { id:it.id + base, srcId:it.id, name:it.tenant || 'Người thuê', phone:it.phone || '', room:it.roomCode || it.roomId,
     wantDate:d.length === 3 ? d[2] + '/' + d[1] + '/' + d[0] : '', submitted:it.createdAt, status:REQ_MAP[it.status] || 'moi',
     note:it.note || ('Đã xem phòng ' + (it.room || '') + ', muốn thuê.'), reason:it.reason || '', urgent:false, contract:false, live:true,
-    payStatus:it.payStatus || 'none', payAmount:it.payAmount || 0, payRef:it.payRef || '' };
+    payStatus:it.payStatus || 'none', payAmount:it.payAmount || 0, payRef:it.payRef || '', apptId:it.appointmentId == null ? null : it.appointmentId };
 }
 function addRoomCode(code){ if(code && ROOM_CODES.indexOf(code) === -1) ROOM_CODES.push(code); }
 function taiYeuCauMayChu(){
@@ -861,6 +865,12 @@ function apptNoteHtml(a){
   if (a.note) h += '<p class="apt-note">Lời nhắn: '+esc(a.note)+'</p>';
   return h;
 }
+// Nguồn khách: đặt qua link môi giới (?ref=MG-…) hay tự tìm tới
+function nguonHtml(a){
+  return a.refCode
+    ? '<span class="src-tag is-mg" title="Khách đặt lịch qua link giới thiệu của môi giới">'+icon('<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M19 8v6M22 11h-6"/>')+'Qua Môi giới: '+esc(a.refCode)+'</span>'
+    : '<span class="src-tag">Khách tự nhiên</span>';
+}
 function apptItemHtml(a, withDate){
   var st = APT_STATUS[a.status];
   var dateLbl = withDate ? '<p class="apt-date-lbl">'+fmtDateShort(a.date)+'</p>' : '';
@@ -868,7 +878,7 @@ function apptItemHtml(a, withDate){
   var urgentTag = a.urgent && a.status==='pending' ? '<span class="urgent-tag">'+icon('<path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>')+'Cần xác nhận sớm</span>' : '';
   return '<div class="apt-item" data-appt="'+a.id+'">' +
     '<div class="apt-row1"><span class="apt-time">'+a.time+' · <span class="apt-room">'+esc(a.room)+'</span></span><span class="apt-status '+st.cls+'">'+st.label+'</span></div>' +
-    '<p class="apt-tenant">'+esc(a.tenant)+' · '+esc(a.phone)+'</p>' + dateLbl + apptNoteHtml(a) + urgentTag + actions +
+    '<p class="apt-tenant">'+esc(a.tenant)+' · '+esc(a.phone)+'</p>' + nguonHtml(a) + dateLbl + apptNoteHtml(a) + urgentTag + actions +
   '</div>';
 }
 function quickActsSm(phone){
@@ -902,7 +912,7 @@ function renderListView(){
     return '<div class="list-row" data-appt="'+a.id+'">' +
       '<div class="lr-date"><b>'+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'</b><span>'+DAY_NAMES[d.getDay()]+'</span></div>' +
       '<div class="lr-time">'+a.time+'</div>' +
-      '<div class="lr-info"><b>'+esc(a.room)+' — '+esc(a.tenant)+'</b><span>'+esc(a.phone)+'</span>'+apptNoteHtml(a)+'</div>' +
+      '<div class="lr-info"><b>'+esc(a.room)+' — '+esc(a.tenant)+'</b><span>'+esc(a.phone)+'</span>'+nguonHtml(a)+apptNoteHtml(a)+'</div>' +
       '<div class="lr-actions"><span class="apt-status '+st.cls+'">'+st.label+'</span>'+actionsHtml+'<div class="quick-acts">'+quickActsSm(a.phone)+'</div></div>' +
     '</div>';
   }).join('');
@@ -925,6 +935,12 @@ function renderKanban(){
       cardsHtml +
     '</div>';
   }).join('');
+}
+// Yêu cầu thuê lấy nguồn khách từ buổi xem đã dẫn tới nó
+function refCuaYeuCau(r){
+  if(r.apptId == null) return null;
+  var a = APPTS.filter(function(x){ return String(x.id) === String(r.apptId) && x.kho !== KHACH_KEY; })[0];
+  return a ? a.refCode : null;
 }
 function reqCardHtml(r){
   var actions = '';
@@ -952,7 +968,7 @@ function reqCardHtml(r){
   var urgentTag = r.urgent && r.status==='moi' ? '<span class="urgent-tag">'+icon('<path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>')+'Cần phản hồi gấp</span>' : '';
   return '<div class="rcard" data-req="'+r.id+'">' +
     '<div class="rc-top"><span class="rc-av">'+esc(initials(r.name))+'</span><div><p class="rc-name">'+esc(r.name)+'</p><p class="rc-when">'+relativeTime(r.submitted)+'</p></div></div>' +
-    '<p class="rc-room">Muốn thuê <b>'+esc(r.room)+'</b> · từ '+esc(r.wantDate)+'</p>' +
+    '<p class="rc-room">Muốn thuê <b>'+esc(r.room)+'</b> · từ '+esc(r.wantDate)+'</p>' + nguonHtml({ refCode:refCuaYeuCau(r) }) +
     '<p class="rc-note">'+esc(r.note)+'</p>' +
     (r.status === 'tu_choi' && r.reason ? '<p class="rc-reason">Lý do không duyệt: '+esc(r.reason)+'</p>' : '') +
     quickActs(r.phone) + urgentTag + actions +
