@@ -129,6 +129,8 @@
     rec.history = (rec.history || []).concat([{ stage: stage, by_id: user.id, by_role: user.role, at: nowIso() }]);
     saved[b.id] = rec;
     if (!writeJson(KEY_KHACH, saved)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
+    // Chủ trọ xác nhận "Đã ký hợp đồng" → thêm một hợp đồng chốt thành công cho môi giới, kiểm lại quyền F1
+    if (stage === 'da-ky' && c.broker) f1Check(c.broker.id);
     return { ok: true, customer: view(b, saved) };
   }
 
@@ -312,7 +314,103 @@
     return { ok: true, dispute: disputeView(d), payment: payment };
   }
 
-  function reset() { try { localStorage.removeItem(KEY_KHACH); localStorage.removeItem(KEY_DOI_SOAT); localStorage.removeItem(KEY_KHIEU_NAI); } catch (e) {} }
+  /* ---------- Quyền Trưởng nhóm F1 (mở khoá tuyển dụng tuyến dưới) ----------
+   * Môi giới mới đăng ký chưa được tuyển F2 (is_f1_unlocked = false). Mở khoá khi đạt đủ 3 điều kiện:
+   *   1. Chốt thành công F1_HOP_DONG (3) hợp đồng: hợp đồng mang mã của môi giới (data.js) + khách chủ trọ đã
+   *      xác nhận "Đã ký hợp đồng" ở sổ khách (bước da-ky). Không đếm hợp đồng của tuyến dưới.
+   *   2. Doanh số tích luỹ >= F1_DOANH_SO (10.000.000₫) = tiền phòng khách của chính môi giới đã đóng và được
+   *      ghi vào sổ (AnCuFinance.brokerStats) + tiền phòng tháng đầu của mỗi hợp đồng mới chủ trọ xác nhận đã ký
+   *      (sổ khách chưa sinh khoản tiền trong sổ tài chính, nên không bị đếm hai lần).
+   *   3. Uy tín: điểm >= 4.5/5 và 0 vi phạm tin rác. Chưa có hệ thống đánh giá nên điểm mặc định 5.0; vi phạm do
+   *      quản trị ghi ở quan-tri/tong-quan.html#moi-gioi (recordViolation).
+   * Kiểm lại mỗi khi chủ trọ xác nhận thu tiền / đã ký hợp đồng, An Cư cưỡng chế duyệt, và khi môi giới mở trang.
+   * Đã mở thì giữ (lưu thời điểm mở + đã hiện lời chúc mừng chưa). Ba F1 mẫu trong data.js có sẵn quyền.
+   *   localStorage 'ancu-f1-mo-khoa-v1' = { [brokerId]: { unlocked_at, celebrated } }
+   *   localStorage 'ancu-uy-tin-mg-v1'  = { [brokerId]: { rating, violations: [{ at, by, note }] } }
+   * Chống đa cấp biến tướng: chỉ mã của tài khoản đã mở khoá mới mời được F2 (canRecruit) — trang đăng ký kiểm. */
+  var KEY_F1 = 'ancu-f1-mo-khoa-v1', KEY_UY_TIN = 'ancu-uy-tin-mg-v1';
+  var F1_HOP_DONG = 3, F1_DOANH_SO = 10000000, F1_DIEM = 4.5, DIEM_MAC_DINH = 5;
+  function objStore(k) { var o = readJson(k, {}); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; }
+
+  function uyTin(brokerId) {
+    var r = objStore(KEY_UY_TIN)[brokerId] || {};
+    var rating = typeof r.rating === 'number' ? r.rating : DIEM_MAC_DINH;
+    var vp = Array.isArray(r.violations) ? r.violations : [];
+    return { rating: rating, rated: typeof r.rating === 'number', violations: vp.length, list: vp, ok: rating >= F1_DIEM && vp.length === 0 };
+  }
+
+  function hopDongChot(brokerId) {
+    var keys = {}, giaTri = 0;
+    D().contracts.forEach(function (c) {
+      var b = brokerOfContract(c);
+      if (b && b.id === brokerId && (c.status === 'active' || c.status === 'ended')) keys['hd:' + c.id] = true;
+    });
+    customersOfBroker(brokerId).forEach(function (k) {
+      if (k.stage.key === 'da-ky') { keys['bk:' + k.booking.id] = true; giaTri += (k.room && k.room.price) || 0; }
+    });
+    return { count: Object.keys(keys).length, firstMonth: giaTri };
+  }
+
+  function isUnlocked(brokerId) {
+    var u = D().findUser(brokerId);
+    return !!u && u.role === 'broker' && (u.is_f1_unlocked === true || !!objStore(KEY_F1)[brokerId]);
+  }
+
+  function f1Status(brokerId) {
+    var u = D().findUser(brokerId), rec = objStore(KEY_F1)[brokerId] || null;
+    var chot = hopDongChot(brokerId), hd = chot.count, ds = F().brokerStats(brokerId).sales + chot.firstMonth, ut = uyTin(brokerId);
+    var conds = [
+      { key: 'hop-dong', label: 'Chốt thành công ' + F1_HOP_DONG + ' hợp đồng thuê phòng', cur: hd, target: F1_HOP_DONG, ok: hd >= F1_HOP_DONG, unit: 'hd' },
+      { key: 'doanh-so', label: 'Tổng doanh số phòng tích luỹ đạt ' + new Intl.NumberFormat('vi-VN').format(F1_DOANH_SO) + '₫', cur: ds, target: F1_DOANH_SO, ok: ds >= F1_DOANH_SO, unit: 'vnd' },
+      { key: 'uy-tin', label: 'Điểm uy tín từ ' + F1_DIEM.toFixed(1) + '/5.0 sao & 0 vi phạm tin rác', cur: ut.rating, target: 5, ok: ut.ok, unit: 'sao', violations: ut.violations, rated: ut.rated }
+    ];
+    return {
+      unlocked: isUnlocked(brokerId), grandfathered: !!(u && u.is_f1_unlocked === true),
+      unlockedAt: rec ? rec.unlocked_at : null, celebrated: rec ? !!rec.celebrated : true,
+      conds: conds, allOk: conds.every(function (c) { return c.ok; })
+    };
+  }
+
+  // Đạt đủ điều kiện mà chưa mở → mở khoá. Trả về true nếu VỪA mở trong lần gọi này.
+  function f1Check(brokerId) {
+    if (!brokerId || isUnlocked(brokerId)) return false;
+    var u = D().findUser(brokerId);
+    if (!u || u.role !== 'broker' || !f1Status(brokerId).allOk) return false;
+    var all = objStore(KEY_F1);
+    all[brokerId] = { unlocked_at: nowIso(), celebrated: false };
+    return writeJson(KEY_F1, all);
+  }
+  function f1MarkCelebrated(brokerId) {
+    var all = objStore(KEY_F1);
+    if (all[brokerId] && !all[brokerId].celebrated) { all[brokerId].celebrated = true; writeJson(KEY_F1, all); }
+  }
+
+  // Mã này có được dùng làm link tuyển dụng (?invite=) không. Trả về { ok, broker, error, message }.
+  function canRecruit(code) {
+    var b = D().findBrokerByRef(norm(code));
+    if (!b) return { ok: false, broker: null, error: 'not_found', message: 'Mã giới thiệu không tồn tại.' };
+    if (!isUnlocked(b.id)) return { ok: false, broker: b, error: 'not_unlocked', message: 'Mã giới thiệu chưa kích hoạt quyền tuyển dụng.' };
+    return { ok: true, broker: b };
+  }
+
+  function recordViolation(brokerId, admin, note) {
+    if (!admin || admin.role !== 'admin') return fail('forbidden', 'Chỉ quản trị An Cư mới ghi vi phạm.');
+    note = String(note || '').trim().replace(/s+/g, ' ');
+    if (note.length < 5 || note.length > 300) return fail('note_required', 'Ghi rõ vi phạm (5–300 ký tự).');
+    var all = objStore(KEY_UY_TIN), r = all[brokerId] || {};
+    r.violations = (Array.isArray(r.violations) ? r.violations : []).concat([{ at: nowIso(), by: admin.id, note: note }]);
+    all[brokerId] = r;
+    return writeJson(KEY_UY_TIN, all) ? { ok: true, uyTin: uyTin(brokerId) } : fail('storage', 'Trình duyệt đang chặn lưu dữ liệu.');
+  }
+  function clearViolations(brokerId, admin) {
+    if (!admin || admin.role !== 'admin') return fail('forbidden', 'Chỉ quản trị An Cư mới gỡ vi phạm.');
+    var all = objStore(KEY_UY_TIN);
+    if (all[brokerId]) { all[brokerId].violations = []; writeJson(KEY_UY_TIN, all); }
+    f1Check(brokerId);
+    return { ok: true, uyTin: uyTin(brokerId) };
+  }
+
+  function reset() { try { [KEY_KHACH, KEY_DOI_SOAT, KEY_KHIEU_NAI, KEY_F1, KEY_UY_TIN].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} }
 
   /* ---------- Thông báo cho môi giới ----------
    * Máy chủ (npm start): GET /api/moi-gioi/thong-bao?ma= — sự kiện + khách có ref_code của mã đó (đã che tên).
@@ -391,6 +489,9 @@
     disputesOfBroker: disputesOfBroker,
     allDisputes: allDisputes,
     openDisputeFor: openDisputeFor,
+    KEY_F1: KEY_F1, KEY_UY_TIN: KEY_UY_TIN, F1_HOP_DONG: F1_HOP_DONG, F1_DOANH_SO: F1_DOANH_SO, F1_DIEM: F1_DIEM,
+    f1Status: f1Status, f1Check: f1Check, f1MarkCelebrated: f1MarkCelebrated, isUnlocked: isUnlocked, canRecruit: canRecruit,
+    uyTin: uyTin, recordViolation: recordViolation, clearViolations: clearViolations,
     reset: reset
   };
 })(window);

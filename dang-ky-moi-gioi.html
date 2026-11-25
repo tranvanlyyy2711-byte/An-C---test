@@ -25,6 +25,9 @@
 .invite{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface);font-size:15px}
 .invite svg{width:20px;height:20px;margin-top:2px;color:var(--success-ink)}
 .invite.is-warn svg{color:var(--warning-ink)}
+.invite.is-err{border-color:rgba(180,41,31,.3);background:rgba(255,107,107,.07)}
+.invite.is-err svg{color:var(--danger-ink)}
+.invite.is-err b{color:var(--danger-ink)}
 .invite[hidden]{display:none}
 .form-card{padding:24px 20px;display:grid;gap:16px}
 @media (min-width:600px){.form-card{padding:28px}}
@@ -95,6 +98,8 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/finance.js"></script>
+<script src="assets/js/bookings.js"></script>
+<script src="assets/js/moi-gioi.js"></script>
 <script src="assets/js/ui.js"></script>
 <script>
 (function(){
@@ -113,9 +118,19 @@
     var qs = new URLSearchParams(location.search);
     maMoi = String(qs.get('invite') || qs.get('moi') || '').trim().toUpperCase();
   } catch (e) {}
-  var nguoiMoi = maMoi ? D.findBrokerByRef(maMoi) : null;
+  // Chống đa cấp biến tướng: chỉ Trưởng nhóm đã mở khoá quyền F1 mới có link tuyển dụng hợp lệ (moi-gioi.js canRecruit)
+  var M = window.AnCuMoiGioi;
+  var ktMoi = maMoi ? M.canRecruit(maMoi) : null;
+  var nguoiMoi = ktMoi && ktMoi.ok ? ktMoi.broker : null;
   var box = $('loiMoi');
-  if (nguoiMoi) {
+  if (ktMoi && ktMoi.error === 'not_unlocked') {
+    box.className = 'invite is-err';
+    box.setAttribute('role', 'alert');
+    box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div><b>Mã giới thiệu chưa kích hoạt quyền tuyển dụng.</b> ' +
+      'Mã <span class="ref">' + esc(maMoi) + '</span> thuộc một môi giới chưa đạt chuẩn Trưởng nhóm (F1) nên chưa mời được tuyến dưới. ' +
+      'Bạn vẫn đăng ký được — nhập mã của một Trưởng nhóm F1 khác ở ô bên dưới, hoặc để trống.</div>';
+    box.hidden = false;
+  } else if (nguoiMoi) {
     box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><div><b>' + esc(nguoiMoi.name) +
       '</b> (<span class="ref">' + esc(nguoiMoi.ref_code) + '</span>) mời bạn tham gia. Bạn sẽ là tuyến dưới của người này.</div>';
     box.hidden = false;
@@ -168,8 +183,12 @@
     if (!tuyenTren) {
       var maNhap = oF1.value.trim().toUpperCase();
       if (maNhap) {
-        tuyenTren = D.findBrokerByRef(maNhap);
-        if (!tuyenTren) { loi('maF1', 'Không có môi giới nào mang mã ' + maNhap + '. Kiểm tra lại hoặc để trống.'); sai = sai || 'maF1'; }
+        var kt = M.canRecruit(maNhap);
+        tuyenTren = kt.ok ? kt.broker : null;
+        if (!kt.ok) {
+          loi('maF1', kt.error === 'not_unlocked' ? 'Mã giới thiệu chưa kích hoạt quyền tuyển dụng.' : 'Không có môi giới nào mang mã ' + maNhap + '. Kiểm tra lại hoặc để trống.');
+          sai = sai || 'maF1';
+        }
       }
     }
     if (mk.length < 8) { loi('matKhau', 'Mật khẩu cần ít nhất 8 ký tự.'); sai = sai || 'matKhau'; }

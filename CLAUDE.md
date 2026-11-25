@@ -443,6 +443,17 @@ khách + đối soát ở `assets/js/moi-gioi.js` — **chỉ dùng chung trong 
 - **Đăng ký F2:** `dang-ky-moi-gioi.html?invite=MG-…` (nhận cả `?moi=` cũ) tự điền và khoá ô "Mã người giới
   thiệu (F1)"; tuyến trên lấy từ link chứ không đọc lại ô (sửa readonly bằng DevTools không đổi được). Không có
   link mời thì tự nhập được, mã phải là môi giới có thật.
+- **Quyền Trưởng nhóm F1 (mở khoá tuyển dụng)** — `assets/js/moi-gioi.js` (`f1Status` / `f1Check` / `canRecruit`).
+  Môi giới mới đăng ký có `is_f1_unlocked = false`; ba F1 mẫu (`MG-KHOA`, `F1_HOANG`, `F1_DEMO`) có sẵn quyền.
+  Tự mở khi đủ 3 điều kiện: (1) chốt **3 hợp đồng** — hợp đồng mang mã của môi giới + khách chủ trọ xác nhận
+  "Đã ký hợp đồng"; (2) **doanh số tích luỹ ≥ 10.000.000₫** — tiền phòng đã thu trong sổ + tiền tháng đầu của
+  hợp đồng vừa ký; (3) **uy tín ≥ 4.5/5 và 0 vi phạm tin rác** — chưa có hệ thống đánh giá nên điểm mặc định 5.0,
+  vi phạm do quản trị ghi ở `quan-tri/tong-quan.html#moi-gioi` (cột "Quyền F1 · Uy tín"). Kiểm lại ngay khi chủ trọ
+  xác nhận thu tiền / đã ký, An Cư cưỡng chế duyệt, và khi môi giới mở trang (localStorage `ancu-f1-mo-khoa-v1`,
+  `ancu-uy-tin-mg-v1`). Chưa mở: cột trái có ổ khoá "Chưa mở khóa", mục Mạng lưới F2 chỉ hiện lộ trình 3 thanh tiến
+  độ, **không có link tuyển dụng**. Vừa mở: popup chúc mừng ở Tổng quan (một lần). Đã mở thì giữ quyền.
+  **Chống đa cấp biến tướng:** mã của tài khoản chưa mở khoá bị từ chối ở `?invite=` / `?moi=` / ô tự nhập /
+  lối `login.html?ref_team=` — báo "Mã giới thiệu chưa kích hoạt quyền tuyển dụng", không gắn tuyến trên.
 - **Nguồn khách đi theo lịch hẹn:** `phong-chi-tiet.html?ref=` lưu `localStorage.refCode`; mọi lối đặt lịch
   (`components/lich-xem.js`, `an-cu-store.js`, `tim-phong.html`, `dat-lich.html`) gửi kèm `refCode`, máy chủ lưu
   cột `viewing_appointments.ref_code` (chữ in hoa, số, `_`, `-`, 3–24 ký tự: `MG-KHOA`, `F1_HOANG`). Đặt ở `phong-chi-tiet.html` gửi kho của chủ

@@ -793,7 +793,7 @@
       <div class="ds-title"><div><h2>Mạng lưới F1 – F2</h2><p>F1 tự đăng ký; F2 đăng ký qua link mời của F1 và F1 hưởng thêm 20% hoa hồng của F2.</p></div></div>
       <div class="card">
         <table>
-          <thead><tr><th>Môi giới</th><th>Cấp</th><th class="num">Doanh số</th><th class="num">Đã nhận</th><th class="num">Khả dụng</th><th class="num">Chờ xử lý</th><th class="num">Chờ chuyển khoản</th><th class="num">Đã rút</th></tr></thead>
+          <thead><tr><th>Môi giới</th><th>Cấp</th><th class="num">Doanh số</th><th class="num">Đã nhận</th><th class="num">Khả dụng</th><th class="num">Chờ xử lý</th><th class="num">Chờ chuyển khoản</th><th class="num">Đã rút</th><th>Quyền F1 · Uy tín</th></tr></thead>
           <tbody id="mgRows"></tbody>
         </table>
         <p class="empty" id="mgEmpty" hidden>Chưa có môi giới nào.</p>
@@ -2119,6 +2119,17 @@
     brokers.forEach(function(b){ if (hang.indexOf(b) === -1) hang.push(b); });
     var tong = { kd:0, cho:0, ck:0, rut:0, nhan:0 };
     $('mgEmpty').hidden = hang.length > 0;
+    // Quyền Trưởng nhóm F1 + uy tín: điều kiện 3 (0 vi phạm tin rác) lấy từ đây — assets/js/moi-gioi.js
+    function oF1(b){
+      var st = M.f1Status(b.id), ut = M.uyTin(b.id);
+      var hd = st.conds[0], ds = st.conds[1];
+      var tt = st.unlocked
+        ? '<span class="tag ok">Đã mở tuyển dụng</span><small>' + (st.grandfathered ? 'F1 có sẵn' : 'Mở ' + esc(luc(st.unlockedAt))) + '</small>'
+        : '<span class="tag wait">Chưa mở</span><small>' + hd.cur + '/' + hd.target + ' HĐ · ' + vnd(ds.cur) + '</small>';
+      return '<td data-th="Quyền F1 · Uy tín">' + tt + '<small>' + ut.rating.toFixed(1) + '/5 · ' + ut.violations + ' vi phạm tin rác</small>' +
+        '<div class="acts" style="justify-content:flex-start;margin-top:6px"><button type="button" class="btn btn-danger-ghost btn-sm" data-vp="' + esc(b.id) + '|ghi">Ghi vi phạm</button>' +
+        (ut.violations ? '<button type="button" class="btn btn-ghost btn-sm" data-vp="' + esc(b.id) + '|go">Gỡ vi phạm</button>' : '') + '</div></td>';
+    }
     $('mgRows').innerHTML = hang.map(function(b){
       var w = F.wallet(b.id), st = F.brokerStats(b.id), up = b.upline_id && D.findUser(b.upline_id);
       var soF2 = brokers.filter(function(x){ return x.upline_id === b.id; }).length;
@@ -2130,7 +2141,7 @@
         '<td data-th="Khả dụng" class="num"' + (w.available < 0 ? ' style="color:var(--danger-ink)"' : '') + '><b>' + vnd(w.available) + '</b></td>' +
         '<td data-th="Chờ xử lý" class="num">≈ ' + vnd(w.pending) + '<small>' + w.pendingCount + ' kỳ</small></td>' +
         '<td data-th="Chờ chuyển khoản" class="num">' + vnd(w.processing) + '</td>' +
-        '<td data-th="Đã rút" class="num">' + vnd(w.withdrawn) + '</td></tr>';
+        '<td data-th="Đã rút" class="num">' + vnd(w.withdrawn) + '</td>' + oF1(b) + '</tr>';
     }).join('');
     var nF2 = brokers.filter(function(b){ return b.upline_id && D.findUser(b.upline_id); }).length;
     $('mgStats').innerHTML = [
@@ -2261,8 +2272,23 @@
   $('tnDuyet').addEventListener('click', function(){ xuLy('force'); });
   $('tnBac').addEventListener('click', function(){ xuLy('rejected'); });
 
+  // Ghi / gỡ vi phạm tin rác của môi giới (ảnh hưởng điều kiện mở khoá quyền F1)
+  $('mgRows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-vp]'); if (!b || !canDuyet()) return;
+    var p = b.getAttribute('data-vp').split('|'), mg = D.findUser(p[0]), kq;
+    if (p[1] === 'ghi') {
+      var note = prompt('Vi phạm tin rác của ' + (mg ? mg.name + ' (' + mg.ref_code + ')' : '') + ' — ghi rõ nội dung (môi giới chưa mở F1 sẽ chưa mở được quyền tuyển dụng):');
+      if (note == null) return;
+      kq = M.recordViolation(p[0], ADMIN, note);
+    } else {
+      if (!confirm('Gỡ toàn bộ vi phạm tin rác của ' + (mg ? mg.name : '') + '?')) return;
+      kq = M.clearViolations(p[0], ADMIN);
+    }
+    if (!kq.ok) { alert(kq.message); return; }
+    veTatCa();
+  });
   function veTatCa(){ var t = veMang(); veRut(t); ve(); veTrongTai(); if (window.AnCuDemQuanTri) AnCuDemQuanTri(); }
-  window.addEventListener('storage', function(e){ if ([F.STORAGE_KEY, M.KEY_DOI_SOAT, M.KEY_KHIEU_NAI, D.CAMPAIGN_KEY].indexOf(e.key) !== -1) veTatCa(); });
+  window.addEventListener('storage', function(e){ if ([F.STORAGE_KEY, M.KEY_DOI_SOAT, M.KEY_KHIEU_NAI, D.CAMPAIGN_KEY, M.KEY_F1, M.KEY_UY_TIN].indexOf(e.key) !== -1) veTatCa(); });
   window.addEventListener('hashchange', function(){ if (/^#(moi-gioi|trong-tai|doi-soat)$/.test(location.hash)) veTatCa(); });
   veTatCa();
 })();

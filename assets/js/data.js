@@ -31,11 +31,13 @@
     { id: 'l-binh',  role: 'landlord', name: 'Trần Hoà',       phone: '0988000999', email: 'chutro@ancu.test', password: DEMO_PASSWORD },
     { id: 'l-mai',   role: 'landlord', name: 'Lê Thu Mai',     phone: '0977111222', email: 'mai@ancu.test',    password: DEMO_PASSWORD },
     // Môi giới — parent_id/upline_id là mã người mời; ref_code được gắn vào link affiliate.
-    { id: 'b-khoa',  role: 'broker',   name: 'Đỗ Minh Khoa',   phone: '0966100200', email: 'khoa@ancu.test',   password: DEMO_PASSWORD, ref_code: 'MG-KHOA', parent_id: null,      upline_id: null },
-    { id: 'b-ngoc',  role: 'broker',   name: 'Vũ Bảo Ngọc',    phone: '0966300400', email: 'ngoc@ancu.test',  password: DEMO_PASSWORD, ref_code: 'MG-NGOC', parent_id: 'b-khoa', upline_id: 'b-khoa' },
-    { id: 'b-hoang', role: 'broker',   name: 'Nguyễn Hoàng',   phone: '0977000888', email: 'hoang@ancu.test',  password: DEMO_PASSWORD, ref_code: 'F1_HOANG', parent_id: null,      upline_id: null },
-    { id: 'b-minh',  role: 'broker',   name: 'Trần Minh',      phone: '0966550011', email: 'minh@ancu.test',   password: DEMO_PASSWORD, ref_code: 'F2_MINH',  parent_id: 'b-hoang', upline_id: 'b-hoang' },
-    { id: 'b-f1-demo', role: 'broker', name: 'Môi giới F1',    phone: '0983333333', email: 'f1-demo@ancu.test', password: DEMO_PASSWORD, ref_code: 'F1_DEMO',  parent_id: null,      upline_id: null },
+    // is_f1_unlocked: đã có quyền tuyển dụng tuyến dưới (Trưởng nhóm F1). Tài khoản mới đăng ký mặc định false,
+    // tự mở khi đạt đủ điều kiện (assets/js/moi-gioi.js f1Check); ba F1 mẫu dưới đây giữ quyền có sẵn.
+    { id: 'b-khoa',  role: 'broker',   name: 'Đỗ Minh Khoa',   phone: '0966100200', email: 'khoa@ancu.test',   password: DEMO_PASSWORD, ref_code: 'MG-KHOA', parent_id: null,      upline_id: null, is_f1_unlocked: true },
+    { id: 'b-ngoc',  role: 'broker',   name: 'Vũ Bảo Ngọc',    phone: '0966300400', email: 'ngoc@ancu.test',  password: DEMO_PASSWORD, ref_code: 'MG-NGOC', parent_id: 'b-khoa', upline_id: 'b-khoa', is_f1_unlocked: false },
+    { id: 'b-hoang', role: 'broker',   name: 'Nguyễn Hoàng',   phone: '0977000888', email: 'hoang@ancu.test',  password: DEMO_PASSWORD, ref_code: 'F1_HOANG', parent_id: null,      upline_id: null, is_f1_unlocked: true },
+    { id: 'b-minh',  role: 'broker',   name: 'Trần Minh',      phone: '0966550011', email: 'minh@ancu.test',   password: DEMO_PASSWORD, ref_code: 'F2_MINH',  parent_id: 'b-hoang', upline_id: 'b-hoang', is_f1_unlocked: false },
+    { id: 'b-f1-demo', role: 'broker', name: 'Môi giới F1',    phone: '0983333333', email: 'f1-demo@ancu.test', password: DEMO_PASSWORD, ref_code: 'F1_DEMO',  parent_id: null,      upline_id: null, is_f1_unlocked: true },
     // Quản trị
     { id: 'ad-01',   role: 'admin',    name: 'Quản trị An Cư', phone: '0900000001', email: 'admin@ancu.test',  password: DEMO_PASSWORD }
   ];
@@ -53,7 +55,8 @@
       if (trung) return;
       var parentId = u.parent_id || u.upline_id || null;
       users.push({ id: u.id, role: 'broker', name: String(u.name || ''), phone: String(u.phone || ''), email: String(u.email || ''),
-        password: String(u.password || ''), ref_code: String(u.ref_code), parent_id: parentId, upline_id: parentId, created_at: u.created_at || null, local: true });
+        password: String(u.password || ''), ref_code: String(u.ref_code), parent_id: parentId, upline_id: parentId, created_at: u.created_at || null, local: true,
+        is_f1_unlocked: false });   // tài khoản tự đăng ký luôn bắt đầu chưa có quyền tuyển dụng
     });
   })();
 

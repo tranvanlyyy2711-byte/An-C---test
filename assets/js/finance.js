@@ -253,7 +253,13 @@
     var q = allocate(s, c, amount, period);
     var payment = record(s, q, landlordId, period, new Date().toISOString());
     if (!save(s)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
+    kiemF1(q);
     return { ok: true, payment: payment, quote: q };
+  }
+
+  // Doanh số vừa tăng → kiểm lại điều kiện mở khoá quyền Trưởng nhóm F1 (assets/js/moi-gioi.js, nạp sau file này)
+  function kiemF1(q) {
+    if (q.broker && global.AnCuMoiGioi && global.AnCuMoiGioi.f1Check) global.AnCuMoiGioi.f1Check(q.broker.id);
   }
 
   /* ---------- Quản trị ---------- */
@@ -278,6 +284,7 @@
     var q = allocate(s, c, amount, period);
     var payment = record(s, q, c.landlord_id, period, new Date().toISOString(), null, { forced_by: idOf(adminId), dispute_id: disputeId || null });
     if (!save(s)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
+    kiemF1(q);
     return { ok: true, payment: payment, quote: q };
   }
 

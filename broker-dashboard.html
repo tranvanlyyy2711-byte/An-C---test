@@ -57,6 +57,45 @@
   background:var(--surface);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;font-weight:600;white-space:nowrap}
 .ref-chip svg{width:16px;height:16px;color:var(--text-dim)}
 .ref-chip:hover{background:var(--surface-2)}
+/* ---------- Quyền Trưởng nhóm F1: khoá / lộ trình / chúc mừng ---------- */
+.side-tx{display:flex;flex-direction:column;align-items:flex-start;gap:3px;line-height:1.25;min-width:0}
+.side-lock{display:none;flex-shrink:0;align-items:center;gap:4px;padding:1px 7px;border-radius:999px;font-size:11.5px;font-weight:600;
+  color:var(--warning-ink);background:rgba(245,177,76,.14);border:1px solid rgba(138,90,17,.2);white-space:nowrap}
+.side-lock svg{width:12px;height:12px}
+#v-mang-luoi [hidden]{display:none!important}
+body.f1-khoa .side-lock{display:inline-flex}
+body.f1-khoa #demF2{display:none}
+.lo-trinh{padding:20px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:768px){.lo-trinh{padding:28px}}
+.lo-trinh .lt-head{display:flex;gap:14px;align-items:flex-start}
+.lt-ic{flex:0 0 48px;height:48px;border-radius:12px;display:grid;place-items:center;background:rgba(245,177,76,.14);color:var(--warning-ink)}
+.lt-ic svg{width:24px;height:24px}
+.lo-trinh h2{font-size:20px;font-weight:700}
+.lo-trinh .lt-sub{font-size:14.5px;color:var(--text-muted);margin-top:2px}
+.dk-list{list-style:none;display:grid;gap:14px}
+.dk{padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);display:grid;gap:8px}
+.dk-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:4px 12px}
+.dk-top b{min-width:0}
+.lt-head > div{min-width:0}
+.dk-top b{font-family:'Be Vietnam Pro',sans-serif;font-size:15px}
+.dk-top .dk-so{font-size:14px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dk .bar{height:10px}
+.dk.is-ok .bar-fill{background:var(--accent)}
+.dk:not(.is-ok) .bar-fill{background:#D9A441;box-shadow:none}
+.dk-note{font-size:13px;color:var(--text-dim)}
+.quyen-loi{padding:16px 18px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(34,139,34,.08),rgba(47,111,237,.06));border:1px solid var(--border-strong);display:grid;gap:12px}
+.quyen-loi p{font-size:15px;font-weight:600;color:var(--text)}
+.quyen-loi .btn{justify-self:start}
+@media (max-width:480px){.quyen-loi .btn{justify-self:stretch;white-space:normal;text-align:center;padding:10px 16px}}
+.f1-dlg{width:min(480px,calc(100% - 32px));text-align:center}
+.f1-dlg .dlg-in{justify-items:center}
+.f1-dlg .f1-badge{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:rgba(34,139,34,.1);color:var(--accent);box-shadow:0 0 0 8px rgba(34,139,34,.06)}
+.f1-dlg .f1-badge svg{width:36px;height:36px}
+.f1-dlg h2{font-size:22px}
+.f1-dlg p{font-size:15px;color:var(--text-muted)}
+.f1-dlg .dlg-act{width:100%;justify-content:center}
+@media (prefers-reduced-motion:no-preference){.f1-dlg[open] .f1-badge{animation:f1-pop .5s cubic-bezier(.16,1,.3,1)}}
+@keyframes f1-pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 /* Chuông thông báo */
 .tb-wrap{position:relative;margin-left:auto}
 .m-top .tb-wrap + .ref-chip{margin-left:0}
@@ -267,7 +306,7 @@ input[type=file].input{padding:10px 12px;min-height:48px}
       <li><a class="side-link" href="#tong-quan" data-view="tong-quan"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Tổng quan</a></li>
       <li><a class="side-link" href="#kho-phong" data-view="kho-phong"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/><path d="M10 21v-6h4v6"/></svg>Kho phòng &amp; Link<span class="side-count" id="demPhong"></span></a></li>
       <li><a class="side-link" href="#khach-hang" data-view="khach-hang"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 15h3"/></svg>Khách hàng &amp; Lịch hẹn<span class="side-count" id="demKhach"></span></a></li>
-      <li><a class="side-link" href="#mang-luoi" data-view="mang-luoi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5l-5.5 5.5M12 11.5l5.5 5.5"/></svg>Mạng lưới F2<span class="side-count" id="demF2"></span></a></li>
+      <li><a class="side-link" href="#mang-luoi" data-view="mang-luoi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5l-5.5 5.5M12 11.5l5.5 5.5"/></svg><span class="side-tx">Mạng lưới F2<span class="side-lock" id="f2KhoaTag"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Chưa mở khóa</span></span><span class="side-count" id="demF2"></span></a></li>
       <li><a class="side-link" href="#vi" data-view="vi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h2M2 10h20M6 6V4h12v2"/></svg>Ví &amp; Rút tiền<span class="side-count" id="demDoiSoat"></span></a></li>
     </ul>
   </nav>
@@ -418,10 +457,24 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   <main class="view" id="v-mang-luoi" data-title="Mạng lưới F2" hidden>
     <section class="page-head reveal">
       <p class="eyebrow">Mạng lưới F2</p>
-      <h1 tabindex="-1">Tuyến dưới của bạn</h1>
+      <h1 tabindex="-1" id="f2H1">Tuyến dưới của bạn</h1>
       <p class="lead" id="f2Lead"></p>
     </section>
-    <section class="card invite reveal" aria-labelledby="h-moi">
+    <!-- Chưa đạt chuẩn F1: lộ trình mở khoá thay cho link tuyển dụng + danh sách tuyến dưới -->
+    <section class="card lo-trinh reveal" id="f2LoTrinh" aria-labelledby="h-lo-trinh" hidden>
+      <div class="lt-head">
+        <span class="lt-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+        <div><h2 id="h-lo-trinh">Lộ trình mở khóa quyền Trưởng nhóm (F1)</h2>
+          <p class="lt-sub">Đạt đủ ba mốc dưới đây, hệ thống tự mở quyền tuyển dụng — không cần gửi yêu cầu.</p></div>
+      </div>
+      <ol class="dk-list" id="f2DieuKien"></ol>
+      <div class="quyen-loi">
+        <p>Hoàn thành các mốc trên để mở khóa Link tuyển dụng F2 và nhận thêm 20% hoa hồng gián tiếp thụ động từ đội nhóm của bạn!</p>
+        <a class="btn btn-primary" href="#kho-phong">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v11h14V10"/></svg>Đi tới Kho phòng để chốt đơn ngay</a>
+      </div>
+    </section>
+    <section class="card invite reveal f2-mo" aria-labelledby="h-moi">
       <h2 id="h-moi">Link tuyển dụng môi giới</h2>
       <p>Đồng nghiệp đăng ký qua link này sẽ thành F2 của bạn. Gửi qua Zalo, Facebook hoặc tin nhắn.</p>
       <div>
@@ -433,11 +486,11 @@ input[type=file].input{padding:10px 12px;min-height:48px}
       </div>
       <p class="example" id="f2ViDu"></p>
     </section>
-    <section class="reveal" aria-labelledby="h-f2-so">
+    <section class="reveal f2-mo" aria-labelledby="h-f2-so">
       <h2 id="h-f2-so" class="sr-only">Số liệu mạng lưới</h2>
       <dl class="money" id="f2So" style="--cols:3"></dl>
     </section>
-    <section class="reveal" aria-labelledby="h-f2">
+    <section class="reveal f2-mo" aria-labelledby="h-f2">
       <div class="sec-head"><div><h2 id="h-f2">Danh sách F2</h2><p>Doanh thu là tổng tiền phòng khách của F2 đã đóng và chủ trọ đã xác nhận.</p></div></div>
       <div id="bangF2"></div>
     </section>
@@ -478,6 +531,19 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     </section>
   </main>
 </div>
+
+<!-- Chúc mừng mở khoá quyền Trưởng nhóm F1 (hiện một lần, ở mục Tổng quan) -->
+<dialog class="dlg-box f1-dlg" id="dlgF1" aria-labelledby="dlgF1Title">
+  <div class="dlg-in">
+    <span class="f1-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg></span>
+    <h2 id="dlgF1Title">Chúc mừng!</h2>
+    <p>Bạn đã đủ điều kiện trở thành Đối tác F1. Quyền tuyển dụng mạng lưới và hưởng 20% hoa hồng thụ động đã được kích hoạt!</p>
+    <div class="dlg-act">
+      <button type="button" class="btn btn-ghost" id="f1De">Để sau</button>
+      <a class="btn btn-primary" href="#mang-luoi" id="f1Di">Khám phá Mạng lưới F2 ngay</a>
+    </div>
+  </div>
+</dialog>
 
 <!-- Hộp thoại: rút tiền -->
 <dialog class="dlg-box" id="dlgRut" aria-labelledby="dlgRutTitle">
@@ -743,7 +809,8 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     var o = [
       ['Khách đang theo dõi', dangTheoDoi, 'Chưa ký hợp đồng', '#khach-hang', false],
       ['Đã ký hợp đồng', daKy, 'Khách qua link của bạn', '#khach-hang', false],
-      ['Tuyến dưới F2', f2, 'Môi giới bạn đã mời', '#mang-luoi', false],
+      M.isUnlocked(ME.id) ? ['Tuyến dưới F2', f2, 'Môi giới bạn đã mời', '#mang-luoi', false]
+        : ['Quyền Trưởng nhóm F1', 'Chưa mở', 'Xem lộ trình mở khóa', '#mang-luoi', false],
       ['Hoa hồng tháng này', vnd(thangNay), 'Trực tiếp và từ F2', '#vi', true]
     ];
     $('tqStats').innerHTML = o.map(function(x){
@@ -901,8 +968,50 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   });
 
   /* ================= 4. Mạng lưới F2 ================= */
-  $('linkF2').value = absUrl('dang-ky-moi-gioi.html?invite=' + encodeURIComponent(REF));
+  /* ---------- Quyền Trưởng nhóm F1 ---------- */
+  // Chưa mở: ổ khoá ở cột trái, mục Mạng lưới F2 chỉ hiện lộ trình 3 điều kiện; link tuyển dụng KHÔNG được tạo.
+  function veLoTrinh(st){
+    $('f2DieuKien').innerHTML = st.conds.map(function(c){
+      var tile = c.unit === 'sao' ? (c.ok ? 100 : 0) : Math.min(100, c.target ? c.cur / c.target * 100 : 0);
+      var so = c.unit === 'hd' ? c.cur + '/' + c.target + ' hợp đồng'
+        : c.unit === 'vnd' ? vnd(c.cur) + ' / ' + vnd(c.target)
+        : (c.ok ? 'Đạt' : 'Chưa đạt');
+      var note = c.unit === 'hd' ? (c.ok ? 'Đã đủ số hợp đồng.' : 'Còn ' + (c.target - c.cur) + ' hợp đồng. Hợp đồng được tính khi chủ trọ xác nhận khách đã ký.')
+        : c.unit === 'vnd' ? (c.ok ? 'Đã đủ doanh số.' : 'Còn ' + vnd(c.target - c.cur) + '. Doanh số = tiền phòng khách của bạn đã đóng (chủ trọ xác nhận thu) + tiền tháng đầu của mỗi hợp đồng chủ trọ xác nhận đã ký.')
+        : 'Điểm hiện tại ' + c.cur.toFixed(1) + '/5.0' + (c.rated ? '' : ' (mặc định, chưa có lượt đánh giá)') + ' · ' + c.violations + ' vi phạm tin rác.';
+      return '<li class="dk' + (c.ok ? ' is-ok' : '') + '"><div class="dk-top"><b>' + (c.ok ? '✓ ' : '') + esc(c.label) + '</b><span class="dk-so ' + (c.ok ? 'ink-ok' : '') + '" style="color:' + (c.ok ? 'var(--success-ink)' : 'var(--warning-ink)') + '">' + esc(so) + '</span></div>' +
+        '<div class="bar" role="progressbar" aria-label="' + esc(c.label) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(tile) + '" aria-valuetext="' + esc(so) + '">' +
+        '<div class="bar-fill" style="width:' + (tile > 0 ? Math.max(tile, 2) : 0) + '%"></div></div><p class="dk-note">' + esc(note) + '</p></li>';
+    }).join('');
+  }
+  function veQuyenF1(){
+    var st = M.f1Status(ME.id), mo = st.unlocked;
+    document.body.classList.toggle('f1-khoa', !mo);
+    $('f2LoTrinh').hidden = mo;
+    [].forEach.call(document.querySelectorAll('#v-mang-luoi .f2-mo'), function(el){ el.hidden = !mo; });
+    $('f2H1').textContent = mo ? 'Tuyến dưới của bạn' : 'Quyền Trưởng nhóm (F1)';
+    // Chỉ tài khoản đã mở khoá mới có link tuyển dụng hợp lệ
+    $('linkF2').value = mo ? absUrl('dang-ky-moi-gioi.html?invite=' + encodeURIComponent(REF)) : '';
+    if (!mo) {
+      $('f2Lead').textContent = 'Tài khoản mới chưa tuyển được tuyến dưới. Chốt đơn thật, giữ uy tín — đủ ba mốc là quyền tuyển dụng tự mở.';
+      veLoTrinh(st);
+    }
+    return st;
+  }
+  // Vừa đạt đủ điều kiện (chủ trọ xác nhận ở tab/máy khác, hoặc lúc mở trang) → mở khoá + chúc mừng ở Tổng quan
+  function kiemF1(){
+    M.f1Check(ME.id);
+    var st = M.f1Status(ME.id);
+    if (st.unlocked && st.unlockedAt && !st.celebrated && !$('v-tong-quan').hidden && !$('dlgF1').open) $('dlgF1').showModal();
+  }
+  function dongF1(){ M.f1MarkCelebrated(ME.id); if ($('dlgF1').open) $('dlgF1').close(); }
+  $('f1De').addEventListener('click', dongF1);
+  $('f1Di').addEventListener('click', dongF1);
+  $('dlgF1').addEventListener('cancel', function(){ M.f1MarkCelebrated(ME.id); });
+  window.addEventListener('hashchange', function(){ setTimeout(kiemF1, 50); });
+
   function veF2(){
+    if (!veQuyenF1().unlocked) { $('demF2').textContent = ''; return; }
     var ds = F.downlines(ME.id);
     $('demF2').textContent = ds.length || '';
     var tuF2 = F.ledger(ME.id).filter(function(e){ return e.kind === 'upline'; });
@@ -1244,13 +1353,13 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   setInterval(function(){ if (!document.hidden) napThongBao(); }, 20000);
   document.addEventListener('visibilitychange', function(){ if (!document.hidden) napThongBao(); });
 
-  function veTatCa(){ veTongQuan(); veKho(); veKhach(); veF2(); veViSo(); veDoiSoat(); veRut(); veLichSu(); UI.reveal(); }
+  function veTatCa(){ M.f1Check(ME.id); veTongQuan(); veKho(); veKhach(); veF2(); veViSo(); veDoiSoat(); veRut(); veLichSu(); UI.reveal(); kiemF1(); }
   veTatCa();
   hienMuc(false);
   napThongBao();
 
   // Chủ trọ xác nhận tiền / khách / đối soát ở tab khác → cập nhật ngay
-  var KEYS = [F.STORAGE_KEY, B.STORAGE_KEY, M.KEY_KHACH, M.KEY_DOI_SOAT, M.KEY_KHIEU_NAI, D.CAMPAIGN_KEY];
+  var KEYS = [F.STORAGE_KEY, B.STORAGE_KEY, M.KEY_KHACH, M.KEY_DOI_SOAT, M.KEY_KHIEU_NAI, D.CAMPAIGN_KEY, M.KEY_F1, M.KEY_UY_TIN];
   window.addEventListener('storage', function(e){
     if (KEYS.indexOf(e.key) !== -1) veTatCa();
     if (window.AnCuRef && (e.key === AnCuRef.EVENTS_KEY || e.key === 'an-cu-lich-xem-v1')) napThongBao();
