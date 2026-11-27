@@ -417,6 +417,14 @@ Trang môi giới `broker-dashboard.html` (5 mục `#tong-quan|kho-phong|khach-h
 `dang-ky-moi-gioi.html?invite=MG-…`. Sổ tiền ở `assets/js/finance.js` (localStorage `ancu-tai-chinh-v3`),
 khách + đối soát ở `assets/js/moi-gioi.js` — **chỉ dùng chung trong một trình duyệt**.
 
+- **Kho phòng & Link:** mỗi thẻ phòng có đúng hai nút. **[Sao chép link]** chép `phong-chi-tiet.html?id=…&ref=<mã>`,
+  nút chuyển "✓ Đã sao chép" 2 giây và hiện đường dẫn vừa chép ngay dưới nút. **[Tải ảnh & nội dung mẫu]** mở
+  `#dlgTai`: bộ ảnh của tin (nhãn "Ảnh đã xác thực" = ảnh gốc của tin đã duyệt), tải từng ảnh hoặc tất cả, và bài
+  đăng mẫu theo kênh Facebook / Zalo / TikTok (`noiDungMau()`), sửa được trong ô trước khi chép, tải được .txt.
+  Nội dung mẫu dựng từ đúng dữ liệu phòng trong `data.js` (giá, diện tích, tiện ích, mô tả), link luôn kèm `?ref=`;
+  TikTok tách link xuống cuối vì chú thích TikTok không bấm được link. Kênh chọn gần nhất nhớ ở localStorage
+  `ancu-kenh-dang-mg-v1`.
+
 - **Luật chia** mỗi kỳ chủ trọ xác nhận đã thu: quỹ = tiền phòng × tỷ lệ của phòng (mặc định 20%); môi giới
   hưởng theo bậc doanh số tháng (41% / 48% / 55%); tuyến trên (F1) thêm 20% phần môi giới nhận, lấy từ phần
   An Cư; An Cư giữ phần còn lại.
@@ -445,13 +453,25 @@ khách + đối soát ở `assets/js/moi-gioi.js` — **chỉ dùng chung trong 
   link mời thì tự nhập được, mã phải là môi giới có thật.
 - **Quyền Trưởng nhóm F1 (mở khoá tuyển dụng)** — `assets/js/moi-gioi.js` (`f1Status` / `f1Check` / `canRecruit`).
   Môi giới mới đăng ký có `is_f1_unlocked = false`; ba F1 mẫu (`MG-KHOA`, `F1_HOANG`, `F1_DEMO`) có sẵn quyền.
+  **Số liệu mẫu phải tự khớp:** F1 mẫu nào có sẵn quyền thì dữ liệu của người đó cũng phải đạt ngưỡng — MG-KHOA
+  có 3 hợp đồng đang chạy (P.101 `HD-2026-019`, P.301 `HD-2026-028`, P.203 `HD-2026-029`, đã thu kỳ 09–11/2026,
+  doanh số 32,4 triệu, ví 2.656.800₫), F1_HOANG và F1_DEMO mỗi người 3 hợp đồng ngắn hạn **đã kết thúc**
+  (`HD-2026-041`…`046`, các phòng đã trả và đang rao lại nên tin p03/p04/p06/p07/p08/p09 vẫn `available`). Sổ khách
+  (`bookings` trong `data.js`) khai bước khởi đầu bằng `stage` + `stage_at`, khách đã ký nối `contract_id` với hợp
+  đồng để số "Đã ký hợp đồng" ở trang môi giới đúng bằng số hợp đồng sinh hoa hồng (không đếm hai lần). Sửa giao
+  dịch mẫu thì tăng `SEED_VERSION` trong `finance.js` để sổ trong trình duyệt dựng lại (giữ lệnh rút và kỳ xác nhận
+  tay, bỏ kỳ xác nhận tay trùng với kỳ mẫu).
   Tự mở khi đủ 3 điều kiện: (1) chốt **3 hợp đồng** — hợp đồng mang mã của môi giới + khách chủ trọ xác nhận
   "Đã ký hợp đồng"; (2) **doanh số tích luỹ ≥ 10.000.000₫** — tiền phòng đã thu trong sổ + tiền tháng đầu của
-  hợp đồng vừa ký; (3) **uy tín ≥ 4.5/5 và 0 vi phạm tin rác** — chưa có hệ thống đánh giá nên điểm mặc định 5.0,
-  vi phạm do quản trị ghi ở `quan-tri/tong-quan.html#moi-gioi` (cột "Quyền F1 · Uy tín"). Kiểm lại ngay khi chủ trọ
+  hợp đồng vừa ký; (3) **uy tín ≥ 4.5/5 và không vi phạm tin rác / bùng lịch** — chưa có hệ thống đánh giá nên
+  điểm mặc định 5.0. Vi phạm có loại (`violations[].type` = `tin-rac` | `bung-lich`): quản trị ghi cả hai loại ở
+  `quan-tri/tong-quan.html#moi-gioi` (cột "Quyền F1 · Uy tín"); chủ trọ bấm **"Khách bùng lịch"** với khách do môi
+  giới giới thiệu ở `landlord-dashboard.html` (`M.markNoShow` — lịch đã xác nhận, đã qua giờ, khách chưa xem; mỗi
+  lịch tính một lần) → khách chuyển "Khách bùng lịch" và môi giới bị tính 1 lần. Kiểm lại ngay khi chủ trọ
   xác nhận thu tiền / đã ký, An Cư cưỡng chế duyệt, và khi môi giới mở trang (localStorage `ancu-f1-mo-khoa-v1`,
-  `ancu-uy-tin-mg-v1`). Chưa mở: cột trái có ổ khoá "Chưa mở khóa", mục Mạng lưới F2 chỉ hiện lộ trình 3 thanh tiến
-  độ, **không có link tuyển dụng**. Vừa mở: popup chúc mừng ở Tổng quan (một lần). Đã mở thì giữ quyền.
+  `ancu-uy-tin-mg-v1`). Chưa mở: cột trái có ổ khoá "Chưa mở khóa", mục Mạng lưới F2 chỉ hiện "Lộ trình mở khóa
+  quyền F1" với 3 thanh tiến độ, **không có link tuyển dụng**. Vừa mở: popup chúc mừng hiện ngay trên dashboard, ở
+  bất kỳ mục nào đang mở (một lần). Đã mở thì giữ quyền.
   **Chống đa cấp biến tướng:** mã của tài khoản chưa mở khoá bị từ chối ở `?invite=` / `?moi=` / ô tự nhập /
   lối `login.html?ref_team=` — báo "Mã giới thiệu chưa kích hoạt quyền tuyển dụng", không gắn tuyến trên.
 - **Nguồn khách đi theo lịch hẹn:** `phong-chi-tiet.html?ref=` lưu `localStorage.refCode`; mọi lối đặt lịch

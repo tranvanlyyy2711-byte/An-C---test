@@ -192,6 +192,7 @@ dialog::backdrop{background:rgba(16,32,16,.4);backdrop-filter:blur(3px)}
 .b-danger{color:var(--danger-ink);background:rgba(255,107,107,.1);border-color:rgba(180,41,31,.2)}
 td .note{display:block;font-size:13.5px;color:var(--text-dim)}
 .act-group{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.btn-no-show{color:var(--danger-ink);border-color:rgba(180,41,31,.3)}
 @media (max-width:899.98px){ td.act .act-group{display:grid} td.act .note{text-align:left} }
 .dlg-act{margin-top:24px;display:flex;flex-direction:column-reverse;gap:8px}
 @media (min-width:480px){ .dlg-act{flex-direction:row;justify-content:flex-end} }
@@ -503,7 +504,7 @@ td .note{display:block;font-size:13.5px;color:var(--text-dim)}
   }
 
   /* ---------- Khách do môi giới giới thiệu ---------- */
-  var NUT_BUOC = { 'da-xem': 'Đã xem phòng', 'da-coc': 'Đã cọc', 'da-ky': 'Đã ký hợp đồng' };
+  var NUT_BUOC = { 'da-xem': 'Đã xem phòng', 'da-coc': 'Đã cọc', 'da-ky': 'Đã ký hợp đồng', 'bung-lich': 'Khách bùng lịch' };
   function renderKhachMg(){
     var list = M.customersOfLandlord(ME.id);
     if (!list.length) { $('khachMg').innerHTML = '<p class="empty">Chưa có khách nào đặt lịch qua link của môi giới.</p>'; return; }
@@ -511,10 +512,11 @@ td .note{display:block;font-size:13.5px;color:var(--text-dim)}
       list.map(function(c){
         var b = c.booking, st = BK.STATUS[b.status] || { label: b.status };
         var buoc = M.nextSteps(c, ME), nut;
-        if (!buoc.length) nut = '<span class="note">' + (c.closed ? 'Lịch đã huỷ.' : 'Đã hoàn tất.') + '</span>';
+        if (!buoc.length) nut = '<span class="note">' + (c.noShow ? 'Khách bùng lịch.' : c.closed ? 'Lịch đã huỷ.' : 'Đã hoàn tất.') + '</span>';
         else if (buoc[0] === 'da-xem' && M.viewBlocker(b)) nut = '<span class="note">' + esc(M.viewBlocker(b)) + '</span>';
         else nut = '<div class="act-group">' + buoc.map(function(k, i){
-          return '<button type="button" class="btn ' + (i === buoc.length - 1 ? 'btn-primary' : 'btn-ghost') + '" data-buoc="' + esc(b.id) + '|' + k + '">' + NUT_BUOC[k] + '</button>';
+          var cls = k === 'bung-lich' ? 'btn-ghost btn-no-show' : k === 'da-xem' || i === buoc.length - 1 ? 'btn-primary' : 'btn-ghost';
+          return '<button type="button" class="btn ' + cls + '" data-buoc="' + esc(b.id) + '|' + k + '">' + NUT_BUOC[k] + '</button>';
         }).join('') + '</div>';
         return '<tr><td data-label="Khách"><span class="main">' + esc(c.name) + '</span>' + (c.phone ? '<span class="sub num">' + esc(c.phone) + '</span>' : '') + '</td>' +
           '<td data-label="Phòng"><span class="main">' + esc(c.room ? c.room.code : b.room_id) + '</span></td>' +
@@ -527,7 +529,8 @@ td .note{display:block;font-size:13.5px;color:var(--text-dim)}
   $('khachMg').addEventListener('click', function(e){
     var b = e.target.closest('[data-buoc]'); if (!b) return;
     var p = b.dataset.buoc.split('|');
-    var kq = M.advance(p[0], p[1], ME);
+    if (p[1] === 'bung-lich' && !confirm('Xác nhận khách không đến buổi xem? Môi giới giới thiệu khách sẽ bị tính 1 lần bùng lịch (ảnh hưởng điều kiện mở quyền F1).')) return;
+    var kq = p[1] === 'bung-lich' ? M.markNoShow(p[0], ME) : M.advance(p[0], p[1], ME);
     if (!kq.ok) { toast(kq.message); return; }
     renderAll();
     toast('Đã cập nhật ' + kq.customer.name + ': ' + kq.customer.stage.label + '.');

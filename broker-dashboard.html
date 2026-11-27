@@ -215,6 +215,28 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
 .room-act{margin-top:auto;padding-top:6px;display:grid;gap:8px}
 .room-act .btn{width:100%}
 .room-act .btn-text{min-height:44px;justify-self:center;width:auto}
+.btn.is-copied{background:rgba(34,139,34,.1);color:var(--success-ink);border-color:rgba(34,139,34,.35);box-shadow:none}
+.room-copied{font-size:13px;line-height:1.45;color:var(--success-ink);overflow-wrap:anywhere}
+.room-copied:empty{display:none}
+.room-copied code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;color:var(--text-muted)}
+/* Hộp thoại Ảnh & nội dung mẫu */
+.dlg-wide{width:min(680px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow-y:auto}
+.tai-khoi{display:grid;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
+.tai-tieu{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.tai-tieu h3{font-size:16px;font-weight:700}
+.xac-thuc{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(34,139,34,.1);color:var(--success-ink);font-size:13px;font-weight:600}
+.xac-thuc svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2}
+.tai-ghi{font-size:13.5px;color:var(--text-dim);line-height:1.5}
+.anh-grid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.anh-grid li{display:grid;gap:6px;min-width:0}
+.anh-grid img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-sm);background:var(--surface-2)}
+.anh-grid .btn{width:100%;padding:0 10px}
+@media (max-width:420px){.anh-grid{grid-template-columns:1fr 1fr}}
+.kenh{display:flex;flex-wrap:wrap;gap:8px}
+.mau-tx{width:100%;min-height:220px;resize:vertical;font-size:16px;line-height:1.55;padding:12px;white-space:pre-wrap}
+.mau-act{display:grid;gap:8px}
+@media (min-width:480px){.mau-act{grid-template-columns:1fr auto}}
+.tai-khoi .btn svg,.mau-act .btn svg{width:18px;height:18px}
 
 .dl-list{list-style:none;display:grid;gap:8px;max-height:46vh;overflow-y:auto}
 .dl-list li{display:flex;align-items:center;gap:12px}
@@ -464,7 +486,7 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     <section class="card lo-trinh reveal" id="f2LoTrinh" aria-labelledby="h-lo-trinh" hidden>
       <div class="lt-head">
         <span class="lt-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-        <div><h2 id="h-lo-trinh">Lộ trình mở khóa quyền Trưởng nhóm (F1)</h2>
+        <div><h2 id="h-lo-trinh">Lộ trình mở khóa quyền F1</h2>
           <p class="lt-sub">Đạt đủ ba mốc dưới đây, hệ thống tự mở quyền tuyển dụng — không cần gửi yêu cầu.</p></div>
       </div>
       <ol class="dk-list" id="f2DieuKien"></ol>
@@ -647,19 +669,40 @@ input[type=file].input{padding:10px 12px;min-height:48px}
 </dialog>
 
 <!-- Hộp thoại: tài liệu & ảnh phòng -->
-<dialog class="dlg-box" id="dlgTai" aria-labelledby="dlgTaiTitle">
+<dialog class="dlg-box dlg-wide" id="dlgTai" aria-labelledby="dlgTaiTitle">
   <div class="dlg-in">
-    <div><h2 id="dlgTaiTitle">Tài liệu phòng</h2><p class="dlg-sub" id="dlgTaiSub"></p></div>
-    <button type="button" class="btn btn-primary" id="taiThongTin">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>
-      Tải thông tin phòng (.txt)
-    </button>
-    <ul class="dl-list" id="dsAnh"></ul>
-    <p class="dlg-note">File thông tin có sẵn mô tả, giá, tiện ích và link giới thiệu kèm mã của bạn — dán thẳng vào bài đăng.</p>
-    <div class="dlg-act">
-      <button type="button" class="btn btn-ghost" id="taiHetAnh">Tải tất cả ảnh</button>
-      <button type="button" class="btn btn-ghost" data-close>Đóng</button>
-    </div>
+    <div><h2 id="dlgTaiTitle">Ảnh &amp; nội dung mẫu</h2><p class="dlg-sub" id="dlgTaiSub"></p></div>
+
+    <section class="tai-khoi" aria-labelledby="h-anh-mau">
+      <div class="tai-tieu">
+        <h3 id="h-anh-mau">Bộ ảnh phòng</h3>
+        <span class="xac-thuc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Ảnh đã xác thực</span>
+      </div>
+      <p class="tai-ghi">Ảnh gốc từ tin đăng của chủ trọ đã được An Cư duyệt. Đăng lại nguyên bản, không chỉnh giá hay che thông tin trên ảnh.</p>
+      <ul class="anh-grid" id="dsAnh"></ul>
+      <button type="button" class="btn btn-primary" id="taiHetAnh"></button>
+    </section>
+
+    <section class="tai-khoi" aria-labelledby="h-noi-dung-mau">
+      <div class="tai-tieu"><h3 id="h-noi-dung-mau">Nội dung đăng mẫu</h3></div>
+      <div class="kenh" role="group" aria-label="Chọn kênh đăng">
+        <button type="button" class="chip" data-kenh="facebook" aria-pressed="true">Facebook</button>
+        <button type="button" class="chip" data-kenh="zalo" aria-pressed="false">Zalo</button>
+        <button type="button" class="chip" data-kenh="tiktok" aria-pressed="false">TikTok</button>
+      </div>
+      <label class="sr-only" for="noiDungMau">Nội dung đăng mẫu</label>
+      <textarea class="input mau-tx" id="noiDungMau" rows="11" spellcheck="false"></textarea>
+      <p class="tai-ghi" id="mauGhi" aria-live="polite"></p>
+      <div class="mau-act">
+        <button type="button" class="btn btn-primary" id="chepMau"></button>
+        <button type="button" class="btn btn-ghost" id="taiThongTin">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M9 14h6M9 17h4"/></svg>
+          Tải file .txt
+        </button>
+      </div>
+    </section>
+
+    <div class="dlg-act"><button type="button" class="btn btn-ghost" data-close>Đóng</button></div>
   </div>
 </dialog>
 
@@ -691,7 +734,9 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',
     cho: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     gui: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>',
-    tai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>'
+    tai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>',
+    link: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>',
+    chep: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg>'
   };
 
   /* ---------- Thông tin chung ---------- */
@@ -740,10 +785,18 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   window.addEventListener('hashchange', function(){ hienMuc(true); });
 
   /* ---------- Sao chép ---------- */
-  function chepChu(text, btn, label){
+  function chepChu(text, btn, label, sau){
     var xong = function(){
-      if (btn) { var cu = btn.innerHTML; btn.textContent = 'Đã chép'; setTimeout(function(){ btn.innerHTML = cu; }, 1600); }
+      if (btn) {
+        // Giữ nội dung gốc một lần, bấm liên tục cũng không kẹt ở chữ "Đã sao chép"
+        if (!btn.dataset.goc) btn.dataset.goc = btn.innerHTML;
+        clearTimeout(btn._hen);
+        btn.classList.add('is-copied');
+        btn.innerHTML = ICON.check + 'Đã sao chép';
+        btn._hen = setTimeout(function(){ btn.classList.remove('is-copied'); btn.innerHTML = btn.dataset.goc; delete btn.dataset.goc; }, 2000);
+      }
       UI.toast(label || 'Đã sao chép vào bộ nhớ tạm.');
+      if (sau) sau();
     };
     var cach2 = function(){
       var t = document.createElement('textarea');
@@ -762,7 +815,14 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     var r = e.target.closest('[data-copy-text="ref"]');
     if (r || e.target.closest('#chipRef')) chepChu(REF, r, 'Đã sao chép mã ' + REF + '.');
     var l = e.target.closest('[data-copy-link]');
-    if (l) chepChu(linkPhong(l.dataset.copyLink), l, 'Đã sao chép link giới thiệu phòng ' + l.dataset.ma + ' (kèm ?ref=' + REF + ').');
+    if (l) {
+      var link = linkPhong(l.dataset.copyLink), o = l.closest('.room') && l.closest('.room').querySelector('.room-copied');
+      chepChu(link, l, 'Đã sao chép link giới thiệu phòng ' + l.dataset.ma + ' (kèm ?ref=' + REF + ').', function(){
+        if (!o) return;
+        o.innerHTML = '✓ Đã sao chép link kèm mã <b>' + esc(REF) + '</b>: <code>' + esc(link.replace(/^https?:\/\//, '')) + '</code>';
+        clearTimeout(o._hen); o._hen = setTimeout(function(){ o.innerHTML = ''; }, 6000);
+      });
+    }
     var t = e.target.closest('[data-tai]');
     if (t) moTaiLieu(t.dataset.tai);
     var c = e.target.closest('dialog [data-close]');
@@ -853,9 +913,10 @@ input[type=file].input{padding:10px 12px;min-height:48px}
           '<dl class="room-earn"><div><dt>Quỹ hoa hồng mỗi kỳ</dt><dd class="num">' + vnd(quy) + '</dd></div>' +
             '<div class="is-me"><dt>Bạn nhận (' + esc(p.tier.name) + ')</dt><dd class="num">≈ ' + vnd(nhan) + '</dd></div></dl>' +
           '<div class="room-act">' +
-            '<button type="button" class="btn btn-primary" data-copy-link="' + esc(r.id) + '" data-ma="' + esc(r.code) + '">' +
-              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>Copy Link giới thiệu</button>' +
-            '<button type="button" class="btn btn-ghost" data-tai="' + esc(r.id) + '">' + ICON.tai + 'Tải ảnh &amp; tài liệu</button>' +
+            '<button type="button" class="btn btn-primary" data-copy-link="' + esc(r.id) + '" data-ma="' + esc(r.code) + '" aria-label="Sao chép link giới thiệu phòng ' + esc(r.code) + '">' +
+              ICON.link + 'Sao chép link</button>' +
+            '<button type="button" class="btn btn-ghost" data-tai="' + esc(r.id) + '" aria-label="Tải ảnh và nội dung mẫu phòng ' + esc(r.code) + '">' + ICON.tai + 'Tải ảnh &amp; nội dung mẫu</button>' +
+            '<p class="room-copied" role="status" aria-live="polite"></p>' +
           '</div>' +
           '<p class="room-meta">Chủ trọ: ' + esc(chu ? chu.name : '—') + '</p>' +
         '</div></article>';
@@ -869,15 +930,92 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   var dangTai = null;
   function tenFile(r, i, src){ var ext = (src.split('.').pop() || 'jpg').split('?')[0]; return 'AnCu-' + r.code + '-anh-' + (i + 1) + '.' + ext; }
   function taiVe(href, name){ var a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  /* Nội dung đăng mẫu theo kênh — dựng từ đúng dữ liệu phòng, link luôn kèm ?ref= của môi giới */
+  var KENH_KEY = 'ancu-kenh-dang-mg-v1';
+  var kenh = (function(){ try { return localStorage.getItem(KENH_KEY) || 'facebook'; } catch (e) { return 'facebook'; } })();
+  if (['facebook', 'zalo', 'tiktok'].indexOf(kenh) === -1) kenh = 'facebook';
+  var GHI_KENH = {
+    facebook: 'Đăng lên trang cá nhân hoặc nhóm phòng trọ, đính kèm 3–5 ảnh ở trên. Link trong bài bấm được ngay.',
+    zalo: 'Gửi thẳng cho khách hoặc nhóm Zalo. Gửi ảnh trước, tin nhắn sau để link hiện khung xem trước.',
+    tiktok: 'Dùng làm chú thích video/ảnh. TikTok không bấm được link trong chú thích, nên dán dòng link cuối vào bình luận ghim hoặc bio.'
+  };
+  function the(s){ return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đ]/g, 'd').replace(/[Đ]/g, 'D').replace(/[^A-Za-z0-9]/g, ''); }
+  function noiDungMau(r, k){
+    var phan = String(r.address).split(',').map(function(x){ return x.trim(); });
+    var quan = phan.length >= 2 ? phan[phan.length - 2] : '', tp = phan[phan.length - 1] || '';
+    var tien = (r.amenities || []), link = linkPhong(r.id), lienHe = ten + (toi.phone ? ' – ' + toi.phone : '');
+    var gia = vnd(r.price) + '/tháng';
+    if (k === 'zalo') return [
+      'Chào anh/chị, em gửi thông tin phòng ' + r.code + ' ạ:',
+      '• ' + r.title,
+      '• Giá: ' + gia + ' · ' + r.area + ' m² · tối đa ' + r.people + ' người',
+      '• Địa chỉ: ' + r.address,
+      tien.length ? '• Tiện ích: ' + tien.slice(0, 4).join(', ') : null,
+      '',
+      'Anh/chị xem đủ ảnh và chọn giờ xem phòng tại đây: ' + link,
+      'Cần hỏi thêm cứ nhắn em nhé — ' + lienHe
+    ].filter(function(x){ return x !== null; }).join('\n');
+    if (k === 'tiktok') return [
+      r.type + ' ' + r.area + 'm² ở ' + quan + ' chỉ ' + trieu(r.price) + '/tháng 😍',
+      tien.slice(0, 3).map(function(t){ return '✅ ' + t; }).join(' '),
+      '📍 ' + [quan, tp].filter(Boolean).join(', ') + ' · tối đa ' + r.people + ' người',
+      'Link xem ảnh & đặt lịch xem phòng ở bình luận ghim 👇',
+      '',
+      '#AnCu #phongtro #thuephong #phongtro' + the(quan).toLowerCase() + ' #reviewphongtro #' + the(tp).toLowerCase(),
+      '',
+      '— Dán vào bình luận ghim —',
+      link
+    ].join('\n');
+    return [
+      '🏠 CHO THUÊ ' + r.type.toUpperCase() + (quan ? ' – ' + quan.toUpperCase() : ''),
+      r.title,
+      '',
+      '💰 Giá thuê: ' + gia,
+      '📐 ' + r.area + ' m² · tối đa ' + r.people + ' người · tầng ' + r.floor,
+      '📍 ' + r.address,
+      tien.length ? '✨ Tiện ích: ' + tien.join(' · ') : null,
+      '',
+      r.desc,
+      '',
+      '👉 Xem đủ ảnh và đặt lịch xem phòng (miễn phí): ' + link,
+      '📞 Tư vấn: ' + lienHe,
+      '',
+      '#AnCu #ChoThuePhongTro #PhongTro' + the(quan) + ' #' + the(tp)
+    ].filter(function(x){ return x !== null; }).join('\n');
+  }
+  function veMau(){
+    var r = dangTai; if (!r) return;
+    document.querySelectorAll('[data-kenh]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.kenh === kenh)); });
+    $('noiDungMau').value = noiDungMau(r, kenh);
+    var tenKenh = { facebook: 'Facebook', zalo: 'Zalo', tiktok: 'TikTok' }[kenh], nut = $('chepMau');
+    // Đổi kênh khi nút còn ở trạng thái "Đã sao chép": bỏ trạng thái đó, không để nó quay về tên kênh cũ
+    clearTimeout(nut._hen); nut.classList.remove('is-copied'); delete nut.dataset.goc;
+    nut.innerHTML = ICON.chep + 'Sao chép nội dung ' + tenKenh;
+    $('mauGhi').textContent = GHI_KENH[kenh] + ' Bạn có thể sửa ngay trong ô trên trước khi chép.';
+  }
+  document.querySelectorAll('[data-kenh]').forEach(function(b){
+    b.addEventListener('click', function(){
+      kenh = b.dataset.kenh;
+      try { localStorage.setItem(KENH_KEY, kenh); } catch (e) {}
+      veMau();
+    });
+  });
+  $('chepMau').addEventListener('click', function(){
+    var r = dangTai; if (!r) return;
+    var tenKenh = { facebook: 'Facebook', zalo: 'Zalo', tiktok: 'TikTok' }[kenh];
+    chepChu($('noiDungMau').value, $('chepMau'), 'Đã sao chép nội dung đăng ' + tenKenh + ' của phòng ' + r.code + '.');
+  });
   function moTaiLieu(id){
     var r = D.findRoom(id); if (!r) return;
     dangTai = r;
-    $('dlgTaiTitle').textContent = 'Tài liệu phòng ' + r.code;
-    $('dlgTaiSub').textContent = r.title + ' · ' + r.images.length + ' ảnh';
+    $('dlgTaiTitle').textContent = 'Ảnh & nội dung mẫu · ' + r.code;
+    $('dlgTaiSub').textContent = r.title + ' · ' + vnd(r.price) + '/tháng · ' + r.images.length + ' ảnh';
     $('dsAnh').innerHTML = r.images.map(function(src, i){
-      return '<li><img src="' + esc(src) + '" alt="Ảnh ' + (i + 1) + ' của ' + esc(r.code) + '" loading="lazy" />' +
-        '<span>Ảnh ' + (i + 1) + '</span><a class="btn btn-ghost" href="' + esc(src) + '" download="' + esc(tenFile(r, i, src)) + '">' + ICON.tai + 'Tải</a></li>';
+      return '<li><img src="' + esc(src) + '" alt="Ảnh ' + (i + 1) + ' của phòng ' + esc(r.code) + ': ' + esc(r.alt || r.title) + '" loading="lazy" width="400" height="300" />' +
+        '<a class="btn btn-ghost" href="' + esc(src) + '" download="' + esc(tenFile(r, i, src)) + '">' + ICON.tai + 'Tải ảnh ' + (i + 1) + '</a></li>';
     }).join('');
+    $('taiHetAnh').innerHTML = ICON.tai + 'Tải tất cả ' + r.images.length + ' ảnh';
+    veMau();
     $('dlgTai').showModal();
   }
   $('taiThongTin').addEventListener('click', function(){
@@ -920,7 +1058,7 @@ input[type=file].input{padding:10px 12px;min-height:48px}
         '<span class="n num">' + dem[s.key] + '</span><span>' + esc(s.who) + '</span></li>';
     }).join('');
 
-    var loc = [['tat-ca', 'Tất cả']].concat(M.STAGES.map(function(s){ return [s.key, s.label]; })).concat([['da-huy', M.CLOSED.label]]);
+    var loc = [['tat-ca', 'Tất cả']].concat(M.STAGES.map(function(s){ return [s.key, s.label]; })).concat([['da-huy', M.CLOSED.label], ['bung-lich', M.NO_SHOW.label]]);
     $('locKhach').innerHTML = loc.map(function(x){
       return '<button type="button" class="chip" data-loc="' + x[0] + '" aria-pressed="' + (locKhach === x[0]) + '">' + esc(x[1]) + ' (' + (dem[x[0]] || 0) + ')</button>';
     }).join('');
@@ -943,7 +1081,8 @@ input[type=file].input{padding:10px 12px;min-height:48px}
           var chan = M.viewBlocker(b);
           thaoTac = chan ? '<span class="note">' + esc(chan) + ' Xác nhận đã xem sau buổi hẹn.</span>'
             : '<button type="button" class="btn btn-ghost" data-da-xem="' + esc(b.id) + '">' + ICON.check + 'Xác nhận đã xem phòng</button>';
-        } else if (c.closed) thaoTac = '<span class="note">Lịch đã huỷ trước khi xem.</span>';
+        } else if (c.noShow) thaoTac = '<span class="note">Chủ trọ xác nhận khách không đến buổi xem — tính 1 lần bùng lịch vào điểm uy tín.</span>';
+        else if (c.closed) thaoTac = '<span class="note">Lịch đã huỷ trước khi xem.</span>';
         else if (c.stageIndex === 3) thaoTac = '<span class="note">Hoàn tất. Hoa hồng chia theo từng kỳ khách đóng tiền.</span>';
         else thaoTac = '<span class="note">Chờ chủ trọ xác nhận khách đã cọc hoặc đã ký hợp đồng.</span>';
         return '<tr>' +
@@ -978,7 +1117,8 @@ input[type=file].input{padding:10px 12px;min-height:48px}
         : (c.ok ? 'Đạt' : 'Chưa đạt');
       var note = c.unit === 'hd' ? (c.ok ? 'Đã đủ số hợp đồng.' : 'Còn ' + (c.target - c.cur) + ' hợp đồng. Hợp đồng được tính khi chủ trọ xác nhận khách đã ký.')
         : c.unit === 'vnd' ? (c.ok ? 'Đã đủ doanh số.' : 'Còn ' + vnd(c.target - c.cur) + '. Doanh số = tiền phòng khách của bạn đã đóng (chủ trọ xác nhận thu) + tiền tháng đầu của mỗi hợp đồng chủ trọ xác nhận đã ký.')
-        : 'Điểm hiện tại ' + c.cur.toFixed(1) + '/5.0' + (c.rated ? '' : ' (mặc định, chưa có lượt đánh giá)') + ' · ' + c.violations + ' vi phạm tin rác.';
+        : 'Điểm hiện tại ' + c.cur.toFixed(1) + '/5.0' + (c.rated ? '' : ' (mặc định, chưa có lượt đánh giá)') + ' · ' + c.tinRac + ' vi phạm tin rác · ' + c.bungLich + ' lần khách bùng lịch.' +
+          (c.violations ? ' Liên hệ An Cư để rà soát vi phạm.' : '');
       return '<li class="dk' + (c.ok ? ' is-ok' : '') + '"><div class="dk-top"><b>' + (c.ok ? '✓ ' : '') + esc(c.label) + '</b><span class="dk-so ' + (c.ok ? 'ink-ok' : '') + '" style="color:' + (c.ok ? 'var(--success-ink)' : 'var(--warning-ink)') + '">' + esc(so) + '</span></div>' +
         '<div class="bar" role="progressbar" aria-label="' + esc(c.label) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(tile) + '" aria-valuetext="' + esc(so) + '">' +
         '<div class="bar-fill" style="width:' + (tile > 0 ? Math.max(tile, 2) : 0) + '%"></div></div><p class="dk-note">' + esc(note) + '</p></li>';
@@ -1002,7 +1142,7 @@ input[type=file].input{padding:10px 12px;min-height:48px}
   function kiemF1(){
     M.f1Check(ME.id);
     var st = M.f1Status(ME.id);
-    if (st.unlocked && st.unlockedAt && !st.celebrated && !$('v-tong-quan').hidden && !$('dlgF1').open) $('dlgF1').showModal();
+    if (st.unlocked && st.unlockedAt && !st.celebrated && !$('dlgF1').open) $('dlgF1').showModal();
   }
   function dongF1(){ M.f1MarkCelebrated(ME.id); if ($('dlgF1').open) $('dlgF1').close(); }
   $('f1De').addEventListener('click', dongF1);
@@ -1062,7 +1202,10 @@ input[type=file].input{padding:10px 12px;min-height:48px}
     var hds = M.contractsOfBroker(ME.id);
     var coTheGui = 0;
     if (!hds.length) {
-      $('doiSoat').innerHTML = '<li class="empty">Chưa có hợp đồng nào do bạn giới thiệu. Khi khách ký hợp đồng, các kỳ thanh toán hiện ở đây.</li>';
+      var daXong = M.f1Status(ME.id).conds[0].cur;
+      $('doiSoat').innerHTML = daXong
+        ? '<li class="empty">Các hợp đồng bạn đã giới thiệu đều đã kết thúc và đối soát xong. Khi khách mới ký hợp đồng, các kỳ thanh toán hiện ở đây.</li>'
+        : '<li class="empty">Chưa có hợp đồng nào do bạn giới thiệu. Khi khách ký hợp đồng, các kỳ thanh toán hiện ở đây.</li>';
     } else {
       $('doiSoat').innerHTML = hds.map(function(c){
         var r = D.findRoom(c.room_id), ky = M.periodsForBroker(c);

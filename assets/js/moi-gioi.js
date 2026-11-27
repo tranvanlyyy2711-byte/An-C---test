@@ -33,6 +33,8 @@
     { key: 'da-ky',       label: 'Đã ký hợp đồng', who: 'Chủ trọ xác nhận',               tone: 'b-ok' }
   ];
   var CLOSED = { key: 'da-huy', label: 'Lịch đã huỷ', who: 'Khách chưa xem phòng', tone: 'b-danger' };
+  // Khách hẹn xem rồi không đến — chủ trọ xác nhận, tính 1 vi phạm "bùng lịch" cho môi giới (điều kiện uy tín F1)
+  var NO_SHOW = { key: 'bung-lich', label: 'Khách bùng lịch', who: 'Chủ trọ xác nhận khách không đến', tone: 'b-danger' };
 
   function D() { return global.AnCuData; }
   function F() { return global.AnCuFinance; }
@@ -53,11 +55,15 @@
     var room = D().findRoom(b.room_id);
     var renter = b.renter_id ? D().findUser(b.renter_id) : null;
     var rec = saved[b.id] || null;
-    var key = rec && stageIndex(rec.stage) !== -1 ? rec.stage : (b.status === 'completed' ? 'da-xem' : 'da-dat-lich');
+    var key = rec && stageIndex(rec.stage) !== -1 ? rec.stage
+      : stageIndex(b.stage) !== -1 ? b.stage                       // bước khởi đầu khai trong dữ liệu mẫu (data.js)
+      : (b.status === 'completed' ? 'da-xem' : 'da-dat-lich');
     var idx = stageIndex(key);
-    var closed = idx === 0 && (b.status === 'cancelled' || b.status === 'rejected');
+    var noShow = !!(rec && rec.no_show);
+    var closed = noShow || (idx === 0 && (b.status === 'cancelled' || b.status === 'rejected'));
     var history = rec && Array.isArray(rec.history) ? rec.history.slice() : [];
-    if (!rec && key === 'da-xem') history.push({ stage: 'da-xem', by_role: 'system', at: b.scheduled_at });
+    if (!rec && b.stage && stageIndex(b.stage) > 0) history.push({ stage: b.stage, by_role: 'landlord', at: b.stage_at || b.scheduled_at });
+    else if (!rec && key === 'da-xem') history.push({ stage: 'da-xem', by_role: 'system', at: b.scheduled_at });
     var last = history.length ? history[history.length - 1] : null;
     return {
       booking: b, room: room, renter: renter,
@@ -65,7 +71,7 @@
       phone: renter ? renter.phone : '',
       broker: D().findBrokerByRef(norm(b.ref_code)),
       landlord: D().findUser(b.landlord_id),
-      stage: closed ? CLOSED : STAGES[idx], stageIndex: closed ? -1 : idx, closed: closed,
+      stage: noShow ? NO_SHOW : closed ? CLOSED : STAGES[idx], stageIndex: closed ? -1 : idx, closed: closed, noShow: noShow,
       history: history, last: last
     };
   }
@@ -95,6 +101,7 @@
     var isBroker = user.role === 'broker' && c.broker && c.broker.id === user.id;
     var out = [];
     if (c.stageIndex === 0 && (isLandlord || isBroker)) out.push('da-xem');
+    if (c.stageIndex === 0 && isLandlord) out.push('bung-lich');
     if (isLandlord && c.stageIndex === 1) out.push('da-coc', 'da-ky');
     if (isLandlord && c.stageIndex === 2) out.push('da-ky');
     return out;
@@ -321,8 +328,9 @@
    *   2. Doanh số tích luỹ >= F1_DOANH_SO (10.000.000₫) = tiền phòng khách của chính môi giới đã đóng và được
    *      ghi vào sổ (AnCuFinance.brokerStats) + tiền phòng tháng đầu của mỗi hợp đồng mới chủ trọ xác nhận đã ký
    *      (sổ khách chưa sinh khoản tiền trong sổ tài chính, nên không bị đếm hai lần).
-   *   3. Uy tín: điểm >= 4.5/5 và 0 vi phạm tin rác. Chưa có hệ thống đánh giá nên điểm mặc định 5.0; vi phạm do
-   *      quản trị ghi ở quan-tri/tong-quan.html#moi-gioi (recordViolation).
+   *   3. Uy tín: điểm >= 4.5/5 và 0 vi phạm (tin rác hoặc bùng lịch). Chưa có hệ thống đánh giá nên điểm mặc định 5.0.
+   *      Tin rác: quản trị ghi ở quan-tri/tong-quan.html#moi-gioi. Bùng lịch: chủ trọ bấm "Khách bùng lịch" với khách
+   *      do môi giới giới thiệu (markNoShow), hoặc quản trị ghi tay. violations[].type = 'tin-rac' | 'bung-lich'.
    * Kiểm lại mỗi khi chủ trọ xác nhận thu tiền / đã ký hợp đồng, An Cư cưỡng chế duyệt, và khi môi giới mở trang.
    * Đã mở thì giữ (lưu thời điểm mở + đã hiện lời chúc mừng chưa). Ba F1 mẫu trong data.js có sẵn quyền.
    *   localStorage 'ancu-f1-mo-khoa-v1' = { [brokerId]: { unlocked_at, celebrated } }
@@ -336,7 +344,9 @@
     var r = objStore(KEY_UY_TIN)[brokerId] || {};
     var rating = typeof r.rating === 'number' ? r.rating : DIEM_MAC_DINH;
     var vp = Array.isArray(r.violations) ? r.violations : [];
-    return { rating: rating, rated: typeof r.rating === 'number', violations: vp.length, list: vp, ok: rating >= F1_DIEM && vp.length === 0 };
+    var bung = vp.filter(function (v) { return v.type === 'bung-lich'; }).length;
+    return { rating: rating, rated: typeof r.rating === 'number', violations: vp.length, tinRac: vp.length - bung, bungLich: bung,
+      list: vp, ok: rating >= F1_DIEM && vp.length === 0 };
   }
 
   function hopDongChot(brokerId) {
@@ -346,7 +356,10 @@
       if (b && b.id === brokerId && (c.status === 'active' || c.status === 'ended')) keys['hd:' + c.id] = true;
     });
     customersOfBroker(brokerId).forEach(function (k) {
-      if (k.stage.key === 'da-ky') { keys['bk:' + k.booking.id] = true; giaTri += (k.room && k.room.price) || 0; }
+      if (k.stage.key !== 'da-ky') return;
+      // Khách nối với một hợp đồng đã có: hợp đồng đó đã được đếm, tiền phòng của nó đã nằm trong sổ tài chính
+      if (k.booking.contract_id) { keys['hd:' + k.booking.contract_id] = true; return; }
+      keys['bk:' + k.booking.id] = true; giaTri += (k.room && k.room.price) || 0;
     });
     return { count: Object.keys(keys).length, firstMonth: giaTri };
   }
@@ -362,7 +375,8 @@
     var conds = [
       { key: 'hop-dong', label: 'Chốt thành công ' + F1_HOP_DONG + ' hợp đồng thuê phòng', cur: hd, target: F1_HOP_DONG, ok: hd >= F1_HOP_DONG, unit: 'hd' },
       { key: 'doanh-so', label: 'Tổng doanh số phòng tích luỹ đạt ' + new Intl.NumberFormat('vi-VN').format(F1_DOANH_SO) + '₫', cur: ds, target: F1_DOANH_SO, ok: ds >= F1_DOANH_SO, unit: 'vnd' },
-      { key: 'uy-tin', label: 'Điểm uy tín từ ' + F1_DIEM.toFixed(1) + '/5.0 sao & 0 vi phạm tin rác', cur: ut.rating, target: 5, ok: ut.ok, unit: 'sao', violations: ut.violations, rated: ut.rated }
+      { key: 'uy-tin', label: 'Điểm uy tín từ ' + F1_DIEM.toFixed(1) + '/5.0 sao & không vi phạm tin rác / bùng lịch', cur: ut.rating, target: 5, ok: ut.ok, unit: 'sao',
+        violations: ut.violations, tinRac: ut.tinRac, bungLich: ut.bungLich, rated: ut.rated }
     ];
     return {
       unlocked: isUnlocked(brokerId), grandfathered: !!(u && u.is_f1_unlocked === true),
@@ -393,15 +407,44 @@
     return { ok: true, broker: b };
   }
 
-  function recordViolation(brokerId, admin, note) {
+  function recordViolation(brokerId, admin, note, type) {
     if (!admin || admin.role !== 'admin') return fail('forbidden', 'Chỉ quản trị An Cư mới ghi vi phạm.');
-    note = String(note || '').trim().replace(/s+/g, ' ');
+    note = String(note || '').trim().replace(/\s+/g, ' ');
     if (note.length < 5 || note.length > 300) return fail('note_required', 'Ghi rõ vi phạm (5–300 ký tự).');
     var all = objStore(KEY_UY_TIN), r = all[brokerId] || {};
-    r.violations = (Array.isArray(r.violations) ? r.violations : []).concat([{ at: nowIso(), by: admin.id, note: note }]);
+    r.violations = (Array.isArray(r.violations) ? r.violations : []).concat([{ at: nowIso(), by: admin.id, type: type === 'bung-lich' ? 'bung-lich' : 'tin-rac', note: note }]);
     all[brokerId] = r;
     return writeJson(KEY_UY_TIN, all) ? { ok: true, uyTin: uyTin(brokerId) } : fail('storage', 'Trình duyệt đang chặn lưu dữ liệu.');
   }
+  // Chủ trọ xác nhận khách do môi giới giới thiệu không đến buổi xem: đóng khách đó + 1 vi phạm bùng lịch cho môi giới.
+  // Chỉ chủ của lịch, lịch đã chốt (confirmed), đã qua giờ hẹn và khách chưa được xác nhận đã xem. Mỗi lịch tính một lần.
+  function markNoShow(bookingId, user) {
+    if (!user || user.role !== 'landlord') return fail('forbidden', 'Chỉ chủ trọ mới xác nhận khách bùng lịch.');
+    var b = B().all().filter(function (x) { return x.id === bookingId; })[0];
+    if (!b || !norm(b.ref_code)) return fail('not_found', 'Không tìm thấy khách do môi giới giới thiệu.');
+    var saved = store(), c = view(b, saved);
+    if (b.landlord_id !== user.id) return fail('forbidden', 'Lịch này không thuộc phòng của bạn.');
+    if (c.closed) return fail('closed', 'Khách này đã đóng (' + c.stage.label.toLowerCase() + ').');
+    if (c.stageIndex !== 0) return fail('already', 'Khách đã xem phòng, không phải bùng lịch.');
+    if (b.status !== 'confirmed') return fail('not_confirmed', 'Chỉ đánh dấu bùng lịch với lịch bạn đã xác nhận.');
+    if (Date.parse(b.scheduled_at) > Date.now()) return fail('not_yet', 'Chưa tới giờ hẹn.');
+    var rec = saved[b.id] || { stage: 'da-dat-lich', history: [] };
+    rec.no_show = true;
+    rec.history = (rec.history || []).concat([{ stage: 'bung-lich', by_id: user.id, by_role: 'landlord', at: nowIso() }]);
+    saved[b.id] = rec;
+    if (!writeJson(KEY_KHACH, saved)) return fail('storage', 'Trình duyệt đang chặn lưu dữ liệu (localStorage), chưa ghi được.');
+    if (c.broker) {
+      var all = objStore(KEY_UY_TIN), r = all[c.broker.id] || {};
+      var vp = Array.isArray(r.violations) ? r.violations : [];
+      if (!vp.some(function (v) { return v.booking_id === b.id; })) {
+        r.violations = vp.concat([{ at: nowIso(), by: user.id, type: 'bung-lich', booking_id: b.id,
+          note: 'Khách ' + c.name + ' không đến xem ' + (c.room ? c.room.code : b.room_id) + ' (chủ trọ xác nhận)' }]);
+        all[c.broker.id] = r; writeJson(KEY_UY_TIN, all);
+      }
+    }
+    return { ok: true, customer: view(b, saved) };
+  }
+
   function clearViolations(brokerId, admin) {
     if (!admin || admin.role !== 'admin') return fail('forbidden', 'Chỉ quản trị An Cư mới gỡ vi phạm.');
     var all = objStore(KEY_UY_TIN);
@@ -491,7 +534,7 @@
     openDisputeFor: openDisputeFor,
     KEY_F1: KEY_F1, KEY_UY_TIN: KEY_UY_TIN, F1_HOP_DONG: F1_HOP_DONG, F1_DOANH_SO: F1_DOANH_SO, F1_DIEM: F1_DIEM,
     f1Status: f1Status, f1Check: f1Check, f1MarkCelebrated: f1MarkCelebrated, isUnlocked: isUnlocked, canRecruit: canRecruit,
-    uyTin: uyTin, recordViolation: recordViolation, clearViolations: clearViolations,
+    uyTin: uyTin, recordViolation: recordViolation, clearViolations: clearViolations, markNoShow: markNoShow, NO_SHOW: NO_SHOW,
     reset: reset
   };
 })(window);

@@ -78,7 +78,7 @@
     // Nhà trọ An Bình của Trần Hoà — khớp PHONG_CHU_TRO trong server/phong.mjs
     { id: 'ab-101', code: 'P.101', title: 'Nhà trọ An Bình', price: 3500000, address: AN_BINH, landlord_id: 'l-binh', status: 'rented',    commission_rate: DEFAULT_COMMISSION_RATE, ref_code: 'MG-KHOA' },
     { id: 'ab-102', code: 'P.102', title: 'Nhà trọ An Bình', price: 3200000, address: AN_BINH, landlord_id: 'l-binh', status: 'available', commission_rate: DEFAULT_COMMISSION_RATE, ref_code: null },
-    { id: 'ab-103', code: 'P.103', title: 'Nhà trọ An Bình', price: 3200000, address: AN_BINH, landlord_id: 'l-binh', status: 'reserved',  commission_rate: DEFAULT_COMMISSION_RATE, ref_code: 'MG-NGOC' },
+    { id: 'ab-103', code: 'P.103', title: 'Nhà trọ An Bình', price: 3200000, address: AN_BINH, landlord_id: 'l-binh', status: 'reserved',  commission_rate: DEFAULT_COMMISSION_RATE, ref_code: 'MG-KHOA' },
     { id: 'ab-201', code: 'P.201', title: 'Nhà trọ An Bình', price: 4100000, address: AN_BINH, landlord_id: 'l-binh', status: 'rented',    commission_rate: DEFAULT_COMMISSION_RATE, ref_code: null },
     { id: 'ab-202', code: 'P.202', title: 'Nhà trọ An Bình', price: 3800000, address: AN_BINH, landlord_id: 'l-binh', status: 'rented',    commission_rate: DEFAULT_COMMISSION_RATE, ref_code: 'MG-NGOC' },
     { id: 'ab-203', code: 'P.203', title: 'Nhà trọ An Bình', price: 3800000, address: AN_BINH, landlord_id: 'l-binh', status: 'rented',    commission_rate: DEFAULT_COMMISSION_RATE, ref_code: null },
@@ -174,9 +174,17 @@
     { id: 'HD-2026-019', room_id: 'ab-101', tenant_id: 'u-an',   tenant_name: 'Nguyễn Văn An',  landlord_id: 'l-binh', start_date: '2026-01-01', end_date: '2026-12-31', monthly_rent: 3500000, deposit: 3500000, status: 'active' },
     { id: 'HD-2026-012', room_id: 'ab-201', tenant_id: 'u-linh', tenant_name: 'Trần Mỹ Linh',   landlord_id: 'l-binh', start_date: '2026-03-01', end_date: '2026-11-30', monthly_rent: 4100000, deposit: 4100000, status: 'active' },
     { id: 'HD-2026-021', room_id: 'ab-202', tenant_id: null,     tenant_name: 'Lê Minh Tú',     landlord_id: 'l-binh', start_date: '2026-02-15', end_date: '2027-02-14', monthly_rent: 3800000, deposit: 3800000, status: 'active', ref_code: 'F2_MINH' },
-    { id: 'HD-2026-029', room_id: 'ab-203', tenant_id: null,     tenant_name: 'Đỗ Thảo',        landlord_id: 'l-binh', start_date: '2026-06-01', end_date: '2027-05-31', monthly_rent: 3800000, deposit: 3800000, status: 'active' },
+    { id: 'HD-2026-029', room_id: 'ab-203', tenant_id: null,     tenant_name: 'Đỗ Thảo',        landlord_id: 'l-binh', start_date: '2026-06-01', end_date: '2027-05-31', monthly_rent: 3800000, deposit: 3800000, status: 'active', ref_code: 'MG-KHOA' },
     { id: 'HD-2026-028', room_id: 'ab-301', tenant_id: 'u-trang', tenant_name: 'Phạm Thu Trang', landlord_id: 'l-binh', start_date: '2026-08-01', end_date: '2027-07-31', monthly_rent: 3500000, deposit: 3500000, status: 'active' },
-    { id: 'HD-2026-031', room_id: 'ab-302', tenant_id: 'u-huy',  tenant_name: 'Lê Quang Huy',   landlord_id: 'l-binh', start_date: '2026-10-01', end_date: '2027-09-30', monthly_rent: 3000000, deposit: 3000000, status: 'active' }
+    { id: 'HD-2026-031', room_id: 'ab-302', tenant_id: 'u-huy',  tenant_name: 'Lê Quang Huy',   landlord_id: 'l-binh', start_date: '2026-10-01', end_date: '2027-09-30', monthly_rent: 3000000, deposit: 3000000, status: 'active' },
+    // Hợp đồng ngắn hạn đã kết thúc do hai F1 mẫu chốt — phòng đã trả và đang rao lại (p03/p04/p06/p07/p08/p09
+    // vẫn là tin 'available'). Đây là lý do F1_HOANG và F1_DEMO có quyền F1: đủ 3 hợp đồng, doanh số ≥ 10 triệu.
+    { id: 'HD-2026-041', room_id: 'p06', tenant_id: null,     tenant_name: 'Phan Đức Long', landlord_id: 'l-mai', start_date: '2026-03-01', end_date: '2026-05-31', monthly_rent: 4600000, deposit: 4600000, status: 'ended', ref_code: 'F1_HOANG' },
+    { id: 'HD-2026-042', room_id: 'p08', tenant_id: null,     tenant_name: 'Ngô Thanh Hà', landlord_id: 'l-mai', start_date: '2026-04-01', end_date: '2026-06-30', monthly_rent: 3400000, deposit: 3400000, status: 'ended', ref_code: 'F1_HOANG' },
+    { id: 'HD-2026-043', room_id: 'p09', tenant_id: null,     tenant_name: 'Vương Gia Bảo', landlord_id: 'l-mai', start_date: '2026-05-01', end_date: '2026-07-31', monthly_rent: 6500000, deposit: 6500000, status: 'ended', ref_code: 'F1_HOANG' },
+    { id: 'HD-2026-044', room_id: 'p03', tenant_id: null,     tenant_name: 'Đinh Quốc Việt', landlord_id: 'l-mai', start_date: '2026-02-01', end_date: '2026-04-30', monthly_rent: 3100000, deposit: 3100000, status: 'ended', ref_code: 'F1_DEMO' },
+    { id: 'HD-2026-045', room_id: 'p04', tenant_id: null,     tenant_name: 'Hồ Ngọc Trâm', landlord_id: 'l-mai', start_date: '2026-03-01', end_date: '2026-05-31', monthly_rent: 3900000, deposit: 3900000, status: 'ended', ref_code: 'F1_DEMO' },
+    { id: 'HD-2026-046', room_id: 'p07', tenant_id: null,     tenant_name: 'Mai Anh Tuấn', landlord_id: 'l-binh', start_date: '2026-06-01', end_date: '2026-08-31', monthly_rent: 1800000, deposit: 1800000, status: 'ended', ref_code: 'F1_DEMO' }
   ];
 
   // Hoá đơn tiền nhà hằng tháng (mô hình v1: bảng invoices). Điện 3.800₫/kWh, nước 100.000₫/người,
@@ -193,11 +201,11 @@
   }
   var invoices = [
     invoice('INV-101-2610', 'HD-2026-019', '2026-10', 3500000,  92, 1, 'paid',    '2026-10-03T09:40:00Z'),
-    invoice('INV-101-2611', 'HD-2026-019', '2026-11', 3500000,  85, 1, 'pending'),
+    invoice('INV-101-2611', 'HD-2026-019', '2026-11', 3500000,  85, 1, 'paid',    '2026-11-03T08:30:00Z'),
     invoice('INV-201-2610', 'HD-2026-012', '2026-10', 4100000, 110, 1, 'overdue'),
     invoice('INV-201-2611', 'HD-2026-012', '2026-11', 4100000,  96, 1, 'pending'),
     invoice('INV-301-2610', 'HD-2026-028', '2026-10', 3500000,  78, 1, 'paid',    '2026-10-05T11:00:00Z'),
-    invoice('INV-301-2611', 'HD-2026-028', '2026-11', 3500000,  81, 1, 'pending'),
+    invoice('INV-301-2611', 'HD-2026-028', '2026-11', 3500000,  81, 1, 'paid',    '2026-11-05T10:20:00Z'),
     invoice('INV-302-2610', 'HD-2026-031', '2026-10', 3000000,  64, 1, 'overdue'),
     invoice('INV-302-2611', 'HD-2026-031', '2026-11', 3000000,  70, 1, 'pending')
   ];
@@ -213,7 +221,24 @@
     { id: 'bk-006', room_id: 'p05', renter_id: 'u-an',    landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-10-02T03:00:00Z', status: 'completed', note: '' },
     { id: 'bk-007', room_id: 'p01', renter_id: 'u-huy',   landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-11-11T09:00:00Z', status: 'confirmed', note: '' },
     { id: 'bk-008', room_id: 'p07', renter_id: 'u-linh',  landlord_id: 'l-binh', ref_code: null,      scheduled_at: '2026-11-14T01:30:00Z', status: 'confirmed', note: 'Xem cùng bạn cùng phòng.' },
-    { id: 'bk-009', room_id: 'p05', renter_id: 'u-trang', landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-11-15T03:00:00Z', status: 'pending',   note: '' }
+    { id: 'bk-009', room_id: 'p05', renter_id: 'u-trang', landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-11-15T03:00:00Z', status: 'pending',   note: '' },
+    // Buổi xem dẫn tới hợp đồng — stage là bước khởi đầu trong sổ khách (assets/js/moi-gioi.js), contract_id nối với
+    // hợp đồng để số "Đã ký hợp đồng" ở trang môi giới đúng bằng số hợp đồng đang sinh hoa hồng, không đếm hai lần.
+    { id: 'bk-010', room_id: 'ab-101', renter_id: 'u-an',    landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2025-12-20T03:00:00Z', status: 'completed', note: '', stage: 'da-ky',  stage_at: '2025-12-28T02:00:00Z', contract_id: 'HD-2026-019' },
+    { id: 'bk-011', room_id: 'ab-203', renter_id: null, renter_name: 'Đỗ Thảo', landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-05-24T09:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-05-28T02:00:00Z', contract_id: 'HD-2026-029' },
+    { id: 'bk-012', room_id: 'ab-301', renter_id: 'u-trang', landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-07-25T02:30:00Z', status: 'completed', note: '', stage: 'da-ky',  stage_at: '2026-07-29T03:00:00Z', contract_id: 'HD-2026-028' },
+    // P.103: khách đã cọc giữ chỗ (khớp trạng thái 'deposit' của P.103 ở trang chủ trọ), chưa ký nên chưa có hoa hồng
+    { id: 'bk-013', room_id: 'ab-103', renter_id: null, renter_name: 'Trần Minh Anh', landlord_id: 'l-binh', ref_code: 'MG-KHOA', scheduled_at: '2026-11-16T08:00:00Z', status: 'completed', note: 'Đã cọc giữ chỗ, dọn vào 01/12.', stage: 'da-coc', stage_at: '2026-11-17T04:00:00Z' },
+    // Khách của hai F1 mẫu, mỗi khách nối với một hợp đồng đã kết thúc ở trên
+    { id: 'bk-014', room_id: 'p06', renter_id: null, renter_name: 'Phan Đức Long', landlord_id: 'l-mai', ref_code: 'F1_HOANG', scheduled_at: '2026-02-20T03:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-02-24T02:00:00Z', contract_id: 'HD-2026-041' },
+    { id: 'bk-015', room_id: 'p08', renter_id: null, renter_name: 'Ngô Thanh Hà', landlord_id: 'l-mai', ref_code: 'F1_HOANG', scheduled_at: '2026-03-21T09:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-03-26T02:00:00Z', contract_id: 'HD-2026-042' },
+    { id: 'bk-016', room_id: 'p09', renter_id: null, renter_name: 'Vương Gia Bảo', landlord_id: 'l-mai', ref_code: 'F1_HOANG', scheduled_at: '2026-04-18T08:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-04-23T02:00:00Z', contract_id: 'HD-2026-043' },
+    { id: 'bk-017', room_id: 'p03', renter_id: null, renter_name: 'Đinh Quốc Việt', landlord_id: 'l-mai', ref_code: 'F1_DEMO', scheduled_at: '2026-01-17T03:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-01-22T02:00:00Z', contract_id: 'HD-2026-044' },
+    { id: 'bk-018', room_id: 'p04', renter_id: null, renter_name: 'Hồ Ngọc Trâm', landlord_id: 'l-mai', ref_code: 'F1_DEMO', scheduled_at: '2026-02-14T09:30:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-02-19T02:00:00Z', contract_id: 'HD-2026-045' },
+    { id: 'bk-019', room_id: 'p07', renter_id: null, renter_name: 'Mai Anh Tuấn', landlord_id: 'l-binh', ref_code: 'F1_DEMO', scheduled_at: '2026-05-23T02:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-05-27T02:00:00Z', contract_id: 'HD-2026-046' },
+    // Khách của hai F2: Minh chốt P.202 (HD-2026-021), Ngọc chốt P.302 (HD-2026-031, mã gắn theo phòng)
+    { id: 'bk-020', room_id: 'ab-202', renter_id: null, renter_name: 'Lê Minh Tú', landlord_id: 'l-binh', ref_code: 'F2_MINH', scheduled_at: '2026-02-07T03:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-02-11T02:00:00Z', contract_id: 'HD-2026-021' },
+    { id: 'bk-021', room_id: 'ab-302', renter_id: 'u-huy', landlord_id: 'l-binh', ref_code: 'MG-NGOC', scheduled_at: '2026-09-20T09:00:00Z', status: 'completed', note: '', stage: 'da-ky', stage_at: '2026-09-25T02:00:00Z', contract_id: 'HD-2026-031' }
   ];
 
   // Giao dịch tài chính mẫu. Hệ thống CHỈ GHI NHẬN, không xử lý thanh toán trực tuyến (trừ gói dịch vụ).
@@ -238,6 +263,29 @@
     { id: 'tx-010', type: 'rent',       contract_id: 'HD-2026-021', room_id: 'ab-202', from_id: null,      to_id: 'l-binh', amount: 3800000, status: 'paid', created_at: '2026-09-01T01:00:00Z', paid_at: '2026-09-05T02:30:00Z', period: '2026-09' },
     { id: 'tx-011', type: 'rent',       contract_id: 'HD-2026-028', room_id: 'ab-301', from_id: 'u-trang', to_id: 'l-binh', amount: 3500000, status: 'paid', created_at: '2026-09-01T01:00:00Z', paid_at: '2026-09-06T10:15:00Z', period: '2026-09' },
     { id: 'tx-014', type: 'rent',       contract_id: 'HD-2026-021', room_id: 'ab-202', from_id: null,      to_id: 'l-binh', amount: 7600000, status: 'paid', created_at: '2026-11-01T01:00:00Z', paid_at: '2026-11-04T02:10:00Z', period: '2026-11', note: 'Đóng gộp 2 tháng' },
+    { id: 'tx-015', type: 'rent',       contract_id: 'HD-2026-029', room_id: 'ab-203', from_id: null,      to_id: 'l-binh', amount: 3800000, status: 'paid', created_at: '2026-09-01T01:00:00Z', paid_at: '2026-09-05T03:00:00Z', period: '2026-09' },
+    { id: 'tx-016', type: 'rent',       contract_id: 'HD-2026-029', room_id: 'ab-203', from_id: null,      to_id: 'l-binh', amount: 3800000, status: 'paid', created_at: '2026-10-01T01:00:00Z', paid_at: '2026-10-04T03:30:00Z', period: '2026-10' },
+    { id: 'tx-017', type: 'rent',       contract_id: 'HD-2026-029', room_id: 'ab-203', from_id: null,      to_id: 'l-binh', amount: 3800000, status: 'paid', created_at: '2026-11-01T01:00:00Z', paid_at: '2026-11-04T09:00:00Z', period: '2026-11' },
+    { id: 'tx-018', type: 'rent',       contract_id: 'HD-2026-019', room_id: 'ab-101', from_id: 'u-an',    to_id: 'l-binh', amount: 3500000, status: 'paid', created_at: '2026-11-01T01:00:00Z', paid_at: '2026-11-03T08:30:00Z', period: '2026-11' },
+    { id: 'tx-019', type: 'rent',       contract_id: 'HD-2026-028', room_id: 'ab-301', from_id: 'u-trang', to_id: 'l-binh', amount: 3500000, status: 'paid', created_at: '2026-11-01T01:00:00Z', paid_at: '2026-11-05T10:20:00Z', period: '2026-11' },
+    { id: 'tx-020', type: 'rent',       contract_id: 'HD-2026-041', room_id: 'p06', from_id: null,      to_id: 'l-mai', amount: 4600000, status: 'paid', created_at: '2026-03-01T01:00:00Z', paid_at: '2026-03-05T02:00:00Z', period: '2026-03' },
+    { id: 'tx-021', type: 'rent',       contract_id: 'HD-2026-041', room_id: 'p06', from_id: null,      to_id: 'l-mai', amount: 4600000, status: 'paid', created_at: '2026-04-01T01:00:00Z', paid_at: '2026-04-05T02:00:00Z', period: '2026-04' },
+    { id: 'tx-022', type: 'rent',       contract_id: 'HD-2026-041', room_id: 'p06', from_id: null,      to_id: 'l-mai', amount: 4600000, status: 'paid', created_at: '2026-05-01T01:00:00Z', paid_at: '2026-05-05T02:00:00Z', period: '2026-05' },
+    { id: 'tx-023', type: 'rent',       contract_id: 'HD-2026-042', room_id: 'p08', from_id: null,      to_id: 'l-mai', amount: 3400000, status: 'paid', created_at: '2026-04-01T01:00:00Z', paid_at: '2026-04-05T02:00:00Z', period: '2026-04' },
+    { id: 'tx-024', type: 'rent',       contract_id: 'HD-2026-042', room_id: 'p08', from_id: null,      to_id: 'l-mai', amount: 3400000, status: 'paid', created_at: '2026-05-01T01:00:00Z', paid_at: '2026-05-05T02:00:00Z', period: '2026-05' },
+    { id: 'tx-025', type: 'rent',       contract_id: 'HD-2026-042', room_id: 'p08', from_id: null,      to_id: 'l-mai', amount: 3400000, status: 'paid', created_at: '2026-06-01T01:00:00Z', paid_at: '2026-06-05T02:00:00Z', period: '2026-06' },
+    { id: 'tx-026', type: 'rent',       contract_id: 'HD-2026-043', room_id: 'p09', from_id: null,      to_id: 'l-mai', amount: 6500000, status: 'paid', created_at: '2026-05-01T01:00:00Z', paid_at: '2026-05-05T02:00:00Z', period: '2026-05' },
+    { id: 'tx-027', type: 'rent',       contract_id: 'HD-2026-043', room_id: 'p09', from_id: null,      to_id: 'l-mai', amount: 6500000, status: 'paid', created_at: '2026-06-01T01:00:00Z', paid_at: '2026-06-05T02:00:00Z', period: '2026-06' },
+    { id: 'tx-028', type: 'rent',       contract_id: 'HD-2026-043', room_id: 'p09', from_id: null,      to_id: 'l-mai', amount: 6500000, status: 'paid', created_at: '2026-07-01T01:00:00Z', paid_at: '2026-07-05T02:00:00Z', period: '2026-07' },
+    { id: 'tx-029', type: 'rent',       contract_id: 'HD-2026-044', room_id: 'p03', from_id: null,      to_id: 'l-mai', amount: 3100000, status: 'paid', created_at: '2026-02-01T01:00:00Z', paid_at: '2026-02-05T02:00:00Z', period: '2026-02' },
+    { id: 'tx-030', type: 'rent',       contract_id: 'HD-2026-044', room_id: 'p03', from_id: null,      to_id: 'l-mai', amount: 3100000, status: 'paid', created_at: '2026-03-01T01:00:00Z', paid_at: '2026-03-05T02:00:00Z', period: '2026-03' },
+    { id: 'tx-031', type: 'rent',       contract_id: 'HD-2026-044', room_id: 'p03', from_id: null,      to_id: 'l-mai', amount: 3100000, status: 'paid', created_at: '2026-04-01T01:00:00Z', paid_at: '2026-04-05T02:00:00Z', period: '2026-04' },
+    { id: 'tx-032', type: 'rent',       contract_id: 'HD-2026-045', room_id: 'p04', from_id: null,      to_id: 'l-mai', amount: 3900000, status: 'paid', created_at: '2026-03-01T01:00:00Z', paid_at: '2026-03-05T02:00:00Z', period: '2026-03' },
+    { id: 'tx-033', type: 'rent',       contract_id: 'HD-2026-045', room_id: 'p04', from_id: null,      to_id: 'l-mai', amount: 3900000, status: 'paid', created_at: '2026-04-01T01:00:00Z', paid_at: '2026-04-05T02:00:00Z', period: '2026-04' },
+    { id: 'tx-034', type: 'rent',       contract_id: 'HD-2026-045', room_id: 'p04', from_id: null,      to_id: 'l-mai', amount: 3900000, status: 'paid', created_at: '2026-05-01T01:00:00Z', paid_at: '2026-05-05T02:00:00Z', period: '2026-05' },
+    { id: 'tx-035', type: 'rent',       contract_id: 'HD-2026-046', room_id: 'p07', from_id: null,      to_id: 'l-binh', amount: 1800000, status: 'paid', created_at: '2026-06-01T01:00:00Z', paid_at: '2026-06-05T02:00:00Z', period: '2026-06' },
+    { id: 'tx-036', type: 'rent',       contract_id: 'HD-2026-046', room_id: 'p07', from_id: null,      to_id: 'l-binh', amount: 1800000, status: 'paid', created_at: '2026-07-01T01:00:00Z', paid_at: '2026-07-05T02:00:00Z', period: '2026-07' },
+    { id: 'tx-037', type: 'rent',       contract_id: 'HD-2026-046', room_id: 'p07', from_id: null,      to_id: 'l-binh', amount: 1800000, status: 'paid', created_at: '2026-08-01T01:00:00Z', paid_at: '2026-08-05T02:00:00Z', period: '2026-08' },
     { id: 'tx-012', type: 'plan', room_id: null, from_id: 'l-binh', to_id: 'ad-01', amount: 199000, status: 'paid',    created_at: '2026-11-01T00:00:00Z', paid_at: '2026-11-01T00:05:00Z', plan: 'plus', period: '2026-11' },
     { id: 'tx-013', type: 'plan', room_id: null, from_id: 'l-mai',  to_id: 'ad-01', amount: 199000, status: 'pending', created_at: '2026-11-01T00:00:00Z', paid_at: null,                   plan: 'plus', period: '2026-11' }
   ];

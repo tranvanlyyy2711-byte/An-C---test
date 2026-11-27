@@ -2126,8 +2126,9 @@
       var tt = st.unlocked
         ? '<span class="tag ok">Đã mở tuyển dụng</span><small>' + (st.grandfathered ? 'F1 có sẵn' : 'Mở ' + esc(luc(st.unlockedAt))) + '</small>'
         : '<span class="tag wait">Chưa mở</span><small>' + hd.cur + '/' + hd.target + ' HĐ · ' + vnd(ds.cur) + '</small>';
-      return '<td data-th="Quyền F1 · Uy tín">' + tt + '<small>' + ut.rating.toFixed(1) + '/5 · ' + ut.violations + ' vi phạm tin rác</small>' +
-        '<div class="acts" style="justify-content:flex-start;margin-top:6px"><button type="button" class="btn btn-danger-ghost btn-sm" data-vp="' + esc(b.id) + '|ghi">Ghi vi phạm</button>' +
+      return '<td data-th="Quyền F1 · Uy tín">' + tt + '<small>' + ut.rating.toFixed(1) + '/5 · ' + ut.tinRac + ' tin rác · ' + ut.bungLich + ' bùng lịch</small>' +
+        '<div class="acts" style="justify-content:flex-start;margin-top:6px"><button type="button" class="btn btn-danger-ghost btn-sm" data-vp="' + esc(b.id) + '|tin-rac">Ghi tin rác</button>' +
+        '<button type="button" class="btn btn-danger-ghost btn-sm" data-vp="' + esc(b.id) + '|bung-lich">Ghi bùng lịch</button>' +
         (ut.violations ? '<button type="button" class="btn btn-ghost btn-sm" data-vp="' + esc(b.id) + '|go">Gỡ vi phạm</button>' : '') + '</div></td>';
     }
     $('mgRows').innerHTML = hang.map(function(b){
@@ -2272,16 +2273,17 @@
   $('tnDuyet').addEventListener('click', function(){ xuLy('force'); });
   $('tnBac').addEventListener('click', function(){ xuLy('rejected'); });
 
-  // Ghi / gỡ vi phạm tin rác của môi giới (ảnh hưởng điều kiện mở khoá quyền F1)
+  // Ghi / gỡ vi phạm tin rác, bùng lịch của môi giới (ảnh hưởng điều kiện mở khoá quyền F1)
   $('mgRows').addEventListener('click', function(e){
     var b = e.target.closest('[data-vp]'); if (!b || !canDuyet()) return;
     var p = b.getAttribute('data-vp').split('|'), mg = D.findUser(p[0]), kq;
-    if (p[1] === 'ghi') {
-      var note = prompt('Vi phạm tin rác của ' + (mg ? mg.name + ' (' + mg.ref_code + ')' : '') + ' — ghi rõ nội dung (môi giới chưa mở F1 sẽ chưa mở được quyền tuyển dụng):');
+    if (p[1] === 'tin-rac' || p[1] === 'bung-lich') {
+      var loai = p[1] === 'tin-rac' ? 'Vi phạm tin rác' : 'Khách bùng lịch';
+      var note = prompt(loai + ' — ' + (mg ? mg.name + ' (' + mg.ref_code + ')' : '') + '. Ghi rõ nội dung (môi giới chưa mở F1 sẽ chưa mở được quyền tuyển dụng):');
       if (note == null) return;
-      kq = M.recordViolation(p[0], ADMIN, note);
+      kq = M.recordViolation(p[0], ADMIN, note, p[1]);
     } else {
-      if (!confirm('Gỡ toàn bộ vi phạm tin rác của ' + (mg ? mg.name : '') + '?')) return;
+      if (!confirm('Gỡ toàn bộ vi phạm (tin rác và bùng lịch) của ' + (mg ? mg.name : '') + '?')) return;
       kq = M.clearViolations(p[0], ADMIN);
     }
     if (!kq.ok) { alert(kq.message); return; }

@@ -41,7 +41,7 @@
   var OLD_KEYS = ['ancu-tai-chinh-v1', V2_KEY];
   // Tăng khi dữ liệu mẫu trong data.js đổi cách gán hoa hồng (vd hợp đồng đổi mã môi giới): sổ được dựng lại
   // từ dữ liệu mẫu mới, giữ nguyên các lần chủ trọ xác nhận / An Cư cưỡng chế và các lệnh rút tiền.
-  var SEED_VERSION = 4;
+  var SEED_VERSION = 6;
   // Tuyến trên của một môi giới: parent_id (tên mới) hoặc upline_id (tên cũ) — data.js khai cả hai
   function parentOf(u) { return u ? (u.parent_id || u.upline_id || null) : null; }
   var MAX_AMOUNT = 1000000000; // chặn gõ nhầm thêm số 0
@@ -185,8 +185,10 @@
     var s = seed(), D = data();
     var seeded = {};
     s.payments.forEach(function (p) { seeded[p.id] = true; });
+    var kySeed = {};
+    s.payments.forEach(function (p) { kySeed[p.contract_id + '|' + p.period] = true; });
     v2.payments
-      .filter(function (p) { return !seeded[p.id]; })
+      .filter(function (p) { return !seeded[p.id] && !kySeed[p.contract_id + '|' + p.period]; })
       .sort(function (a, b) { return String(a.confirmed_at).localeCompare(String(b.confirmed_at)); })
       .forEach(function (p) {
         var c = D.findContract(p.contract_id);
